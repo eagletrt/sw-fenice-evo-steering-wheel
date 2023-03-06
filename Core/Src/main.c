@@ -106,7 +106,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   led_control_init();
-  led_control_set(&hi2c4, (uint32_t[6]){COLOR_RED, COLOR_RED, COLOR_GREEN, COLOR_GREEN, COLOR_BLUE, COLOR_BLUE});
+  led_control_set(&hi2c4, (uint32_t[6]){COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE, COLOR_BLUE});
 
   /* USER CODE END 2 */
 
@@ -114,10 +114,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	HAL_UART_Transmit(&hlpuart1, (uint8_t*) "hello\n", sizeof("hello\n"), 100);
-	// uint8_t x = 0;
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
