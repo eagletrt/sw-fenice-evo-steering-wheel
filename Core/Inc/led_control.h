@@ -18,8 +18,9 @@
 #define GREEN (uint8_t) 3
 #define BLUE  (uint8_t) 5
 
-#define COLOR_ORANGE 0xFFA500
-#define COLOR_WHITE  0xFFFFFF
+#define COLOR_RED  0xFF0000
+#define COLOR_GREEN 0x00FF00
+#define COLOR_BLUE 0x0000FF
 
 #define LED_N 6
 

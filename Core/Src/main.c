@@ -106,7 +106,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   led_control_init();
-  led_control_set(&hi2c4, (uint32_t[6]){COLOR_WHITE,COLOR_WHITE,COLOR_WHITE, COLOR_ORANGE, COLOR_ORANGE, COLOR_ORANGE});
+  led_control_set(&hi2c4, (uint32_t[6]){COLOR_RED, COLOR_RED, COLOR_GREEN, COLOR_GREEN, COLOR_BLUE, COLOR_BLUE});
 
   /* USER CODE END 2 */
 
