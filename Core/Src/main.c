@@ -108,21 +108,13 @@ int main(void)
 
     led_control_init();
     led_control_set(&hi2c4, (uint32_t[6]) {
-        COLOR_BLUE, COLOR_OFF, COLOR_OFF, COLOR_OFF, COLOR_OFF, COLOR_OFF
+        COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN
     });
-    // HAL_FLASH_Unlock();
 
-    // uint32_t *data = (uint32_t *)0x08047000;
-
-    // printf("%08X\n", *data);
-
-    // HAL_FLASH_Lock();
-
-
-    // HAL_GPIO_WritePin(LCD_BL_DIM_GPIO_Port, LCD_BL_DIM_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(NC4_GPIO_Port, NC4_Pin, GPIO_PIN_RESET);
-    // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
+    
+    HAL_GPIO_WritePin(NC4_GPIO_Port, NC4_Pin, GPIO_PIN_RESET); // test
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
 
 
   /* USER CODE END 2 */
@@ -131,9 +123,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
     while (1)
     {
-        for(int i=0; i<100; ++i) {
-            HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, i * 10);
-            HAL_Delay(2000);
+        for(int i=0; i<3; ++i) {
+            HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, i * 1200);
+            // problemi con il delay
+            HAL_Delay(500);
         }
     /* USER CODE END WHILE */
 
