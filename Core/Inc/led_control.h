@@ -27,6 +27,7 @@
 #define COLOR_GREEN      (uint32_t) 0x00FF00
 #define COLOR_BLUE       (uint32_t) 0x0000FF
 #define COLOR_PURPLE     (uint32_t) 0x800080
+#define COLOR_OFF        (uint32_t) 0x000000
 
 void led_control_init();
 void led_control_set(I2C_HandleTypeDef* hi2c4, uint32_t colors[LED_N]);

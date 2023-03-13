@@ -65,6 +65,8 @@ void Error_Handler(void);
 #define INT_3_GPIO_Port GPIOD
 #define LCD_BL_EN_Pin GPIO_PIN_7
 #define LCD_BL_EN_GPIO_Port GPIOD
+#define NC4_Pin GPIO_PIN_9
+#define NC4_GPIO_Port GPIOG
 #define INT_1_Pin GPIO_PIN_11
 #define INT_1_GPIO_Port GPIOG
 #define INT_2_Pin GPIO_PIN_12
