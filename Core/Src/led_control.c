@@ -14,6 +14,12 @@ void led_control_init() {
 	HAL_I2C_Master_Transmit(&hi2c4, ledaddr2, control, sizeof(control), 100);
 }
 
+void led_control_set_all(I2C_HandleTypeDef* hi2c4, uint32_t color) {
+	led_control_set(hi2c4, (uint32_t[6]) {
+        color, color, color, color, color, color
+    });
+}
+
 void led_control_set(I2C_HandleTypeDef* hi2c4, uint32_t colors[LED_N]) {
 	// left leds
 	for (int icolor = 0; icolor < LED_N / 2; ++icolor) {

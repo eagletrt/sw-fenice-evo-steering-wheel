@@ -106,16 +106,51 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
+#define SCREEN_WIDTH  (uint32_t) 640
+#define SCREEN_HEIGHT (uint32_t) 480
+
     led_control_init();
-    led_control_set(&hi2c4, (uint32_t[6]) {
-        COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN, COLOR_GREEN
-    });
+    led_control_set_all(&hi2c4, COLOR_BLUE);
 
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
-    
-    HAL_GPIO_WritePin(NC4_GPIO_Port, NC4_Pin, GPIO_PIN_RESET); // test
+    HAL_GPIO_WritePin(NC4_GPIO_Port, NC4_Pin, GPIO_PIN_RESET); // test gpio pin
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
 
+    uint32_t* memaddr = (uint32_t*) FMC_SDRAM_BANK1 + 0xF000;
+    uint8_t display_buffer[3 * SCREEN_WIDTH];
+    memset(display_buffer, 0xFF, 3 * SCREEN_WIDTH);
+
+    uint32_t icol = 0;
+    while(icol < SCREEN_HEIGHT) {
+        HAL_SDRAM_Write_8b(&hsdram1, memaddr + icol * sizeof(display_buffer), display_buffer, sizeof(display_buffer));
+        ++icol;
+    }
+
+#if 0
+    uint8_t buffer[4] = {0xF3, 0x1F, 0xF0, 0xFF};
+    uint8_t content_check[4] = {0};
+    uint32_t* offset = (uint32_t*) FMC_SDRAM_BANK1;
+    uint8_t display_buffer[3 * SCREEN_WIDTH];
+
+    HAL_SDRAM_Write_8b(&hsdram1, offset, buffer, sizeof(buffer));
+    HAL_SDRAM_Read_8b(&hsdram1, offset, content_check, sizeof(content_check));
+
+    if (buffer[0] == content_check[0]) {
+        led_control_set_all(&hi2c4, COLOR_GREEN);
+    } else {
+        led_control_set_all(&hi2c4, COLOR_RED);
+    }
+#endif
+
+#define LTDC_SCREEN_ACTIVE
+#ifdef LTDC_SCREEN_ACTIVE
+
+    HAL_LTDC_SetWindowSize(&hltdc, SCREEN_WIDTH, SCREEN_WIDTH, LTDC_LAYER_1);
+    HAL_LTDC_SetWindowPosition(&hltdc, 0, 0, LTDC_LAYER_1);
+    HAL_LTDC_SetAlpha(&hltdc, 255, LTDC_LAYER_1);
+    HAL_LTDC_SetAddress(&hltdc, (uint32_t) FMC_Bank1_R, LTDC_LAYER_1);
+
+#endif
 
   /* USER CODE END 2 */
 
@@ -123,11 +158,14 @@ int main(void)
   /* USER CODE BEGIN WHILE */
     while (1)
     {
+#if 0
         for(int i=0; i<3; ++i) {
             HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, i * 1200);
-            // problemi con il delay
             HAL_Delay(500);
         }
+#endif
+        HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
+        HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

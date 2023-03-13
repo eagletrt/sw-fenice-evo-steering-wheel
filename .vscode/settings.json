@@ -3,6 +3,7 @@
     "cortex-debug.openocdPath": "/usr/bin/openocd",
     "files.associations": {
         "gpio.h": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "stm32h7xx_hal.h": "c"
     }
 }

@@ -30,6 +30,7 @@
 #define COLOR_OFF        (uint32_t) 0x000000
 
 void led_control_init();
+void led_control_set_all(I2C_HandleTypeDef* hi2c4, uint32_t color);
 void led_control_set(I2C_HandleTypeDef* hi2c4, uint32_t colors[LED_N]);
 
 
