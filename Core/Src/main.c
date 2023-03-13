@@ -109,6 +109,9 @@ int main(void)
 #define SCREEN_WIDTH  (uint32_t) 640
 #define SCREEN_HEIGHT (uint32_t) 480
 
+#define SDRAM_SIZE 1048576
+#define SDRAM_N_BANKS 4
+
     led_control_init();
     led_control_set_all(&hi2c4, COLOR_BLUE);
 
@@ -116,7 +119,7 @@ int main(void)
     HAL_GPIO_WritePin(NC4_GPIO_Port, NC4_Pin, GPIO_PIN_RESET); // test gpio pin
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
 
-    uint32_t* memaddr = (uint32_t*) FMC_SDRAM_BANK1 + 0xF000;
+    uint32_t* memaddr = (uint32_t*) FMC_SDRAM_BANK1;
     uint8_t display_buffer[3 * SCREEN_WIDTH];
     memset(display_buffer, 0xFF, 3 * SCREEN_WIDTH);
 
