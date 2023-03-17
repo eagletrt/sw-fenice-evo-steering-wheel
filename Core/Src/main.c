@@ -117,42 +117,36 @@ int main(void) {
   HAL_GPIO_WritePin(NC4_GPIO_Port, NC4_Pin, GPIO_PIN_RESET); // test gpio pin
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
 
-  uint8_t wdata[] = {0x01, 0x02, 0x03, 0x04, 0x5};
-  uint8_t rdata[10];
-  memcpy((uint32_t *)SDRAM_BASE_ADDRESS, wdata, 5);
-  memcpy(rdata, (uint32_t *)SDRAM_BASE_ADDRESS, 5);
-
 #if 0
-  uint32_t *memaddr = (uint32_t *)FMC_SDRAM_BANK1;
+    uint8_t wdata[] = {0x01, 0x02, 0x03, 0x04, 0x5};
+    uint8_t rdata[10];
+    memcpy((uint32_t *)SDRAM_BASE_ADDRESS, wdata, 5);
+    memcpy(rdata, (uint32_t *)SDRAM_BASE_ADDRESS, 5);
+#endif
+
+  uint32_t *memaddr = (uint32_t *)SDRAM_BASE_ADDRESS;
   uint8_t display_buffer[3 * SCREEN_WIDTH];
   memset(display_buffer, 0xFF, 3 * SCREEN_WIDTH);
 
   uint32_t icol = 0;
   while (icol < SCREEN_HEIGHT) {
-    HAL_SDRAM_Write_8b(&hsdram1, memaddr + icol * sizeof(display_buffer),
-                       display_buffer, sizeof(display_buffer));
+    memcpy((uint32_t *)memaddr + icol * sizeof(display_buffer), display_buffer,
+           sizeof(display_buffer));
     ++icol;
   }
 
   HAL_LTDC_SetWindowSize(&hltdc, SCREEN_WIDTH, SCREEN_WIDTH, LTDC_LAYER_1);
   HAL_LTDC_SetWindowPosition(&hltdc, 0, 0, LTDC_LAYER_1);
   HAL_LTDC_SetAlpha(&hltdc, 255, LTDC_LAYER_1);
-  HAL_LTDC_SetAddress(&hltdc, (uint32_t)FMC_Bank1_R, LTDC_LAYER_1);
-#endif
+  HAL_LTDC_SetAddress(&hltdc, *memaddr, LTDC_LAYER_1);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-#if 0
-        for(int i=0; i<3; ++i) {
-            HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, i * 1200);
-            HAL_Delay(500);
-        }
-        HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
-        HAL_Delay(500);
-#endif
+    HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
+    HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
