@@ -29,6 +29,8 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
+#include "memdriver.h"
+
 /* USER CODE END Includes */
 
 extern SDRAM_HandleTypeDef hsdram1;

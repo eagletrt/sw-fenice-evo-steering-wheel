@@ -44,6 +44,7 @@ Core/Src/i2c.c \
 Core/Src/led_control.c \
 Core/Src/ltdc.c \
 Core/Src/main.c \
+Core/Src/memdriver.c \
 Core/Src/octospi.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Core/Src/stm32h7xx_it.c \

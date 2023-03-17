@@ -22,9 +22,6 @@
 #include "fmc.h"
 
 /* USER CODE BEGIN 0 */
-
-// #include "mt48lc4m32b2.h"
-
 /* USER CODE END 0 */
 
 SDRAM_HandleTypeDef hsdram1;
@@ -69,33 +66,19 @@ void MX_FMC_Init(void) {
   }
 
   /* USER CODE BEGIN FMC_Init 2 */
-
-#if 1
-
-  struct {
-    uint32_t TargetBank;     /*!< Target Bank                             */
-    uint32_t RefreshMode;    /*!< Refresh Mode                            */
-    uint32_t RefreshRate;    /*!< Refresh Rate                            */
-    uint32_t BurstLength;    /*!< Burst Length                            */
-    uint32_t BurstType;      /*!< Burst Type                              */
-    uint32_t CASLatency;     /*!< CAS Latency                             */
-    uint32_t OperationMode;  /*!< Operation Mode                          */
-    uint32_t WriteBurstMode; /*!< Write Burst Mode                        */
-  } MT48LC4M32B2_Context_t;
   MT48LC4M32B2_Context_t MT48LC4M32B2;
-  MT48LC4M32B2.TargetBank = FMC_SDRAM_CMD_TARGET_BANK1; // changeable
+  MT48LC4M32B2.TargetBank = FMC_SDRAM_CMD_TARGET_BANK1;
   MT48LC4M32B2.RefreshMode = MT48LC4M32B2_AUTOREFRESH_MODE_CMD;
   MT48LC4M32B2.RefreshRate = REFRESH_COUNT;
   MT48LC4M32B2.BurstLength = MT48LC4M32B2_BURST_LENGTH_1;
   MT48LC4M32B2.BurstType = MT48LC4M32B2_BURST_TYPE_SEQUENTIAL;
-  MT48LC4M32B2.CASLatency = MT48LC4M32B2_CAS_LATENCY_3; // changeable
+  MT48LC4M32B2.CASLatency = MT48LC4M32B2_CAS_LATENCY_3;
   MT48LC4M32B2.OperationMode = MT48LC4M32B2_OPERATING_MODE_STANDARD;
   MT48LC4M32B2.WriteBurstMode = MT48LC4M32B2_WRITEBURST_MODE_SINGLE;
 
   if (MT48LC4M32B2_Init(&hsdram1, &MT48LC4M32B2) != MT48LC4M32B2_OK) {
     Error_Handler();
   }
-#endif
   /* USER CODE END FMC_Init 2 */
 }
 

@@ -42,6 +42,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
+#define SDRAM_BASE_ADDRESS 0xC0000000
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -106,41 +110,6 @@ int main(void) {
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
-#if 0
-#define SCREEN_WIDTH (uint32_t)640
-#define SCREEN_HEIGHT (uint32_t)480
-
-#define SDRAM_SIZE 1048576
-#define SDRAM_N_BANKS 4
-
-#define EXTERNAL_RAM_BASE_ADDRESS 0x60000000
-
-#define SDRAM_BANK1_BASE_ADDRESS FMC_Bank1_R_BASE
-#define SDRAM_BANK2_BASE_ADDRESS SDRAM_BANK1_BASE_ADDRESS + 1 * SDRAM_SIZE
-#define SDRAM_BANK3_BASE_ADDRESS SDRAM_BANK1_BASE_ADDRESS + 2 * SDRAM_SIZE
-#define SDRAM_BANK4_BASE_ADDRESS SDRAM_BANK1_BASE_ADDRESS + 3 * SDRAM_SIZE
-
-    HAL_MPU_Disable();
-
-    MPU_Region_InitTypeDef MPU_Init;
-    MPU_Init.Enable = MPU_REGION_ENABLE;
-    MPU_Init.BaseAddress = FMC_Bank1_R_BASE;
-    MPU_Init.Size = MPU_REGION_SIZE_4MB;
-    MPU_Init.AccessPermission = MPU_REGION_FULL_ACCESS;
-    MPU_Init.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
-    MPU_Init.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-    MPU_Init.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
-    MPU_Init.Number = MPU_REGION_NUMBER0;
-    MPU_Init.TypeExtField = MPU_TEX_LEVEL1;
-    MPU_Init.SubRegionDisable = 0x00;
-    MPU_Init.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-
-    HAL_MPU_ConfigRegion(&MPU_Init);
-
-    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
-
-#endif
-
   led_control_init();
   led_control_set_all(&hi2c4, COLOR_GREEN);
 
@@ -148,9 +117,12 @@ int main(void) {
   HAL_GPIO_WritePin(NC4_GPIO_Port, NC4_Pin, GPIO_PIN_RESET); // test gpio pin
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
 
-#define LTDC_SCREEN_ACTIVE 0
-#if LTDC_SCREEN_ACTIVE
+  uint8_t wdata[] = {0x01, 0x02, 0x03, 0x04, 0x5};
+  uint8_t rdata[10];
+  memcpy((uint32_t *)SDRAM_BASE_ADDRESS, wdata, 5);
+  memcpy(rdata, (uint32_t *)SDRAM_BASE_ADDRESS, 5);
 
+#if 0
   uint32_t *memaddr = (uint32_t *)FMC_SDRAM_BANK1;
   uint8_t display_buffer[3 * SCREEN_WIDTH];
   memset(display_buffer, 0xFF, 3 * SCREEN_WIDTH);
@@ -166,31 +138,6 @@ int main(void) {
   HAL_LTDC_SetWindowPosition(&hltdc, 0, 0, LTDC_LAYER_1);
   HAL_LTDC_SetAlpha(&hltdc, 255, LTDC_LAYER_1);
   HAL_LTDC_SetAddress(&hltdc, (uint32_t)FMC_Bank1_R, LTDC_LAYER_1);
-
-#else
-
-#if 0
-    uint8_t buffer[4] = {0xF3, 0x1F, 0xF0, 0xFF};
-    uint8_t content_check[4] = {0};
-    uint32_t* memaddr = (uint32_t*) SDRAM_BANK1_BASE_ADDRESS;
-
-    HAL_SDRAM_Write_8b(&hsdram1, memaddr, buffer, sizeof(buffer));
-    HAL_SDRAM_Read_8b(&hsdram1, memaddr, content_check, sizeof(content_check));
-
-    if (buffer[0] == content_check[0]) {
-        led_control_set_all(&hi2c4, COLOR_GREEN);
-    } else {
-        led_control_set_all(&hi2c4, COLOR_RED);
-    }
-#endif
-#endif
-
-#if 1
-#define SDRAM_ADD 0xC0000000
-  uint8_t wdata[] = {0x01, 0x02, 0x03, 0x04, 0x5};
-  uint8_t rdata[10];
-  memcpy((uint32_t *)SDRAM_ADD, wdata, 5);
-  memcpy(rdata, (uint32_t *)SDRAM_ADD, 5);
 #endif
 
   /* USER CODE END 2 */
