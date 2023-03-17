@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "dac.h"
+#include "dma2d.h"
 #include "fdcan.h"
 #include "fmc.h"
 #include "gpio.h"
@@ -108,25 +109,29 @@ int main(void) {
   MX_TIM5_Init();
   MX_DAC1_Init();
   MX_TIM7_Init();
+  MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
   led_control_init();
-  led_control_set_all(&hi2c4, COLOR_GREEN);
+  led_control_set_all(&hi2c4, COLOR_BLUE);
 
+#if 1
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(NC4_GPIO_Port, NC4_Pin, GPIO_PIN_RESET); // test gpio pin
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
-
-#if 0
-    uint8_t wdata[] = {0x01, 0x02, 0x03, 0x04, 0x5};
-    uint8_t rdata[10];
-    memcpy((uint32_t *)SDRAM_BASE_ADDRESS, wdata, 5);
-    memcpy(rdata, (uint32_t *)SDRAM_BASE_ADDRESS, 5);
 #endif
+
+//HAL_DMA2D_ConfigLayer(&hdma2d, LTDC_LAYER_1);
+//HAL_DMA2D_Start(&hdma2d, );
+
+#if 1
+  uint8_t wdata[] = {0x01, 0x02, 0x03, 0x04, 0x5};
+  uint8_t rdata[10];
+  memcpy((uint32_t *)SDRAM_BASE_ADDRESS, wdata, 5);
+  memcpy(rdata, (uint32_t *)SDRAM_BASE_ADDRESS, 5);
 
   uint32_t *memaddr = (uint32_t *)SDRAM_BASE_ADDRESS;
   uint8_t display_buffer[3 * SCREEN_WIDTH];
-  memset(display_buffer, 0xFF, 3 * SCREEN_WIDTH);
+  memset(display_buffer, 0xAA, 3 * SCREEN_WIDTH);
 
   uint32_t icol = 0;
   while (icol < SCREEN_HEIGHT) {
@@ -134,6 +139,8 @@ int main(void) {
            sizeof(display_buffer));
     ++icol;
   }
+
+#endif
 
   HAL_LTDC_SetWindowSize(&hltdc, SCREEN_WIDTH, SCREEN_WIDTH, LTDC_LAYER_1);
   HAL_LTDC_SetWindowPosition(&hltdc, 0, 0, LTDC_LAYER_1);
