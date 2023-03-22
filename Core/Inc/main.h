@@ -72,6 +72,9 @@ void Error_Handler(void);
 #define INT_2_Pin GPIO_PIN_12
 #define INT_2_GPIO_Port GPIOG
 /* USER CODE BEGIN Private defines */
+#define SDRAM_BASE_ADDRESS 0xC0000000
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
 /* USER CODE END Private defines */
 

@@ -8,7 +8,6 @@ Test One:
 and then read BSIZE bytes from the same address and check that they are the same
 */
 void sdram_test1() {
-  uint32_t correct = 0;
   uint32_t wrong = 0;
   for (uint32_t iseg = 0; iseg < TEST_SEGS; ++iseg) {
     uint32_t offset = TEST_SEG_SIZE * iseg + (rand() % TEST_SEG_SIZE);
@@ -19,9 +18,7 @@ void sdram_test1() {
     memcpy(rdata_buf, (uint32_t *)SDRAM_BASE_ADDRESS + offset, TEST_BSIZE);
     for (uint32_t iin = 0; iin < TEST_BSIZE; ++iin) {
       if (wdata_buf[iin] != rdata_buf[iin]) {
-        wrong++;
-      } else {
-        correct++;
+        Error_Handler();
       }
     }
     HAL_Delay(1);
@@ -34,16 +31,16 @@ Test Two:
     Write a long array into the memory, then read it and check it
 */
 void sdram_test2() {
-  const uint32_t data_buf_size = 50000;
+  const uint32_t data_buf_size = 10000;
   uint8_t wdata_buf[data_buf_size];
   for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
-    wdata_buf[iin] = (data_buf_size + iin) % 256;
+    wdata_buf[iin] = (uint8_t)(iin % 256);
   }
-  uint32_t offset = 150;
-  memcpy((uint32_t *)SDRAM_BASE_ADDRESS + offset, wdata_buf, TEST_BSIZE);
+  uint32_t offset = 0;
+  memcpy((void *)SDRAM_BASE_ADDRESS + offset, wdata_buf, data_buf_size);
   uint8_t rdata_buf[data_buf_size];
   HAL_Delay(1);
-  memcpy(rdata_buf, (uint32_t *)SDRAM_BASE_ADDRESS + offset, TEST_BSIZE);
+  memcpy(rdata_buf, (void *)SDRAM_BASE_ADDRESS + offset, data_buf_size);
   for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
     if (wdata_buf[iin] != rdata_buf[iin]) {
       Error_Handler();

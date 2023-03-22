@@ -19,7 +19,7 @@ che siano ancora uguali
 2. scrivere TANTO a tanta velocita'
 */
 
-#define TEST_MEMSIZE 4000000
+#define TEST_MEMSIZE 2200000
 #define TEST_SEGS 10
 #define TEST_SEG_SIZE TEST_MEMSIZE / TEST_SEGS
 #define TEST_BSIZE 4

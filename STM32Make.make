@@ -52,6 +52,7 @@ Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
 Core/Src/sysmem.c \
 Core/Src/system_stm32h7xx.c \
+Core/Src/test/sdram_test.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
@@ -155,6 +156,7 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
+-ICore/Inc/test \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
