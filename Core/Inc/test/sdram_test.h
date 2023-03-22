@@ -13,12 +13,6 @@ inline void write_buffer(uint32_t base_address, uint32_t offset,
   memcpy((uint32_t *)base_address + offset, wdata, size);
 }
 
-/*
-1. scrivere 4 bytes in 50 differenti regioni di memoria, leggere e verificare
-che siano ancora uguali
-2. scrivere TANTO a tanta velocita'
-*/
-
 #define TEST_MEMSIZE 2200000
 #define TEST_SEGS 10
 #define TEST_SEG_SIZE TEST_MEMSIZE / TEST_SEGS
@@ -28,5 +22,6 @@ void sdram_tests_init();
 void sdram_test1();
 void sdram_test2();
 void sdram_test3();
+void sdram_test4();
 
 #endif
