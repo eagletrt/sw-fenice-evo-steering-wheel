@@ -22,6 +22,5 @@ void sdram_tests_init();
 void sdram_test1();
 void sdram_test2();
 void sdram_test3();
-void sdram_test4();
 
 #endif

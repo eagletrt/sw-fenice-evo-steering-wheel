@@ -31,7 +31,7 @@ Test Two:
     Write a long array into the memory, then read it and check it
 */
 void sdram_test2() {
-  const uint32_t data_buf_size = 10000;
+  const uint32_t data_buf_size = 50000;
   uint8_t wdata_buf[data_buf_size];
   for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
     wdata_buf[iin] = (uint8_t)(iin % 256);
