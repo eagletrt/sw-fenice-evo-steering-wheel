@@ -31,8 +31,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "led_control.h"
-#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -43,9 +41,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
-#define SDRAM_BASE_ADDRESS 0xC0000000
 
 /* USER CODE END PD */
 
@@ -112,19 +107,31 @@ int main(void) {
   MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
+#define SDRAM_TESTS 0
+#if SDRAM_TESTS
+  sdram_tests_init();
+  sdram_test1();
+  sdram_test2();
+  sdram_test3();
+  sdram_test4();
+#endif
+
   led_control_init();
-  led_control_set_all(&hi2c4, COLOR_BLUE);
+  led_control_set_all(&hi2c4, COLOR_OFF);
 
+  memset((void *)SDRAM_BASE_ADDRESS, 0x44, (SCREEN_HEIGHT * SCREEN_WIDTH * 4));
 
-  uint8_t ***display_buffer = (uint8_t ***)SDRAM_BASE_ADDRESS;
-
-  memset(display_buffer, 0xFF, 3 * SCREEN_WIDTH * SCREEN_HEIGHT);
-
-  HAL_LTDC_SetWindowSize(&hltdc, SCREEN_WIDTH, SCREEN_HEIGHT * 10,
-                         LTDC_LAYER_1);
-  HAL_LTDC_SetWindowPosition(&hltdc, 0, 0, LTDC_LAYER_1);
-  HAL_LTDC_SetAlpha(&hltdc, 255, LTDC_LAYER_1);
-  HAL_LTDC_SetAddress(&hltdc, SDRAM_BASE_ADDRESS, LTDC_LAYER_1);
+  /*
+  Goes HardFault...
+  uint8_t *** display_buffer = (uint8_t ***) SDRAM_BASE_ADDRESS;
+  for (uint32_t icol = 0; icol < SCREEN_HEIGHT; icol++) {
+    for (uint32_t irow = 0; irow < SCREEN_WIDTH; irow++) {
+      display_buffer[icol][irow][0] = 0x30;
+      display_buffer[icol][irow][1] = 0xFF;
+      display_buffer[icol][irow][2] = 0x1C;
+    }
+  }
+  */
 
   HAL_Delay(100);
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
@@ -135,8 +142,10 @@ int main(void) {
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    HAL_UART_Transmit(&hlpuart1, (uint8_t *)"eccomi\n", sizeof("eccomi\n"),
+                      100);
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
-    HAL_Delay(500);
+    HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -158,7 +167,7 @@ void SystemClock_Config(void) {
 
   /** Configure the main internal regulator output voltage
    */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
 
   while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
   }
@@ -176,13 +185,13 @@ void SystemClock_Config(void) {
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 34;
+  RCC_OscInitStruct.PLL.PLLN = 18;
   RCC_OscInitStruct.PLL.PLLP = 1;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 3072;
+  RCC_OscInitStruct.PLL.PLLFRACN = 6144;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
@@ -200,7 +209,7 @@ void SystemClock_Config(void) {
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
     Error_Handler();
   }
 }

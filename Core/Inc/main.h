@@ -31,7 +31,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include "led_control.h"
+#include "test/sdram_test.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

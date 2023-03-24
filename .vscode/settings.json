@@ -6,7 +6,8 @@
         "main.h": "c",
         "stm32h7xx_hal.h": "c",
         "sdram_test.h": "c",
-        "ltdc.h": "c"
+        "ltdc.h": "c",
+        "display_buf.h": "c"
     },
     "cmake.configureOnOpen": false
 }

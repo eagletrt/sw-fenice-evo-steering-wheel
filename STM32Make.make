@@ -37,6 +37,7 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Core/Src/dac.c \
+Core/Src/display_buf.c \
 Core/Src/dma2d.c \
 Core/Src/fdcan.c \
 Core/Src/fmc.c \
