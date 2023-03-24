@@ -13,7 +13,7 @@ inline void write_buffer(uint32_t base_address, uint32_t offset,
   memcpy((uint32_t *)base_address + offset, wdata, size);
 }
 
-#define TEST_MEMSIZE 2200000
+#define TEST_MEMSIZE 2000000
 #define TEST_SEGS 10
 #define TEST_SEG_SIZE TEST_MEMSIZE / TEST_SEGS
 #define TEST_BSIZE 4
@@ -22,5 +22,6 @@ void sdram_tests_init();
 void sdram_test1();
 void sdram_test2();
 void sdram_test3();
+void sdram_test4();
 
 #endif
