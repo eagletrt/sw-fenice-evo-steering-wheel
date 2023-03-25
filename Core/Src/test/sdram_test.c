@@ -84,9 +84,22 @@ void sdram_test4() {
   HAL_Delay(1);
 }
 
-
 /*
 TODO
 Test Five:
   Set directly the memory region without functions like memset or memcpy
 */
+void sdram_test5() {
+  const uint32_t buf_len = 100;
+  uint8_t *data = (uint8_t *)SDRAM_BASE_ADDRESS;
+  uint8_t content = 0xA1;
+  for (uint32_t iin = 0; iin < buf_len; ++iin) {
+    data[iin] = content;
+  }
+  for (uint32_t iin = 0; iin < buf_len; ++iin) {
+    if (data[iin] != content) {
+      Error_Handler();
+    }
+  }
+  HAL_Delay(1);
+}
