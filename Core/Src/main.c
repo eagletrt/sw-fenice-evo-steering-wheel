@@ -41,6 +41,12 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define WIDTH SCREEN_WIDTH
+#define HEIGHT SCREEN_HEIGHT
+#define BACKGROUND_COLOR 0xFF181818
+#define CIRCLE_RADIUS 100
+#define CIRCLE_COLOR 0x99AA2020
+#define PI 3.14159265359
 
 /* USER CODE END PD */
 
@@ -52,12 +58,74 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+float triangle_angle = 0;
+float circle_x = WIDTH/2;
+float circle_y = HEIGHT/2;
+float circle_dx = 100;
+float circle_dy = 100;
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+float sqrtf(float x);
+float atan2f(float y, float x);
+float sinf(float x);
+float cosf(float x);
+
+static inline void rotate_point(float *x, float *y)
+{
+    float dx = *x - WIDTH/2;
+    float dy = *y - HEIGHT/2;
+    float mag = sqrtf(dx*dx + dy*dy);
+    float dir = atan2f(dy, dx) + triangle_angle;
+    *x = cosf(dir)*mag + WIDTH/2;
+    *y = sinf(dir)*mag + HEIGHT/2;
+}
+
+Olivec_Canvas vc_render(float dt)
+{
+    uint32_t *pixels = (uint32_t *)SDRAM_BASE_ADDRESS;
+    Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
+
+    olivec_fill(oc, BACKGROUND_COLOR);
+
+    // Triangle
+    {
+        triangle_angle += 0.5f*PI*dt;
+
+        float x1 = WIDTH/2, y1 = HEIGHT/8;
+        float x2 = WIDTH/8, y2 = HEIGHT/2;
+        float x3 = WIDTH*7/8, y3 = HEIGHT*7/8;
+        rotate_point(&x1, &y1);
+        rotate_point(&x2, &y2);
+        rotate_point(&x3, &y3);
+        olivec_triangle3c(oc, x1, y1, x2, y2, x3, y3, 0xFF2020FF, 0xFF20FF20, 0xFFFF2020);
+    }
+
+    // Circle
+    {
+        float x = circle_x + circle_dx*dt;
+        if (x - CIRCLE_RADIUS < 0 || x + CIRCLE_RADIUS >= WIDTH) {
+            circle_dx *= -1;
+        } else {
+            circle_x = x;
+        }
+
+        float y = circle_y + circle_dy*dt;
+        if (y - CIRCLE_RADIUS < 0 || y + CIRCLE_RADIUS >= HEIGHT) {
+            circle_dy *= -1;
+        } else {
+            circle_y = y;
+        }
+
+        olivec_circle(oc, circle_x, circle_y, CIRCLE_RADIUS, CIRCLE_COLOR);
+    }
+
+    return oc;
+}
 
 /* USER CODE END PFP */
 
@@ -107,22 +175,35 @@ int main(void) {
   MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
-#define SDRAM_TESTS 0
+#define SDRAM_TESTS 1
 #if SDRAM_TESTS
   sdram_tests_init();
   sdram_test1();
   sdram_test2();
   sdram_test3();
   sdram_test4();
+  sdram_test5();
 #endif
 
   led_control_init();
   led_control_set_all(&hi2c4, COLOR_OFF);
 
-  memset((void *)SDRAM_BASE_ADDRESS, 0x44, (SCREEN_HEIGHT * SCREEN_WIDTH * 4));
+  uint32_t *pixels = (uint32_t *)SDRAM_BASE_ADDRESS;
+  Olivec_Canvas oc =
+      olivec_canvas(pixels, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
 
-  /*
-  Goes HardFault...
+  olivec_fill(oc, 0xFFFFFFFF);
+  olivec_circle(oc, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 180, 0xFFFF0000);
+
+/*
+  Green screen
+  for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
+    display_buffer[3 * icell] = 0x00;
+    display_buffer[3 * icell + 1] = 0xFF;
+    display_buffer[3 * icell + 2] = 0x00;
+  }
+
+  For some reasons goes HardFault...
   uint8_t *** display_buffer = (uint8_t ***) SDRAM_BASE_ADDRESS;
   for (uint32_t icol = 0; icol < SCREEN_HEIGHT; icol++) {
     for (uint32_t irow = 0; irow < SCREEN_WIDTH; irow++) {
@@ -136,15 +217,22 @@ int main(void) {
   HAL_Delay(100);
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
+  
+  // uint32_t prev = HAL_GetTick();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    HAL_UART_Transmit(&hlpuart1, (uint8_t *)"eccomi\n", sizeof("eccomi\n"),
-                      100);
-    HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
+   //  uint32_t curr = HAL_GetTick();
+    // float dt = (curr - prev) / 1000.0f;
+
+    // vc_render(dt);
+
+    // HAL_UART_Transmit(&hlpuart1, (uint8_t *)"eccomi\n", sizeof("eccomi\n"),
+    // 100);
+    // HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
     HAL_Delay(1000);
     /* USER CODE END WHILE */
 
