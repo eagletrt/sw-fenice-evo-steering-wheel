@@ -182,7 +182,8 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
   while (1) {
     uint32_t curr = HAL_GetTick();
-    float dt = (curr - prev) / 1000.0f;
+    float dt = (curr - prev) / 10000.0f;
+    prev = curr;
     LTDC_switch_framebuffer();
     vc_render(dt);
 
