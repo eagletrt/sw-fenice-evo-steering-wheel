@@ -36,6 +36,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+enum framebuffer { FRAMEBUFFER1, FRAMEBUFFER2 };
 
 /* USER CODE END PTD */
 
@@ -58,11 +59,13 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-float triangle_angle = 0;
-float circle_x = WIDTH/2;
-float circle_y = HEIGHT/2;
-float circle_dx = 100;
-float circle_dy = 100;
+static enum framebuffer active = FRAMEBUFFER1;
+
+static float triangle_angle = 0;
+static float circle_x = WIDTH / 2;
+static float circle_y = HEIGHT / 2;
+static float circle_dx = 100;
+static float circle_dy = 100;
 
 /* USER CODE END PV */
 
@@ -75,57 +78,10 @@ float atan2f(float y, float x);
 float sinf(float x);
 float cosf(float x);
 
-static inline void rotate_point(float *x, float *y)
-{
-    float dx = *x - WIDTH/2;
-    float dy = *y - HEIGHT/2;
-    float mag = sqrtf(dx*dx + dy*dy);
-    float dir = atan2f(dy, dx) + triangle_angle;
-    *x = cosf(dir)*mag + WIDTH/2;
-    *y = sinf(dir)*mag + HEIGHT/2;
-}
-
-Olivec_Canvas vc_render(float dt)
-{
-    uint32_t *pixels = (uint32_t *)SDRAM_BASE_ADDRESS;
-    Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
-
-    olivec_fill(oc, BACKGROUND_COLOR);
-
-    // Triangle
-    {
-        triangle_angle += 0.5f*PI*dt;
-
-        float x1 = WIDTH/2, y1 = HEIGHT/8;
-        float x2 = WIDTH/8, y2 = HEIGHT/2;
-        float x3 = WIDTH*7/8, y3 = HEIGHT*7/8;
-        rotate_point(&x1, &y1);
-        rotate_point(&x2, &y2);
-        rotate_point(&x3, &y3);
-        olivec_triangle3c(oc, x1, y1, x2, y2, x3, y3, 0xFF2020FF, 0xFF20FF20, 0xFFFF2020);
-    }
-
-    // Circle
-    {
-        float x = circle_x + circle_dx*dt;
-        if (x - CIRCLE_RADIUS < 0 || x + CIRCLE_RADIUS >= WIDTH) {
-            circle_dx *= -1;
-        } else {
-            circle_x = x;
-        }
-
-        float y = circle_y + circle_dy*dt;
-        if (y - CIRCLE_RADIUS < 0 || y + CIRCLE_RADIUS >= HEIGHT) {
-            circle_dy *= -1;
-        } else {
-            circle_y = y;
-        }
-
-        olivec_circle(oc, circle_x, circle_y, CIRCLE_RADIUS, CIRCLE_COLOR);
-    }
-
-    return oc;
-}
+static inline void rotate_point(float *x, float *y);
+Olivec_Canvas vc_render(float dt);
+void LTDC_switch_framebuffer(void);
+uint32_t *LTDC_get_backbuffer_address(void);
 
 /* USER CODE END PFP */
 
@@ -177,10 +133,9 @@ int main(void) {
 
 #define SDRAM_TESTS 1
 #if SDRAM_TESTS
-  sdram_tests_init();
-  sdram_test1();
-  sdram_test2();
-  sdram_test3();
+  // sdram_test1();
+  // sdram_test2();
+  // sdram_test3();
   sdram_test4();
   sdram_test5();
 #endif
@@ -188,6 +143,8 @@ int main(void) {
   led_control_init();
   led_control_set_all(&hi2c4, COLOR_OFF);
 
+  /*
+  Japan Flag
   uint32_t *pixels = (uint32_t *)SDRAM_BASE_ADDRESS;
   Olivec_Canvas oc =
       olivec_canvas(pixels, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
@@ -195,45 +152,41 @@ int main(void) {
   olivec_fill(oc, 0xFFFFFFFF);
   olivec_circle(oc, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 180, 0xFFFF0000);
 
-/*
-  Green screen
-  for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
-    display_buffer[3 * icell] = 0x00;
-    display_buffer[3 * icell + 1] = 0xFF;
-    display_buffer[3 * icell + 2] = 0x00;
-  }
-
-  For some reasons goes HardFault...
-  uint8_t *** display_buffer = (uint8_t ***) SDRAM_BASE_ADDRESS;
-  for (uint32_t icol = 0; icol < SCREEN_HEIGHT; icol++) {
-    for (uint32_t irow = 0; irow < SCREEN_WIDTH; irow++) {
-      display_buffer[icol][irow][0] = 0x30;
-      display_buffer[icol][irow][1] = 0xFF;
-      display_buffer[icol][irow][2] = 0x1C;
+    Green screen
+    for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
+      display_buffer[3 * icell] = 0x00;
+      display_buffer[3 * icell + 1] = 0xFF;
+      display_buffer[3 * icell + 2] = 0x00;
     }
-  }
-  */
+
+    For some reasons goes HardFault...
+    uint8_t *** display_buffer = (uint8_t ***) SDRAM_BASE_ADDRESS;
+    for (uint32_t icol = 0; icol < SCREEN_HEIGHT; icol++) {
+      for (uint32_t irow = 0; irow < SCREEN_WIDTH; irow++) {
+        display_buffer[icol][irow][0] = 0x30;
+        display_buffer[icol][irow][1] = 0xFF;
+        display_buffer[icol][irow][2] = 0x1C;
+      }
+    }
+    */
 
   HAL_Delay(100);
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
-  
-  // uint32_t prev = HAL_GetTick();
+
+  uint32_t prev = HAL_GetTick();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-   //  uint32_t curr = HAL_GetTick();
-    // float dt = (curr - prev) / 1000.0f;
+    uint32_t curr = HAL_GetTick();
+    float dt = (curr - prev) / 1000.0f;
+    LTDC_switch_framebuffer();
+    vc_render(dt);
 
-    // vc_render(dt);
-
-    // HAL_UART_Transmit(&hlpuart1, (uint8_t *)"eccomi\n", sizeof("eccomi\n"),
-    // 100);
-    // HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_IMMEDIATE);
-    HAL_Delay(1000);
+    HAL_Delay(16);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -303,6 +256,77 @@ void SystemClock_Config(void) {
 }
 
 /* USER CODE BEGIN 4 */
+
+void LTDC_switch_framebuffer(void) {
+  if (active == FRAMEBUFFER1) {
+    LTDC_Layer1->CFBAR = FRAMEBUFFER2_ADDR;
+    active = FRAMEBUFFER2;
+  } else {
+    LTDC_Layer1->CFBAR = FRAMEBUFFER1_ADDR;
+    active = FRAMEBUFFER1;
+  }
+  LTDC->SRCR = LTDC_SRCR_VBR; // reload shadow registers on vertical blank
+  while ((LTDC->CDSR & LTDC_CDSR_VSYNCS) == 0) // wait for reload
+    ;
+}
+
+uint32_t *LTDC_get_backbuffer_address(void) {
+  if (active == FRAMEBUFFER1)
+    return (uint32_t *)FRAMEBUFFER2_ADDR;
+  else
+    return (uint32_t *)FRAMEBUFFER1_ADDR;
+}
+
+static inline void rotate_point(float *x, float *y) {
+  float dx = *x - WIDTH / 2;
+  float dy = *y - HEIGHT / 2;
+  float mag = sqrtf(dx * dx + dy * dy);
+  float dir = atan2f(dy, dx) + triangle_angle;
+  *x = cosf(dir) * mag + WIDTH / 2;
+  *y = sinf(dir) * mag + HEIGHT / 2;
+}
+
+Olivec_Canvas vc_render(float dt) {
+  uint32_t *pixels = LTDC_get_backbuffer_address();
+  Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
+
+  olivec_fill(oc, BACKGROUND_COLOR);
+
+  // Triangle
+  {
+    triangle_angle += 0.5f * PI * dt;
+
+    float x1 = WIDTH / 2, y1 = HEIGHT / 8;
+    float x2 = WIDTH / 8, y2 = HEIGHT / 2;
+    float x3 = WIDTH * 7 / 8, y3 = HEIGHT * 7 / 8;
+    rotate_point(&x1, &y1);
+    rotate_point(&x2, &y2);
+    rotate_point(&x3, &y3);
+    olivec_triangle3c(oc, x1, y1, x2, y2, x3, y3, 0xFF2020FF, 0xFF20FF20,
+                      0xFFFF2020);
+  }
+
+  // Circle
+  {
+    float x = circle_x + circle_dx * dt;
+    if (x - CIRCLE_RADIUS < 0 || x + CIRCLE_RADIUS >= WIDTH) {
+      circle_dx *= -1;
+    } else {
+      circle_x = x;
+    }
+
+    float y = circle_y + circle_dy * dt;
+    if (y - CIRCLE_RADIUS < 0 || y + CIRCLE_RADIUS >= HEIGHT) {
+      circle_dy *= -1;
+    } else {
+      circle_y = y;
+    }
+
+    olivec_circle(oc, circle_x, circle_y, CIRCLE_RADIUS, CIRCLE_COLOR);
+  }
+
+  return oc;
+}
 
 /* USER CODE END 4 */
 

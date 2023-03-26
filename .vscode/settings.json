@@ -7,7 +7,8 @@
         "stm32h7xx_hal.h": "c",
         "sdram_test.h": "c",
         "ltdc.h": "c",
-        "display_buf.h": "c"
+        "display_buf.h": "c",
+        "memdriver.h": "c"
     },
     "cmake.configureOnOpen": false
 }

@@ -31,9 +31,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h>
 #include "led_control.h"
 #include "test/sdram_test.h"
+#include <string.h>
 #define OLIVEC_IMPLEMENTATION
 #include "olive.c"
 /* USER CODE END Includes */
@@ -77,6 +77,8 @@ void Error_Handler(void);
 #define INT_2_GPIO_Port GPIOG
 /* USER CODE BEGIN Private defines */
 #define SDRAM_BASE_ADDRESS 0xC0000000
+#define FRAMEBUFFER1_ADDR SDRAM_BASE_ADDRESS
+#define FRAMEBUFFER2_ADDR 0xC0178000
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 480
 
