@@ -34,8 +34,6 @@ extern "C" {
 #include "led_control.h"
 #include "test/sdram_test.h"
 #include <string.h>
-#define OLIVEC_IMPLEMENTATION
-#include "olive.c"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

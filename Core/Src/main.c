@@ -42,12 +42,6 @@ enum framebuffer { FRAMEBUFFER1, FRAMEBUFFER2 };
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define WIDTH SCREEN_WIDTH
-#define HEIGHT SCREEN_HEIGHT
-#define BACKGROUND_COLOR 0xFF181818
-#define CIRCLE_RADIUS 100
-#define CIRCLE_COLOR 0x99AA2020
-#define PI 3.14159265359
 
 /* USER CODE END PD */
 
@@ -59,13 +53,8 @@ enum framebuffer { FRAMEBUFFER1, FRAMEBUFFER2 };
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-static enum framebuffer active = FRAMEBUFFER1;
 
-static float triangle_angle = 0;
-static float circle_x = WIDTH / 2;
-static float circle_y = HEIGHT / 2;
-static float circle_dx = 100;
-static float circle_dy = 100;
+static enum framebuffer active = FRAMEBUFFER1;
 
 /* USER CODE END PV */
 
@@ -73,13 +62,6 @@ static float circle_dy = 100;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
-float sqrtf(float x);
-float atan2f(float y, float x);
-float sinf(float x);
-float cosf(float x);
-
-static inline void rotate_point(float *x, float *y);
-Olivec_Canvas vc_render(float dt);
 void LTDC_switch_framebuffer(void);
 uint32_t *LTDC_get_backbuffer_address(void);
 
@@ -144,14 +126,6 @@ int main(void) {
   led_control_set_all(&hi2c4, COLOR_OFF);
 
   /*
-  Japan Flag
-  uint32_t *pixels = (uint32_t *)SDRAM_BASE_ADDRESS;
-  Olivec_Canvas oc =
-      olivec_canvas(pixels, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-
-  olivec_fill(oc, 0xFFFFFFFF);
-  olivec_circle(oc, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 180, 0xFFFF0000);
-
     Green screen
     for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
       display_buffer[3 * icell] = 0x00;
@@ -174,18 +148,11 @@ int main(void) {
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
 
-  uint32_t prev = HAL_GetTick();
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    uint32_t curr = HAL_GetTick();
-    float dt = (curr - prev) / 10000.0f;
-    prev = curr;
-    LTDC_switch_framebuffer();
-    vc_render(dt);
 
     HAL_Delay(16);
     /* USER CODE END WHILE */
@@ -276,57 +243,6 @@ uint32_t *LTDC_get_backbuffer_address(void) {
     return (uint32_t *)FRAMEBUFFER2_ADDR;
   else
     return (uint32_t *)FRAMEBUFFER1_ADDR;
-}
-
-static inline void rotate_point(float *x, float *y) {
-  float dx = *x - WIDTH / 2;
-  float dy = *y - HEIGHT / 2;
-  float mag = sqrtf(dx * dx + dy * dy);
-  float dir = atan2f(dy, dx) + triangle_angle;
-  *x = cosf(dir) * mag + WIDTH / 2;
-  *y = sinf(dir) * mag + HEIGHT / 2;
-}
-
-Olivec_Canvas vc_render(float dt) {
-  uint32_t *pixels = LTDC_get_backbuffer_address();
-  Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
-
-  olivec_fill(oc, BACKGROUND_COLOR);
-
-  // Triangle
-  {
-    triangle_angle += 0.5f * PI * dt;
-
-    float x1 = WIDTH / 2, y1 = HEIGHT / 8;
-    float x2 = WIDTH / 8, y2 = HEIGHT / 2;
-    float x3 = WIDTH * 7 / 8, y3 = HEIGHT * 7 / 8;
-    rotate_point(&x1, &y1);
-    rotate_point(&x2, &y2);
-    rotate_point(&x3, &y3);
-    olivec_triangle3c(oc, x1, y1, x2, y2, x3, y3, 0xFF2020FF, 0xFF20FF20,
-                      0xFFFF2020);
-  }
-
-  // Circle
-  {
-    float x = circle_x + circle_dx * dt;
-    if (x - CIRCLE_RADIUS < 0 || x + CIRCLE_RADIUS >= WIDTH) {
-      circle_dx *= -1;
-    } else {
-      circle_x = x;
-    }
-
-    float y = circle_y + circle_dy * dt;
-    if (y - CIRCLE_RADIUS < 0 || y + CIRCLE_RADIUS >= HEIGHT) {
-      circle_dy *= -1;
-    } else {
-      circle_y = y;
-    }
-
-    olivec_circle(oc, circle_x, circle_y, CIRCLE_RADIUS, CIRCLE_COLOR);
-  }
-
-  return oc;
 }
 
 /* USER CODE END 4 */
