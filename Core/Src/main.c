@@ -113,26 +113,25 @@ int main(void) {
   MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
-#define SDRAM_TESTS 1
-#if SDRAM_TESTS
-  // sdram_test1();
-  // sdram_test2();
-  // sdram_test3();
-  // sdram_test4();
-  // sdram_test5();
-#endif
-#if 0
+  print("Guten Morgen\n");
+
+  HAL_Delay(100);
+  HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
+  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
+
+#if 1
   led_control_init();
-  led_control_set_all(&hi2c4, COLOR_OFF);
+  led_control_set_all(&hi2c4, COLOR_GREEN);
 #endif
 
+#if 0
   lv_init();
-  // lv_disp_t * display = lv_disp_create(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   static lv_disp_draw_buf_t disp_buf_conf;
   lv_disp_draw_buf_init(&disp_buf_conf, (uint32_t *)FRAMEBUFFER1_ADDR,
                         (uint32_t *)FRAMEBUFFER2_ADDR,
                         SCREEN_HEIGHT * SCREEN_WIDTH);
+#endif
 
   // lv_disp_set_draw_buffers(display, (uint32_t *)FRAMEBUFFER1_ADDR , (uint32_t
   // *)FRAMEBUFFER2_ADDR, SCREEN_HEIGHT * SCREEN_WIDTH,
@@ -163,24 +162,22 @@ int main(void) {
     }
     */
 
-  HAL_Delay(100);
-  HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
-  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
-
   uint32_t ptick = HAL_GetTick();
 
-  lv_example_grid_4();
+  // lv_example_grid_4();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    print("Guten Morgen\n");
+    HAL_UART_Transmit(&hlpuart1, (uint8_t *)"ciao\n", sizeof("ciao\n"), 100);
     uint32_t ctick = HAL_GetTick();
     lv_tick_inc(ptick - ctick);
     ptick = ctick;
 
-    lv_timer_handler();
+    // lv_timer_handler();
 
     HAL_Delay(5);
 
@@ -205,7 +202,7 @@ void SystemClock_Config(void) {
 
   /** Configure the main internal regulator output voltage
    */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
   }
@@ -223,13 +220,13 @@ void SystemClock_Config(void) {
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 18;
+  RCC_OscInitStruct.PLL.PLLN = 25;
   RCC_OscInitStruct.PLL.PLLP = 1;
   RCC_OscInitStruct.PLL.PLLQ = 4;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 6144;
+  RCC_OscInitStruct.PLL.PLLFRACN = 0;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }

@@ -131,7 +131,7 @@ CPU = -mcpu=cortex-m7
 FPU = -mfpu=fpv5-d16
 
 # float-abi
-FLOAT-ABI = -mfloat-abi=hard
+FLOAT-ABI = -mfloat-abi=soft
 
 # mcu
 MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
@@ -181,7 +181,7 @@ CXXFLAGS += -g -gdwarf -ggdb
 endif
 
 # Add additional flags
-CFLAGS += -mfloat-abi=softfp -static 
+CFLAGS += 
 ASFLAGS += 
 CXXFLAGS += 
 
@@ -202,7 +202,7 @@ LIBDIR = \
 
 
 # Additional LD Flags from config file
-ADDITIONALLDFLAGS = -mfloat-abi=softfp -specs=nano.specs -static 
+ADDITIONALLDFLAGS = -specs=nano.specs 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
