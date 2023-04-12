@@ -61,7 +61,7 @@ static enum framebuffer active = FRAMEBUFFER1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+void lv_example_grid_4(void);
 void LTDC_switch_framebuffer(void);
 uint32_t *LTDC_get_backbuffer_address(void);
 
@@ -118,8 +118,8 @@ int main(void) {
   // sdram_test1();
   // sdram_test2();
   // sdram_test3();
-  sdram_test4();
-  sdram_test5();
+  // sdram_test4();
+  // sdram_test5();
 #endif
 #if 0
   led_control_init();
@@ -130,14 +130,18 @@ int main(void) {
   // lv_disp_t * display = lv_disp_create(SCREEN_WIDTH, SCREEN_HEIGHT);
 
   static lv_disp_draw_buf_t disp_buf_conf;
-  lv_disp_draw_buf_init(&disp_buf_conf, (uint32_t *)FRAMEBUFFER1_ADDR , (uint32_t *)FRAMEBUFFER2_ADDR, SCREEN_HEIGHT * SCREEN_WIDTH);
+  lv_disp_draw_buf_init(&disp_buf_conf, (uint32_t *)FRAMEBUFFER1_ADDR,
+                        (uint32_t *)FRAMEBUFFER2_ADDR,
+                        SCREEN_HEIGHT * SCREEN_WIDTH);
 
-  // lv_disp_set_draw_buffers(display, (uint32_t *)FRAMEBUFFER1_ADDR , (uint32_t *)FRAMEBUFFER2_ADDR, SCREEN_HEIGHT * SCREEN_WIDTH, LV_DISP_RENDER_MODE_DIRECT);
+  // lv_disp_set_draw_buffers(display, (uint32_t *)FRAMEBUFFER1_ADDR , (uint32_t
+  // *)FRAMEBUFFER2_ADDR, SCREEN_HEIGHT * SCREEN_WIDTH,
+  // LV_DISP_RENDER_MODE_DIRECT);
 
   // lv_disp_set_flush_cb(display, my_flush_cb);
 
   // lv_disp_set_color_depth(display, LV_COLOR_FORMAT_ARGB8888);
-  
+
   // lv_log_register_print_cb(LV_LOG_LEVEL_INFO, steering_log);
 
   /*
@@ -164,6 +168,8 @@ int main(void) {
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
 
   uint32_t ptick = HAL_GetTick();
+
+  lv_example_grid_4();
 
   /* USER CODE END 2 */
 
@@ -247,6 +253,38 @@ void SystemClock_Config(void) {
 }
 
 /* USER CODE BEGIN 4 */
+
+void lv_example_grid_4(void) {
+  static lv_coord_t col_dsc[] = {60, 60, 60, LV_GRID_TEMPLATE_LAST};
+  static lv_coord_t row_dsc[] = {45, 45, 45, LV_GRID_TEMPLATE_LAST};
+
+  /*Add space between the columns and move the rows to the bottom (end)*/
+
+  /*Create a container with grid*/
+  lv_obj_t *cont = lv_obj_create(lv_scr_act());
+  lv_obj_set_grid_align(cont, LV_GRID_ALIGN_SPACE_BETWEEN, LV_GRID_ALIGN_END);
+  lv_obj_set_grid_dsc_array(cont, col_dsc, row_dsc);
+  lv_obj_set_size(cont, 300, 220);
+  lv_obj_center(cont);
+
+  lv_obj_t *label;
+  lv_obj_t *obj;
+  uint32_t i;
+  for (i = 0; i < 9; i++) {
+    uint8_t col = i % 3;
+    uint8_t row = i / 3;
+
+    obj = lv_obj_create(cont);
+    /*Stretch the cell horizontally and vertically too
+     *Set span to 1 to make the cell 1 column/row sized*/
+    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_STRETCH, col, 1,
+                         LV_GRID_ALIGN_STRETCH, row, 1);
+
+    label = lv_label_create(obj);
+    lv_label_set_text_fmt(label, "%d,%d", col, row);
+    lv_obj_center(label);
+  }
+}
 
 void LTDC_switch_framebuffer(void) {
   if (active == FRAMEBUFFER1) {

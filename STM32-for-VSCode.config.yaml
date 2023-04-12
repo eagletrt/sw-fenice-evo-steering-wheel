@@ -39,12 +39,13 @@ cxxDefinitionsFile:
 asDefinitionsFile:
 
 # Compiler flags
-cFlags: [-mfloat-abi=softfp]
+cFlags: [-mfloat-abi=softfp, -static]
 cxxFlags: []
 assemblyFlags: []
 linkerFlags: 
   - -specs=nano.specs
   - -mfloat-abi=softfp
+  - -static
 
 
 # libraries to be included. The -l prefix to the library will be automatically added.

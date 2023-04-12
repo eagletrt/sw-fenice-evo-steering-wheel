@@ -181,7 +181,7 @@ CXXFLAGS += -g -gdwarf -ggdb
 endif
 
 # Add additional flags
-CFLAGS += -mfloat-abi=softfp 
+CFLAGS += -mfloat-abi=softfp -static 
 ASFLAGS += 
 CXXFLAGS += 
 
@@ -202,7 +202,7 @@ LIBDIR = \
 
 
 # Additional LD Flags from config file
-ADDITIONALLDFLAGS = -mfloat-abi=softfp -specs=nano.specs 
+ADDITIONALLDFLAGS = -mfloat-abi=softfp -specs=nano.specs -static 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

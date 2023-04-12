@@ -33,9 +33,9 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "led_control.h"
 #include "lvgl.h"
+#include "lvgl_port/lvgl_port.h"
 #include "test/sdram_test.h"
 #include <string.h>
-#include "lvgl_port/lvgl_port.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

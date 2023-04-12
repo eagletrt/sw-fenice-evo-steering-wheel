@@ -2,7 +2,8 @@
 
 /*
 void my_flush_cb(lv_disp_t * disp, const lv_area_t * area, lv_color_t * buf){
-    //The most simple case (but also the slowest) to put all pixels to the screen //one-by-one
+    //The most simple case (but also the slowest) to put all pixels to the
+screen //one-by-one
     // *`put_px` is just an example, it needs to be implemented by you.
     int32_t x, y;
     for(y = area->y1; y <= area->y2; y++) {
@@ -12,11 +13,9 @@ void my_flush_cb(lv_disp_t * disp, const lv_area_t * area, lv_color_t * buf){
         }
     }
 
-    // IMPORTANT!!!Inform LVGL that you are ready with the flushing and buf is not used anymore
-    lv_disp_flush_ready(disp);
+    // IMPORTANT!!!Inform LVGL that you are ready with the flushing and buf is
+not used anymore lv_disp_flush_ready(disp);
 }
 */
 
-void steering_log(lv_log_level_t level, const char * buf) {
-    print(buf);
-}
+void steering_log(lv_log_level_t level, const char *buf) { print(buf); }
