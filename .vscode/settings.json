@@ -8,7 +8,10 @@
         "sdram_test.h": "c",
         "ltdc.h": "c",
         "display_buf.h": "c",
-        "memdriver.h": "c"
+        "memdriver.h": "c",
+        "lv_examples.h": "c",
+        "lvgl.h": "c",
+        "lvgl_port.h": "c"
     },
     "cmake.configureOnOpen": false
 }

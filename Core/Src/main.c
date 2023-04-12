@@ -121,9 +121,24 @@ int main(void) {
   sdram_test4();
   sdram_test5();
 #endif
-
+#if 0
   led_control_init();
   led_control_set_all(&hi2c4, COLOR_OFF);
+#endif
+
+  lv_init();
+  // lv_disp_t * display = lv_disp_create(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+  static lv_disp_draw_buf_t disp_buf_conf;
+  lv_disp_draw_buf_init(&disp_buf_conf, (uint32_t *)FRAMEBUFFER1_ADDR , (uint32_t *)FRAMEBUFFER2_ADDR, SCREEN_HEIGHT * SCREEN_WIDTH);
+
+  // lv_disp_set_draw_buffers(display, (uint32_t *)FRAMEBUFFER1_ADDR , (uint32_t *)FRAMEBUFFER2_ADDR, SCREEN_HEIGHT * SCREEN_WIDTH, LV_DISP_RENDER_MODE_DIRECT);
+
+  // lv_disp_set_flush_cb(display, my_flush_cb);
+
+  // lv_disp_set_color_depth(display, LV_COLOR_FORMAT_ARGB8888);
+  
+  // lv_log_register_print_cb(LV_LOG_LEVEL_INFO, steering_log);
 
   /*
     Green screen
@@ -148,13 +163,21 @@ int main(void) {
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
 
+  uint32_t ptick = HAL_GetTick();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    uint32_t ctick = HAL_GetTick();
+    lv_tick_inc(ptick - ctick);
+    ptick = ctick;
 
-    HAL_Delay(16);
+    lv_timer_handler();
+
+    HAL_Delay(5);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

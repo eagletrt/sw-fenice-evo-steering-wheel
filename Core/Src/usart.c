@@ -128,7 +128,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
 
 /* USER CODE BEGIN 1 */
 
-void print(char *buff) {
+void print(const char *buff) {
   HAL_UART_Transmit(&hlpuart1, (uint8_t *)buff, sizeof(buff), 100);
 }
 

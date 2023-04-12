@@ -39,11 +39,12 @@ cxxDefinitionsFile:
 asDefinitionsFile:
 
 # Compiler flags
-cFlags: []
+cFlags: [-mfloat-abi=softfp]
 cxxFlags: []
 assemblyFlags: []
 linkerFlags: 
   - -specs=nano.specs
+  - -mfloat-abi=softfp
 
 
 # libraries to be included. The -l prefix to the library will be automatically added.
@@ -51,9 +52,10 @@ libraries:
   - c
   - m
   - nosys
+  - lvgl
 
 # Library directories. Folders can be added here that contain custom libraries.
-libraryDirectories: []
+libraryDirectories: [lvgl/build/lib]
 
 # Files or folders that will be excluded from compilation.
 # Glob patterns (https://www.wikiwand.com/en/Glob_(programming)) can be used.
@@ -81,6 +83,7 @@ includeDirectories:
   - Src/**
   - Core/Src/**
   - Core/Lib/**
+  - lvgl
 
 
 # Files that should be included in the compilation.

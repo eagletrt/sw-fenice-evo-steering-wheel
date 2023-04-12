@@ -4,11 +4,13 @@
       "name": "STM32",
       "includePath": [
         "Core/Inc",
+        "Core/Inc/lvgl_port",
         "Core/Inc/test",
         "Drivers/CMSIS/Device/ST/STM32H7xx/Include",
         "Drivers/CMSIS/Include",
         "Drivers/STM32H7xx_HAL_Driver/Inc",
-        "Drivers/STM32H7xx_HAL_Driver/Inc/Legacy"
+        "Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
+        "lvgl"
       ],
       "defines": [
         "STM32H723xx",

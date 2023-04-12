@@ -45,6 +45,7 @@ Core/Src/gpio.c \
 Core/Src/i2c.c \
 Core/Src/led_control.c \
 Core/Src/ltdc.c \
+Core/Src/lvgl_port/lvgl_port.c \
 Core/Src/main.c \
 Core/Src/memdriver.c \
 Core/Src/octospi.c \
@@ -157,11 +158,13 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
+-ICore/Inc/lvgl_port \
 -ICore/Inc/test \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
--IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy
+-IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy \
+-Ilvgl
 
 
 
@@ -178,7 +181,7 @@ CXXFLAGS += -g -gdwarf -ggdb
 endif
 
 # Add additional flags
-CFLAGS += 
+CFLAGS += -mfloat-abi=softfp 
 ASFLAGS += 
 CXXFLAGS += 
 
@@ -193,12 +196,13 @@ CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32H723ZGTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys 
+LIBS = -lc -llvgl -lm -lnosys 
 LIBDIR = \
+-Llvgl/build/lib
 
 
 # Additional LD Flags from config file
-ADDITIONALLDFLAGS = -specs=nano.specs 
+ADDITIONALLDFLAGS = -mfloat-abi=softfp -specs=nano.specs 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
@@ -216,8 +220,14 @@ vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 # list of C objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
+
 # list of ASM program objects
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
+# list of ASM program objects
+UPPER_CASE_ASM_SOURCES = $(filter %.S,$(ASM_SOURCES))
+LOWER_CASE_ASM_SOURCES = $(filter %.s,$(ASM_SOURCES))
+
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(UPPER_CASE_ASM_SOURCES:.S=.o)))
+OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(LOWER_CASE_ASM_SOURCES:.s=.o)))
 vpath %.s $(sort $(dir $(ASM_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.cpp STM32Make.make | $(BUILD_DIR) 
@@ -230,6 +240,9 @@ $(BUILD_DIR)/%.o: %.c STM32Make.make | $(BUILD_DIR)
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s STM32Make.make | $(BUILD_DIR)
+	$(AS) -c $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/%.o: %.S STM32Make.make | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) STM32Make.make
