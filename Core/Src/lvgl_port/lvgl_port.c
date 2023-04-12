@@ -18,4 +18,4 @@ not used anymore lv_disp_flush_ready(disp);
 }
 */
 
-void steering_log(lv_log_level_t level, const char *buf) { print(buf); }
+void steering_log(const char *buf) { print(buf); }

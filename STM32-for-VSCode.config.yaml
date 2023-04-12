@@ -16,7 +16,7 @@ optimization: Og
 targetMCU: stm32h7x
 cpu: cortex-m7 # type of cpu e.g. cortex-m4
 fpu: fpv5-d16 # Defines how floating points are defined. Can be left empty.
-floatAbi: -mfloat-abi=soft
+floatAbi: -mfloat-abi=hard
 ldscript: STM32H723ZGTx_FLASH.ld # linker script
 
 # Compiler definitions. The -D prefix for the compiler will be automatically added.
@@ -51,10 +51,9 @@ libraries:
   - c
   - m
   - nosys
-  - lvgl
 
 # Library directories. Folders can be added here that contain custom libraries.
-libraryDirectories: [lvgl/build/lib]
+libraryDirectories: []
 
 # Files or folders that will be excluded from compilation.
 # Glob patterns (https://www.wikiwand.com/en/Glob_(programming)) can be used.
@@ -136,6 +135,7 @@ sourceFiles:
   - Src/**
   - Core/Src/**
   - Core/Lib/**
+  - lvgl/src/**/*.c
 
 
 # When no makefile is present it will show a warning pop-up.

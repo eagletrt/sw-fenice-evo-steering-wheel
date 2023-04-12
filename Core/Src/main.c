@@ -64,6 +64,12 @@ void SystemClock_Config(void);
 void lv_example_grid_4(void);
 void LTDC_switch_framebuffer(void);
 uint32_t *LTDC_get_backbuffer_address(void);
+void empty(lv_disp_t * disp, const lv_area_t * area, lv_color_t * buf) {
+
+    /* IMPORTANT!!!
+     * Inform LVGL that you are ready with the flushing and buf is not used anymore*/
+    // lv_disp_flush_ready(disp);
+}
 
 /* USER CODE END PFP */
 
@@ -113,8 +119,6 @@ int main(void) {
   MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
-  print("Guten Morgen\n");
-
   HAL_Delay(100);
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
@@ -123,25 +127,6 @@ int main(void) {
   led_control_init();
   led_control_set_all(&hi2c4, COLOR_GREEN);
 #endif
-
-#if 0
-  lv_init();
-
-  static lv_disp_draw_buf_t disp_buf_conf;
-  lv_disp_draw_buf_init(&disp_buf_conf, (uint32_t *)FRAMEBUFFER1_ADDR,
-                        (uint32_t *)FRAMEBUFFER2_ADDR,
-                        SCREEN_HEIGHT * SCREEN_WIDTH);
-#endif
-
-  // lv_disp_set_draw_buffers(display, (uint32_t *)FRAMEBUFFER1_ADDR , (uint32_t
-  // *)FRAMEBUFFER2_ADDR, SCREEN_HEIGHT * SCREEN_WIDTH,
-  // LV_DISP_RENDER_MODE_DIRECT);
-
-  // lv_disp_set_flush_cb(display, my_flush_cb);
-
-  // lv_disp_set_color_depth(display, LV_COLOR_FORMAT_ARGB8888);
-
-  // lv_log_register_print_cb(LV_LOG_LEVEL_INFO, steering_log);
 
   /*
     Green screen
@@ -164,7 +149,7 @@ int main(void) {
 
   uint32_t ptick = HAL_GetTick();
 
-  // lv_example_grid_4();
+  lv_example_grid_4();
 
   /* USER CODE END 2 */
 
@@ -177,7 +162,7 @@ int main(void) {
     lv_tick_inc(ptick - ctick);
     ptick = ctick;
 
-    // lv_timer_handler();
+    lv_timer_handler();
 
     HAL_Delay(5);
 
