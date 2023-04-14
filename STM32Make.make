@@ -46,8 +46,6 @@ Core/Src/gpio.c \
 Core/Src/i2c.c \
 Core/Src/led_control.c \
 Core/Src/ltdc.c \
-Core/Src/lvgl_port/custom_memory_alloc.c \
-Core/Src/lvgl_port/heap.c \
 Core/Src/lvgl_port/lvgl_port.c \
 Core/Src/lvgl_port/screen_driver.c \
 Core/Src/main.c \
