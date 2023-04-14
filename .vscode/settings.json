@@ -11,7 +11,9 @@
         "memdriver.h": "c",
         "lv_examples.h": "c",
         "lvgl.h": "c",
-        "lvgl_port.h": "c"
+        "lvgl_port.h": "c",
+        "stdio.h": "c",
+        "memory_alloc.h": "c"
     },
     "cmake.configureOnOpen": false
 }
