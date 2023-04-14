@@ -26,6 +26,7 @@
 #include "i2c.h"
 #include "ltdc.h"
 #include "octospi.h"
+#include "screen_driver.h"
 #include "tim.h"
 #include "usart.h"
 
@@ -61,15 +62,12 @@ static enum framebuffer active = FRAMEBUFFER1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
 void lv_example_grid_4(void);
 void LTDC_switch_framebuffer(void);
 uint32_t *LTDC_get_backbuffer_address(void);
-void empty(lv_disp_t * disp, const lv_area_t * area, lv_color_t * buf) {
-
-    /* IMPORTANT!!!
-     * Inform LVGL that you are ready with the flushing and buf is not used anymore*/
-    // lv_disp_flush_ready(disp);
-}
+lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
+lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
 /* USER CODE END PFP */
 
@@ -119,51 +117,59 @@ int main(void) {
   MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_Delay(100);
+  
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
+  HAL_Delay(100);
 
 #if 1
   led_control_init();
-  led_control_set_all(&hi2c4, COLOR_GREEN);
+  led_control_set_all(&hi2c4, COLOR_RED);
+#endif
+
+#define SDRAM_TESTS 0
+#if SDRAM_TESTS == 1
+  sdram_test_write_all();
+  sdram_test_segments();
+  sdram_test_long_arrays();
+  sdram_test_end_of_memory();
+  sdram_test_simple_write();
+#endif
+
+#if 1 // Green screen
+  uint8_t *display_buffer = (uint8_t *)SDRAM_BASE_ADDRESS;
+  for (uint8_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
+    display_buffer[4 * icell] = 0xFF;
+    display_buffer[4 * icell + 1] = 0xFF;
+    display_buffer[4 * icell + 2] = 0xFF;
+    display_buffer[4 * icell + 3] = 0xFF;
+  }
 #endif
 
   /*
-    Green screen
-    for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
-      display_buffer[3 * icell] = 0x00;
-      display_buffer[3 * icell + 1] = 0xFF;
-      display_buffer[3 * icell + 2] = 0x00;
+  For some reasons goes HardFault...
+  uint8_t *** display_buffer = (uint8_t ***) SDRAM_BASE_ADDRESS;
+  for (uint32_t icol = 0; icol < SCREEN_HEIGHT; icol++) {
+    for (uint32_t irow = 0; irow < SCREEN_WIDTH; irow++) {
+      display_buffer[icol][irow][0] = 0x30;
+      display_buffer[icol][irow][1] = 0xFF;
+      display_buffer[icol][irow][2] = 0x1C;
     }
+  }
+  */
 
-    For some reasons goes HardFault...
-    uint8_t *** display_buffer = (uint8_t ***) SDRAM_BASE_ADDRESS;
-    for (uint32_t icol = 0; icol < SCREEN_HEIGHT; icol++) {
-      for (uint32_t irow = 0; irow < SCREEN_WIDTH; irow++) {
-        display_buffer[icol][irow][0] = 0x30;
-        display_buffer[icol][irow][1] = 0xFF;
-        display_buffer[icol][irow][2] = 0x1C;
-      }
-    }
-    */
+  // uint32_t ptick = HAL_GetTick();
 
-  uint32_t ptick = HAL_GetTick();
-
-  lv_example_grid_4();
+  // lv_init();
+  // screen_driver_init();
+  // lv_example_grid_4();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    print("Guten Morgen\n");
-    HAL_UART_Transmit(&hlpuart1, (uint8_t *)"ciao\n", sizeof("ciao\n"), 100);
-    uint32_t ctick = HAL_GetTick();
-    lv_tick_inc(ptick - ctick);
-    ptick = ctick;
-
-    lv_timer_handler();
-
+    // lv_tasks(&ptick);
     HAL_Delay(5);
 
     /* USER CODE END WHILE */

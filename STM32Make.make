@@ -45,8 +45,10 @@ Core/Src/gpio.c \
 Core/Src/i2c.c \
 Core/Src/led_control.c \
 Core/Src/ltdc.c \
+Core/Src/lvgl_port/custom_memory_alloc.c \
+Core/Src/lvgl_port/heap.c \
 Core/Src/lvgl_port/lvgl_port.c \
-Core/Src/lvgl_port/tft.c \
+Core/Src/lvgl_port/screen_driver.c \
 Core/Src/main.c \
 Core/Src/memdriver.c \
 Core/Src/octospi.c \
@@ -55,7 +57,9 @@ Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
 Core/Src/sysmem.c \
 Core/Src/system_stm32h7xx.c \
+Core/Src/test/i2c_test.c \
 Core/Src/test/sdram_test.c \
+Core/Src/test/uart_test.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \

@@ -1,18 +1,30 @@
 #include "test/sdram_test.h"
 
+void sdram_test_write_all() {
+  const uint32_t data_buf_size = MEMSIZE;
+  uint8_t *array = (uint8_t *)SDRAM_BASE_ADDRESS;
+  for (uint64_t ic = 0; ic < data_buf_size; ++ic) {
+    array[ic] = 69;
+  }
+  for (uint64_t ic = 0; ic < data_buf_size; ++ic) {
+    if (array[ic] != 69) {
+      Error_Handler();
+    }
+  }
+}
+
 /*
-Test One:
-    Write TEST_BSIZE bytes of data in TEST_SEGS different segments in memory,
+Write BSIZE bytes of data in SEGS different segments in memory,
 and then read BSIZE bytes from the same address and check that they are the same
 */
-void sdram_test1() {
-  for (uint32_t iseg = 0; iseg < TEST_SEGS; ++iseg) {
-    uint32_t offset = (TEST_SEG_SIZE)*iseg;
-    uint8_t wdata_buf[TEST_BSIZE] = {0x01, 0x02, 0x03, 0x04};
-    memcpy((uint32_t *)SDRAM_BASE_ADDRESS + offset, wdata_buf, TEST_BSIZE);
-    uint8_t rdata_buf[TEST_BSIZE] = {0x00};
-    memcpy(rdata_buf, (uint32_t *)SDRAM_BASE_ADDRESS + offset, TEST_BSIZE);
-    for (uint32_t iin = 0; iin < TEST_BSIZE; ++iin) {
+void sdram_test_segments() {
+  for (uint32_t iseg = 0; iseg < SEGS; ++iseg) {
+    uint32_t offset = (SEG_SIZE)*iseg;
+    uint8_t wdata_buf[BSIZE] = {0x01, 0x02, 0x03, 0x04};
+    memcpy((uint32_t *)SDRAM_BASE_ADDRESS + offset, wdata_buf, BSIZE);
+    uint8_t rdata_buf[BSIZE] = {0x00};
+    memcpy(rdata_buf, (uint32_t *)SDRAM_BASE_ADDRESS + offset, BSIZE);
+    for (uint32_t iin = 0; iin < BSIZE; ++iin) {
       if (wdata_buf[iin] != rdata_buf[iin]) {
         Error_Handler();
       }
@@ -22,55 +34,38 @@ void sdram_test1() {
 }
 
 /*
-Test Two:
-    Write a long array into the memory, then read it and check it
+Write five long array into the memory, then read it and check it
 */
-void sdram_test2() {
-  const uint32_t data_buf_size = 100000;
-  uint8_t wdata_buf[data_buf_size];
-  for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
-    wdata_buf[iin] = (uint8_t)(iin % 256);
-  }
-  uint32_t offset = 0;
-  memcpy((void *)SDRAM_BASE_ADDRESS + offset, wdata_buf, data_buf_size);
-  uint8_t rdata_buf[data_buf_size];
-  memcpy(rdata_buf, (void *)SDRAM_BASE_ADDRESS + offset, data_buf_size);
-  for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
-    if (wdata_buf[iin] != rdata_buf[iin]) {
-      Error_Handler();
+void sdram_test_long_arrays() {
+  for (int itime = 0; itime < 5; itime++) {
+    const uint32_t data_buf_size = 100000;
+    uint8_t wdata_buf[data_buf_size];
+    for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
+      wdata_buf[iin] = (uint8_t)(iin % 256);
+    }
+    uint32_t offset = 0 + itime * 1048576;
+    memcpy((void *)SDRAM_BASE_ADDRESS + offset, wdata_buf, data_buf_size);
+    uint8_t rdata_buf[data_buf_size];
+    memcpy(rdata_buf, (void *)SDRAM_BASE_ADDRESS + offset, data_buf_size);
+    for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
+      if (wdata_buf[iin] != rdata_buf[iin]) {
+        Error_Handler();
+      }
     }
   }
   HAL_Delay(1);
 }
 
 /*
-Test Three:
-  simple write and read of 4 bytes checking that are the same
+Go at the end of the memory and write 100 bytes, then read them and expect ok
 */
-void sdram_test3() {
-  uint8_t wdata_buf[TEST_BSIZE] = {0x01, 0x02, 0x03, 0x04};
-  memcpy((void *)SDRAM_BASE_ADDRESS, wdata_buf, TEST_BSIZE);
-  uint8_t rdata_buf[TEST_BSIZE];
-  memcpy(rdata_buf, (void *)SDRAM_BASE_ADDRESS, TEST_BSIZE);
-  for (uint32_t iin = 0; iin < TEST_BSIZE; ++iin) {
-    if (wdata_buf[iin] != rdata_buf[iin]) {
-      Error_Handler();
-    }
-  }
-  HAL_Delay(1);
-}
-
-/*
-Test Four:
-  Go at the end of the memory and write 100 bytes, then read them and expect ok
-*/
-void sdram_test4() {
+void sdram_test_end_of_memory() {
   const uint32_t buf_len = 100;
   uint8_t wdata_buf[buf_len];
   for (uint32_t iin = 0; iin < buf_len; ++iin) {
     wdata_buf[iin] = iin;
   }
-  uint32_t write_address = SDRAM_BASE_ADDRESS + TEST_MEMSIZE - buf_len;
+  uint32_t write_address = SDRAM_BASE_ADDRESS + MEMSIZE - buf_len;
   memcpy((void *)write_address, wdata_buf, buf_len);
   uint8_t rdata_buf[buf_len];
   memcpy(rdata_buf, (void *)write_address, buf_len);
@@ -83,11 +78,10 @@ void sdram_test4() {
 }
 
 /*
-TODO
-Test Five:
-  Set directly the memory region without functions like memset or memcpy
+Simple write. Set directly the memory region without functions like memset or
+memcpy.
 */
-void sdram_test5() {
+void sdram_test_simple_write() {
   const uint32_t buf_len = 100;
   uint8_t *data = (uint8_t *)SDRAM_BASE_ADDRESS;
   uint8_t content = 0xA1;

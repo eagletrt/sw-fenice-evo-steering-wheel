@@ -2,26 +2,23 @@
 #define TEST_SDRAM_TEST_H
 
 #include "main.h"
-#include <assert.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 inline void write_buffer(uint32_t base_address, uint32_t offset,
                          uint8_t wdata[], uint32_t size) {
   memcpy((uint32_t *)base_address + offset, wdata, size);
 }
 
-#define TEST_MEMSIZE 4000000
-#define TEST_SEGS 10
-#define TEST_SEG_SIZE TEST_MEMSIZE / TEST_SEGS
-#define TEST_BSIZE 4
+#define MEMSIZE 8 * 1000000
+#define SEGS 20
+#define SEG_SIZE MEMSIZE / SEGS
+#define BSIZE 4
 
-void sdram_test1();
-void sdram_test2();
-void sdram_test3();
-void sdram_test4();
-void sdram_test5();
+void sdram_test_write_all();
+void sdram_test_segments();
+void sdram_test_long_arrays();
+void sdram_test_end_of_memory();
+void sdram_test_simple_write();
 
 #endif
