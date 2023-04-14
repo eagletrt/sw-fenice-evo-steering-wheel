@@ -5,6 +5,7 @@
       "includePath": [
         "Core/Inc",
         "Core/Inc/lvgl_port",
+        "Core/Inc/steering",
         "Core/Inc/test",
         "Drivers/CMSIS/Device/ST/STM32H7xx/Include",
         "Drivers/CMSIS/Include",

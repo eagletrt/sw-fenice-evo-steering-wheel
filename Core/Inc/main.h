@@ -36,6 +36,7 @@ extern "C" {
 #include "lvgl_port/lvgl_port.h"
 #include "test/sdram_test.h"
 #include <string.h>
+#include "steering/steering.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

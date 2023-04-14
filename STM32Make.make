@@ -41,6 +41,7 @@ Core/Src/display_buf.c \
 Core/Src/dma2d.c \
 Core/Src/fdcan.c \
 Core/Src/fmc.c \
+Core/Src/fonts/lv_font_inter_bold_30.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
 Core/Src/led_control.c \
@@ -52,6 +53,8 @@ Core/Src/lvgl_port/screen_driver.c \
 Core/Src/main.c \
 Core/Src/memdriver.c \
 Core/Src/octospi.c \
+Core/Src/steering/tab_manager.c \
+Core/Src/steering/tab_racing.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
@@ -349,6 +352,7 @@ AS_INCLUDES = \
 C_INCLUDES =  \
 -ICore/Inc \
 -ICore/Inc/lvgl_port \
+-ICore/Inc/steering \
 -ICore/Inc/test \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \

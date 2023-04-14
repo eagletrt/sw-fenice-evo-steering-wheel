@@ -117,14 +117,13 @@ int main(void) {
   MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
-  
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
   HAL_Delay(100);
 
 #if 1
   led_control_init();
-  led_control_set_all(&hi2c4, COLOR_RED);
+  led_control_set_all(&hi2c4, COLOR_YELLOW);
 #endif
 
 #define SDRAM_TESTS 0
@@ -136,13 +135,13 @@ int main(void) {
   sdram_test_simple_write();
 #endif
 
-#if 1 // Green screen
+#if 0 // Green screen
   uint8_t *display_buffer = (uint8_t *)SDRAM_BASE_ADDRESS;
-  for (uint8_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
+  for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
     display_buffer[4 * icell] = 0xFF;
     display_buffer[4 * icell + 1] = 0xFF;
-    display_buffer[4 * icell + 2] = 0xFF;
-    display_buffer[4 * icell + 3] = 0xFF;
+    display_buffer[4 * icell + 2] = 0x00;
+    display_buffer[4 * icell + 3] = 0x00;
   }
 #endif
 
@@ -158,19 +157,19 @@ int main(void) {
   }
   */
 
-  // uint32_t ptick = HAL_GetTick();
-
-  // lv_init();
-  // screen_driver_init();
+  lv_init();
+  screen_driver_init();
   // lv_example_grid_4();
+  tab_manager();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+    lv_timer_handler();
+    HAL_Delay(50);
     // lv_tasks(&ptick);
-    HAL_Delay(5);
 
     /* USER CODE END WHILE */
 
