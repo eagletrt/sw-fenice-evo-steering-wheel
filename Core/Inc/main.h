@@ -37,6 +37,7 @@ extern "C" {
 #include "steering/steering.h"
 #include "test/sdram_test.h"
 #include <string.h>
+#include "steering/tab_manager.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -79,7 +80,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 #define SDRAM_BASE_ADDRESS 0xC0000000
 #define FRAMEBUFFER1_ADDR SDRAM_BASE_ADDRESS
-#define FRAMEBUFFER2_ADDR 0xC0178000
+#define FRAMEBUFFER2_ADDR  0xC01773E8
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 480
 

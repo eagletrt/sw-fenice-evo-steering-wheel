@@ -15,7 +15,8 @@
         "stdio.h": "c",
         "memory_alloc.h": "c",
         "steering.h": "c",
-        "tab_racing.h": "c"
+        "tab_racing.h": "c",
+        "tim.h": "c"
     },
     "cmake.configureOnOpen": false
 }
