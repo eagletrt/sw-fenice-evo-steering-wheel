@@ -1,8 +1,8 @@
 #ifndef TAB_MANAGER_H
 #define TAB_MANAGER_H
 
-#include "steering.h"
 #include "lvgl.h"
+#include "steering.h"
 #include "tab_calibration.h"
 #include "tab_debug.h"
 #include "tab_racing.h"
