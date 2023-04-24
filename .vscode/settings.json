@@ -13,7 +13,9 @@
         "lvgl.h": "c",
         "lvgl_port.h": "c",
         "stdio.h": "c",
-        "memory_alloc.h": "c"
+        "memory_alloc.h": "c",
+        "steering.h": "c",
+        "tab_racing.h": "c"
     },
     "cmake.configureOnOpen": false
 }

@@ -23,6 +23,7 @@ ldscript: STM32H723ZGTx_FLASH.ld # linker script
 cDefinitions: 
   - USE_HAL_DRIVER
   - STM32H723xx
+  - LV_LVGL_H_INCLUDE_SIMPLE
 
 cxxDefinitions: 
   - USE_HAL_DRIVER
