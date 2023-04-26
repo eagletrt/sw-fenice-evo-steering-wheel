@@ -161,15 +161,18 @@ int main(void) {
   screen_driver_init();
   // lv_example_grid_4();
   tab_manager();
+  uint32_t ptick = HAL_GetTick();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    lv_timer_handler();
-    HAL_Delay(50);
-    // lv_tasks(&ptick);
+    // lv_timer_handler();
+    LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
+    // HAL_Delay(33);
+    lv_tasks(&ptick);
+    
 
     /* USER CODE END WHILE */
 

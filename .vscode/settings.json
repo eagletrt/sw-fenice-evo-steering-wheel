@@ -16,7 +16,12 @@
         "memory_alloc.h": "c",
         "steering.h": "c",
         "tab_racing.h": "c",
-        "tim.h": "c"
+        "tim.h": "c",
+        "stm32h7xx_hal_dma2d.h": "c",
+        "lv_gpu_stm32_dma2d.h": "c",
+        "lv_draw_sw.h": "c",
+        "lv_hal_disp.h": "c",
+        "lv_color.h": "c"
     },
     "cmake.configureOnOpen": false
 }
