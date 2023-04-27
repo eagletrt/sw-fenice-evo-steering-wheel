@@ -14,7 +14,7 @@
 
 #define LCD_SCREEN_WIDTH SCREEN_WIDTH
 #define LCD_SCREEN_HEIGHT SCREEN_HEIGHT
-#define FRAMEBUFFER_SIZE (uint32_t) (LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH)
+#define FRAMEBUFFER_SIZE (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH)
 #define DMA_XFERS_NEEDED                                                       \
   FRAMEBUFFER_SIZE / 2 // We need half as many transfers because the buffer is
                        // an array of 16 bits but the transfers are 32 bits.
@@ -76,6 +76,8 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
   HAL_LTDC_SetAddress_NoReload(&hltdc, (uint32_t)color_p, 0);
   HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING); // VSYNC
 
+#if 1
+
   // Determine source and destination of transfer
   dma_xfer_src = (uint16_t *)color_p;
   if (color_p == framebuffer_1) {
@@ -91,13 +93,15 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                       (uint32_t)dma_xfer_dst);
     }
   }
+#endif
 
   lv_disp_flush_ready(disp_drv);
 }
 
 void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
   size_t start_offset =
-      (LCD_SCREEN_WIDTH * (area.y1) + (area.x1)); // address offset (not pixel offset so it is multiplied by 2)
+      (LCD_SCREEN_WIDTH * (area.y1) + (area.x1)) *
+      4; // address offset (not pixel offset so it is multiplied by 2)
   size_t area_width = 1 + area.x2 - area.x1;
   size_t area_height = 1 + area.y2 - area.y1;
   size_t in_out_offset = LCD_SCREEN_WIDTH - area_width;
@@ -116,6 +120,6 @@ void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
   HAL_DMA2D_Init(&hdma2d);
   HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_FOREGROUND_LAYER);
   HAL_DMA2D_Start(&hdma2d, src_buffer + start_offset, dst_buffer + start_offset,
-                  area_width, area_height);  // Start transfer
-  HAL_DMA2D_PollForTransfer(&hdma2d, 10); // Wait for transfer to be over
+                  area_width, area_height); // Start transfer
+  HAL_DMA2D_PollForTransfer(&hdma2d, 10);   // Wait for transfer to be over
 }
