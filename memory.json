@@ -1,0 +1,22 @@
+{
+    "configs": [
+        {
+            "DISPLAY_BUF": 1536000,
+            "OFFSET": 0,
+            "FRAMEBUFFER1_ADDR": "0xC0000000",
+            "FRAMEBUFFER2_ADDR": "0xC0177000",
+            "OTHER": "0xC02EE000",
+            "OTHER_SIZE": "5316608",
+            "MEMORY_END": "0xC0800000"
+        },
+        {
+            "DISPLAY_BUF": 1536000,
+            "OFFSET": 561152,
+            "FRAMEBUFFER1_ADDR": "0xC0000000",
+            "FRAMEBUFFER2_ADDR": "0xC0200000",
+            "OTHER": "0xC0400000",
+            "OTHER_SIZE": "4194304",
+            "MEMORY_END": "0xC0800000"
+        }
+    ]
+}

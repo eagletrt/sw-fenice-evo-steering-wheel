@@ -34,6 +34,7 @@ extern "C" {
 #include "led_control.h"
 #include "lvgl.h"
 #include "lvgl_port/lvgl_port.h"
+#include "lvgl_port/screen_driver.h"
 #include "steering/steering.h"
 #include "steering/tab_manager.h"
 #include "test/sdram_test.h"
@@ -80,7 +81,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 #define SDRAM_BASE_ADDRESS 0xC0000000
 #define FRAMEBUFFER1_ADDR SDRAM_BASE_ADDRESS
-#define FRAMEBUFFER2_ADDR 0xC0177000
+#define FRAMEBUFFER2_ADDR 0xC0200000
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 480
 
