@@ -5,6 +5,6 @@
 #include "usart.h"
 
 void steering_log(const char *buf);
-void lv_tasks(uint32_t *ptick);
+void lv_tasks();
 
 #endif

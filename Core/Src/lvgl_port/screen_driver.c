@@ -14,10 +14,10 @@
 
 #define LCD_SCREEN_WIDTH SCREEN_WIDTH
 #define LCD_SCREEN_HEIGHT SCREEN_HEIGHT
-#define FRAMEBUFFER_SIZE (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH)
+#define FRAMEBUFFER_SIZE (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH * 4)
 #define DMA_XFERS_NEEDED                                                       \
-  FRAMEBUFFER_SIZE / 2 // We need half as many transfers because the buffer is
-                       // an array of 16 bits but the transfers are 32 bits.
+  FRAMEBUFFER_SIZE // We need half as many transfers because the buffer is
+                   // an array of 16 bits but the transfers are 32 bits.
 
 /*
  * Handles to peripherals
@@ -39,6 +39,7 @@ lv_disp_drv_t lv_display_driver;
 void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                     lv_color_t *color_p);
 void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer);
+void steering_wait(lv_disp_drv_t *disp_drv);
 
 /*
  * Public functions definitions
@@ -55,6 +56,7 @@ void screen_driver_init() {
   lv_display_driver.ver_res = SCREEN_HEIGHT;
   lv_display_driver.flush_cb = stm32_flush_cb;
   lv_display_driver.draw_buf = &draw_buf;
+  // lv_display_driver.wait_cb = steering_wait;
 
   lv_disp_drv_register(&lv_display_driver);
 }
@@ -95,6 +97,8 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
   }
 #endif
 
+  // steering_wait(disp_drv);
+
   lv_disp_flush_ready(disp_drv);
 }
 
@@ -122,4 +126,10 @@ void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
   HAL_DMA2D_Start(&hdma2d, src_buffer + start_offset, dst_buffer + start_offset,
                   area_width, area_height); // Start transfer
   HAL_DMA2D_PollForTransfer(&hdma2d, 10);   // Wait for transfer to be over
+}
+
+void steering_wait(lv_disp_drv_t *disp_drv) {
+  LTDC->SRCR = LTDC_SRCR_VBR; // reload shadow registers on vertical blank
+  while ((LTDC->CDSR & LTDC_CDSR_VSYNCS) == 0) // wait for reload
+    ;
 }
