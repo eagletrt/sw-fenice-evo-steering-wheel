@@ -123,7 +123,7 @@ int main(void) {
 
 #if 1
   led_control_init();
-  led_control_set_all(&hi2c4, COLOR_RED);
+  led_control_set_all(&hi2c4, COLOR_BLUE);
 #endif
 
 #define SDRAM_TESTS 0
@@ -159,25 +159,23 @@ int main(void) {
 
   lv_init();
   screen_driver_init();
-  lv_example_grid_4();
-  // tab_manager();
+  // lv_example_grid_4();
+  tab_manager();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    // LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
+    LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
 
-#if 1
+#if 0
     HAL_StatusTypeDef retval =
         HAL_UART_Transmit(&hlpuart1, (uint8_t *)"Hello\n", 6, 100);
     if (retval != HAL_OK) {
       Error_Handler();
     }
 #endif
-
-    lv_label_set_text_fmt(example_label, "%u", HAL_GetTick() % 100);
 
     lv_tasks();
 

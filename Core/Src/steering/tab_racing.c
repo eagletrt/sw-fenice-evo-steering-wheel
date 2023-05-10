@@ -233,13 +233,6 @@ void tab_racing(lv_obj_t *parent) {
   lv_obj_set_grid_cell(slip, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
 
-  // adding separation line for right data panel
-  lv_obj_t *sep_line = lv_bar_create(right_data_panel);
-  lv_obj_remove_style_all(sep_line);
-  lv_obj_add_style(sep_line, &box_panels_style, 0);
-  lv_obj_set_size(sep_line, 185, 3);
-  lv_obj_set_grid_cell(sep_line, LV_GRID_ALIGN_CENTER, 0, 2,
-                       LV_GRID_ALIGN_START, 1, 1);
 
   lv_obj_t *test =
       lv_triple_label(right_data_panel, &steering.lb_INVERTER_TEMP, "60",
