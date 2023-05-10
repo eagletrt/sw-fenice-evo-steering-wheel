@@ -122,7 +122,7 @@ int main(void) {
 
 #if 1
   led_control_init();
-  led_control_set_all(&hi2c4, COLOR_GREEN);
+  led_control_set_all(&hi2c4, COLOR_RED);
 #endif
 
 #define SDRAM_TESTS 0
@@ -158,8 +158,8 @@ int main(void) {
 
   lv_init();
   screen_driver_init();
-  // lv_example_grid_4();
-  tab_manager();
+  lv_example_grid_4();
+  // tab_manager();
 
   /* USER CODE END 2 */
 
@@ -168,12 +168,15 @@ int main(void) {
   while (1) {
     // LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
 
-#if 0
-    HAL_StatusTypeDef retval = HAL_UART_Transmit(&hlpuart1, (uint8_t *)"Hello World!\n", 13, 1000);
+#if 1
+    HAL_StatusTypeDef retval =
+        HAL_UART_Transmit(&hlpuart1, (uint8_t *)"Hello\n", 6, 100);
     if (retval != HAL_OK) {
       Error_Handler();
     }
 #endif
+
+    HAL_Delay(2000);
 
     lv_tasks();
 
@@ -198,7 +201,7 @@ void SystemClock_Config(void) {
 
   /** Configure the main internal regulator output voltage
    */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
   while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
   }
@@ -210,19 +213,22 @@ void SystemClock_Config(void) {
   /** Initializes the RCC Oscillators according to the specified parameters
    * in the RCC_OscInitTypeDef structure.
    */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType =
+      RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.CSIState = RCC_CSI_ON;
+  RCC_OscInitStruct.CSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 12;
+  RCC_OscInitStruct.PLL.PLLN = 34;
   RCC_OscInitStruct.PLL.PLLP = 1;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 0;
+  RCC_OscInitStruct.PLL.PLLFRACN = 3072;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
@@ -240,7 +246,7 @@ void SystemClock_Config(void) {
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
     Error_Handler();
   }
 }
