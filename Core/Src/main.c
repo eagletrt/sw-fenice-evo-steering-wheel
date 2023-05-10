@@ -55,6 +55,7 @@ enum framebuffer { FRAMEBUFFER1, FRAMEBUFFER2 };
 /* USER CODE BEGIN PV */
 
 static enum framebuffer active = FRAMEBUFFER1;
+lv_obj_t *example_label;
 
 /* USER CODE END PV */
 
@@ -176,7 +177,7 @@ int main(void) {
     }
 #endif
 
-    HAL_Delay(2000);
+    lv_label_set_text_fmt(example_label, "%u", HAL_GetTick() % 100);
 
     lv_tasks();
 
@@ -266,7 +267,7 @@ void lv_example_grid_4(void) {
   lv_obj_set_size(cont, 300, 220);
   lv_obj_center(cont);
 
-  lv_obj_t *label;
+  
   lv_obj_t *obj;
   uint32_t i;
   for (i = 0; i < 9; i++) {
@@ -279,9 +280,9 @@ void lv_example_grid_4(void) {
     lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_STRETCH, col, 1,
                          LV_GRID_ALIGN_STRETCH, row, 1);
 
-    label = lv_label_create(obj);
-    lv_label_set_text_fmt(label, "%d,%d", col, row);
-    lv_obj_center(label);
+    example_label = lv_label_create(obj);
+    lv_label_set_text_fmt(example_label, "%d,%d", col, row);
+    lv_obj_center(example_label);
   }
 }
 
