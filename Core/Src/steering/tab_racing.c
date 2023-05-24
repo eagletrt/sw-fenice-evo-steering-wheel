@@ -233,7 +233,6 @@ void tab_racing(lv_obj_t *parent) {
   lv_obj_set_grid_cell(slip, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
 
-
   lv_obj_t *test =
       lv_triple_label(right_data_panel, &steering.lb_INVERTER_TEMP, "60",
                       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22,

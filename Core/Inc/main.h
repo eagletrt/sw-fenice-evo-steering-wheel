@@ -64,20 +64,25 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define INT1_Pin GPIO_PIN_2
+#define INT1_GPIO_Port GPIOE
+#define INT1_EXTI_IRQn EXTI2_IRQn
+#define INT3_Pin GPIO_PIN_3
+#define INT3_GPIO_Port GPIOE
+#define INT3_EXTI_IRQn EXTI3_IRQn
 #define LCD_BL_DIM_Pin GPIO_PIN_4
 #define LCD_BL_DIM_GPIO_Port GPIOA
-#define INT_4_Pin GPIO_PIN_4
-#define INT_4_GPIO_Port GPIOD
-#define INT_3_Pin GPIO_PIN_5
-#define INT_3_GPIO_Port GPIOD
 #define LCD_BL_EN_Pin GPIO_PIN_7
 #define LCD_BL_EN_GPIO_Port GPIOD
-#define NC4_Pin GPIO_PIN_9
-#define NC4_GPIO_Port GPIOG
-#define INT_1_Pin GPIO_PIN_11
-#define INT_1_GPIO_Port GPIOG
-#define INT_2_Pin GPIO_PIN_12
-#define INT_2_GPIO_Port GPIOG
+#define INT4_Pin GPIO_PIN_4
+#define INT4_GPIO_Port GPIOB
+#define INT4_EXTI_IRQn EXTI4_IRQn
+#define INT2_Pin GPIO_PIN_5
+#define INT2_GPIO_Port GPIOB
+#define INT2_EXTI_IRQn EXTI9_5_IRQn
+#define INT5_Pin GPIO_PIN_9
+#define INT5_GPIO_Port GPIOB
+#define INT5_EXTI_IRQn EXTI9_5_IRQn
 /* USER CODE BEGIN Private defines */
 #define SDRAM_BASE_ADDRESS 0xC0000000
 #define FRAMEBUFFER1_ADDR SDRAM_BASE_ADDRESS

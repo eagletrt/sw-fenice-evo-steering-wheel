@@ -75,7 +75,6 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
 
   // Swap the buffer for the one to display and reload the screen at the next
   // vertical blanking
-  HAL_LTDC_SetAddress_NoReload(&hltdc, (uint32_t)color_p, 0);
   HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING); // VSYNC
 
 #if 1

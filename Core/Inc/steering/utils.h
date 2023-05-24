@@ -14,7 +14,7 @@
 #define NOTCH_BAR_WIDTH_L 90 // large item
 #define NOTCH_BAR_HEIGHT_L 10
 
-#define COLOR_PRIMARY_HEX 0x383838   // dark grey backgroud
+#define COLOR_PRIMARY_HEX 0x000000   // dark grey backgroud
 #define COLOR_SECONDARY_HEX 0X575757 // light grey (borders)
 #define COLOR_TERTIARY_HEX 0xF2F3F5  // white
 #define COLOR_YELLOW_STATUS_HEX 0xFFFA14
