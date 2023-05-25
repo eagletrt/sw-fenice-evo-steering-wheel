@@ -55,7 +55,6 @@ enum framebuffer { FRAMEBUFFER1, FRAMEBUFFER2 };
 /* USER CODE BEGIN PV */
 
 static enum framebuffer active = FRAMEBUFFER1;
-lv_obj_t *example_label;
 
 /* USER CODE END PV */
 
@@ -161,9 +160,7 @@ int main(void) {
 
   lv_init();
   screen_driver_init();
-  // lv_example_grid_4();
   tab_manager();
-  // uint32_t counter = 0;
 
   /* USER CODE END 2 */
 
@@ -171,11 +168,7 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
 
   while (1) {
-    // LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
-
-    // lv_label_set_text_fmt(example_label, "%lu", counter);
-    // counter++;
-    // counter = counter % 100;
+    LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
 
 #if 0
     HAL_StatusTypeDef retval =
@@ -208,7 +201,7 @@ void SystemClock_Config(void) {
 
   /** Configure the main internal regulator output voltage
    */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
   while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
   }
@@ -229,14 +222,14 @@ void SystemClock_Config(void) {
   RCC_OscInitStruct.CSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 2;
-  RCC_OscInitStruct.PLL.PLLN = 16;
+  RCC_OscInitStruct.PLL.PLLM = 3;
+  RCC_OscInitStruct.PLL.PLLN = 62;
   RCC_OscInitStruct.PLL.PLLP = 1;
-  RCC_OscInitStruct.PLL.PLLQ = 3;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 0;
+  RCC_OscInitStruct.PLL.PLLFRACN = 4096;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
@@ -254,43 +247,12 @@ void SystemClock_Config(void) {
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK) {
     Error_Handler();
   }
 }
 
 /* USER CODE BEGIN 4 */
-
-void lv_example_grid_4(void) {
-  static lv_coord_t col_dsc[] = {60, 60, 60, LV_GRID_TEMPLATE_LAST};
-  static lv_coord_t row_dsc[] = {45, 45, 45, LV_GRID_TEMPLATE_LAST};
-
-  /*Add space between the columns and move the rows to the bottom (end)*/
-
-  /*Create a container with grid*/
-  lv_obj_t *cont = lv_obj_create(lv_scr_act());
-  lv_obj_set_grid_align(cont, LV_GRID_ALIGN_SPACE_BETWEEN, LV_GRID_ALIGN_END);
-  lv_obj_set_grid_dsc_array(cont, col_dsc, row_dsc);
-  lv_obj_set_size(cont, 300, 220);
-  lv_obj_center(cont);
-
-  lv_obj_t *obj;
-  uint32_t i;
-  for (i = 0; i < 9; i++) {
-    uint8_t col = i % 3;
-    uint8_t row = i / 3;
-
-    obj = lv_obj_create(cont);
-    /*Stretch the cell horizontally and vertically too
-     *Set span to 1 to make the cell 1 column/row sized*/
-    lv_obj_set_grid_cell(obj, LV_GRID_ALIGN_STRETCH, col, 1,
-                         LV_GRID_ALIGN_STRETCH, row, 1);
-
-    example_label = lv_label_create(obj);
-    lv_label_set_text_fmt(example_label, "%d,%d", col, row);
-    lv_obj_center(example_label);
-  }
-}
 
 void LTDC_switch_framebuffer(void) {
   if (active == FRAMEBUFFER1) {
