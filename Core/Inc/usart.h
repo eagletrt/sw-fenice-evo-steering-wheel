@@ -41,7 +41,7 @@ extern UART_HandleTypeDef hlpuart1;
 void MX_LPUART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void print(const char *buff);
+void print(const char *fmt, ...);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
