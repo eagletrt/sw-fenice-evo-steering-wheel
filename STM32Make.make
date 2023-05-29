@@ -50,6 +50,8 @@ Core/Src/fonts/lv_font_inter_bold_60.c \
 Core/Src/fonts/lv_font_inter_bold_70.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
+Core/Src/inputs/inputs.c \
+Core/Src/inputs/mcp23017.c \
 Core/Src/led_control.c \
 Core/Src/ltdc.c \
 Core/Src/lvgl_port/lvgl_port.c \
@@ -327,6 +329,7 @@ AS_INCLUDES = \
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
+-ICore/Inc/inputs \
 -ICore/Inc/lvgl_port \
 -ICore/Inc/steering \
 -ICore/Inc/test \

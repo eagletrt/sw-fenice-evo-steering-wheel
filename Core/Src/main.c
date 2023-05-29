@@ -116,8 +116,6 @@ int main(void) {
   MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
-  // HAL_NVIC_EnableIRQ(LTDC_IRQn);
-
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
   HAL_Delay(100);
@@ -162,13 +160,15 @@ int main(void) {
   screen_driver_init();
   tab_manager();
 
+  // HAL_TIM_Base_Start_IT(&htim7);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
   while (1) {
-    LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
+    // LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
 
 #if 0
     HAL_StatusTypeDef retval =
@@ -179,6 +179,7 @@ int main(void) {
 #endif
 
     lv_tasks();
+    read_buttons();
 
     /* USER CODE END WHILE */
 

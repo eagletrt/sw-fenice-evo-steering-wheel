@@ -21,7 +21,8 @@
         "lv_gpu_stm32_dma2d.h": "c",
         "lv_draw_sw.h": "c",
         "lv_hal_disp.h": "c",
-        "lv_color.h": "c"
+        "lv_color.h": "c",
+        "mcp23017.h": "c"
     },
     "cmake.configureOnOpen": false
 }

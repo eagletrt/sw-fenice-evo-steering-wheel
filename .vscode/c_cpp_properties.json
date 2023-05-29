@@ -23,6 +23,7 @@
       "name": "STM32",
       "includePath": [
         "Core/Inc",
+        "Core/Inc/inputs",
         "Core/Inc/lvgl_port",
         "Core/Inc/steering",
         "Core/Inc/test",

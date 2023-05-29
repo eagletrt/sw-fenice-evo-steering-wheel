@@ -31,6 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "inputs/inputs.h"
 #include "led_control.h"
 #include "lvgl.h"
 #include "lvgl_port/lvgl_port.h"
