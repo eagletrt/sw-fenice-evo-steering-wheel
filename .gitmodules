@@ -4,3 +4,6 @@
 [submodule "steering/simulator"]
 	path = steering/simulator
 	url = git@github.com:eagletrt/sw-fenice-evo-steering-wheel-simulator.git
+[submodule "steering/micro-libs"]
+	path = steering/micro-libs
+	url = git@github.com:eagletrt/micro-libs.git
