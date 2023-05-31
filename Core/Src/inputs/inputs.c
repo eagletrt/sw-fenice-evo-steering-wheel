@@ -20,10 +20,14 @@ void inputs_init() {
 }
 
 void print_buttons() {
-  print("Buttons: \n");
+  char buffer[100];
+  uint32_t len = 0;
+  len += sprintf(buffer + len, "Buttons: ");
   for (int i = 0; i < BUTTONS_N; i++) {
-    print("%d \n", buttons[i]);
+    len += sprintf(buffer + len, "%d ", buttons[i]);
   }
+  len += sprintf(buffer + len, "\n");
+  print("%s", buffer);
 }
 
 void from_gpio_to_buttons(uint8_t gpio) {
@@ -34,14 +38,14 @@ void from_gpio_to_buttons(uint8_t gpio) {
 }
 
 void read_buttons() {
-  uint8_t gpio[1] = {0};
-  if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1, gpio,
+  uint8_t button_input;
+  if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1, &button_input,
                        1, 100) != HAL_OK) {
     print("Error\n");
   }
-  from_gpio_to_buttons(gpio[0]);
-  if (gpio[0] != dev1.gpio[0]) {
+  from_gpio_to_buttons(button_input);
+  if (button_input != dev1.gpio[0]) {
     print_buttons();
   }
-  dev1.gpio[0] = gpio[0];
+  dev1.gpio[0] = button_input;
 }

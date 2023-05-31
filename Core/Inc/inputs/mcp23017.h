@@ -96,26 +96,6 @@
 #define MCP23017_GPPU_IO6_ENABLED 0x40
 #define MCP23017_GPPU_IO7_ENABLED 0x80
 
-// GPIOB pins start from number 8
-enum GPIO_PINS {
-  FB_INVERTERS = 0U,
-  FB_PCBS,
-  FB_PUMPS,
-  FB_SHUTDOWN,
-  FB_RADIATORS,
-  FB_FAN,
-  FB_AS_ACTUATION,
-  NC,
-  LED_R,
-  LED_G,
-  LED_B,
-  FRG_EN,
-  RFE_EN,
-  STP_ENABLE,
-  DISCHARGE,
-  STP_SLEEP
-};
-
 typedef struct {
   I2C_HandleTypeDef *hi2c;
   uint16_t addr;
@@ -139,12 +119,5 @@ HAL_StatusTypeDef mcp23017_read_gpio(MCP23017_HandleTypeDef *hdev,
                                      uint8_t port);
 HAL_StatusTypeDef mcp23017_write_gpio(MCP23017_HandleTypeDef *hdev,
                                       uint8_t port);
-void mcp23017_print_gpioA(MCP23017_HandleTypeDef *hdev, char *out);
-void mcp23017_print_gpioB(MCP23017_HandleTypeDef *hdev, char *out);
-void mcp23017_read_both(MCP23017_HandleTypeDef *hdev, I2C_HandleTypeDef *hi2c);
-void mcp23017_read_and_print_both(MCP23017_HandleTypeDef *hdev,
-                                  I2C_HandleTypeDef *hi2c);
-uint8_t mcp23017_get_state(MCP23017_HandleTypeDef *hdev, uint8_t gpio_port,
-                           uint8_t gpio_pin);
 uint8_t mcptest(MCP23017_HandleTypeDef *hdev);
 #endif

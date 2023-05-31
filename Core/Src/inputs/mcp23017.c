@@ -13,8 +13,6 @@
 
 #include "main.h"
 #include "stdio.h"
-#include "usart.h"
-
 #include <string.h>
 
 MCP23017_HandleTypeDef hmcp;
@@ -64,150 +62,19 @@ HAL_StatusTypeDef mcp23017_write_gpio(MCP23017_HandleTypeDef *hdev,
   return mcp23017_write(hdev, REGISTER_GPIOA | port, &data);
 }
 
-void mcp23017_print_gpioA(MCP23017_HandleTypeDef *hdev, char *out) {
-  char mcp_buff[30];
-  for (uint8_t i = 0; i < GPIOA_TOTAL_FB; i++) {
-    switch (i) {
-    case FB_INVERTERS:
-      sprintf(mcp_buff, "FB_INVERTERS: %d [GPA%d]",
-              ((hdev->gpio[0] & (1 << i)) >> i), i);
-      break;
-    case FB_PCBS:
-      sprintf(mcp_buff, "FB_PCBS: %d [GPA%d]",
-              ((hdev->gpio[0] & (1 << i)) >> i), i);
-      break;
-    case FB_PUMPS:
-      sprintf(mcp_buff, "FB_PUMPS: %d [GPA%d]",
-              ((hdev->gpio[0] & (1 << i)) >> i), i);
-      break;
-    case FB_SHUTDOWN:
-      sprintf(mcp_buff, "FB_SHUTDOWN: %d [GPA%d]",
-              ((hdev->gpio[0] & (1 << i)) >> i), i);
-      break;
-    case FB_RADIATORS:
-      sprintf(mcp_buff, "FB_RADIATORS: %d [GPA%d]",
-              ((hdev->gpio[0] & (1 << i)) >> i), i);
-      break;
-    case FB_FAN:
-      sprintf(mcp_buff, "FB_FAN: %d [GPA%d]", ((hdev->gpio[0] & (1 << i)) >> i),
-              i);
-      break;
-    case FB_AS_ACTUATION:
-      sprintf(mcp_buff, "FB_AS_ACTUATION: %d [GPA%d]",
-              ((hdev->gpio[0] & (1 << i)) >> i), i);
-      break;
-    default:
-      sprintf(mcp_buff, "GPIOA VAL: %d [GPA%d]",
-              ((hdev->gpio[0] & (1 << i)) >> i), i);
-      break;
-    }
-    if (out == NULL) {
-    } else {
-      sprintf(out + strlen(out), "%s \r\n", mcp_buff);
-    }
-  }
-}
-
-void mcp23017_print_gpioB(MCP23017_HandleTypeDef *hdev, char *out) {
-  char mcp_buff[30];
-  for (uint8_t i = 0; i < GPIOB_TOTAL_FB; i++) {
-    switch (i + 8) {
-    case LED_R:
-      sprintf(mcp_buff, "LED_R: %d [GPB%d]", ((hdev->gpio[1] & (1 << i)) >> i),
-              i);
-      break;
-    case LED_G:
-      sprintf(mcp_buff, "LED_G: %d [GPB%d]", ((hdev->gpio[1] & (1 << i)) >> i),
-              i);
-      break;
-    case LED_B:
-      sprintf(mcp_buff, "LED_B: %d [GPB%d]", ((hdev->gpio[1] & (1 << i)) >> i),
-              i);
-      break;
-    case FRG_EN:
-      sprintf(mcp_buff, "FRG_EN: %d [GPB%d]", ((hdev->gpio[1] & (1 << i)) >> i),
-              i);
-      break;
-    case RFE_EN:
-      sprintf(mcp_buff, "RFE_EN: %d [GPB%d]", ((hdev->gpio[1] & (1 << i)) >> i),
-              i);
-      break;
-    case STP_ENABLE:
-      sprintf(mcp_buff, "STP_ENABLE: %d [GPB%d]",
-              ((hdev->gpio[1] & (1 << i)) >> i), i);
-      break;
-    case DISCHARGE:
-      sprintf(mcp_buff, "DISCHARGE: %d [GPB%d]",
-              ((hdev->gpio[1] & (1 << i)) >> i), i);
-      break;
-    case STP_SLEEP:
-      sprintf(mcp_buff, "STP_SLEEP: %d [GPB%d]",
-              ((hdev->gpio[1] & (1 << i)) >> i), i);
-      break;
-    default:
-      sprintf(mcp_buff, "GPIOB VAL: %d [GPB%d]",
-              ((hdev->gpio[1] & (1 << i)) >> i), i);
-      break;
-    }
-
-    if (out == NULL) {
-    } else {
-      sprintf(out + strlen(out), "%s \r\n", mcp_buff);
-    }
-  }
-}
 /**
  * @brief Necessary and tested configuration to initialize correctly the
  * MCP23017 Using default address 0x20
  *
  * @param hdev MCP23017_HandleTypeDef handle for the device
- * @param hi2c I2C Handle
  */
 void mcp23017_init(MCP23017_HandleTypeDef *hdev) {
   mcp23017_iodir(hdev, MCP23017_PORTA, MCP23017_IODIR_ALL_INPUT);
   mcp23017_iodir(hdev, MCP23017_PORTB, MCP23017_IODIR_ALL_INPUT);
-  mcp23017_ggpu(hdev, MCP23017_PORTA, MCP23017_GPPU_ALL_DISABLED);
-  mcp23017_ggpu(hdev, MCP23017_PORTB, MCP23017_GPPU_ALL_DISABLED);
+  mcp23017_ggpu(hdev, MCP23017_PORTA, MCP23017_GPPU_ALL_ENABLED);
+  mcp23017_ggpu(hdev, MCP23017_PORTB, MCP23017_GPPU_ALL_ENABLED);
   mcp23017_ipol(hdev, MCP23017_PORTA, MCP23017_IPOL_ALL_NORMAL);
   mcp23017_ipol(hdev, MCP23017_PORTB, MCP23017_IPOL_ALL_NORMAL);
-}
-/**
- * @brief Read and print registers GPIOA and GPIOB
- *
- * @param hdev MCP23017_HandleTypeDef handle for the device
- * @param hi2c I2C Handle
- */
-void mcp23017_read_and_print_both(MCP23017_HandleTypeDef *hdev,
-                                  I2C_HandleTypeDef *hi2c) {
-  HAL_StatusTypeDef res =
-      HAL_I2C_Mem_Read(hi2c, hdev->addr, REGISTER_GPIOA, 1, hdev->gpio, 1, 100);
-  if (res != HAL_OK) {
-  } else {
-    mcp23017_print_gpioA(hdev, NULL);
-  }
-  res = HAL_I2C_Mem_Read(hi2c, hdev->addr, REGISTER_GPIOB, 1, hdev->gpio + 1, 1,
-                         100);
-  if (res != HAL_OK) {
-  } else {
-    mcp23017_print_gpioB(hdev, NULL);
-  }
-}
-
-/**
- * @brief      Read registers GPIOA and GPIOB
- *
- * @param hdev MCP23017_HandleTypeDef handle for the device
- * @param hi2c I2C Handle
- */
-void mcp23017_read_both(MCP23017_HandleTypeDef *hdev, I2C_HandleTypeDef *hi2c) {
-  HAL_StatusTypeDef res =
-      HAL_I2C_Mem_Read(hi2c, hdev->addr, REGISTER_GPIOA, 1, hdev->gpio, 1, 100);
-  if (res != HAL_OK) {
-  }
-  res = HAL_I2C_Mem_Read(hi2c, hdev->addr, REGISTER_GPIOB, 1, hdev->gpio + 1, 1,
-                         100);
-  if (res != HAL_OK) {
-  }
 }
 
 uint8_t mcp23017_get_state(MCP23017_HandleTypeDef *hdev, uint8_t gpio_port,
