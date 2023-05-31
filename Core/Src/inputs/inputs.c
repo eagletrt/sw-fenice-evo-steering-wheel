@@ -37,15 +37,21 @@ void from_gpio_to_buttons(uint8_t gpio) {
   }
 }
 
+void actions() {
+  if (buttons[0])
+    change_tab(0);
+}
+
 void read_buttons() {
   uint8_t button_input;
-  if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1, &button_input,
-                       1, 100) != HAL_OK) {
+  if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1,
+                       &button_input, 1, 100) != HAL_OK) {
     print("Error\n");
   }
   from_gpio_to_buttons(button_input);
   if (button_input != dev1.gpio[0]) {
     print_buttons();
+    actions();
   }
   dev1.gpio[0] = button_input;
 }
