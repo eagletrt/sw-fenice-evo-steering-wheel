@@ -41,13 +41,6 @@ Core/Src/display_buf.c \
 Core/Src/dma2d.c \
 Core/Src/fdcan.c \
 Core/Src/fmc.c \
-Core/Src/fonts/lv_font_inter_bold_14.c \
-Core/Src/fonts/lv_font_inter_bold_18.c \
-Core/Src/fonts/lv_font_inter_bold_22.c \
-Core/Src/fonts/lv_font_inter_bold_30.c \
-Core/Src/fonts/lv_font_inter_bold_38.c \
-Core/Src/fonts/lv_font_inter_bold_60.c \
-Core/Src/fonts/lv_font_inter_bold_70.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
 Core/Src/inputs/inputs.c \
@@ -59,12 +52,6 @@ Core/Src/lvgl_port/screen_driver.c \
 Core/Src/main.c \
 Core/Src/memdriver.c \
 Core/Src/octospi.c \
-Core/Src/steering/steering.c \
-Core/Src/steering/tab_calibration.c \
-Core/Src/steering/tab_debug.c \
-Core/Src/steering/tab_manager.c \
-Core/Src/steering/tab_racing.c \
-Core/Src/steering/utils.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
@@ -255,7 +242,21 @@ lvgl/src/widgets/lv_roller.c \
 lvgl/src/widgets/lv_slider.c \
 lvgl/src/widgets/lv_switch.c \
 lvgl/src/widgets/lv_table.c \
-lvgl/src/widgets/lv_textarea.c
+lvgl/src/widgets/lv_textarea.c \
+steering/simulator/steering/fonts/lv_font_inter_bold_14.c \
+steering/simulator/steering/fonts/lv_font_inter_bold_18.c \
+steering/simulator/steering/fonts/lv_font_inter_bold_20.c \
+steering/simulator/steering/fonts/lv_font_inter_bold_22.c \
+steering/simulator/steering/fonts/lv_font_inter_bold_30.c \
+steering/simulator/steering/fonts/lv_font_inter_bold_38.c \
+steering/simulator/steering/fonts/lv_font_inter_bold_60.c \
+steering/simulator/steering/fonts/lv_font_inter_bold_70.c \
+steering/simulator/steering/steering.c \
+steering/simulator/steering/ui/tab_calibration.c \
+steering/simulator/steering/ui/tab_manager.c \
+steering/simulator/steering/ui/tab_racing.c \
+steering/simulator/steering/ui/tab_sensors.c \
+steering/simulator/steering/ui/utils.c
 
 
 CPP_SOURCES = \
@@ -331,13 +332,14 @@ C_INCLUDES =  \
 -ICore/Inc \
 -ICore/Inc/inputs \
 -ICore/Inc/lvgl_port \
--ICore/Inc/steering \
 -ICore/Inc/test \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
 -IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy \
--Ilvgl
+-Ilvgl \
+-Isteering/simulator/steering \
+-Isteering/simulator/steering/ui
 
 
 

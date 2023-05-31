@@ -36,8 +36,8 @@ extern "C" {
 #include "lvgl.h"
 #include "lvgl_port/lvgl_port.h"
 #include "lvgl_port/screen_driver.h"
-#include "steering/steering.h"
-#include "steering/tab_manager.h"
+#include "steering.h"
+#include "tab_manager.h"
 #include "test/sdram_test.h"
 #include <string.h>
 /* USER CODE END Includes */

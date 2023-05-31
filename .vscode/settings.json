@@ -22,7 +22,11 @@
         "lv_draw_sw.h": "c",
         "lv_hal_disp.h": "c",
         "lv_color.h": "c",
-        "mcp23017.h": "c"
+        "mcp23017.h": "c",
+        "tab_manager.h": "c",
+        "stdlib.h": "c",
+        "typeinfo": "c",
+        "screen_driver.h": "c"
     },
     "cmake.configureOnOpen": false
 }

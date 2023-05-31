@@ -168,7 +168,7 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
 
   while (1) {
-    LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
+    // LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
 
 #if 0
     HAL_StatusTypeDef retval =

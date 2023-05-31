@@ -14,7 +14,7 @@ fi
 BUILD_DIR=./build
 IGNORE=./Drivers
 LVGL=./lvgl
-STEERING=./steering/simulator
+STEERING=./steering
 
 CLANG_FORMAT=clang-format
 

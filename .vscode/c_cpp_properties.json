@@ -25,13 +25,14 @@
         "Core/Inc",
         "Core/Inc/inputs",
         "Core/Inc/lvgl_port",
-        "Core/Inc/steering",
         "Core/Inc/test",
         "Drivers/CMSIS/Device/ST/STM32H7xx/Include",
         "Drivers/CMSIS/Include",
         "Drivers/STM32H7xx_HAL_Driver/Inc",
         "Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
-        "lvgl"
+        "lvgl",
+        "steering/simulator/steering",
+        "steering/simulator/steering/ui"
       ],
       "defines": [
         "LV_LVGL_H_INCLUDE_SIMPLE",
