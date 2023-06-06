@@ -56,6 +56,7 @@ void screen_driver_init() {
   lv_display_driver.ver_res = SCREEN_HEIGHT;
   lv_display_driver.flush_cb = stm32_flush_cb;
   lv_display_driver.draw_buf = &draw_buf;
+  lv_display_driver.dpi = 1;
   // lv_display_driver.wait_cb = steering_wait;
 
   lv_disp_drv_register(&lv_display_driver);
