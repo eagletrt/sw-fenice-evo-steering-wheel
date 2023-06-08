@@ -22,6 +22,8 @@
 
 /* USER CODE BEGIN 0 */
 
+extern steering_t steering;
+
 /* USER CODE END 0 */
 
 FDCAN_HandleTypeDef hfdcan1;
@@ -43,9 +45,9 @@ void MX_FDCAN1_Init(void) {
   hfdcan1.Init.AutoRetransmission = DISABLE;
   hfdcan1.Init.TransmitPause = DISABLE;
   hfdcan1.Init.ProtocolException = DISABLE;
-  hfdcan1.Init.NominalPrescaler = 16;
+  hfdcan1.Init.NominalPrescaler = 2;
   hfdcan1.Init.NominalSyncJumpWidth = 1;
-  hfdcan1.Init.NominalTimeSeg1 = 2;
+  hfdcan1.Init.NominalTimeSeg1 = 9;
   hfdcan1.Init.NominalTimeSeg2 = 2;
   hfdcan1.Init.DataPrescaler = 1;
   hfdcan1.Init.DataSyncJumpWidth = 1;
@@ -132,7 +134,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     /** Initializes the peripherals clock
      */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
-    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL;
+    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
       Error_Handler();
     }
@@ -169,7 +171,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     /** Initializes the peripherals clock
      */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FDCAN;
-    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_PLL;
+    PeriphClkInitStruct.FdcanClockSelection = RCC_FDCANCLKSOURCE_HSE;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
       Error_Handler();
     }
@@ -249,5 +251,77 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+void _can_wait(FDCAN_HandleTypeDef *nwk) {
+  uint32_t start_timestamp = HAL_GetTick();
+  while (HAL_FDCAN_GetTxFifoFreeLevel(nwk) == 0)
+    if (HAL_GetTick() > start_timestamp + 5)
+      return;
+}
+
+HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
+
+  FDCAN_TxHeaderTypeDef header = {
+      .Identifier = msg->id,
+      .IdType = FDCAN_STANDARD_ID,
+      .TxFrameType = FDCAN_DATA_FRAME,
+      .DataLength = FDCAN_DLC_BYTES_4,
+      .ErrorStateIndicator = FDCAN_ESI_ACTIVE, // error active
+      .BitRateSwitch = FDCAN_BRS_OFF,          // disable bit rate switching
+      .FDFormat = FDCAN_CLASSIC_CAN,
+      .TxEventFifoControl = FDCAN_NO_TX_EVENTS, // ???
+      .MessageMarker = 0,                       // ???
+  };
+
+  _can_wait(nwk);
+
+  return HAL_FDCAN_AddMessageToTxFifoQ(nwk, &header, msg->data);
+}
+
+void handle_primary(can_message_t *msg) {
+  switch (msg->id) {
+  case PRIMARY_CAR_STATUS_FRAME_ID:
+    CHECK_SIZE(CAR_STATUS);
+    PRIMARY_UNPACK(car_status);
+    car_status_update(&data);
+    break;
+  default:
+    break;
+  }
+}
+
+void handle_secondary(can_message_t *msg) {}
+
+/**
+ * @brief     HAL callback for RX on FIFO0
+ */
+void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
+                               uint32_t RxFifo0ITs) {
+  FDCAN_RxHeaderTypeDef header;
+  can_message_t msg;
+
+  /* Get the last message */
+  HAL_FDCAN_GetRxMessage(hfdcan, RxFifo0ITs, &header, msg.data);
+  msg.id = header.IdType;
+  msg.size = header.DataLength;
+
+  handle_primary(&msg);
+}
+
+/**
+ * @brief     HAL callback for RX on FIFO1
+ */
+void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
+                               uint32_t RxFifo1ITs) {
+  FDCAN_RxHeaderTypeDef header;
+  can_message_t msg;
+
+  /* Get the last message */
+  HAL_FDCAN_GetRxMessage(hfdcan, RxFifo1ITs, &header, msg.data);
+  msg.id = header.IdType;
+  msg.size = header.DataLength;
+
+  handle_secondary(&msg);
+}
 
 /* USER CODE END 1 */

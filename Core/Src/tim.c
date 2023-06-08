@@ -184,7 +184,9 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 /* USER CODE BEGIN 1 */
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-  // Already Handled by HAL_TIM_IRQHandler
+  if (htim->Instance == TIM7) {
+    // check button state
+  }
 }
 
 /* USER CODE END 1 */

@@ -26,7 +26,13 @@
         "tab_manager.h": "c",
         "stdlib.h": "c",
         "typeinfo": "c",
-        "screen_driver.h": "c"
+        "screen_driver.h": "c",
+        "inputs.h": "c",
+        "array": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "ranges": "c",
+        "utility": "c"
     },
     "cmake.configureOnOpen": false
 }

@@ -226,9 +226,6 @@ void TIM7_IRQHandler(void) {
   HAL_TIM_IRQHandler(&htim7);
   /* USER CODE BEGIN TIM7_IRQn 1 */
 
-  // Update buttons state
-  HAL_UART_Transmit(&hlpuart1, (uint8_t *)"TIM7\n", 5, 100);
-
   /* USER CODE END TIM7_IRQn 1 */
 }
 

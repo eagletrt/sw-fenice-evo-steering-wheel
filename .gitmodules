@@ -7,3 +7,7 @@
 [submodule "steering/micro-libs"]
 	path = steering/micro-libs
 	url = git@github.com:eagletrt/micro-libs.git
+[submodule "steering/can"]
+	path = steering/can
+	url = git@github.com:eagletrt/can.git
+	branch = build-evo

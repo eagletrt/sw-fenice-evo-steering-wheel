@@ -161,6 +161,8 @@ int main(void) {
   tab_manager();
 
   // HAL_TIM_Base_Start_IT(&htim7);
+  HAL_FDCAN_Start(&hfdcan1);
+  HAL_FDCAN_Start(&hfdcan2);
 
   /* USER CODE END 2 */
 
@@ -168,7 +170,6 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
 
   while (1) {
-    // LV_UPDATE_PROPERTY(ESTIMATED_VELOCITY, steering.AMBIENT_TEMPERATURE++);
 
 #if 0
     HAL_StatusTypeDef retval =
@@ -179,7 +180,7 @@ int main(void) {
 #endif
 
     lv_tasks();
-    read_buttons();
+    read_inputs();
 
     /* USER CODE END WHILE */
 

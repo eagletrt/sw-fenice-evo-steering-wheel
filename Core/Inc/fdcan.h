@@ -38,12 +38,30 @@ extern FDCAN_HandleTypeDef hfdcan2;
 
 /* USER CODE BEGIN Private defines */
 
+#define CHECK_SIZE(type)                                                       \
+  if (msg->size != PRIMARY_##type##_SIZE)                                      \
+  print("Invalid size for" #type "message")
+
+#define PRIMARY_UNPACK(type)                                                   \
+  primary_##type##_t data;                                                     \
+  primary_##type##_unpack(&data, msg->data, msg->size)
+
 /* USER CODE END Private defines */
 
 void MX_FDCAN1_Init(void);
 void MX_FDCAN2_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+typedef uint16_t can_id_t;
+
+typedef struct {
+  can_id_t id;
+  uint8_t size;
+  uint8_t data[8];
+} can_message_t;
+
+HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk);
 
 /* USER CODE END Prototypes */
 

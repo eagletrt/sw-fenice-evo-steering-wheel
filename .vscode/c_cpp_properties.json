@@ -31,6 +31,7 @@
         "Drivers/STM32H7xx_HAL_Driver/Inc",
         "Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
         "lvgl",
+        "steering/can/lib",
         "steering/simulator/steering",
         "steering/simulator/steering/ui"
       ],

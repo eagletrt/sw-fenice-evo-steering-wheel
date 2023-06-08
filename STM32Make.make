@@ -243,6 +243,9 @@ lvgl/src/widgets/lv_slider.c \
 lvgl/src/widgets/lv_switch.c \
 lvgl/src/widgets/lv_table.c \
 lvgl/src/widgets/lv_textarea.c \
+steering/can/lib/bms/bms_network.c \
+steering/can/lib/primary/primary_network.c \
+steering/can/lib/secondary/secondary_network.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_14.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_18.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_20.c \
@@ -338,6 +341,7 @@ C_INCLUDES =  \
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
 -IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -Ilvgl \
+-Isteering/can/lib \
 -Isteering/simulator/steering \
 -Isteering/simulator/steering/ui
 

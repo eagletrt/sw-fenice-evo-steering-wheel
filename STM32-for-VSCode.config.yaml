@@ -84,6 +84,7 @@ includeDirectories:
   - Core/Lib/**
   - lvgl
   - steering/simulator/steering/**
+  - steering/can/lib
 
 
 # Files that should be included in the compilation.
@@ -139,6 +140,7 @@ sourceFiles:
   - Core/Lib/**
   - lvgl/src/**/*.c
   - steering/simulator/steering/**/*.c
+  - steering/can/lib/**/*.c
 
 
 # When no makefile is present it will show a warning pop-up.
