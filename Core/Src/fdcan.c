@@ -24,6 +24,10 @@
 
 extern steering_t steering;
 
+void _CAN_error_handler(char *msg);
+void _CAN_Init_primary();
+void _CAN_Init_secondary();
+
 /* USER CODE END 0 */
 
 FDCAN_HandleTypeDef hfdcan1;
@@ -46,17 +50,17 @@ void MX_FDCAN1_Init(void) {
   hfdcan1.Init.TransmitPause = DISABLE;
   hfdcan1.Init.ProtocolException = DISABLE;
   hfdcan1.Init.NominalPrescaler = 2;
-  hfdcan1.Init.NominalSyncJumpWidth = 1;
+  hfdcan1.Init.NominalSyncJumpWidth = 16;
   hfdcan1.Init.NominalTimeSeg1 = 9;
   hfdcan1.Init.NominalTimeSeg2 = 2;
   hfdcan1.Init.DataPrescaler = 1;
   hfdcan1.Init.DataSyncJumpWidth = 1;
-  hfdcan1.Init.DataTimeSeg1 = 1;
+  hfdcan1.Init.DataTimeSeg1 = 2;
   hfdcan1.Init.DataTimeSeg2 = 1;
   hfdcan1.Init.MessageRAMOffset = 0;
-  hfdcan1.Init.StdFiltersNbr = 0;
+  hfdcan1.Init.StdFiltersNbr = 1;
   hfdcan1.Init.ExtFiltersNbr = 0;
-  hfdcan1.Init.RxFifo0ElmtsNbr = 0;
+  hfdcan1.Init.RxFifo0ElmtsNbr = 10;
   hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan1.Init.RxFifo1ElmtsNbr = 0;
   hfdcan1.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
@@ -64,13 +68,14 @@ void MX_FDCAN1_Init(void) {
   hfdcan1.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
   hfdcan1.Init.TxEventsNbr = 0;
   hfdcan1.Init.TxBuffersNbr = 0;
-  hfdcan1.Init.TxFifoQueueElmtsNbr = 0;
+  hfdcan1.Init.TxFifoQueueElmtsNbr = 10;
   hfdcan1.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
   hfdcan1.Init.TxElmtSize = FDCAN_DATA_BYTES_8;
   if (HAL_FDCAN_Init(&hfdcan1) != HAL_OK) {
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN1_Init 2 */
+  _CAN_Init_primary();
 
   /* USER CODE END FDCAN1_Init 2 */
 }
@@ -91,17 +96,17 @@ void MX_FDCAN2_Init(void) {
   hfdcan2.Init.TransmitPause = DISABLE;
   hfdcan2.Init.ProtocolException = DISABLE;
   hfdcan2.Init.NominalPrescaler = 16;
-  hfdcan2.Init.NominalSyncJumpWidth = 1;
+  hfdcan2.Init.NominalSyncJumpWidth = 16;
   hfdcan2.Init.NominalTimeSeg1 = 2;
   hfdcan2.Init.NominalTimeSeg2 = 2;
   hfdcan2.Init.DataPrescaler = 1;
   hfdcan2.Init.DataSyncJumpWidth = 1;
-  hfdcan2.Init.DataTimeSeg1 = 1;
+  hfdcan2.Init.DataTimeSeg1 = 2;
   hfdcan2.Init.DataTimeSeg2 = 1;
   hfdcan2.Init.MessageRAMOffset = 0;
-  hfdcan2.Init.StdFiltersNbr = 0;
+  hfdcan2.Init.StdFiltersNbr = 1;
   hfdcan2.Init.ExtFiltersNbr = 0;
-  hfdcan2.Init.RxFifo0ElmtsNbr = 0;
+  hfdcan2.Init.RxFifo0ElmtsNbr = 10;
   hfdcan2.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.RxFifo1ElmtsNbr = 0;
   hfdcan2.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
@@ -109,13 +114,14 @@ void MX_FDCAN2_Init(void) {
   hfdcan2.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.TxEventsNbr = 0;
   hfdcan2.Init.TxBuffersNbr = 0;
-  hfdcan2.Init.TxFifoQueueElmtsNbr = 0;
+  hfdcan2.Init.TxFifoQueueElmtsNbr = 10;
   hfdcan2.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
   hfdcan2.Init.TxElmtSize = FDCAN_DATA_BYTES_8;
   if (HAL_FDCAN_Init(&hfdcan2) != HAL_OK) {
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN2_Init 2 */
+  _CAN_Init_secondary();
 
   /* USER CODE END FDCAN2_Init 2 */
 }
@@ -252,6 +258,91 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
 /* USER CODE BEGIN 1 */
 
+void _CAN_error_handler(char *msg) { printf("%s\n", msg); }
+
+/**
+ * @brief Create the CAN filter for the primary CAN network
+ * @param f A CAN_FilterTypeDef in which to store the filter data
+ * */
+void _CAN_Init_primary() {
+  FDCAN_FilterTypeDef f;
+  HAL_StatusTypeDef s;
+  f.IdType = FDCAN_STANDARD_ID;
+  f.FilterIndex = 0;
+  f.FilterType = FDCAN_FILTER_MASK;
+  f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+  f.FilterID1 = 0;        // ???
+  f.FilterID2 = 0;        // ???
+  f.RxBufferIndex = 0;    // ignored
+  f.IsCalibrationMsg = 0; // ignored
+
+  /*
+  Previous configuration:
+
+  f->FilterMode = CAN_FILTERMODE_IDMASK;
+  f->FilterIdLow = 0;
+  f->FilterIdHigh = 0xFFFF;
+  f->FilterMaskIdHigh = 0;
+  f->FilterMaskIdLow = 0;
+  f->FilterFIFOAssignment = CAN_FILTER_FIFO0;
+  f->FilterBank = 0;
+  f->FilterScale = CAN_FILTERSCALE_16BIT;
+  f->FilterActivation = ENABLE;
+  */
+
+  if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK)
+    print("Failed to initialize CAN1 filter\n");
+
+  if ((s = HAL_FDCAN_ActivateNotification(
+           &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK)
+    print("Failed to activate CAN1 interrupt\n");
+
+  if ((s = HAL_FDCAN_Start(&hfdcan1)) != HAL_OK)
+    print("Failed to start CAN1\n");
+}
+
+/**
+ * @brief Create the CAN filter for the secondary CAN network
+ * @param f A CAN_FilterTypeDef in which to store the filter data
+ * */
+void _CAN_Init_secondary() {
+  FDCAN_FilterTypeDef f;
+  HAL_StatusTypeDef s;
+  f.IdType = FDCAN_STANDARD_ID;
+  f.FilterIndex = 0;
+  f.FilterType = FDCAN_FILTER_MASK;
+  f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+  f.FilterID1 = 0;        // ???
+  f.FilterID2 = 0;        // ???
+  f.RxBufferIndex = 0;    // ignored
+  f.IsCalibrationMsg = 0; // ignored
+
+  /*
+  Previous configuration:
+
+  f->FilterMode = CAN_FILTERMODE_IDMASK;
+  f->FilterIdLow = 0;
+  f->FilterIdHigh = 0xFFFF;
+  f->FilterMaskIdHigh = 0;
+  f->FilterMaskIdLow = 0;
+  f->FilterFIFOAssignment = CAN_FILTER_FIFO1;
+  f->FilterBank = 1;
+  f->FilterScale = CAN_FILTERSCALE_16BIT;
+  f->FilterActivation = ENABLE;
+  f->SlaveStartFilterBank = 1;
+  */
+
+  if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK)
+    print("Failed to initialize CAN2 filter\n");
+
+  if ((s = HAL_FDCAN_ActivateNotification(
+           &hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK)
+    print("Failed to activate CAN2 interrupt\n");
+
+  if ((s = HAL_FDCAN_Start(&hfdcan2)) != HAL_OK)
+    print("Failed to start CAN2\n");
+}
+
 void _can_wait(FDCAN_HandleTypeDef *nwk) {
   uint32_t start_timestamp = HAL_GetTick();
   while (HAL_FDCAN_GetTxFifoFreeLevel(nwk) == 0)
@@ -265,12 +356,12 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
       .Identifier = msg->id,
       .IdType = FDCAN_STANDARD_ID,
       .TxFrameType = FDCAN_DATA_FRAME,
-      .DataLength = FDCAN_DLC_BYTES_4,
+      .DataLength = msg->size,
       .ErrorStateIndicator = FDCAN_ESI_ACTIVE, // error active
       .BitRateSwitch = FDCAN_BRS_OFF,          // disable bit rate switching
       .FDFormat = FDCAN_CLASSIC_CAN,
-      .TxEventFifoControl = FDCAN_NO_TX_EVENTS, // ???
-      .MessageMarker = 0,                       // ???
+      .TxEventFifoControl = FDCAN_STORE_TX_EVENTS,
+      .MessageMarker = 0,
   };
 
   _can_wait(nwk);
@@ -283,7 +374,7 @@ void handle_primary(can_message_t *msg) {
   case PRIMARY_CAR_STATUS_FRAME_ID:
     CHECK_SIZE(CAR_STATUS);
     PRIMARY_UNPACK(car_status);
-    car_status_update(&data);
+    // car_status_update(&data);
     break;
   default:
     break;
@@ -297,6 +388,7 @@ void handle_secondary(can_message_t *msg) {}
  */
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo0ITs) {
+  print("RECEIVED MESSAGE CAN 0\n");
   FDCAN_RxHeaderTypeDef header;
   can_message_t msg;
 
@@ -313,6 +405,7 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
  */
 void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo1ITs) {
+  print("RECEIVED MESSAGE CAN 1\n");
   FDCAN_RxHeaderTypeDef header;
   can_message_t msg;
 

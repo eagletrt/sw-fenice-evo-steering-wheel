@@ -62,7 +62,7 @@ void send_tson() {
   // TS ON
   can_message_t msg = {0};
   msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
-  msg.size = PRIMARY_SET_CAR_STATUS_SIZE;
+  msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
   msg.data[0] = primary_set_car_status_car_status_set_READY;
   can_send(&msg, &hfdcan1);
 }

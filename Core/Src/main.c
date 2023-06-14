@@ -160,9 +160,7 @@ int main(void) {
   screen_driver_init();
   tab_manager();
 
-  // HAL_TIM_Base_Start_IT(&htim7);
-  HAL_FDCAN_Start(&hfdcan1);
-  HAL_FDCAN_Start(&hfdcan2);
+  HAL_TIM_Base_Start_IT(&htim7);
 
   /* USER CODE END 2 */
 
@@ -180,7 +178,6 @@ int main(void) {
 #endif
 
     lv_tasks();
-    read_inputs();
 
     /* USER CODE END WHILE */
 

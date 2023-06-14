@@ -39,12 +39,15 @@ extern FDCAN_HandleTypeDef hfdcan2;
 /* USER CODE BEGIN Private defines */
 
 #define CHECK_SIZE(type)                                                       \
-  if (msg->size != PRIMARY_##type##_SIZE)                                      \
+  if (msg->size != PRIMARY_##type##_BYTE_SIZE)                                 \
   print("Invalid size for" #type "message")
 
 #define PRIMARY_UNPACK(type)                                                   \
   primary_##type##_t data;                                                     \
   primary_##type##_unpack(&data, msg->data, msg->size)
+
+#define CAN_PRIMARY_NETWORK hfdcan1
+#define CAN_SECONDARY_NETWORK hfdcan2
 
 /* USER CODE END Private defines */
 
