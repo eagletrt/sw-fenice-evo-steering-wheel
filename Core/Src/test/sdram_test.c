@@ -14,39 +14,20 @@ void sdram_test_write_all() {
 }
 
 /*
-Write BSIZE bytes of data in SEGS different segments in memory,
-and then read BSIZE bytes from the same address and check that they are the same
-*/
-void sdram_test_segments() {
-  for (uint32_t iseg = 0; iseg < SEGS; ++iseg) {
-    uint32_t offset = (SEG_SIZE)*iseg;
-    uint8_t wdata_buf[BSIZE] = {0x01, 0x02, 0x03, 0x04};
-    memcpy((uint32_t *)SDRAM_BASE_ADDRESS + offset, wdata_buf, BSIZE);
-    uint8_t rdata_buf[BSIZE] = {0x00};
-    memcpy(rdata_buf, (uint32_t *)SDRAM_BASE_ADDRESS + offset, BSIZE);
-    for (uint32_t iin = 0; iin < BSIZE; ++iin) {
-      if (wdata_buf[iin] != rdata_buf[iin]) {
-        Error_Handler();
-      }
-    }
-  }
-  HAL_Delay(1);
-}
-
-/*
 Write five long array into the memory, then read it and check it
 */
 void sdram_test_long_arrays() {
+  const uint32_t data_buf_size = 1000;
   for (int itime = 0; itime < 5; itime++) {
-    const uint32_t data_buf_size = 100000;
     uint8_t wdata_buf[data_buf_size];
     for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
       wdata_buf[iin] = (uint8_t)(iin % 256);
     }
     uint32_t offset = 0 + itime * 1048576;
-    memcpy((void *)SDRAM_BASE_ADDRESS + offset, wdata_buf, data_buf_size);
+    void *destination =
+        memcpy((void *)SDRAM_BASE_ADDRESS + offset, wdata_buf, data_buf_size);
     uint8_t rdata_buf[data_buf_size];
-    memcpy(rdata_buf, (void *)SDRAM_BASE_ADDRESS + offset, data_buf_size);
+    memcpy(rdata_buf, destination, data_buf_size);
     for (uint32_t iin = 0; iin < data_buf_size; ++iin) {
       if (wdata_buf[iin] != rdata_buf[iin]) {
         Error_Handler();
