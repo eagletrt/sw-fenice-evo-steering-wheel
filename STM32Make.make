@@ -257,9 +257,11 @@ steering/simulator/steering/fonts/lv_font_inter_bold_60.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_70.c \
 steering/simulator/steering/steering.c \
 steering/simulator/steering/ui/tab_calibration.c \
+steering/simulator/steering/ui/tab_debug/tab_debug_HvFeedbacks.c \
 steering/simulator/steering/ui/tab_manager.c \
 steering/simulator/steering/ui/tab_racing.c \
 steering/simulator/steering/ui/tab_sensors.c \
+steering/simulator/steering/ui/tab_track_test.c \
 steering/simulator/steering/ui/utils.c
 
 
@@ -344,7 +346,8 @@ C_INCLUDES =  \
 -Ilvgl \
 -Isteering/can/lib \
 -Isteering/simulator/steering \
--Isteering/simulator/steering/ui
+-Isteering/simulator/steering/ui \
+-Isteering/simulator/steering/ui/tab_debug
 
 
 
