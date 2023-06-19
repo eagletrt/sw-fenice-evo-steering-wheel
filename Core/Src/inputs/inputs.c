@@ -8,6 +8,7 @@ MCP23017_HandleTypeDef dev2;
 
 bool buttons[BUTTONS_N];
 uint8_t manettini[MANETTINI_N];
+uint32_t manettini_last_change;
 
 void configure_internal_pull_up_resistors() {
   uint8_t cdata = 0xFF;
@@ -37,7 +38,6 @@ void inputs_init(void) {
       .addr = MCP23017_DEV2_ADDR, .hi2c = &hi2c4, .gpio = {0}};
   mcp23017_init(&dev1);
   mcp23017_init(&dev2);
-  configure_internal_pull_up_resistors();
 }
 
 void print_buttons(void) {
@@ -51,14 +51,47 @@ void print_buttons(void) {
   print("%s", buffer);
 }
 
-void from_gpio_to_buttons(uint8_t gpio) {
-  uint8_t mapping[8] = BUTTON_MAPPING;
-  for (int i = 0; i < BUTTONS_N; i++) {
-    buttons[i] = (gpio >> mapping[i]) & 1;
+void buttons_actions(uint8_t button) {
+  switch (button) {
+  case 0:
+    // BUTTON_0 ACTION
+    break;
+  case 1:
+    // BUTTON_1 ACTION
+    break;
+  case 2:
+    // BUTTON_2 ACTION
+    break;
+  case 3:
+    // BUTTON_3 ACTION
+    break;
+  case 4:
+    // BUTTON_4 ACTION
+    break;
+  case 5:
+    // BUTTON_5 ACTION
+    break;
+  case 6:
+    // BUTTON_6 ACTION
+    break;
+  case 7:
+    // BUTTON_7 ACTION
+    break;
   }
 }
 
-void send_tson() {
+void from_gpio_to_buttons(uint8_t gpio) {
+  uint8_t mapping[8] = BUTTON_MAPPING;
+  for (int i = 0; i < BUTTONS_N; i++) {
+    if (buttons[i] != ((gpio >> mapping[i]) & 1)) {
+      print("Button %d: %d\n", i, (gpio >> mapping[i]) & 1);
+      buttons[i] = (gpio >> mapping[i]) & 1;
+      buttons_actions(i);
+    }
+  }
+}
+
+void send_tson(void) {
   // TS ON
   can_message_t msg = {0};
   msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
@@ -67,29 +100,10 @@ void send_tson() {
   can_send(&msg, &hfdcan1);
 }
 
-void actions(void) {
-  if (buttons[0]) {
-  }
-
-  if (buttons[1]) {
-  }
-
-  if (buttons[2]) {
-  }
-
-  if (buttons[3]) {
-  }
-
-  if (buttons[4]) {
-  }
-
-  if (buttons[5]) {
-  }
-
-  if (buttons[6]) {
-  }
-
-  if (buttons[7]) {
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  if (GPIO_Pin == ExtraButton_Pin) {
+    print("Extra button pressed\n");
+    // send_tson();
   }
 }
 
@@ -102,7 +116,6 @@ void read_buttons(void) {
   from_gpio_to_buttons(button_input);
   if (button_input != dev1.gpio[1]) {
     print_buttons();
-    actions();
   }
   dev1.gpio[1] = button_input;
 }
@@ -115,6 +128,7 @@ void read_manettino_1(void) {
   }
   if (manettino_input != dev1.gpio[0]) {
     print("Manettino 1: %d\n", manettino_input);
+    // MANETTINO_1 ACTION
   }
   manettini[0] = manettino_input;
   dev1.gpio[0] = manettino_input;
@@ -128,6 +142,7 @@ void read_manettino_2(void) {
   }
   if (manettino_input != dev2.gpio[1]) {
     print("Manettino 2: %d\n", manettino_input);
+    // MANETTINO_2 ACTION
   }
   manettini[1] = manettino_input;
   dev2.gpio[1] = manettino_input;
@@ -141,29 +156,18 @@ void read_manettino_3(void) {
   }
   if (manettino_input != dev2.gpio[0]) {
     print("Manettino 3: %d\n", manettino_input);
+    // MANETTINO_3 ACTION
   }
   manettini[2] = manettino_input;
   dev2.gpio[0] = manettino_input;
 }
 
-void test_change_IOCON() {
-  print("----------------\n");
-  print("Change IOCON bank 0x0A register\n");
-  uint8_t cdata[1];
-  mcp23017_read(&dev1, 0x0A, cdata);
-  print("Before writing: %u\n", (uint32_t)cdata[0]);
-
-  cdata[0] |= 0b10000000;
-  mcp23017_write(&dev1, 0x05, cdata);
-
-  mcp23017_read(&dev1, 0x05, cdata);
-  print("After writing: %u\n", (uint32_t)cdata[0]);
-  print("----------------\n");
-}
-
 void read_inputs(void) {
   read_buttons();
-  read_manettino_1();
-  read_manettino_2();
-  read_manettino_3();
+  if (HAL_GetTick() - manettini_last_change < MANETTINO_DEBOUNCE) {
+    manettini_last_change = HAL_GetTick();
+    read_manettino_1();
+    read_manettino_2();
+    read_manettino_3();
+  }
 }

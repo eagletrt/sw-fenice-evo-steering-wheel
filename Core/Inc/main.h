@@ -78,8 +78,10 @@ void Error_Handler(void);
 #define INT4_GPIO_Port GPIOB
 #define INT2_Pin GPIO_PIN_5
 #define INT2_GPIO_Port GPIOB
-#define INT5_Pin GPIO_PIN_9
-#define INT5_GPIO_Port GPIOB
+#define INT2_EXTI_IRQn EXTI9_5_IRQn
+#define ExtraButton_Pin GPIO_PIN_9
+#define ExtraButton_GPIO_Port GPIOB
+#define ExtraButton_EXTI_IRQn EXTI9_5_IRQn
 /* USER CODE BEGIN Private defines */
 #define SDRAM_BASE_ADDRESS 0xC0000000
 #define FRAMEBUFFER1_ADDR SDRAM_BASE_ADDRESS
