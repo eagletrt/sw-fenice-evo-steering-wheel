@@ -125,10 +125,9 @@ int main(void) {
   led_control_set_all(&hi2c4, COLOR_BLUE);
 #endif
 
-#define SDRAM_TESTS 0
+#define SDRAM_TESTS 1
 #if SDRAM_TESTS == 1
   sdram_test_write_all();
-  sdram_test_segments();
   sdram_test_long_arrays();
   sdram_test_end_of_memory();
   sdram_test_simple_write();
@@ -156,11 +155,14 @@ int main(void) {
   }
   */
 
+  #define SCREEN_ENABLED 1
+  #if SCREEN_ENABLED == 1
   lv_init();
   screen_driver_init();
   tab_manager();
+  #endif
 
-  HAL_TIM_Base_Start_IT(&htim7);
+  // HAL_TIM_Base_Start_IT(&htim7);
 
   /* USER CODE END 2 */
 
@@ -177,7 +179,13 @@ int main(void) {
     }
 #endif
 
+
+    #if SCREEN_ENABLED == 1
     lv_tasks();
+    #else
+    print("Hello\n");
+    HAL_Delay(1000);
+    #endif
 
     /* USER CODE END WHILE */
 
