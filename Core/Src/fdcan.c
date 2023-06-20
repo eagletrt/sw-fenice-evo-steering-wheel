@@ -49,26 +49,26 @@ void MX_FDCAN1_Init(void) {
   hfdcan1.Init.AutoRetransmission = DISABLE;
   hfdcan1.Init.TransmitPause = DISABLE;
   hfdcan1.Init.ProtocolException = DISABLE;
-  hfdcan1.Init.NominalPrescaler = 2;
-  hfdcan1.Init.NominalSyncJumpWidth = 16;
-  hfdcan1.Init.NominalTimeSeg1 = 9;
-  hfdcan1.Init.NominalTimeSeg2 = 2;
+  hfdcan1.Init.NominalPrescaler = 1;
+  hfdcan1.Init.NominalSyncJumpWidth = 64;
+  hfdcan1.Init.NominalTimeSeg1 = 18;
+  hfdcan1.Init.NominalTimeSeg2 = 5;
   hfdcan1.Init.DataPrescaler = 1;
   hfdcan1.Init.DataSyncJumpWidth = 1;
-  hfdcan1.Init.DataTimeSeg1 = 2;
+  hfdcan1.Init.DataTimeSeg1 = 1;
   hfdcan1.Init.DataTimeSeg2 = 1;
   hfdcan1.Init.MessageRAMOffset = 0;
   hfdcan1.Init.StdFiltersNbr = 1;
   hfdcan1.Init.ExtFiltersNbr = 0;
-  hfdcan1.Init.RxFifo0ElmtsNbr = 10;
+  hfdcan1.Init.RxFifo0ElmtsNbr = 64;
   hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
-  hfdcan1.Init.RxFifo1ElmtsNbr = 0;
+  hfdcan1.Init.RxFifo1ElmtsNbr = 64;
   hfdcan1.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan1.Init.RxBuffersNbr = 0;
   hfdcan1.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
-  hfdcan1.Init.TxEventsNbr = 0;
-  hfdcan1.Init.TxBuffersNbr = 0;
-  hfdcan1.Init.TxFifoQueueElmtsNbr = 10;
+  hfdcan1.Init.TxEventsNbr = 32;
+  hfdcan1.Init.TxBuffersNbr = 32;
+  hfdcan1.Init.TxFifoQueueElmtsNbr = 32;
   hfdcan1.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
   hfdcan1.Init.TxElmtSize = FDCAN_DATA_BYTES_8;
   if (HAL_FDCAN_Init(&hfdcan1) != HAL_OK) {
@@ -95,9 +95,9 @@ void MX_FDCAN2_Init(void) {
   hfdcan2.Init.AutoRetransmission = DISABLE;
   hfdcan2.Init.TransmitPause = DISABLE;
   hfdcan2.Init.ProtocolException = DISABLE;
-  hfdcan2.Init.NominalPrescaler = 16;
-  hfdcan2.Init.NominalSyncJumpWidth = 16;
-  hfdcan2.Init.NominalTimeSeg1 = 2;
+  hfdcan2.Init.NominalPrescaler = 2;
+  hfdcan2.Init.NominalSyncJumpWidth = 64;
+  hfdcan2.Init.NominalTimeSeg1 = 9;
   hfdcan2.Init.NominalTimeSeg2 = 2;
   hfdcan2.Init.DataPrescaler = 1;
   hfdcan2.Init.DataSyncJumpWidth = 1;
@@ -106,22 +106,22 @@ void MX_FDCAN2_Init(void) {
   hfdcan2.Init.MessageRAMOffset = 0;
   hfdcan2.Init.StdFiltersNbr = 1;
   hfdcan2.Init.ExtFiltersNbr = 0;
-  hfdcan2.Init.RxFifo0ElmtsNbr = 10;
+  hfdcan2.Init.RxFifo0ElmtsNbr = 64;
   hfdcan2.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
-  hfdcan2.Init.RxFifo1ElmtsNbr = 0;
+  hfdcan2.Init.RxFifo1ElmtsNbr = 64;
   hfdcan2.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.RxBuffersNbr = 0;
   hfdcan2.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
-  hfdcan2.Init.TxEventsNbr = 0;
-  hfdcan2.Init.TxBuffersNbr = 0;
-  hfdcan2.Init.TxFifoQueueElmtsNbr = 10;
+  hfdcan2.Init.TxEventsNbr = 32;
+  hfdcan2.Init.TxBuffersNbr = 32;
+  hfdcan2.Init.TxFifoQueueElmtsNbr = 32;
   hfdcan2.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
   hfdcan2.Init.TxElmtSize = FDCAN_DATA_BYTES_8;
   if (HAL_FDCAN_Init(&hfdcan2) != HAL_OK) {
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN2_Init 2 */
-  _CAN_Init_secondary();
+  // _CAN_Init_secondary();
 
   /* USER CODE END FDCAN2_Init 2 */
 }
@@ -166,6 +166,8 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     /* FDCAN1 interrupt Init */
     HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
+    HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
     /* USER CODE BEGIN FDCAN1_MspInit 1 */
 
     /* USER CODE END FDCAN1_MspInit 1 */
@@ -203,6 +205,8 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     /* FDCAN2 interrupt Init */
     HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
+    HAL_NVIC_SetPriority(FDCAN2_IT1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(FDCAN2_IT1_IRQn);
     /* USER CODE BEGIN FDCAN2_MspInit 1 */
 
     /* USER CODE END FDCAN2_MspInit 1 */
@@ -229,6 +233,7 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
     /* FDCAN1 interrupt Deinit */
     HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
+    HAL_NVIC_DisableIRQ(FDCAN1_IT1_IRQn);
     /* USER CODE BEGIN FDCAN1_MspDeInit 1 */
 
     /* USER CODE END FDCAN1_MspDeInit 1 */
@@ -250,6 +255,7 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
     /* FDCAN2 interrupt Deinit */
     HAL_NVIC_DisableIRQ(FDCAN2_IT0_IRQn);
+    HAL_NVIC_DisableIRQ(FDCAN2_IT1_IRQn);
     /* USER CODE BEGIN FDCAN2_MspDeInit 1 */
 
     /* USER CODE END FDCAN2_MspDeInit 1 */
@@ -269,10 +275,10 @@ void _CAN_Init_primary() {
   HAL_StatusTypeDef s;
   f.IdType = FDCAN_STANDARD_ID;
   f.FilterIndex = 0;
-  f.FilterType = FDCAN_FILTER_MASK;
+  f.FilterType = FDCAN_FILTER_RANGE;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
   f.FilterID1 = 0;        // ???
-  f.FilterID2 = 0;        // ???
+  f.FilterID2 = 0x7FF;    // ???
   f.RxBufferIndex = 0;    // ignored
   f.IsCalibrationMsg = 0; // ignored
 
@@ -311,7 +317,7 @@ void _CAN_Init_secondary() {
   f.IdType = FDCAN_STANDARD_ID;
   f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_MASK;
-  f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
+  f.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
   f.FilterID1 = 0;        // ???
   f.FilterID2 = 0;        // ???
   f.RxBufferIndex = 0;    // ignored
@@ -336,7 +342,7 @@ void _CAN_Init_secondary() {
     print("Failed to initialize CAN2 filter\n");
 
   if ((s = HAL_FDCAN_ActivateNotification(
-           &hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK)
+           &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0)) != HAL_OK)
     print("Failed to activate CAN2 interrupt\n");
 
   if ((s = HAL_FDCAN_Start(&hfdcan2)) != HAL_OK)
@@ -356,7 +362,7 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
       .Identifier = msg->id,
       .IdType = FDCAN_STANDARD_ID,
       .TxFrameType = FDCAN_DATA_FRAME,
-      .DataLength = msg->size,
+      .DataLength = FDCAN_DLC_BYTES_8,
       .ErrorStateIndicator = FDCAN_ESI_ACTIVE, // error active
       .BitRateSwitch = FDCAN_BRS_OFF,          // disable bit rate switching
       .FDFormat = FDCAN_CLASSIC_CAN,
@@ -370,34 +376,40 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
 }
 
 void handle_primary(can_message_t *msg) {
-  switch (msg->id) {
-  case PRIMARY_CAR_STATUS_FRAME_ID:
-    CHECK_SIZE(CAR_STATUS);
-    PRIMARY_UNPACK(car_status);
-    // car_status_update(&data);
-    break;
-  default:
-    break;
-  }
+  print("Primary network   - message id %" PRIu16 "\n", msg->id);
 }
 
-void handle_secondary(can_message_t *msg) {}
+void handle_secondary(can_message_t *msg) {
+  print("Secondary network - message id %" PRIu16 "\n", msg->id);
+}
+
+void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan) {
+  if (hfdcan == &hfdcan1) {
+    print("CAN0 error %" PRIu32 "\n", (uint32_t)hfdcan->ErrorCode);
+  } else {
+    print("CAN1 error %" PRIu32 "\n", (uint32_t)hfdcan->ErrorCode);
+  }
+}
 
 /**
  * @brief     HAL callback for RX on FIFO0
  */
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo0ITs) {
-  print("RECEIVED MESSAGE CAN 0\n");
-  FDCAN_RxHeaderTypeDef header;
+  FDCAN_RxHeaderTypeDef header = {0};
   can_message_t msg;
-
-  /* Get the last message */
-  HAL_FDCAN_GetRxMessage(hfdcan, RxFifo0ITs, &header, msg.data);
-  msg.id = header.IdType;
+  HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
+  uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO0);
+  print("RX Fifo0 fill level %" PRIu32 "\n", fill_level);
+  msg.id = header.Identifier;
   msg.size = header.DataLength;
-
-  handle_primary(&msg);
+  if (hfdcan == &hfdcan1) {
+    print("DEVICE 0\n");
+    handle_primary(&msg);
+  } else {
+    print("DEVICE 1\n");
+    handle_secondary(&msg);
+  }
 }
 
 /**
@@ -405,16 +417,18 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
  */
 void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo1ITs) {
-  print("RECEIVED MESSAGE CAN 1\n");
   FDCAN_RxHeaderTypeDef header;
   can_message_t msg;
-
-  /* Get the last message */
   HAL_FDCAN_GetRxMessage(hfdcan, RxFifo1ITs, &header, msg.data);
-  msg.id = header.IdType;
+  msg.id = header.Identifier;
   msg.size = header.DataLength;
-
-  handle_secondary(&msg);
+  if (hfdcan == &hfdcan1) {
+    print("DEVICE 0\n");
+    handle_primary(&msg);
+  } else {
+    print("DEVICE 1\n");
+    handle_secondary(&msg);
+  }
 }
 
 /* USER CODE END 1 */

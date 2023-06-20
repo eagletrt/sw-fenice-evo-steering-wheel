@@ -155,12 +155,12 @@ int main(void) {
   }
   */
 
-  #define SCREEN_ENABLED 1
-  #if SCREEN_ENABLED == 1
+#define SCREEN_ENABLED 0
+#if SCREEN_ENABLED == 1
   lv_init();
   screen_driver_init();
   tab_manager();
-  #endif
+#endif
 
   // HAL_TIM_Base_Start_IT(&htim7);
 
@@ -179,13 +179,22 @@ int main(void) {
     }
 #endif
 
-
-    #if SCREEN_ENABLED == 1
+#if SCREEN_ENABLED == 1
     lv_tasks();
-    #else
-    print("Hello\n");
+#endif
+
+#if 0
+    can_message_t msg;
+    msg.id = 0x2;
+    msg.size = 4;
+    msg.data[0] = 3;
+    msg.data[1] = 4;
+    msg.data[2] = 5;
+    msg.data[3] = 6;
+    print("Sending CAN message with id %" PRIu32 "\n", msg.id);
+    can_send(&msg, &hfdcan1);
     HAL_Delay(1000);
-    #endif
+#endif
 
     /* USER CODE END WHILE */
 
