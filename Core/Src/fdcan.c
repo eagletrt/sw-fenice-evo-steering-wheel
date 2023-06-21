@@ -328,11 +328,42 @@ void _can_wait(FDCAN_HandleTypeDef *nwk) {
 
 HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
 
+  uint32_t dlc_len;
+  switch (msg->size) {
+  case 0:
+    dlc_len = FDCAN_DLC_BYTES_0;
+    break;
+  case 1:
+    dlc_len = FDCAN_DLC_BYTES_1;
+    break;
+  case 2:
+    dlc_len = FDCAN_DLC_BYTES_2;
+    break;
+  case 3:
+    dlc_len = FDCAN_DLC_BYTES_3;
+    break;
+  case 4:
+    dlc_len = FDCAN_DLC_BYTES_4;
+    break;
+  case 5:
+    dlc_len = FDCAN_DLC_BYTES_5;
+    break;
+  case 6:
+    dlc_len = FDCAN_DLC_BYTES_6;
+    break;
+  case 7:
+    dlc_len = FDCAN_DLC_BYTES_7;
+    break;
+  case 8:
+    dlc_len = FDCAN_DLC_BYTES_8;
+    break;
+  }
+
   FDCAN_TxHeaderTypeDef header = {
       .Identifier = msg->id,
       .IdType = FDCAN_STANDARD_ID,
       .TxFrameType = FDCAN_DATA_FRAME,
-      .DataLength = FDCAN_DLC_BYTES_8,
+      .DataLength = dlc_len,
       .ErrorStateIndicator = FDCAN_ESI_ACTIVE, // error active
       .BitRateSwitch = FDCAN_BRS_OFF,          // disable bit rate switching
       .FDFormat = FDCAN_CLASSIC_CAN,
@@ -340,16 +371,24 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
       .MessageMarker = 0,
   };
 
-  _can_wait(nwk);
+  // _can_wait(nwk);
 
   return HAL_FDCAN_AddMessageToTxFifoQ(nwk, &header, msg->data);
 }
 
 void handle_primary(can_message_t *msg) {
 #if CAN_LOG_ENABLED
-  print("Primary network   - message id %" PRIu16 "\n", msg->id);
+  print("Primary network - message id %" PRIu16 "\n", msg->id);
 #endif
   can_id_t id = msg->id;
+  switch (id) {
+  case PRIMARY_CAR_STATUS_FRAME_ID:
+    CHECK_SIZE(CAR_STATUS);
+    PRIMARY_UNPACK(car_status);
+    steering.low_voltage.car_status = data.car_status;
+    lv_label_set_text_fmt(steering.low_voltage.lb_car_status, "%d",
+                          data.car_status);
+  }
 }
 
 void handle_secondary(can_message_t *msg) {
