@@ -48,6 +48,7 @@ extern FDCAN_HandleTypeDef hfdcan2;
 
 #define CAN_PRIMARY_NETWORK hfdcan1
 #define CAN_SECONDARY_NETWORK hfdcan2
+#define CAN_LOG_ENABLED 0
 
 /* USER CODE END Private defines */
 

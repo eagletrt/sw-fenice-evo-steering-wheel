@@ -277,25 +277,10 @@ void _CAN_Init_primary() {
   f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_RANGE;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-  f.FilterID1 = 0;        // ???
-  f.FilterID2 = 0x7FF;    // ???
-  f.RxBufferIndex = 0;    // ignored
-  f.IsCalibrationMsg = 0; // ignored
-
-  /*
-  Previous configuration:
-
-  f->FilterMode = CAN_FILTERMODE_IDMASK;
-  f->FilterIdLow = 0;
-  f->FilterIdHigh = 0xFFFF;
-  f->FilterMaskIdHigh = 0;
-  f->FilterMaskIdLow = 0;
-  f->FilterFIFOAssignment = CAN_FILTER_FIFO0;
-  f->FilterBank = 0;
-  f->FilterScale = CAN_FILTERSCALE_16BIT;
-  f->FilterActivation = ENABLE;
-  */
-
+  f.FilterID1 = 0;
+  f.FilterID2 = 0x7FF;
+  f.RxBufferIndex = 0;
+  f.IsCalibrationMsg = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK)
     print("Failed to initialize CAN1 filter\n");
 
@@ -318,25 +303,10 @@ void _CAN_Init_secondary() {
   f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_MASK;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
-  f.FilterID1 = 0;        // ???
-  f.FilterID2 = 0;        // ???
-  f.RxBufferIndex = 0;    // ignored
-  f.IsCalibrationMsg = 0; // ignored
-
-  /*
-  Previous configuration:
-
-  f->FilterMode = CAN_FILTERMODE_IDMASK;
-  f->FilterIdLow = 0;
-  f->FilterIdHigh = 0xFFFF;
-  f->FilterMaskIdHigh = 0;
-  f->FilterMaskIdLow = 0;
-  f->FilterFIFOAssignment = CAN_FILTER_FIFO1;
-  f->FilterBank = 1;
-  f->FilterScale = CAN_FILTERSCALE_16BIT;
-  f->FilterActivation = ENABLE;
-  f->SlaveStartFilterBank = 1;
-  */
+  f.FilterID1 = 0;
+  f.FilterID2 = 0;
+  f.RxBufferIndex = 0;
+  f.IsCalibrationMsg = 0;
 
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK)
     print("Failed to initialize CAN2 filter\n");
@@ -376,11 +346,16 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
 }
 
 void handle_primary(can_message_t *msg) {
+#if CAN_LOG_ENABLED
   print("Primary network   - message id %" PRIu16 "\n", msg->id);
+#endif
+  can_id_t id = msg->id;
 }
 
 void handle_secondary(can_message_t *msg) {
+#if CAN_LOG_ENABLED
   print("Secondary network - message id %" PRIu16 "\n", msg->id);
+#endif
 }
 
 void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan) {
@@ -399,15 +374,26 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
   FDCAN_RxHeaderTypeDef header = {0};
   can_message_t msg;
   HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
+
+#if CAN_LOG_ENABLED
   uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO0);
   print("RX Fifo0 fill level %" PRIu32 "\n", fill_level);
+#endif
+
   msg.id = header.Identifier;
   msg.size = header.DataLength;
   if (hfdcan == &hfdcan1) {
+
+#if CAN_LOG_ENABLED
     print("DEVICE 0\n");
+#endif
+
     handle_primary(&msg);
   } else {
+#if CAN_LOG_ENABLED
     print("DEVICE 1\n");
+#endif
+
     handle_secondary(&msg);
   }
 }
@@ -419,14 +405,28 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo1ITs) {
   FDCAN_RxHeaderTypeDef header;
   can_message_t msg;
-  HAL_FDCAN_GetRxMessage(hfdcan, RxFifo1ITs, &header, msg.data);
+  HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, msg.data);
+
+#if CAN_LOG_ENABLED
+  uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO1);
+  print("RX Fifo1 fill level %" PRIu32 "\n", fill_level);
+#endif
+
   msg.id = header.Identifier;
   msg.size = header.DataLength;
   if (hfdcan == &hfdcan1) {
+
+#if CAN_LOG_ENABLED
     print("DEVICE 0\n");
+#endif
+
     handle_primary(&msg);
   } else {
+
+#if CAN_LOG_ENABLED
     print("DEVICE 1\n");
+#endif
+
     handle_secondary(&msg);
   }
 }
