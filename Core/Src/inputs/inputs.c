@@ -8,6 +8,7 @@ MCP23017_HandleTypeDef dev2;
 
 bool buttons[BUTTONS_N];
 uint8_t manettini[MANETTINI_N];
+uint8_t tson_button = 0;
 uint32_t manettini_last_change;
 
 void configure_internal_pull_up_resistors() {
@@ -55,27 +56,35 @@ void buttons_actions(uint8_t button) {
   switch (button) {
   case 0:
     // BUTTON_0 ACTION
+    print("button 0\n");
     break;
   case 1:
     // BUTTON_1 ACTION
+    print("button 1\n");
     break;
   case 2:
     // BUTTON_2 ACTION
+    print("button 2\n");
     break;
   case 3:
     // BUTTON_3 ACTION
+    print("button 3\n");
     break;
   case 4:
     // BUTTON_4 ACTION
+    print("button 4\n");
     break;
   case 5:
     // BUTTON_5 ACTION
+    print("button 5\n");
     break;
   case 6:
     // BUTTON_6 ACTION
+    print("button left\n");
     break;
   case 7:
     // BUTTON_7 ACTION
+    print("button right\n");
     break;
   }
 }
@@ -83,10 +92,12 @@ void buttons_actions(uint8_t button) {
 void from_gpio_to_buttons(uint8_t gpio) {
   uint8_t mapping[8] = BUTTON_MAPPING;
   for (int i = 0; i < BUTTONS_N; i++) {
-    if (buttons[i] != ((gpio >> mapping[i]) & 1)) {
-      print("Button %d: %d\n", i, (gpio >> mapping[i]) & 1);
-      buttons[i] = (gpio >> mapping[i]) & 1;
-      buttons_actions(i);
+    uint8_t current_button_val = ((gpio >> mapping[i]) & 1);
+    if (buttons[i] != current_button_val) {
+      if (current_button_val == 0) {
+        buttons_actions(i);
+      }
+      buttons[i] = current_button_val;
     }
   }
 }
@@ -102,8 +113,8 @@ void send_tson(void) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
-    print("Extra button pressed\n");
-    // send_tson();
+    print("Send tson\n");
+    send_tson();
   }
 }
 
@@ -127,7 +138,7 @@ void read_manettino_1(void) {
     print("Error\n");
   }
   if (manettino_input != dev1.gpio[0]) {
-    print("Manettino 1: %d\n", manettino_input);
+    print("Manettino 1: %u\n", (unsigned int)manettino_input);
     // MANETTINO_1 ACTION
   }
   manettini[0] = manettino_input;
@@ -141,7 +152,7 @@ void read_manettino_2(void) {
     print("Error\n");
   }
   if (manettino_input != dev2.gpio[1]) {
-    print("Manettino 2: %d\n", manettino_input);
+    print("Manettino 2: %u\n", (unsigned int)manettino_input);
     // MANETTINO_2 ACTION
   }
   manettini[1] = manettino_input;
@@ -155,7 +166,7 @@ void read_manettino_3(void) {
     print("Error\n");
   }
   if (manettino_input != dev2.gpio[0]) {
-    print("Manettino 3: %d\n", manettino_input);
+    print("Manettino 3: %u\n", (unsigned int)manettino_input);
     // MANETTINO_3 ACTION
   }
   manettini[2] = manettino_input;
@@ -164,7 +175,7 @@ void read_manettino_3(void) {
 
 void read_inputs(void) {
   read_buttons();
-  if (HAL_GetTick() - manettini_last_change < MANETTINO_DEBOUNCE) {
+  if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
     manettini_last_change = HAL_GetTick();
     read_manettino_1();
     read_manettino_2();
