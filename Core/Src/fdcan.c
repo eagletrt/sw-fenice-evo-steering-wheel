@@ -328,7 +328,7 @@ void _can_wait(FDCAN_HandleTypeDef *nwk) {
 
 HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
 
-  uint32_t dlc_len;
+  uint32_t dlc_len = 0;
   switch (msg->size) {
   case 0:
     dlc_len = FDCAN_DLC_BYTES_0;
@@ -393,7 +393,7 @@ void handle_primary(can_message_t *msg) {
     // PRIMARY_UNPACK(car_status);
     // steering.low_voltage.car_status = data.car_status;
     // lv_label_set_text_fmt(steering.low_voltage.lb_car_status, "%d",
-                          // data.car_status);
+    // data.car_status);
   case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
     print("Resetting for open blt\n");
     HAL_NVIC_SystemReset();

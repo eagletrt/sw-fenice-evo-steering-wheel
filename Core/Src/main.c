@@ -155,7 +155,7 @@ int main(void) {
   }
   */
 
-#define SCREEN_ENABLED 0
+#define SCREEN_ENABLED 1
 #if SCREEN_ENABLED == 1
   lv_init();
   screen_driver_init();

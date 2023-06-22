@@ -33,8 +33,7 @@
         "lvgl",
         "steering/can/lib",
         "steering/simulator/steering",
-        "steering/simulator/steering/ui",
-        "steering/simulator/steering/ui/tab_debug"
+        "steering/simulator/steering/ui"
       ],
       "defines": [
         "LV_LVGL_H_INCLUDE_SIMPLE",

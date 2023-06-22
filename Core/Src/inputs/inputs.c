@@ -79,12 +79,10 @@ void buttons_actions(uint8_t button) {
     print("button 5\n");
     break;
   case 6:
-    // BUTTON_6 ACTION
-    print("button left\n");
+    change_tab(false);
     break;
   case 7:
-    // BUTTON_7 ACTION
-    print("button right\n");
+    change_tab(true);
     break;
   }
 }

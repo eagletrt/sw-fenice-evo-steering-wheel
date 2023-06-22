@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    dma2d.c
-  * @brief   This file provides code for the configuration
-  *          of the DMA2D instances.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2023 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    dma2d.c
+ * @brief   This file provides code for the configuration
+ *          of the DMA2D instances.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2023 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "dma2d.h"
@@ -27,8 +27,7 @@
 DMA2D_HandleTypeDef hdma2d;
 
 /* DMA2D init function */
-void MX_DMA2D_Init(void)
-{
+void MX_DMA2D_Init(void) {
 
   /* USER CODE BEGIN DMA2D_Init 0 */
 
@@ -48,49 +47,42 @@ void MX_DMA2D_Init(void)
   hdma2d.LayerCfg[1].AlphaInverted = DMA2D_REGULAR_ALPHA;
   hdma2d.LayerCfg[1].RedBlueSwap = DMA2D_RB_REGULAR;
   hdma2d.LayerCfg[1].ChromaSubSampling = DMA2D_NO_CSS;
-  if (HAL_DMA2D_Init(&hdma2d) != HAL_OK)
-  {
+  if (HAL_DMA2D_Init(&hdma2d) != HAL_OK) {
     Error_Handler();
   }
-  if (HAL_DMA2D_ConfigLayer(&hdma2d, 1) != HAL_OK)
-  {
+  if (HAL_DMA2D_ConfigLayer(&hdma2d, 1) != HAL_OK) {
     Error_Handler();
   }
   /* USER CODE BEGIN DMA2D_Init 2 */
 
   /* USER CODE END DMA2D_Init 2 */
-
 }
 
-void HAL_DMA2D_MspInit(DMA2D_HandleTypeDef* dma2dHandle)
-{
+void HAL_DMA2D_MspInit(DMA2D_HandleTypeDef *dma2dHandle) {
 
-  if(dma2dHandle->Instance==DMA2D)
-  {
-  /* USER CODE BEGIN DMA2D_MspInit 0 */
+  if (dma2dHandle->Instance == DMA2D) {
+    /* USER CODE BEGIN DMA2D_MspInit 0 */
 
-  /* USER CODE END DMA2D_MspInit 0 */
+    /* USER CODE END DMA2D_MspInit 0 */
     /* DMA2D clock enable */
     __HAL_RCC_DMA2D_CLK_ENABLE();
-  /* USER CODE BEGIN DMA2D_MspInit 1 */
+    /* USER CODE BEGIN DMA2D_MspInit 1 */
 
-  /* USER CODE END DMA2D_MspInit 1 */
+    /* USER CODE END DMA2D_MspInit 1 */
   }
 }
 
-void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef* dma2dHandle)
-{
+void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef *dma2dHandle) {
 
-  if(dma2dHandle->Instance==DMA2D)
-  {
-  /* USER CODE BEGIN DMA2D_MspDeInit 0 */
+  if (dma2dHandle->Instance == DMA2D) {
+    /* USER CODE BEGIN DMA2D_MspDeInit 0 */
 
-  /* USER CODE END DMA2D_MspDeInit 0 */
+    /* USER CODE END DMA2D_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_DMA2D_CLK_DISABLE();
-  /* USER CODE BEGIN DMA2D_MspDeInit 1 */
+    /* USER CODE BEGIN DMA2D_MspDeInit 1 */
 
-  /* USER CODE END DMA2D_MspDeInit 1 */
+    /* USER CODE END DMA2D_MspDeInit 1 */
   }
 }
 
