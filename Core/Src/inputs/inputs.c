@@ -87,6 +87,38 @@ void buttons_actions(uint8_t button) {
   }
 }
 
+void manettino_right_actions(uint8_t val) {
+  uint8_t possible_vals[] = MANETTINO_RIGHT_VALS;
+  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t)); ++ival) {
+    if (val == MANETTINO_DEBOUNCE_VALUE) continue;
+    if (val == possible_vals[ival]) {
+      print("manettino right step %u\n", (unsigned int) ival);
+      break;
+    }
+  }
+}
+
+void manettino_center_actions(uint8_t val) {
+  uint8_t possible_vals[] = MANETTINO_CENTER_VALS;
+  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t)); ++ival) {
+    if (val == MANETTINO_DEBOUNCE_VALUE) continue;
+    if (val == possible_vals[ival]) {
+      print("manettino center step %u\n", (unsigned int) ival);
+      break;
+    }
+  }
+}
+
+void manettino_left_actions(uint8_t val) {
+  uint8_t possible_vals[] = MANETTINO_LEFT_VALS;
+  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t)); ++ival) {
+    if (val == possible_vals[ival]) {
+      print("manettino left step %u\n", (unsigned int) ival);
+      break;
+    }
+  }
+}
+
 void from_gpio_to_buttons(uint8_t gpio) {
   uint8_t mapping[8] = BUTTON_MAPPING;
   for (int i = 0; i < BUTTONS_N; i++) {
@@ -136,8 +168,7 @@ void read_manettino_1(void) {
     print("Error\n");
   }
   if (manettino_input != dev1.gpio[0]) {
-    print("Manettino 1: %u\n", (unsigned int)manettino_input);
-    // MANETTINO_1 ACTION
+    manettino_left_actions(manettino_input);
   }
   manettini[0] = manettino_input;
   dev1.gpio[0] = manettino_input;
@@ -150,8 +181,7 @@ void read_manettino_2(void) {
     print("Error\n");
   }
   if (manettino_input != dev2.gpio[1]) {
-    print("Manettino 2: %u\n", (unsigned int)manettino_input);
-    // MANETTINO_2 ACTION
+    manettino_center_actions(manettino_input);
   }
   manettini[1] = manettino_input;
   dev2.gpio[1] = manettino_input;
@@ -164,8 +194,7 @@ void read_manettino_3(void) {
     print("Error\n");
   }
   if (manettino_input != dev2.gpio[0]) {
-    print("Manettino 3: %u\n", (unsigned int)manettino_input);
-    // MANETTINO_3 ACTION
+    manettino_right_actions(manettino_input);
   }
   manettini[2] = manettino_input;
   dev2.gpio[0] = manettino_input;

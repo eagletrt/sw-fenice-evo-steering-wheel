@@ -125,7 +125,7 @@ int main(void) {
   led_control_set_all(&hi2c4, COLOR_BLUE);
 #endif
 
-#define SDRAM_TESTS 1
+#define SDRAM_TESTS 0
 #if SDRAM_TESTS == 1
   sdram_test_write_all();
   sdram_test_long_arrays();
