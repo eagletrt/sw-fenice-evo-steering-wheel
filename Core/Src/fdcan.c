@@ -377,17 +377,27 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
 }
 
 void handle_primary(can_message_t *msg) {
-#if CAN_LOG_ENABLED
-  print("Primary network - message id %" PRIu16 "\n", msg->id);
+#if 1
+  char name_buffer[BUFSIZ];
+  primary_message_name_from_id(msg->id, name_buffer);
+  print("Primary network - message id %s\n", name_buffer);
 #endif
   can_id_t id = msg->id;
   switch (id) {
   case PRIMARY_CAR_STATUS_FRAME_ID:
-    CHECK_SIZE(CAR_STATUS);
-    PRIMARY_UNPACK(car_status);
-    steering.low_voltage.car_status = data.car_status;
-    lv_label_set_text_fmt(steering.low_voltage.lb_car_status, "%d",
-                          data.car_status);
+#if 1
+    print("Received car status\n");
+#endif
+    break;
+    // CHECK_SIZE(CAR_STATUS);
+    // PRIMARY_UNPACK(car_status);
+    // steering.low_voltage.car_status = data.car_status;
+    // lv_label_set_text_fmt(steering.low_voltage.lb_car_status, "%d",
+                          // data.car_status);
+  case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
+    print("Resetting for open blt\n");
+    HAL_NVIC_SystemReset();
+    break;
   }
 }
 

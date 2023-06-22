@@ -162,7 +162,7 @@ int main(void) {
   tab_manager();
 #endif
 
-  // HAL_TIM_Base_Start_IT(&htim7);
+  HAL_TIM_Base_Start_IT(&htim7);
 
   /* USER CODE END 2 */
 
@@ -182,6 +182,10 @@ int main(void) {
 #if SCREEN_ENABLED == 1
     lv_tasks();
 #endif
+
+    read_inputs();
+
+    // HAL_Delay(500);
 
 #if 0
     can_message_t msg;
