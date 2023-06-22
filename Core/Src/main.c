@@ -85,6 +85,12 @@ int main(void) {
 
   /* USER CODE END 1 */
 
+  /* Enable I-Cache---------------------------------------------------------*/
+  SCB_EnableICache();
+
+  /* Enable D-Cache---------------------------------------------------------*/
+  SCB_EnableDCache();
+
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick.
@@ -156,14 +162,66 @@ int main(void) {
   }
   */
 
-#define SCREEN_ENABLED 1
+#define SCREEN_ENABLED 0
 #if SCREEN_ENABLED == 1
   lv_init();
   screen_driver_init();
   tab_manager();
 #endif
 
-  HAL_TIM_Base_Start_IT(&htim7);
+#define EXTERNAL_FLASH_ADDRESS 0x90000000
+#define TSIZE 20
+
+#if 0
+
+  uint8_t data[TSIZE];
+  memcpy(data, (void *)EXTERNAL_FLASH_ADDRESS, TSIZE);
+  data[TSIZE - 1] = '\0';
+  print("roba: %s\n", (char *)data);
+#endif
+
+  // HAL_TIM_Base_Start_IT(&htim7);
+  uint8_t data[100] = {};
+  uint32_t val = HAL_OSPI_GetState(&hospi1);
+  print("HAL_OSPI_GetState = %u\n", (unsigned int)val);
+  HAL_StatusTypeDef status = HAL_OSPI_Receive(&hospi1, data, 500);
+  if (status == HAL_OK) {
+    print("HAL OK\n");
+  } else {
+    print("HAL NOT OK\n");
+  }
+
+  uint32_t command = 0;
+  uint32_t address = 0;
+
+
+  OSPI_RegularCmdTypeDef command = {
+      .OperationType = HAL_OSPI_OPTYPE_READ_CFG,
+      .FlashId = HAL_OSPI_FLASH_ID_1,
+      .Instruction = command,
+      .InstructionMode = HAL_OSPI_INSTRUCTION_1_LINE,
+      .InstructionSize = HAL_OSPI_INSTRUCTION_8_BITS,
+      .InstructionDtrMode = HAL_OSPI_INSTRUCTION_DTR_DISABLE,
+      .Address = address,
+      .AddressMode= HAL_OSPI_ADDRESS_1_LINE,
+      .AddressSize = HAL_OSPI_ADDRESS_8_BITS,
+      .AddressDtrMode = HAL_OSPI_ADDRESS_DTR_DISABLE,
+      .AlternateBytes = 0,
+      .AlternateBytesMode = HAL_OSPI_ALTERNATE_BYTES_NONE,
+      .AlternateBytesSize = HAL_OSPI_ALTERNATE_BYTES_8_BITS, // ignored
+      .AlternateBytesDtrMode = HAL_OSPI_ALTERNATE_BYTES_DTR_DISABLE,
+      .DataMode = HAL_OSPI_DATA_DTR_DISABLE,
+      .NbData = 0, // ?????
+      .DataDtrMode = HAL_OSPI_DATA_DTR_DISABLE,
+      .DummyCycles = 0,
+      .DQSMode = HAL_OSPI_DQS_DISABLE,
+      .SIOOMode = HAL_OSPI_SIOO_INST_EVERY_CMD,
+
+  };
+  HAL_OSPI_Command(&hospi1);
+
+
+
 
   if (PRIMARY_INTERVAL_STEER_STATUS != 100) {
     lv_timer_t *steer_status_task =
