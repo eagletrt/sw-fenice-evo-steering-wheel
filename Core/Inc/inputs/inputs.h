@@ -21,5 +21,6 @@
 void inputs_init(void);
 void read_inputs(void);
 void send_tson(void);
+void turnon_telemetry(void);
 
 #endif

@@ -385,6 +385,7 @@ void handle_primary(can_message_t *msg) {
   can_id_t id = msg->id;
   switch (id) {
   case PRIMARY_CAR_STATUS_FRAME_ID:
+    print("Received car status\n");
     break;
     // CHECK_SIZE(CAR_STATUS);
     // PRIMARY_UNPACK(car_status);
@@ -396,9 +397,14 @@ void handle_primary(can_message_t *msg) {
     HAL_NVIC_SystemReset();
     break;
   case PRIMARY_PTT_STATUS_FRAME_ID: {
+    print("Received ptt status\n");
     primary_ptt_status_t data;
     primary_ptt_status_unpack(&data, msg->data, msg->size);
     handle_ptt_message(data.status);
+    break;
+  }
+  case PRIMARY_TLM_STATUS_FRAME_ID: {
+    print("Received tlm status\n");
     break;
   }
   }

@@ -76,20 +76,23 @@ void buttons_pressed_actions(uint8_t button) {
   case 4:
     // BUTTON_4 ACTION
     print("button 4\n");
-    activate_ptt();
+    
     break;
   case 5:
     // BUTTON_5 ACTION
     print("button 5\n");
-    deactivate_ptt();
     break;
   case 6:
-    print("button 6 pressed\n");
-    change_tab(false);
+    // BUTTON BOTTOM LEFT
+    // print("button 6 pressed\n");
+    print("TURN ON TELEMETRY\n");
+    turnon_telemetry();
     break;
   case 7:
-    print("button 7 pressed\n");
-    change_tab(true);
+    // BUTTON BOTTOM RIGHT
+    // print("button 7 pressed\n");
+    print("ACTIVATE PTT\n");
+    activate_ptt();
     break;
   }
 }
@@ -115,10 +118,12 @@ void buttons_released_actions(uint8_t button) {
     print("button 5 released\n");
     break;
   case 6:
-    print("button 6 released\n");
+    // print("button 6 released\n");
     break;
   case 7:
-    print("button 7 released\n");
+    // print("button 7 released\n");
+    print("DEACTIVATE PTT\n");
+    deactivate_ptt();
     break;
   }
 }
@@ -213,6 +218,14 @@ void from_gpio_to_buttons(uint8_t gpio) {
       buttons_long_press_activated[i] = true;
     }
   }
+}
+
+void turnon_telemetry(void) {
+  can_message_t msg = {0};
+  msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
+  msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
+  msg.data[0] = primary_set_tlm_status_tlm_status_ON;
+  can_send(&msg, &hfdcan1);
 }
 
 void send_tson(void) {

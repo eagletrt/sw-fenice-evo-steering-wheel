@@ -23,9 +23,11 @@ void handle_ptt_message(primary_ptt_status_status val) {
     if (status)
       display_notification("Push-To-Talk OFF");
     status = 0;
+    print("Received status OFF");
   } else if (val == primary_ptt_status_status_ON) {
     if (!status)
       display_notification("Push-To-Talk ON");
     status = 1;
+    print("Received status ON");
   }
 }
