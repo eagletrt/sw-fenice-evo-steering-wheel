@@ -33,7 +33,8 @@
         "initializer_list": "c",
         "ranges": "c",
         "utility": "c",
-        "fdcan.h": "c"
+        "fdcan.h": "c",
+        "ptt.h": "c"
     },
     "cmake.configureOnOpen": false
 }

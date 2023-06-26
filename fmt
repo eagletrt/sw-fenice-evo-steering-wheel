@@ -7,8 +7,8 @@
 # -------------
 
 if ! [ -d .git ]; then
-  echo "[!] Please run this script from the root of the repository"
-  exit 1
+    echo "[!] Please run this script from the root of the repository"
+    exit 1
 fi
 
 BUILD_DIR=./build
@@ -20,7 +20,16 @@ CLANG_FORMAT=clang-format
 
 echo "[*] Formatting c files"
 find . -path $BUILD_DIR -prune -false -o -path $LVGL -prune -false -o -path $IGNORE -prune -false -o -path $STEERING -prune -false -o -type f \
-  -name "*.c" -exec sh -c "$CLANG_FORMAT -i \$1" _ {} \;
+-name "*.c" -exec sh -c "$CLANG_FORMAT -i \$1" _ {} \;
 echo "[*] Formatting h   files"
 find . -path $BUILD_DIR -prune -false -o -path $LVGL -prune -false -o  -path $IGNORE -prune -false -o -path $STEERING -prune -false -o -type f \
-  -name "*.h" -exec sh -c "$CLANG_FORMAT -i \$1" _ {} \;
+-name "*.h" -exec sh -c "$CLANG_FORMAT -i \$1" _ {} \;
+
+if [ -d ./steering/simulator ]
+then
+    echo "formatting steering simulator folder"
+    cd steering/simulator
+    sh fmt
+else
+    echo "no steering simulator directory found"
+fi

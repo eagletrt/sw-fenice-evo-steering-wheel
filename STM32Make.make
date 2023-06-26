@@ -52,6 +52,7 @@ Core/Src/lvgl_port/screen_driver.c \
 Core/Src/main.c \
 Core/Src/memdriver.c \
 Core/Src/octospi.c \
+Core/Src/ptt.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
@@ -259,6 +260,7 @@ steering/simulator/steering/steering.c \
 steering/simulator/steering/ui/tab_calibration.c \
 steering/simulator/steering/ui/tab_debug.c \
 steering/simulator/steering/ui/tab_manager.c \
+steering/simulator/steering/ui/tab_notification.c \
 steering/simulator/steering/ui/tab_racing.c \
 steering/simulator/steering/ui/tab_sensors.c \
 steering/simulator/steering/ui/tab_track_test.c \
