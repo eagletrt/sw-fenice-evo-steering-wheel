@@ -1,8 +1,6 @@
 # Steering Wheel - Firmware
 
-```
-work in progress
-```
+![Steering Wheel Render MockUp](./docs/SteeringWheel.png)
 
 Steering wheel firmware of the E-Agle TRT car <em>Fenice Evo</em>.
 
