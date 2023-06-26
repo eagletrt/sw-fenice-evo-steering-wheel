@@ -76,15 +76,16 @@ void buttons_pressed_actions(uint8_t button) {
   case 4:
     // BUTTON_4 ACTION
     print("button 4\n");
+    activate_ptt();
     break;
   case 5:
     // BUTTON_5 ACTION
     print("button 5\n");
+    deactivate_ptt();
     break;
   case 6:
     print("button 6 pressed\n");
-    activate_ptt();
-    // change_tab(false);
+    change_tab(false);
     break;
   case 7:
     print("button 7 pressed\n");

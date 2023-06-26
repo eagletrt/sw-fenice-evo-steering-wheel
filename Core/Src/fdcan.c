@@ -395,6 +395,12 @@ void handle_primary(can_message_t *msg) {
     print("Resetting for open blt\n");
     HAL_NVIC_SystemReset();
     break;
+  case PRIMARY_PTT_STATUS_FRAME_ID: {
+    primary_ptt_status_t data;
+    primary_ptt_status_unpack(&data, msg->data, msg->size);
+    handle_ptt_message(data.status);
+    break;
+  }
   }
 }
 
