@@ -2,11 +2,14 @@
 
 #define BUTTONS_N 8
 #define MANETTINI_N 3
+#define BUTTONS_LONG_PRESS_TIME 1500
 
 MCP23017_HandleTypeDef dev1;
 MCP23017_HandleTypeDef dev2;
 
 bool buttons[BUTTONS_N];
+uint32_t buttons_long_press_check[BUTTONS_N];
+bool buttons_long_press_activated[BUTTONS_N];
 uint8_t manettini[MANETTINI_N];
 uint8_t tson_button = 0;
 uint32_t manettini_last_change;
@@ -52,7 +55,7 @@ void print_buttons(void) {
   print("%s", buffer);
 }
 
-void buttons_actions(uint8_t button) {
+void buttons_pressed_actions(uint8_t button) {
   switch (button) {
   case 0:
     // BUTTON_0 ACTION
@@ -79,20 +82,83 @@ void buttons_actions(uint8_t button) {
     print("button 5\n");
     break;
   case 6:
-    change_tab(false);
+    print("button 6 pressed\n");
+    activate_ptt();
+    // change_tab(false);
     break;
   case 7:
+    print("button 7 pressed\n");
     change_tab(true);
+    break;
+  }
+}
+
+void buttons_released_actions(uint8_t button) {
+  switch (button) {
+  case 0:
+    print("button 0 released\n");
+    break;
+  case 1:
+    print("button 1 released\n");
+    break;
+  case 2:
+    print("button 2 released\n");
+    break;
+  case 3:
+    print("button 3 released\n");
+    break;
+  case 4:
+    print("button 4 released\n");
+    break;
+  case 5:
+    print("button 5 released\n");
+    break;
+  case 6:
+    print("button 6 released\n");
+    break;
+  case 7:
+    print("button 7 released\n");
+    break;
+  }
+}
+
+void buttons_long_pressed_actions(uint8_t button) {
+  switch (button) {
+  case 0:
+    print("button 0 long pressed\n");
+    break;
+  case 1:
+    print("button 1 long pressed\n");
+    break;
+  case 2:
+    print("button 2 long pressed\n");
+    break;
+  case 3:
+    print("button 3 long pressed\n");
+    break;
+  case 4:
+    print("button 4 long pressed\n");
+    break;
+  case 5:
+    print("button 5 long pressed\n");
+    break;
+  case 6:
+    print("button 6 long pressed\n");
+    break;
+  case 7:
+    print("button 7 long pressed\n");
     break;
   }
 }
 
 void manettino_right_actions(uint8_t val) {
   uint8_t possible_vals[] = MANETTINO_RIGHT_VALS;
-  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t)); ++ival) {
-    if (val == MANETTINO_DEBOUNCE_VALUE) continue;
+  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t));
+       ++ival) {
+    if (val == MANETTINO_DEBOUNCE_VALUE)
+      continue;
     if (val == possible_vals[ival]) {
-      print("manettino right step %u\n", (unsigned int) ival);
+      print("manettino right step %u\n", (unsigned int)ival);
       break;
     }
   }
@@ -100,10 +166,12 @@ void manettino_right_actions(uint8_t val) {
 
 void manettino_center_actions(uint8_t val) {
   uint8_t possible_vals[] = MANETTINO_CENTER_VALS;
-  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t)); ++ival) {
-    if (val == MANETTINO_DEBOUNCE_VALUE) continue;
+  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t));
+       ++ival) {
+    if (val == MANETTINO_DEBOUNCE_VALUE)
+      continue;
     if (val == possible_vals[ival]) {
-      print("manettino center step %u\n", (unsigned int) ival);
+      print("manettino center step %u\n", (unsigned int)ival);
       break;
     }
   }
@@ -111,9 +179,10 @@ void manettino_center_actions(uint8_t val) {
 
 void manettino_left_actions(uint8_t val) {
   uint8_t possible_vals[] = MANETTINO_LEFT_VALS;
-  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t)); ++ival) {
+  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t));
+       ++ival) {
     if (val == possible_vals[ival]) {
-      print("manettino left step %u\n", (unsigned int) ival);
+      print("manettino left step %u\n", (unsigned int)ival);
       break;
     }
   }
@@ -125,15 +194,27 @@ void from_gpio_to_buttons(uint8_t gpio) {
     uint8_t current_button_val = ((gpio >> mapping[i]) & 1);
     if (buttons[i] != current_button_val) {
       if (current_button_val == 0) {
-        buttons_actions(i);
+        // button pressed action
+        buttons_long_press_activated[i] = false;
+        buttons_long_press_check[i] = HAL_GetTick();
+        buttons_pressed_actions(i);
+      } else {
+        // button released action
+        buttons_released_actions(i);
       }
       buttons[i] = current_button_val;
+    }
+    if (!buttons[i] &&
+        HAL_GetTick() > buttons_long_press_check[i] + BUTTONS_LONG_PRESS_TIME &&
+        !buttons_long_press_activated[i]) {
+      // button long press action
+      buttons_long_pressed_actions(i);
+      buttons_long_press_activated[i] = true;
     }
   }
 }
 
 void send_tson(void) {
-  // TS ON
   can_message_t msg = {0};
   msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
@@ -155,9 +236,6 @@ void read_buttons(void) {
     print("Error\n");
   }
   from_gpio_to_buttons(button_input);
-  if (button_input != dev1.gpio[1]) {
-    print_buttons();
-  }
   dev1.gpio[1] = button_input;
 }
 
