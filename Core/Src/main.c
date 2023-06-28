@@ -62,6 +62,7 @@ static enum framebuffer active = FRAMEBUFFER1;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
+void steering_task(uint32_t current_time);
 void lv_example_grid_4(void);
 void LTDC_switch_framebuffer(void);
 uint32_t *LTDC_get_backbuffer_address(void);
@@ -164,6 +165,18 @@ int main(void) {
 
   HAL_TIM_Base_Start_IT(&htim7);
 
+  lv_timer_t* read_inputs_task = lv_timer_create(read_inputs, 100, NULL);
+  lv_timer_set_repeat_count(read_inputs_task, -1);
+  lv_timer_reset(read_inputs_task);
+
+  lv_timer_t* steer_status_task = lv_timer_create(send_steer_status, PRIMARY_INTERVAL_STEER_STATUS, NULL);
+  lv_timer_set_repeat_count(steer_status_task, -1);
+  lv_timer_reset(steer_status_task);
+
+  lv_timer_t* steer_version_task = lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEER_STATUS, NULL);
+  lv_timer_set_repeat_count(steer_version_task, -1);
+  lv_timer_reset(steer_version_task);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -182,10 +195,6 @@ int main(void) {
 #if SCREEN_ENABLED == 1
     lv_tasks();
 #endif
-
-    read_inputs();
-
-    // HAL_Delay(500);
 
 #if 0
     can_message_t msg;

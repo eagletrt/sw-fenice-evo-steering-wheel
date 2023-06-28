@@ -34,7 +34,8 @@
         "ranges": "c",
         "utility": "c",
         "fdcan.h": "c",
-        "ptt.h": "c"
+        "ptt.h": "c",
+        "primary_watchdog.h": "c"
     },
     "cmake.configureOnOpen": false
 }

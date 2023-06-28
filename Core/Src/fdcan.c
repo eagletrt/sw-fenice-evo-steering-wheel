@@ -326,6 +326,31 @@ void _can_wait(FDCAN_HandleTypeDef *nwk) {
       return;
 }
 
+void send_steer_version(lv_timer_t* main_timer) {
+  can_message_t msg = {0};
+  msg.id = PRIMARY_STEER_VERSION_FRAME_ID;
+  msg.size = PRIMARY_STEER_VERSION_BYTE_SIZE;
+  primary_steer_version_t version = {
+    .canlib_build_time = CANLIB_BUILD_TIME,
+    .component_version = 1
+  };
+  primary_steer_version_pack(msg.data, &version, PRIMARY_STEER_VERSION_BYTE_SIZE);
+  can_send(&msg, &hfdcan1);
+}
+
+void send_steer_status(lv_timer_t* main_timer) {
+  can_message_t msg = {0};
+  msg.id = PRIMARY_STEER_STATUS_FRAME_ID;
+  msg.size = PRIMARY_STEER_STATUS_BYTE_SIZE;
+  primary_steer_status_t status = {
+    .map_pw = steering.control.power,
+    .map_sc = steering.control.slip,
+    .map_tv = steering.control.torque
+  };
+  primary_steer_status_pack(msg.data, &status, PRIMARY_STEER_STATUS_BYTE_SIZE);
+  can_send(&msg, &hfdcan1);
+}
+
 HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
 
   uint32_t dlc_len = 0;
@@ -385,7 +410,7 @@ void handle_primary(can_message_t *msg) {
   can_id_t id = msg->id;
   switch (id) {
   case PRIMARY_CAR_STATUS_FRAME_ID:
-    print("Received car status\n");
+    // print("Received car status\n");
     break;
     // CHECK_SIZE(CAR_STATUS);
     // PRIMARY_UNPACK(car_status);
@@ -397,14 +422,14 @@ void handle_primary(can_message_t *msg) {
     HAL_NVIC_SystemReset();
     break;
   case PRIMARY_PTT_STATUS_FRAME_ID: {
-    print("Received ptt status\n");
+    // print("Received ptt status\n");
     primary_ptt_status_t data;
     primary_ptt_status_unpack(&data, msg->data, msg->size);
     handle_ptt_message(data.status);
     break;
   }
   case PRIMARY_TLM_STATUS_FRAME_ID: {
-    print("Received tlm status\n");
+    // print("Received tlm status\n");
     break;
   }
   }

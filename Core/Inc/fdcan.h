@@ -27,6 +27,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "lvgl.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -66,6 +67,8 @@ typedef struct {
 } can_message_t;
 
 HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk);
+void send_steer_version(lv_timer_t* main_timer);
+void send_steer_status(lv_timer_t* main_timer);
 
 /* USER CODE END Prototypes */
 

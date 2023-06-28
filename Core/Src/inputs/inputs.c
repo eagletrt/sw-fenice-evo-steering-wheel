@@ -57,102 +57,70 @@ void print_buttons(void) {
 
 void buttons_pressed_actions(uint8_t button) {
   switch (button) {
-  case 0:
-    // BUTTON_0 ACTION
-    print("button 0\n");
+  case PADDLE_TOP_RIGHT:
+    change_tab(true);
     break;
-  case 1:
-    // BUTTON_1 ACTION
-    print("button 1\n");
+  case PADDLE_TOP_LEFT:
+    change_tab(false);
     break;
-  case 2:
-    // BUTTON_2 ACTION
-    print("button 2\n");
+  case PADDLE_BOTTOM_RIGHT:
     break;
-  case 3:
-    // BUTTON_3 ACTION
-    print("button 3\n");
+  case PADDLE_BOTTOM_LEFT:
     break;
-  case 4:
-    // BUTTON_4 ACTION
-    print("button 4\n");
-    
-    break;
-  case 5:
-    // BUTTON_5 ACTION
-    print("button 5\n");
-    break;
-  case 6:
-    // BUTTON BOTTOM LEFT
-    // print("button 6 pressed\n");
-    print("TURN ON TELEMETRY\n");
+  case BUTTON_TOP_RIGHT:
     turnon_telemetry();
     break;
-  case 7:
-    // BUTTON BOTTOM RIGHT
-    // print("button 7 pressed\n");
-    print("ACTIVATE PTT\n");
+  case BUTTON_TOP_LEFT:
+    print("ACTIVATE ptt\n");
     activate_ptt();
+    break;
+  case BUTTON_BOTTOM_RIGHT:
+    break;
+  case BUTTON_BOTTOM_LEFT:
     break;
   }
 }
 
 void buttons_released_actions(uint8_t button) {
   switch (button) {
-  case 0:
-    print("button 0 released\n");
+  case PADDLE_TOP_RIGHT:
     break;
-  case 1:
-    print("button 1 released\n");
+  case PADDLE_TOP_LEFT:
     break;
-  case 2:
-    print("button 2 released\n");
+  case PADDLE_BOTTOM_RIGHT:
     break;
-  case 3:
-    print("button 3 released\n");
+  case PADDLE_BOTTOM_LEFT:
     break;
-  case 4:
-    print("button 4 released\n");
+  case BUTTON_TOP_RIGHT:
     break;
-  case 5:
-    print("button 5 released\n");
-    break;
-  case 6:
-    // print("button 6 released\n");
-    break;
-  case 7:
-    // print("button 7 released\n");
-    print("DEACTIVATE PTT\n");
+  case BUTTON_TOP_LEFT:
+    print("DEACTIVATE ptt\n");
     deactivate_ptt();
+    break;
+  case BUTTON_BOTTOM_RIGHT:
+    break;
+  case BUTTON_BOTTOM_LEFT:
     break;
   }
 }
 
 void buttons_long_pressed_actions(uint8_t button) {
   switch (button) {
-  case 0:
-    print("button 0 long pressed\n");
+  case PADDLE_TOP_RIGHT:
     break;
-  case 1:
-    print("button 1 long pressed\n");
+  case PADDLE_TOP_LEFT:
     break;
-  case 2:
-    print("button 2 long pressed\n");
+  case PADDLE_BOTTOM_RIGHT:
     break;
-  case 3:
-    print("button 3 long pressed\n");
+  case PADDLE_BOTTOM_LEFT:
     break;
-  case 4:
-    print("button 4 long pressed\n");
+  case BUTTON_TOP_RIGHT:
     break;
-  case 5:
-    print("button 5 long pressed\n");
+  case BUTTON_TOP_LEFT:
     break;
-  case 6:
-    print("button 6 long pressed\n");
+  case BUTTON_BOTTOM_RIGHT:
     break;
-  case 7:
-    print("button 7 long pressed\n");
+  case BUTTON_BOTTOM_LEFT:
     break;
   }
 }
@@ -213,7 +181,6 @@ void from_gpio_to_buttons(uint8_t gpio) {
     if (!buttons[i] &&
         HAL_GetTick() > buttons_long_press_check[i] + BUTTONS_LONG_PRESS_TIME &&
         !buttons_long_press_activated[i]) {
-      // button long press action
       buttons_long_pressed_actions(i);
       buttons_long_press_activated[i] = true;
     }
@@ -221,6 +188,7 @@ void from_gpio_to_buttons(uint8_t gpio) {
 }
 
 void turnon_telemetry(void) {
+  print("Sending Telemetry ON\n");
   can_message_t msg = {0};
   msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
@@ -229,6 +197,7 @@ void turnon_telemetry(void) {
 }
 
 void send_tson(void) {
+  print("Sending TSON\n");
   can_message_t msg = {0};
   msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
@@ -239,6 +208,7 @@ void send_tson(void) {
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
     print("Send tson\n");
+    // TODO implement long press for tson
     send_tson();
   }
 }
@@ -292,7 +262,8 @@ void read_manettino_3(void) {
   dev2.gpio[0] = manettino_input;
 }
 
-void read_inputs(void) {
+void read_inputs(lv_timer_t* main_timer) {
+  UNUSED(main_timer);
   read_buttons();
   if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
     manettini_last_change = HAL_GetTick();

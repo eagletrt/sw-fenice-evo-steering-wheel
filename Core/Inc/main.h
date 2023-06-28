@@ -37,6 +37,7 @@ extern "C" {
 #include "lvgl_port/lvgl_port.h"
 #include "lvgl_port/screen_driver.h"
 #include "primary/primary_network.h"
+#include "primary/primary_watchdog.h"
 #include "steering.h"
 #include "tab_manager.h"
 #include "test/sdram_test.h"

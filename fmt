@@ -15,14 +15,15 @@ BUILD_DIR=./build
 IGNORE=./Drivers
 LVGL=./lvgl
 STEERING=./steering
+OPEN_BLT=./open-blt-fenice-steering-wheel
 
 CLANG_FORMAT=clang-format
 
 echo "[*] Formatting c files"
-find . -path $BUILD_DIR -prune -false -o -path $LVGL -prune -false -o -path $IGNORE -prune -false -o -path $STEERING -prune -false -o -type f \
+find . -path $OPEN_BLT -prune -false -o -path $BUILD_DIR -prune -false -o -path $LVGL -prune -false -o -path $IGNORE -prune -false -o -path $STEERING -prune -false -o -type f \
 -name "*.c" -exec sh -c "$CLANG_FORMAT -i \$1" _ {} \;
 echo "[*] Formatting h   files"
-find . -path $BUILD_DIR -prune -false -o -path $LVGL -prune -false -o  -path $IGNORE -prune -false -o -path $STEERING -prune -false -o -type f \
+find . -path $OPEN_BLT -prune -false -o -path $BUILD_DIR -prune -false -o -path $LVGL -prune -false -o  -path $IGNORE -prune -false -o -path $STEERING -prune -false -o -type f \
 -name "*.h" -exec sh -c "$CLANG_FORMAT -i \$1" _ {} \;
 
 if [ -d ./steering/simulator ]
