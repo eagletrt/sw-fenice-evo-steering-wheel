@@ -87,9 +87,9 @@ void MX_TIM7_Init(void) {
 
   /* USER CODE END TIM7_Init 1 */
   htim7.Instance = TIM7;
-  htim7.Init.Prescaler = 8000;
+  htim7.Init.Prescaler = 5000 - 1;
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim7.Init.Period = 10000;
+  htim7.Init.Period = 2500 - 1;
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK) {
     Error_Handler();
@@ -183,8 +183,21 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 
 /* USER CODE BEGIN 1 */
 
+uint8_t timer_counter = 0;
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM7) {
+    read_inputs();
+    if (PRIMARY_INTERVAL_STEER_STATUS == 100 &&
+        PRIMARY_INTERVAL_STEER_VERSION == 1000) {
+      timer_counter++;
+      if (timer_counter % 2 == 0) {
+        send_steer_status(NULL);
+      } else if (timer_counter == 10) {
+        timer_counter = 0;
+        send_steer_version(NULL);
+      }
+    }
   }
 }
 

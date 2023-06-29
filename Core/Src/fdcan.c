@@ -326,27 +326,24 @@ void _can_wait(FDCAN_HandleTypeDef *nwk) {
       return;
 }
 
-void send_steer_version(lv_timer_t* main_timer) {
+void send_steer_version(lv_timer_t *main_timer) {
   can_message_t msg = {0};
   msg.id = PRIMARY_STEER_VERSION_FRAME_ID;
   msg.size = PRIMARY_STEER_VERSION_BYTE_SIZE;
-  primary_steer_version_t version = {
-    .canlib_build_time = CANLIB_BUILD_TIME,
-    .component_version = 1
-  };
-  primary_steer_version_pack(msg.data, &version, PRIMARY_STEER_VERSION_BYTE_SIZE);
+  primary_steer_version_t version = {.canlib_build_time = CANLIB_BUILD_TIME,
+                                     .component_version = 1};
+  primary_steer_version_pack(msg.data, &version,
+                             PRIMARY_STEER_VERSION_BYTE_SIZE);
   can_send(&msg, &hfdcan1);
 }
 
-void send_steer_status(lv_timer_t* main_timer) {
+void send_steer_status(lv_timer_t *main_timer) {
   can_message_t msg = {0};
   msg.id = PRIMARY_STEER_STATUS_FRAME_ID;
   msg.size = PRIMARY_STEER_STATUS_BYTE_SIZE;
-  primary_steer_status_t status = {
-    .map_pw = steering.control.power,
-    .map_sc = steering.control.slip,
-    .map_tv = steering.control.torque
-  };
+  primary_steer_status_t status = {.map_pw = steering.control.power,
+                                   .map_sc = steering.control.slip,
+                                   .map_tv = steering.control.torque};
   primary_steer_status_pack(msg.data, &status, PRIMARY_STEER_STATUS_BYTE_SIZE);
   can_send(&msg, &hfdcan1);
 }

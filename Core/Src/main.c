@@ -165,17 +165,23 @@ int main(void) {
 
   HAL_TIM_Base_Start_IT(&htim7);
 
-  lv_timer_t* read_inputs_task = lv_timer_create(read_inputs, 100, NULL);
+  if (PRIMARY_INTERVAL_STEER_STATUS != 100) {
+    lv_timer_t *steer_status_task =
+        lv_timer_create(send_steer_status, PRIMARY_INTERVAL_STEER_STATUS, NULL);
+    lv_timer_set_repeat_count(steer_status_task, -1);
+    lv_timer_reset(steer_status_task);
+  }
+
+  if (PRIMARY_INTERVAL_STEER_VERSION != 1000) {
+    lv_timer_t *steer_version_task = lv_timer_create(
+        send_steer_version, PRIMARY_INTERVAL_STEER_VERSION, NULL);
+    lv_timer_set_repeat_count(steer_version_task, -1);
+    lv_timer_reset(steer_version_task);
+  }
+
+  lv_timer_t *read_inputs_task = lv_timer_create(read_inputs, 100, NULL);
   lv_timer_set_repeat_count(read_inputs_task, -1);
   lv_timer_reset(read_inputs_task);
-
-  lv_timer_t* steer_status_task = lv_timer_create(send_steer_status, PRIMARY_INTERVAL_STEER_STATUS, NULL);
-  lv_timer_set_repeat_count(steer_status_task, -1);
-  lv_timer_reset(steer_status_task);
-
-  lv_timer_t* steer_version_task = lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEER_STATUS, NULL);
-  lv_timer_set_repeat_count(steer_version_task, -1);
-  lv_timer_reset(steer_version_task);
 
   /* USER CODE END 2 */
 
