@@ -112,11 +112,12 @@ int main(void)
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
   HAL_Delay(100);
 
+  #define ABOBA_PADDING 50
+  #define HEIGHT 480
   uint32_t* pixels = (uint32_t*) 0xC0000000;
   Olivec_Canvas oc = olivec_canvas(pixels, 800, 480, 800);
   olivec_fill(oc, 0xFF000000);
-  #define ABOBA_PADDING 50
-  #define HEIGHT 480
+  
   uint32_t size = 8;
   olivec_text(oc, "wait for boot...", ABOBA_PADDING, HEIGHT - ABOBA_PADDING - olivec_default_font.height*size, olivec_default_font, size, 0xFFFFFFFF);
   char buffer[] = "STEERING WHEEL OPENBLT waiting for flashing...\n";

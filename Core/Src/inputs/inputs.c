@@ -191,12 +191,21 @@ void from_gpio_to_buttons(uint8_t gpio) {
 }
 
 void turnon_telemetry(void) {
-  print("Sending Telemetry ON\n");
-  can_message_t msg = {0};
-  msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
-  msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
-  msg.data[0] = primary_set_tlm_status_tlm_status_ON;
-  can_send(&msg, &hfdcan1);
+  if (steering.telemetry.status == primary_set_tlm_status_tlm_status_ON) {
+    print("Sending Telemetry OFF\n");
+    can_message_t msg = {0};
+    msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
+    msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
+    msg.data[0] = primary_set_tlm_status_tlm_status_OFF;
+    can_send(&msg, &hfdcan1);
+  } else {
+    print("Sending Telemetry ON\n");
+    can_message_t msg = {0};
+    msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
+    msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
+    msg.data[0] = primary_set_tlm_status_tlm_status_ON;
+    can_send(&msg, &hfdcan1);
+  }
 }
 
 void send_tson(void) {

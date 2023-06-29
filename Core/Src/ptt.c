@@ -21,12 +21,12 @@ void deactivate_ptt(void) {
 void handle_ptt_message(primary_ptt_status_status val) {
   if (val == primary_ptt_status_status_OFF) {
     if (status)
-      display_notification("Push-To-Talk OFF");
+      display_notification("Push-To-Talk OFF", 500);
     status = 0;
     print("Received status OFF");
   } else if (val == primary_ptt_status_status_ON) {
     if (!status)
-      display_notification("Push-To-Talk ON");
+      display_notification("Push-To-Talk ON", 500);
     status = 1;
     print("Received status ON");
   }
