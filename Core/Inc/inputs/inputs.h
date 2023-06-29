@@ -2,9 +2,9 @@
 #define INPUTS_H
 
 #include "fdcan.h"
+#include "lvgl.h"
 #include "mcp23017.h"
 #include "ptt.h"
-#include "lvgl.h"
 
 #define BUTTON_MAPPING                                                         \
   { 7, 5, 3, 1, 0, 6, 4, 2 }
@@ -29,7 +29,7 @@
   { 223, 239, 254, 253, 251, 247, 191, 127 }
 
 void inputs_init(void);
-void read_inputs(lv_timer_t* main_timer);
+void read_inputs();
 void send_tson(void);
 void turnon_telemetry(void);
 

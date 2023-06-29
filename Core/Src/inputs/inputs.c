@@ -7,12 +7,13 @@
 MCP23017_HandleTypeDef dev1;
 MCP23017_HandleTypeDef dev2;
 
-bool buttons[BUTTONS_N];
-uint32_t buttons_long_press_check[BUTTONS_N];
-bool buttons_long_press_activated[BUTTONS_N];
-uint8_t manettini[MANETTINI_N];
-uint8_t tson_button = 0;
+bool buttons[BUTTONS_N] = {true};
+uint32_t buttons_long_press_check[BUTTONS_N] = {0};
+bool buttons_long_press_activated[BUTTONS_N] = {false};
+uint8_t manettini[MANETTINI_N] = {0};
 uint32_t manettini_last_change;
+bool tson_button_pressed = false;
+lv_timer_t *send_tson_long_press_delay = NULL;
 
 void configure_internal_pull_up_resistors() {
   uint8_t cdata = 0xFF;
@@ -75,6 +76,8 @@ void buttons_pressed_actions(uint8_t button) {
     activate_ptt();
     break;
   case BUTTON_BOTTOM_RIGHT:
+    print("Display notification\n");
+    display_notification("test notification popup", 500);
     break;
   case BUTTON_BOTTOM_LEFT:
     break;
@@ -198,18 +201,39 @@ void turnon_telemetry(void) {
 
 void send_tson(void) {
   print("Sending TSON\n");
+#if 0
   can_message_t msg = {0};
   msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
   msg.data[0] = primary_set_car_status_car_status_set_READY;
   can_send(&msg, &hfdcan1);
+#endif
+}
+
+void send_tson_check(lv_timer_t *tim) {
+  if (tson_button_pressed) {
+    print("TSON TIMER: sending TSON\n");
+    display_notification("Sent TSON", 1500);
+  } else {
+    print("TSON TIMER: not sending tson\n");
+  }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
-    print("Send tson\n");
-    // TODO implement long press for tson
-    send_tson();
+    GPIO_PinState tson_pin_state =
+        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
+    if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
+      print("Setting timer to check button state in 2 seconds\n");
+      tson_button_pressed = true;
+      send_tson_long_press_delay = lv_timer_create(send_tson_check, 1000, NULL);
+      lv_timer_set_repeat_count(send_tson_long_press_delay, 1);
+      lv_timer_reset(send_tson_long_press_delay);
+    } else {
+      print("tson button released and possible timer deleted\n");
+      tson_button_pressed = false;
+      lv_timer_set_repeat_count(send_tson_long_press_delay, 0);
+    }
   }
 }
 
@@ -262,8 +286,7 @@ void read_manettino_3(void) {
   dev2.gpio[0] = manettino_input;
 }
 
-void read_inputs(lv_timer_t* main_timer) {
-  UNUSED(main_timer);
+void read_inputs() {
   read_buttons();
   if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
     manettini_last_change = HAL_GetTick();
