@@ -23,6 +23,10 @@
 /* USER CODE BEGIN 0 */
 
 extern steering_t steering;
+device_t can_device;
+uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
+uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
+uint8_t payload[8];
 
 void _CAN_error_handler(char *msg);
 void _CAN_Init_primary();
@@ -37,6 +41,8 @@ FDCAN_HandleTypeDef hfdcan2;
 void MX_FDCAN1_Init(void) {
 
   /* USER CODE BEGIN FDCAN1_Init 0 */
+
+  init_can_device();
 
   /* USER CODE END FDCAN1_Init 0 */
 
@@ -266,6 +272,12 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
 void _CAN_error_handler(char *msg) { printf("%s\n", msg); }
 
+void init_can_device(void) {
+  device_init(&can_device);
+  device_set_address(&can_device, &_raw, primary_MAX_STRUCT_SIZE_RAW,
+                     &_converted, primary_MAX_STRUCT_SIZE_CONVERSION);
+}
+
 /**
  * @brief Create the CAN filter for the primary CAN network
  * @param f A CAN_FilterTypeDef in which to store the filter data
@@ -393,10 +405,15 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
       .MessageMarker = 0,
   };
 
+  // TODO CHECK if wait is necessary
   // _can_wait(nwk);
 
   return HAL_FDCAN_AddMessageToTxFifoQ(nwk, &header, msg->data);
 }
+
+#define CAST_FROM_DEVICE(message_name)                                         \
+  primary_##message_name##_t *data =                                           \
+      (primary_##message_name##_converted_t *)can_device.message
 
 void handle_primary(can_message_t *msg) {
 #if CAL_LOG_ENABLED
@@ -405,15 +422,28 @@ void handle_primary(can_message_t *msg) {
   print("Primary network - message id %s\n", name_buffer);
 #endif
   can_id_t id = msg->id;
+  primary_devices_deserialize_from_id(&can_device, id, payload);
   switch (id) {
-  case PRIMARY_CAR_STATUS_FRAME_ID:
-    // print("Received car status\n");
+  case PRIMARY_CAR_STATUS_FRAME_ID: {
+    CAST_FROM_DEVICE(car_status);
+    car_status_update(data);
     break;
-    // CHECK_SIZE(CAR_STATUS);
-    // PRIMARY_UNPACK(car_status);
-    // steering.low_voltage.car_status = data.car_status;
-    // lv_label_set_text_fmt(steering.low_voltage.lb_car_status, "%d",
-    // data.car_status);
+  }
+  case PRIMARY_HV_ERRORS_FRAME_ID: {
+    CAST_FROM_DEVICE(hv_errors);
+    hv_errors_update(data);
+    break;
+  }
+  case PRIMARY_LV_ERRORS_FRAME_ID: {
+    CAST_FROM_DEVICE(lv_errors);
+    lv_errors_update(data);
+    break;
+  }
+  case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
+    CAST_FROM_DEVICE(hv_feedbacks_status);
+    hv_feedback_update(data);
+    break;
+  }
   case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
     print("Resetting for open blt\n");
     HAL_NVIC_SystemReset();

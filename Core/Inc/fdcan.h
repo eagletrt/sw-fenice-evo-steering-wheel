@@ -68,6 +68,7 @@ typedef struct {
 HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk);
 void send_steer_version(lv_timer_t *main_timer);
 void send_steer_status(lv_timer_t *main_timer);
+void init_can_device(void);
 
 /* USER CODE END Prototypes */
 
