@@ -24,7 +24,6 @@
       "includePath": [
         "Core/Inc",
         "Core/Inc/inputs",
-        "Core/Inc/lvgl_port",
         "Core/Inc/test",
         "Drivers/CMSIS/Device/ST/STM32H7xx/Include",
         "Drivers/CMSIS/Include",

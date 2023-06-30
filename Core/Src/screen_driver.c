@@ -1,52 +1,28 @@
-/*
- * screen.c
- *
- *  Created on: Feb 16, 2023
- *      Author: morgan
- */
-
-#include "main.h"
-#include <lvgl.h>
 #include <screen_driver.h>
-#include <stdio.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #define LCD_SCREEN_WIDTH SCREEN_WIDTH
 #define LCD_SCREEN_HEIGHT SCREEN_HEIGHT
 #define FRAMEBUFFER_SIZE (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH * 4)
-#define DMA_XFERS_NEEDED                                                       \
-  FRAMEBUFFER_SIZE // We need half as many transfers because the buffer is
-                   // an array of 16 bits but the transfers are 32 bits.
 
-/*
- * Handles to peripherals
- */
+/* We need half as many transfers because the buffer is
+an array of 16 bits but the transfers are 32 bits. */
+#define DMA_XFERS_NEEDED FRAMEBUFFER_SIZE
+
 extern LTDC_HandleTypeDef hltdc;
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 extern DMA2D_HandleTypeDef hdma2d;
 extern lv_color_t *framebuffer_1;
 extern lv_color_t *framebuffer_2;
 
-/*
- * Global variables
- */
 lv_disp_drv_t lv_display_driver;
 
-/*
- * Private functions prototypes
- */
 void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                     lv_color_t *color_p);
 void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer);
-void steering_wait(lv_disp_drv_t *disp_drv);
-
-/*
- * Public functions definitions
- */
 
 void screen_driver_init() {
-
   static lv_disp_draw_buf_t draw_buf;
   lv_disp_draw_buf_init(&draw_buf, framebuffer_1, framebuffer_2,
                         FRAMEBUFFER_SIZE);
@@ -57,14 +33,10 @@ void screen_driver_init() {
   lv_display_driver.flush_cb = stm32_flush_cb;
   lv_display_driver.draw_buf = &draw_buf;
   lv_display_driver.dpi = 1;
-  // lv_display_driver.wait_cb = steering_wait;
 
   lv_disp_drv_register(&lv_display_driver);
 }
 
-/*
- * Private functions definitions
- */
 void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                     lv_color_t *color_p) {
   lv_disp_t *disp = _lv_refr_get_disp_refreshing();
@@ -97,8 +69,6 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
   }
 #endif
 
-  // steering_wait(disp_drv);
-
   lv_disp_flush_ready(disp_drv);
 }
 
@@ -128,8 +98,14 @@ void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
   HAL_DMA2D_PollForTransfer(&hdma2d, 10);   // Wait for transfer to be over
 }
 
-void steering_wait(lv_disp_drv_t *disp_drv) {
-  LTDC->SRCR = LTDC_SRCR_VBR; // reload shadow registers on vertical blank
-  while ((LTDC->CDSR & LTDC_CDSR_VSYNCS) == 0) // wait for reload
-    ;
+void steering_log(const char *buf) { print(buf); }
+
+void lv_tasks() {
+#if LV_TICK_CUSTOM == 1
+  lv_timer_handler();
+#else
+  uint32_t ctick = HAL_GetTick();
+  lv_tick_inc(ctick - *ptick);
+  *ptick = ctick;
+#endif
 }

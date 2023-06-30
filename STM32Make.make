@@ -37,7 +37,6 @@ BUILD_DIR = build
 # C sources
 C_SOURCES =  \
 Core/Src/dac.c \
-Core/Src/display_buf.c \
 Core/Src/dma2d.c \
 Core/Src/fdcan.c \
 Core/Src/fmc.c \
@@ -47,12 +46,11 @@ Core/Src/inputs/inputs.c \
 Core/Src/inputs/mcp23017.c \
 Core/Src/led_control.c \
 Core/Src/ltdc.c \
-Core/Src/lvgl_port/lvgl_port.c \
-Core/Src/lvgl_port/screen_driver.c \
 Core/Src/main.c \
 Core/Src/memdriver.c \
 Core/Src/octospi.c \
 Core/Src/ptt.c \
+Core/Src/screen_driver.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
@@ -339,7 +337,6 @@ AS_INCLUDES = \
 C_INCLUDES =  \
 -ICore/Inc \
 -ICore/Inc/inputs \
--ICore/Inc/lvgl_port \
 -ICore/Inc/test \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \

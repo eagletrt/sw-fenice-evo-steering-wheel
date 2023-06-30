@@ -36,7 +36,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-enum framebuffer { FRAMEBUFFER1, FRAMEBUFFER2 };
 
 /* USER CODE END PTD */
 
@@ -54,15 +53,12 @@ enum framebuffer { FRAMEBUFFER1, FRAMEBUFFER2 };
 
 /* USER CODE BEGIN PV */
 
-static enum framebuffer active = FRAMEBUFFER1;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
-void steering_task(uint32_t current_time);
 void lv_example_grid_4(void);
 void LTDC_switch_framebuffer(void);
 uint32_t *LTDC_get_backbuffer_address(void);
@@ -150,27 +146,12 @@ int main(void) {
   }
 #endif
 
-  /*
-  For some reasons goes HardFault...
-  uint8_t *** display_buffer = (uint8_t ***) SDRAM_BASE_ADDRESS;
-  for (uint32_t icol = 0; icol < SCREEN_HEIGHT; icol++) {
-    for (uint32_t irow = 0; irow < SCREEN_WIDTH; irow++) {
-      display_buffer[icol][irow][0] = 0x30;
-      display_buffer[icol][irow][1] = 0xFF;
-      display_buffer[icol][irow][2] = 0x1C;
-    }
-  }
-  */
-
-#define SCREEN_ENABLED 0
+#define SCREEN_ENABLED 1
 #if SCREEN_ENABLED == 1
   lv_init();
   screen_driver_init();
   tab_manager();
 #endif
-
-#define EXTERNAL_FLASH_ADDRESS 0x90000000
-#define TSIZE 20
 
 #if 0
 
@@ -180,22 +161,17 @@ int main(void) {
   print("roba: %s\n", (char *)data);
 #endif
 
-  // HAL_TIM_Base_Start_IT(&htim7);
-  uint8_t data[100] = {};
-  uint32_t val = HAL_OSPI_GetState(&hospi1);
-  print("HAL_OSPI_GetState = %u\n", (unsigned int)val);
-  HAL_StatusTypeDef status = HAL_OSPI_Receive(&hospi1, data, 500);
-  if (status == HAL_OK) {
-    print("HAL OK\n");
-  } else {
-    print("HAL NOT OK\n");
-  }
+  HAL_TIM_Base_Start_IT(&htim7);
 
+#define EXTERNAL_FLASH_ENABLED 0
+#if EXTERNAL_FLASH_ENABLED == 1
+
+#define EXTERNAL_FLASH_ADDRESS 0x90000000
+#define TSIZE 20
   uint32_t command = 0;
   uint32_t address = 0;
 
-
-  OSPI_RegularCmdTypeDef command = {
+  OSPI_RegularCmdTypeDef ospi_command = {
       .OperationType = HAL_OSPI_OPTYPE_READ_CFG,
       .FlashId = HAL_OSPI_FLASH_ID_1,
       .Instruction = command,
@@ -203,7 +179,7 @@ int main(void) {
       .InstructionSize = HAL_OSPI_INSTRUCTION_8_BITS,
       .InstructionDtrMode = HAL_OSPI_INSTRUCTION_DTR_DISABLE,
       .Address = address,
-      .AddressMode= HAL_OSPI_ADDRESS_1_LINE,
+      .AddressMode = HAL_OSPI_ADDRESS_1_LINE,
       .AddressSize = HAL_OSPI_ADDRESS_8_BITS,
       .AddressDtrMode = HAL_OSPI_ADDRESS_DTR_DISABLE,
       .AlternateBytes = 0,
@@ -216,12 +192,22 @@ int main(void) {
       .DummyCycles = 0,
       .DQSMode = HAL_OSPI_DQS_DISABLE,
       .SIOOMode = HAL_OSPI_SIOO_INST_EVERY_CMD,
-
   };
-  HAL_OSPI_Command(&hospi1);
+  HAL_OSPI_Command(&hospi1, &ospi_command, 1000);
+// HAL_OSPI_Command(&hospi1);
+#endif
 
-
-
+#if 0
+  int8_t data[100] = {};
+  uint32_t val = HAL_OSPI_GetState(&hospi1);
+  print("HAL_OSPI_GetState = %u\n", (unsigned int)val);
+  HAL_StatusTypeDef status = HAL_OSPI_Receive(&hospi1, data, 500);
+  if (status == HAL_OK) {
+    print("HAL OK\n");
+  } else {
+    print("HAL NOT OK\n");
+  }
+#endif
 
   if (PRIMARY_INTERVAL_STEER_STATUS != 100) {
     lv_timer_t *steer_status_task =
@@ -318,7 +304,7 @@ void SystemClock_Config(void) {
   RCC_OscInitStruct.PLL.PLLM = 3;
   RCC_OscInitStruct.PLL.PLLN = 62;
   RCC_OscInitStruct.PLL.PLLP = 1;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLQ = 5;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
@@ -346,26 +332,6 @@ void SystemClock_Config(void) {
 }
 
 /* USER CODE BEGIN 4 */
-
-void LTDC_switch_framebuffer(void) {
-  if (active == FRAMEBUFFER1) {
-    LTDC_Layer1->CFBAR = FRAMEBUFFER2_ADDR;
-    active = FRAMEBUFFER2;
-  } else {
-    LTDC_Layer1->CFBAR = FRAMEBUFFER1_ADDR;
-    active = FRAMEBUFFER1;
-  }
-  LTDC->SRCR = LTDC_SRCR_VBR; // reload shadow registers on vertical blank
-  while ((LTDC->CDSR & LTDC_CDSR_VSYNCS) == 0) // wait for reload
-    ;
-}
-
-uint32_t *LTDC_get_backbuffer_address(void) {
-  if (active == FRAMEBUFFER1)
-    return (uint32_t *)FRAMEBUFFER2_ADDR;
-  else
-    return (uint32_t *)FRAMEBUFFER1_ADDR;
-}
 
 /* USER CODE END 4 */
 

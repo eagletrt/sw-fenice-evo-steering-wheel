@@ -36,7 +36,8 @@
         "fdcan.h": "c",
         "ptt.h": "c",
         "primary_watchdog.h": "c",
-        "tab_notification.h": "c"
+        "tab_notification.h": "c",
+        "usart.h": "c"
     },
     "cmake.configureOnOpen": false
 }
