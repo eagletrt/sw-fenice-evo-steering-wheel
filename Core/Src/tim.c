@@ -188,6 +188,7 @@ uint8_t timer_counter = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM7) {
     read_inputs();
+    calibration_request_timeout_check(HAL_GetTick());
     if (PRIMARY_INTERVAL_STEER_STATUS == 100 &&
         PRIMARY_INTERVAL_STEER_VERSION == 1000) {
       timer_counter++;

@@ -429,6 +429,26 @@ void handle_primary(can_message_t *msg) {
     car_status_update(data);
     break;
   }
+  case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
+    CAST_FROM_DEVICE(pedal_calibration_ack);
+    pedal_calibration_ack(data);
+    break;
+  }
+  case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
+    print("Resetting for open blt\n");
+    HAL_NVIC_SystemReset();
+    break;
+  case PRIMARY_PTT_STATUS_FRAME_ID: {
+    primary_ptt_status_t data;
+    primary_ptt_status_unpack(&data, msg->data, msg->size);
+    handle_ptt_message(data.status);
+    break;
+  }
+  case PRIMARY_TLM_STATUS_FRAME_ID: {
+    CAST_FROM_DEVICE(tlm_status);
+    tlm_status_update(data);
+    break;
+  }
   case PRIMARY_HV_ERRORS_FRAME_ID: {
     CAST_FROM_DEVICE(hv_errors);
     hv_errors_update(data);
@@ -444,19 +464,29 @@ void handle_primary(can_message_t *msg) {
     hv_feedback_update(data);
     break;
   }
-  case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
-    print("Resetting for open blt\n");
-    HAL_NVIC_SystemReset();
-    break;
-  case PRIMARY_PTT_STATUS_FRAME_ID: {
-    // print("Received ptt status\n");
-    primary_ptt_status_t data;
-    primary_ptt_status_unpack(&data, msg->data, msg->size);
-    handle_ptt_message(data.status);
+  case PRIMARY_HV_TEMP_FRAME_ID: {
+    CAST_FROM_DEVICE(hv_temp);
+    hv_temp_update(data);
     break;
   }
-  case PRIMARY_TLM_STATUS_FRAME_ID: {
-    // print("Received tlm status\n");
+  case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
+    CAST_FROM_DEVICE(lv_total_voltage);
+    lv_total_voltage_update(data);
+    break;
+  }
+  case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
+    CAST_FROM_DEVICE(lv_cells_voltage);
+    lv_cells_voltage_update(data);
+    break;
+  }
+  case PRIMARY_LV_CURRENTS_FRAME_ID: {
+    CAST_FROM_DEVICE(lv_currents);
+    lv_currents_update(data);
+    break;
+  }
+  case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
+    CAST_FROM_DEVICE(lv_cells_temp);
+    lv_cells_temp_update(data);
     break;
   }
   }

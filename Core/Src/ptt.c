@@ -4,17 +4,23 @@ bool status = 0;
 
 void activate_ptt(void) {
   can_message_t msg = {0};
+  primary_set_ptt_status_t ptt_status = {0};
+  ptt_status.status = primary_set_ptt_status_status_ON;
   msg.id = PRIMARY_SET_PTT_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_PTT_STATUS_BYTE_SIZE;
-  msg.data[0] = primary_set_ptt_status_status_ON;
+  primary_set_ptt_status_pack(msg.data, &ptt_status,
+                              PRIMARY_SET_PTT_STATUS_BYTE_SIZE);
   can_send(&msg, &hfdcan1);
 }
 
 void deactivate_ptt(void) {
   can_message_t msg = {0};
+  primary_set_ptt_status_t ptt_status = {0};
+  ptt_status.status = primary_set_ptt_status_status_OFF;
   msg.id = PRIMARY_SET_PTT_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_PTT_STATUS_BYTE_SIZE;
-  msg.data[0] = primary_set_ptt_status_status_OFF;
+  primary_set_ptt_status_pack(msg.data, &ptt_status,
+                              PRIMARY_SET_PTT_STATUS_BYTE_SIZE);
   can_send(&msg, &hfdcan1);
 }
 

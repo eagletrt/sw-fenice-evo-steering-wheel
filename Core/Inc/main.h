@@ -34,6 +34,10 @@ extern "C" {
 #include "inputs/inputs.h"
 #include "led_control.h"
 #include "lvgl.h"
+#ifndef DEVICE_IMPLEMENTATION
+#define DEVICE_IMPLEMENTATION
+#define CANLIB_DEVICE_IMPLEMENTATION
+#endif
 #include "primary/primary_network.h"
 #include "primary/primary_watchdog.h"
 #include "screen_driver.h"

@@ -31,6 +31,7 @@
 void inputs_init(void);
 void read_inputs();
 void send_tson(void);
-void turnon_telemetry(void);
+void turn_telemetry_on_off(void);
+void pedal_calibration_ack(primary_pedal_calibration_ack_t *data);
 
 #endif

@@ -14,6 +14,16 @@ uint8_t manettini[MANETTINI_N] = {0};
 uint32_t manettini_last_change;
 bool tson_button_pressed = false;
 lv_timer_t *send_tson_long_press_delay = NULL;
+bool calibration_min_sent_request[CALBOX_N];
+bool calibration_max_sent_request[CALBOX_N];
+uint32_t calibration_min_request_timestamp[CALBOX_N];
+uint32_t calibration_max_request_timestamp[CALBOX_N];
+#define CALIBRATION_TIMEOUT_RESPONSE 3000
+extern tab_t current_tab;
+extern lv_obj_t *set_min_btn;
+extern lv_obj_t *set_max_btn;
+
+void calibration_tool_set_min_max(bool maxv);
 
 void configure_internal_pull_up_resistors() {
   uint8_t cdata = 0xFF;
@@ -69,7 +79,7 @@ void buttons_pressed_actions(uint8_t button) {
   case PADDLE_BOTTOM_LEFT:
     break;
   case BUTTON_TOP_RIGHT:
-    turnon_telemetry();
+    turn_telemetry_on_off();
     break;
   case BUTTON_TOP_LEFT:
     print("ACTIVATE ptt\n");
@@ -190,27 +200,109 @@ void from_gpio_to_buttons(uint8_t gpio) {
   }
 }
 
-void turnon_telemetry(void) {
+void turn_telemetry_on_off(void) {
+  primary_set_tlm_status_t tlm = {0};
+  can_message_t msg = {0};
+  msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
+  msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
+
   if (steering.telemetry.status == primary_set_tlm_status_tlm_status_ON) {
     print("Sending Telemetry OFF\n");
-    can_message_t msg = {0};
-    msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
-    msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
-    msg.data[0] = primary_set_tlm_status_tlm_status_OFF;
+    tlm.tlm_status = primary_set_tlm_status_tlm_status_OFF;
+    primary_set_tlm_status_pack(msg.data, &tlm,
+                                PRIMARY_SET_TLM_STATUS_BYTE_SIZE);
     can_send(&msg, &hfdcan1);
   } else {
     print("Sending Telemetry ON\n");
-    can_message_t msg = {0};
-    msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
-    msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
-    msg.data[0] = primary_set_tlm_status_tlm_status_ON;
+    tlm.tlm_status = primary_set_tlm_status_tlm_status_ON;
+    primary_set_tlm_status_pack(msg.data, &tlm,
+                                PRIMARY_SET_TLM_STATUS_BYTE_SIZE);
     can_send(&msg, &hfdcan1);
+  }
+}
+
+void pedal_calibration_ack(primary_pedal_calibration_ack_t *data) {
+  primary_pedal_calibration_ack_bound bound = data->bound;
+
+  lv_obj_set_style_bg_color(bound == primary_pedal_calibration_ack_bound_SET_MAX
+                                ? set_max_btn
+                                : set_min_btn,
+                            lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+}
+
+void send_calibration(bool accel, bool max) {
+  can_message_t msg = {0};
+  primary_set_pedal_calibration_t calib = {0};
+  calib.pedal = accel ? primary_set_pedal_calibration_pedal_ACCELERATOR
+                      : primary_set_pedal_calibration_pedal_BRAKE;
+  calib.bound = max ? primary_set_pedal_calibration_bound_SET_MAX
+                    : primary_set_pedal_calibration_bound_SET_MIN;
+  msg.id = PRIMARY_SET_PEDAL_CALIBRATION_FRAME_ID;
+  msg.size = PRIMARY_SET_PEDAL_CALIBRATION_BYTE_SIZE;
+  primary_set_pedal_calibration_pack(msg.data, &calib,
+                                     PRIMARY_SET_PEDAL_CALIBRATION_BYTE_SIZE);
+  can_send(&msg, &hfdcan1);
+}
+
+void calibration_request_timeout_check(uint32_t current_time) {
+  for (uint8_t iel = 0; iel < CALBOX_N; ++iel) {
+    if (calibration_min_sent_request[iel] &&
+        calibration_min_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
+            current_time) {
+      calibration_min_sent_request[iel] = false;
+      lv_obj_set_style_bg_color(
+          iel == set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    }
+    if (calibration_max_sent_request[iel] &&
+        calibration_max_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
+            current_time) {
+      calibration_max_sent_request[iel] = false;
+      lv_obj_set_style_bg_color(
+          iel == set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    }
+  }
+}
+
+void calibration_tool_set_min_max(bool maxv) {
+  if (current_tab == TAB_CALIBRATION) {
+    calibration_box_t curr_focus = steering.curr_focus;
+    if (curr_focus == STEER)
+      return;
+    switch (curr_focus) {
+    case BSE: {
+      send_calibration(false, maxv);
+      if (maxv) {
+        calibration_max_sent_request[BSE] = true;
+        calibration_max_request_timestamp[BSE] = HAL_GetTick();
+      } else {
+        calibration_min_sent_request[BSE] = true;
+        calibration_min_request_timestamp[BSE] = HAL_GetTick();
+      }
+      break;
+    }
+    case APPS: {
+      send_calibration(true, maxv);
+      if (maxv) {
+        calibration_max_sent_request[APPS] = true;
+        calibration_max_request_timestamp[APPS] = HAL_GetTick();
+      } else {
+        calibration_min_sent_request[APPS] = true;
+        calibration_min_request_timestamp[APPS] = HAL_GetTick();
+      }
+      break;
+    }
+    default:
+      return;
+    }
+    lv_obj_set_style_bg_color(maxv ? set_max_btn : set_min_btn,
+                              lv_color_hex(COLOR_ORANGE_STATUS_HEX),
+                              LV_PART_MAIN);
   }
 }
 
 void send_tson(void) {
   print("Sending TSON\n");
-#if 0
+#if 1
   can_message_t msg = {0};
   msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
