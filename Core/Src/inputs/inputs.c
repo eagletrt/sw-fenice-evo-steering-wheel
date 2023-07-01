@@ -251,14 +251,14 @@ void calibration_request_timeout_check(uint32_t current_time) {
             current_time) {
       calibration_min_sent_request[iel] = false;
       lv_obj_set_style_bg_color(
-          iel == set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+          set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
     }
     if (calibration_max_sent_request[iel] &&
         calibration_max_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
             current_time) {
       calibration_max_sent_request[iel] = false;
       lv_obj_set_style_bg_color(
-          iel == set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+          set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
     }
   }
 }

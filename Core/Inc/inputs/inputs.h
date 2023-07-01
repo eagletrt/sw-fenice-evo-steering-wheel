@@ -33,5 +33,6 @@ void read_inputs();
 void send_tson(void);
 void turn_telemetry_on_off(void);
 void pedal_calibration_ack(primary_pedal_calibration_ack_t *data);
+void calibration_request_timeout_check(uint32_t current_time);
 
 #endif
