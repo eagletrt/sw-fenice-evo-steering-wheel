@@ -54,6 +54,8 @@
 
 /* USER CODE BEGIN PV */
 
+extern const unsigned char EAGLE_LOGO[30000];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,9 +120,20 @@ int main(void)
   Olivec_Canvas oc = olivec_canvas(pixels, 800, 480, 800);
   olivec_fill(oc, 0xFF000000);
   
-  uint32_t size = 8;
-  olivec_text(oc, "wait for boot...", ABOBA_PADDING, HEIGHT - ABOBA_PADDING - olivec_default_font.height*size, olivec_default_font, size, 0xFFFFFFFF);
+  uint32_t size = 5;
+  // powerful right alignment...
+  olivec_text(oc, "         wait for boot...", ABOBA_PADDING, HEIGHT - ABOBA_PADDING - olivec_default_font.height * size, olivec_default_font, size, 0xFFFFFFFF);
   char buffer[] = "STEERING WHEEL OPENBLT waiting for flashing...\n";
+
+  for (size_t iindex = 0; iindex < 30000; ++iindex) {
+    for (size_t ibit = 0; ibit < 8; ++ibit) {
+      if (EAGLE_LOGO[iindex] & (1 << ibit)) {
+        pixels[iindex * 8 + ibit] = 0xFFFFFFFF;
+      } else {
+        pixels[iindex * 8 + ibit] = 0xFF000000;
+      }
+    }
+  }
 
   BootInit();
 
