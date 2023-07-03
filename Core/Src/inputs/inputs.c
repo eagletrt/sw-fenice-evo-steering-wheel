@@ -262,7 +262,7 @@ void turn_telemetry_on_off(void) {
   }
 }
 
-void pedal_calibration_ack(primary_pedal_calibration_ack_t *data) {
+void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data) {
   primary_pedal_calibration_ack_bound bound = data->bound;
 
   lv_obj_set_style_bg_color(bound == primary_pedal_calibration_ack_bound_SET_MAX

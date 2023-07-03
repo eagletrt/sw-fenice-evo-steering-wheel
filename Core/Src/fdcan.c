@@ -418,13 +418,17 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
   return HAL_FDCAN_AddMessageToTxFifoQ(nwk, &header, msg->data);
 }
 
-#define CAST_FROM_DEVICE(network, message_name)                                \
-  network##_##message_name##_t *data =                                         \
-      (network##_##message_name##_t *)network##_can_device.message;
+
+#define MESSAGE_DESERIALIZE(network, message_name, capital) \
+    network##_##message_name##_t raw; \
+    network##_##message_name##_converted_t converted; \
+    network##_##message_name##_unpack(&raw, msg->data, PRIMARY_##capital##_BYTE_SIZE); \
+    network##_##message_name##_raw_to_conversion_struct(&converted, &raw); \
 
 void handle_primary(can_message_t *msg) {
   if (!steering_initialized)
     return;
+#define CAL_LOG_ENABLED 0
 #if CAL_LOG_ENABLED
   char name_buffer[BUFSIZ];
   primary_message_name_from_id(msg->id, name_buffer);
@@ -434,13 +438,16 @@ void handle_primary(can_message_t *msg) {
   primary_devices_deserialize_from_id(&primary_can_device, id, msg->data);
   switch (id) {
   case PRIMARY_CAR_STATUS_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, car_status);
-    car_status_update(data);
+    primary_car_status_t raw;
+    primary_car_status_converted_t converted;
+    primary_car_status_unpack(&raw, msg->data, PRIMARY_CAR_STATUS_BYTE_SIZE);
+    primary_car_status_raw_to_conversion_struct(&converted, &raw);
+    car_status_update(&converted);
     break;
   }
   case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, pedal_calibration_ack);
-    pedal_calibration_ack(data);
+    MESSAGE_DESERIALIZE(primary, pedal_calibration_ack, PEDAL_CALIBRATION_ACK);
+    pedal_calibration_ack(&converted);
     break;
   }
   case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
@@ -454,86 +461,87 @@ void handle_primary(can_message_t *msg) {
     break;
   }
   case PRIMARY_TLM_STATUS_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, tlm_status);
-    tlm_status_update(data);
+    MESSAGE_DESERIALIZE(primary, tlm_status, TLM_STATUS);
+    tlm_status_update(&converted);
     break;
   }
   case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, ambient_temperature);
-    ambient_temperature_update(data);
+    MESSAGE_DESERIALIZE(primary, ambient_temperature, AMBIENT_TEMPERATURE);
+    ambient_temperature_update(&converted);
     break;
   }
   case PRIMARY_SPEED_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, speed);
-    speed_update(data);
+    MESSAGE_DESERIALIZE(primary, speed, SPEED);
+    speed_update(&converted);
     break;
   }
 
   case PRIMARY_HV_VOLTAGE_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, hv_voltage);
-    hv_voltage_update(data);
+    MESSAGE_DESERIALIZE(primary, hv_voltage, HV_VOLTAGE);
+    hv_voltage_update(&converted);
     break;
   }
   case PRIMARY_HV_CURRENT_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, hv_current);
-    hv_current_update(data);
+    MESSAGE_DESERIALIZE(primary, hv_current, HV_CURRENT);
+    hv_current_update(&converted);
     break;
   }
   case PRIMARY_HV_TEMP_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, hv_temp);
-    hv_temp_update(data);
+    MESSAGE_DESERIALIZE(primary, hv_temp, HV_TEMP);
+    hv_temp_update(&converted);
     break;
   }
   case PRIMARY_HV_ERRORS_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, hv_errors);
-    hv_errors_update(data);
+    MESSAGE_DESERIALIZE(primary, hv_errors, HV_ERRORS);
+    hv_errors_update(&converted);
     break;
   }
   case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, hv_feedbacks_status);
-    hv_feedbacks_status_update(data);
+    MESSAGE_DESERIALIZE(primary, hv_feedbacks_status, HV_FEEDBACKS_STATUS);
+    hv_feedbacks_status_update(&converted);
     break;
   }
   case PRIMARY_HV_CELLS_VOLTAGE_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, hv_cells_voltage);
-    hv_cells_voltage_update(data);
+    MESSAGE_DESERIALIZE(primary, hv_cells_voltage, HV_CELLS_VOLTAGE);
+    hv_cells_voltage_update(&converted);
     break;
   }
   case PRIMARY_HV_CELLS_TEMP_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, hv_cells_temp);
-    hv_cells_temp_update(data);
+    MESSAGE_DESERIALIZE(primary, hv_cells_temp, HV_CELLS_TEMP);
+    hv_cells_temp_update(&converted);
     break;
   }
 
   case PRIMARY_DAS_ERRORS_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, das_errors);
-    das_errors_update(data);
+    MESSAGE_DESERIALIZE(primary, das_errors, DAS_ERRORS);
+    das_errors_update(&converted);
     break;
   }
 
   case PRIMARY_LV_CURRENTS_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, lv_currents);
-    lv_currents_update(data);
+    MESSAGE_DESERIALIZE(primary, lv_currents, LV_CURRENTS);
+    lv_currents_update(&converted);
     break;
   }
   case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, lv_cells_voltage);
-    lv_cells_voltage_update(data);
+    MESSAGE_DESERIALIZE(primary, lv_cells_voltage, LV_CELLS_VOLTAGE);
+    lv_cells_voltage_update(&converted);
     break;
   }
+
   case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, lv_cells_temp);
-    lv_cells_temp_update(data);
+    MESSAGE_DESERIALIZE(primary, lv_cells_temp, LV_CELLS_TEMP);
+    lv_cells_temp_update(&converted);
     break;
   }
   case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, lv_total_voltage);
-    lv_total_voltage_update(data);
+    MESSAGE_DESERIALIZE(primary, lv_total_voltage, LV_TOTAL_VOLTAGE);
+    lv_total_voltage_update(&converted);
     break;
   }
   case PRIMARY_LV_ERRORS_FRAME_ID: {
-    CAST_FROM_DEVICE(primary, lv_errors);
-    lv_errors_update(data);
+    MESSAGE_DESERIALIZE(primary, lv_errors, LV_ERRORS);
+    lv_errors_update(&converted);
     break;
   }
   }

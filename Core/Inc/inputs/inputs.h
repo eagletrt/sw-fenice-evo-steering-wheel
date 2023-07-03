@@ -47,7 +47,7 @@ void send_set_car_status(void);
 void send_drive(void);
 void send_tsoff(void);
 void turn_telemetry_on_off(void);
-void pedal_calibration_ack(primary_pedal_calibration_ack_t *data);
+void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data);
 void calibration_request_timeout_check(uint32_t current_time);
 
 #endif
