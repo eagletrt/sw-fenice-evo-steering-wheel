@@ -173,7 +173,7 @@ void manettino_right_actions(uint8_t val) {
     if (val == manettino_right_possible_vals[ival]) {
       char title[100];
       sprintf(title, "TORQUE VECTORING %u", (unsigned int)ival);
-      display_notification(title, 1000);
+      display_notification(title, 750);
       print("TORQUE VECTORING %u\n", (unsigned int)ival);
       steer_status_last_message.map_tv = val_torque_map_index[ival];
       break;
@@ -191,7 +191,7 @@ void manettino_center_actions(uint8_t val) {
     if (val == manettino_center_possible_vals[ival]) {
       char title[100];
       sprintf(title, "POWER MAP %u", (unsigned int)ival);
-      display_notification(title, 1000);
+      display_notification(title, 750);
       print("POWER MAP %u\n", (unsigned int)ival);
       steer_status_last_message.map_pw = val_power_map_mapping[ival];
       break;
@@ -207,7 +207,7 @@ void manettino_left_actions(uint8_t val) {
     if (val == manettino_left_possible_vals[ival]) {
       char title[100];
       sprintf(title, "SLIP CONTROL %u", (unsigned int)ival);
-      display_notification(title, 1000);
+      display_notification(title, 750);
       print("SLIP CONTROL %u\n", (unsigned int)ival);
       steer_status_last_message.map_sc = val_slip_map_index[ival];
       break;
@@ -417,7 +417,7 @@ void read_manettino_1(void) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev1.gpio[0] && !manettini_initialized[0]) {
+  if (manettino_input != dev1.gpio[0] && manettini_initialized[0]) {
     manettino_left_actions(manettino_input);
   }
   manettini_initialized[0] = true;
@@ -432,7 +432,7 @@ void read_manettino_2(void) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev2.gpio[1] && !manettini_initialized[1]) {
+  if (manettino_input != dev2.gpio[1] && manettini_initialized[1]) {
     manettino_center_actions(manettino_input);
   }
   manettini_initialized[1] = true;
@@ -447,7 +447,7 @@ void read_manettino_3(void) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev2.gpio[0] && !manettini_initialized[2]) {
+  if (manettino_input != dev2.gpio[0] && manettini_initialized[2]) {
     manettino_right_actions(manettino_input);
   }
   manettini_initialized[2] = true;
