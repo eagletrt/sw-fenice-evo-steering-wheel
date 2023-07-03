@@ -37,7 +37,8 @@
         "ptt.h": "c",
         "primary_watchdog.h": "c",
         "tab_notification.h": "c",
-        "usart.h": "c"
+        "usart.h": "c",
+        "primary_network.h": "c"
     },
     "cmake.configureOnOpen": false
 }

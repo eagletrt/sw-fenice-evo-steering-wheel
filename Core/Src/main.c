@@ -209,23 +209,30 @@ int main(void) {
   }
 #endif
 
-  if (PRIMARY_INTERVAL_STEER_STATUS != 100) {
-    lv_timer_t *steer_status_task =
-        lv_timer_create(send_steer_status, PRIMARY_INTERVAL_STEER_STATUS, NULL);
-    lv_timer_set_repeat_count(steer_status_task, -1);
-    lv_timer_reset(steer_status_task);
-  }
+  lv_timer_t *steer_status_task =
+      lv_timer_create(send_steer_status, PRIMARY_INTERVAL_STEER_STATUS, NULL);
+  lv_timer_set_repeat_count(steer_status_task, -1);
+  lv_timer_reset(steer_status_task);
 
-  if (PRIMARY_INTERVAL_STEER_VERSION != 1000) {
-    lv_timer_t *steer_version_task = lv_timer_create(
-        send_steer_version, PRIMARY_INTERVAL_STEER_VERSION, NULL);
-    lv_timer_set_repeat_count(steer_version_task, -1);
-    lv_timer_reset(steer_version_task);
-  }
+  lv_timer_t *steer_version_task =
+      lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEER_VERSION, NULL);
+  lv_timer_set_repeat_count(steer_version_task, -1);
+  lv_timer_reset(steer_version_task);
 
   lv_timer_t *read_inputs_task = lv_timer_create(read_inputs, 100, NULL);
   lv_timer_set_repeat_count(read_inputs_task, -1);
   lv_timer_reset(read_inputs_task);
+
+#if 0
+  can_message_t msg = {0};
+  primary_set_car_status_t car_status = {0};
+  car_status.car_status_set = primary_set_car_status_car_status_set_READY;
+  msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
+  msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
+  primary_set_car_status_pack(msg.data, &car_status,
+                              PRIMARY_SET_CAR_STATUS_BYTE_SIZE);
+  can_send(&msg, &hfdcan1);
+#endif
 
   /* USER CODE END 2 */
 
@@ -234,6 +241,10 @@ int main(void) {
 
   while (1) {
 
+#if SCREEN_ENABLED == 1
+    lv_tasks();
+#endif
+
 #if 0
     HAL_StatusTypeDef retval =
         HAL_UART_Transmit(&hlpuart1, (uint8_t *)"Hello\n", 6, 100);
@@ -241,11 +252,6 @@ int main(void) {
       Error_Handler();
     }
 #endif
-
-#if SCREEN_ENABLED == 1
-    lv_tasks();
-#endif
-
 #if 0
     can_message_t msg;
     msg.id = 0x2;

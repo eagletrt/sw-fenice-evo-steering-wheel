@@ -37,20 +37,27 @@ void screen_driver_init() {
   lv_disp_drv_register(&lv_display_driver);
 }
 
+uint32_t last_tick = 0;
+
 void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                     lv_color_t *color_p) {
   lv_disp_t *disp = _lv_refr_get_disp_refreshing();
   uint16_t *dma_xfer_src, *dma_xfer_dst;
   if (!lv_disp_flush_is_last(disp_drv)) {
     lv_disp_flush_ready(disp_drv);
+
+#if 0
+    uint32_t hal_tick = HAL_GetTick();
+    print("Flush time: %u\n", (unsigned int) (hal_tick - last_tick));
+    last_tick = hal_tick;
+#endif
+
     return;
   }
 
   // Swap the buffer for the one to display and reload the screen at the next
   // vertical blanking
   HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING); // VSYNC
-
-#if 1
 
   // Determine source and destination of transfer
   dma_xfer_src = (uint16_t *)color_p;
@@ -67,8 +74,6 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                       (uint32_t)dma_xfer_dst);
     }
   }
-#endif
-
   lv_disp_flush_ready(disp_drv);
 }
 

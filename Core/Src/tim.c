@@ -183,22 +183,8 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef *tim_baseHandle) {
 
 /* USER CODE BEGIN 1 */
 
-uint8_t timer_counter = 0;
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if (htim->Instance == TIM7) {
-    read_inputs();
-    calibration_request_timeout_check(HAL_GetTick());
-    if (PRIMARY_INTERVAL_STEER_STATUS == 100 &&
-        PRIMARY_INTERVAL_STEER_VERSION == 1000) {
-      timer_counter++;
-      if (timer_counter % 2 == 0) {
-        send_steer_status(NULL);
-      } else if (timer_counter == 10) {
-        timer_counter = 0;
-        send_steer_version(NULL);
-      }
-    }
   }
 }
 

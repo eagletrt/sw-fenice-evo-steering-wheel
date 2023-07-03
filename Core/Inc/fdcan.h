@@ -30,6 +30,9 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 #include "lvgl.h"
+#include "primary/primary_network.h"
+#include "primary/primary_watchdog.h"
+#include "secondary/secondary_network.h"
 /* USER CODE END Includes */
 
 extern FDCAN_HandleTypeDef hfdcan1;
@@ -66,9 +69,9 @@ typedef struct {
 } can_message_t;
 
 HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk);
-void send_steer_version(lv_timer_t *main_timer);
-void send_steer_status(lv_timer_t *main_timer);
-void init_can_device(void);
+void send_steer_version(lv_timer_t *);
+void send_steer_status(lv_timer_t *);
+void init_can_device(device_t *);
 
 /* USER CODE END Prototypes */
 

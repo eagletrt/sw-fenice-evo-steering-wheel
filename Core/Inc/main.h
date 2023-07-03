@@ -34,6 +34,7 @@ extern "C" {
 #include "inputs/inputs.h"
 #include "led_control.h"
 #include "lvgl.h"
+#include "secondary/secondary_network.h"
 #ifndef DEVICE_IMPLEMENTATION
 #define DEVICE_IMPLEMENTATION
 #define CANLIB_DEVICE_IMPLEMENTATION

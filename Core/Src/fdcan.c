@@ -23,10 +23,13 @@
 /* USER CODE BEGIN 0 */
 
 extern steering_t steering;
-device_t can_device;
+extern bool steering_initialized;
+extern primary_steer_status_t steer_status_last_message;
+
+device_t primary_can_device;
+device_t secondary_can_device;
 uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
 uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
-uint8_t payload[8];
 
 void _CAN_error_handler(char *msg);
 void _CAN_Init_primary();
@@ -42,7 +45,7 @@ void MX_FDCAN1_Init(void) {
 
   /* USER CODE BEGIN FDCAN1_Init 0 */
 
-  init_can_device();
+  init_can_device(&primary_can_device);
 
   /* USER CODE END FDCAN1_Init 0 */
 
@@ -89,6 +92,8 @@ void MX_FDCAN1_Init(void) {
 void MX_FDCAN2_Init(void) {
 
   /* USER CODE BEGIN FDCAN2_Init 0 */
+
+  init_can_device(&secondary_can_device);
 
   /* USER CODE END FDCAN2_Init 0 */
 
@@ -272,9 +277,9 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
 void _CAN_error_handler(char *msg) { printf("%s\n", msg); }
 
-void init_can_device(void) {
-  device_init(&can_device);
-  device_set_address(&can_device, &_raw, primary_MAX_STRUCT_SIZE_RAW,
+void init_can_device(device_t *can_device) {
+  device_init(can_device);
+  device_set_address(can_device, &_raw, primary_MAX_STRUCT_SIZE_RAW,
                      &_converted, primary_MAX_STRUCT_SIZE_CONVERSION);
 }
 
@@ -353,9 +358,11 @@ void send_steer_status(lv_timer_t *main_timer) {
   can_message_t msg = {0};
   msg.id = PRIMARY_STEER_STATUS_FRAME_ID;
   msg.size = PRIMARY_STEER_STATUS_BYTE_SIZE;
-  primary_steer_status_t status = {.map_pw = steering.control.power,
-                                   .map_sc = steering.control.slip,
-                                   .map_tv = steering.control.torque};
+  primary_steer_status_t status = {
+      .map_pw = steer_status_last_message.map_pw,
+      .map_sc = steer_status_last_message.map_sc,
+      .map_tv = steer_status_last_message.map_tv,
+  };
   primary_steer_status_pack(msg.data, &status, PRIMARY_STEER_STATUS_BYTE_SIZE);
   can_send(&msg, &hfdcan1);
 }
@@ -411,26 +418,28 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
   return HAL_FDCAN_AddMessageToTxFifoQ(nwk, &header, msg->data);
 }
 
-#define CAST_FROM_DEVICE(message_name)                                         \
-  primary_##message_name##_t *data =                                           \
-      (primary_##message_name##_converted_t *)can_device.message
+#define CAST_FROM_DEVICE(network, message_name)                                \
+  network##_##message_name##_t *data =                                         \
+      (network##_##message_name##_t *)network##_can_device.message;
 
 void handle_primary(can_message_t *msg) {
+  if (!steering_initialized)
+    return;
 #if CAL_LOG_ENABLED
   char name_buffer[BUFSIZ];
   primary_message_name_from_id(msg->id, name_buffer);
   print("Primary network - message id %s\n", name_buffer);
 #endif
   can_id_t id = msg->id;
-  primary_devices_deserialize_from_id(&can_device, id, payload);
+  primary_devices_deserialize_from_id(&primary_can_device, id, msg->data);
   switch (id) {
   case PRIMARY_CAR_STATUS_FRAME_ID: {
-    CAST_FROM_DEVICE(car_status);
+    CAST_FROM_DEVICE(primary, car_status);
     car_status_update(data);
     break;
   }
   case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
-    CAST_FROM_DEVICE(pedal_calibration_ack);
+    CAST_FROM_DEVICE(primary, pedal_calibration_ack);
     pedal_calibration_ack(data);
     break;
   }
@@ -445,57 +454,101 @@ void handle_primary(can_message_t *msg) {
     break;
   }
   case PRIMARY_TLM_STATUS_FRAME_ID: {
-    CAST_FROM_DEVICE(tlm_status);
+    CAST_FROM_DEVICE(primary, tlm_status);
     tlm_status_update(data);
     break;
   }
-  case PRIMARY_HV_ERRORS_FRAME_ID: {
-    CAST_FROM_DEVICE(hv_errors);
-    hv_errors_update(data);
+  case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, ambient_temperature);
+    ambient_temperature_update(data);
     break;
   }
-  case PRIMARY_LV_ERRORS_FRAME_ID: {
-    CAST_FROM_DEVICE(lv_errors);
-    lv_errors_update(data);
+  case PRIMARY_SPEED_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, speed);
+    speed_update(data);
     break;
   }
-  case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
-    CAST_FROM_DEVICE(hv_feedbacks_status);
-    hv_feedback_update(data);
+
+  case PRIMARY_HV_VOLTAGE_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, hv_voltage);
+    hv_voltage_update(data);
+    break;
+  }
+  case PRIMARY_HV_CURRENT_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, hv_current);
+    hv_current_update(data);
     break;
   }
   case PRIMARY_HV_TEMP_FRAME_ID: {
-    CAST_FROM_DEVICE(hv_temp);
+    CAST_FROM_DEVICE(primary, hv_temp);
     hv_temp_update(data);
     break;
   }
-  case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
-    CAST_FROM_DEVICE(lv_total_voltage);
-    lv_total_voltage_update(data);
+  case PRIMARY_HV_ERRORS_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, hv_errors);
+    hv_errors_update(data);
     break;
   }
-  case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
-    CAST_FROM_DEVICE(lv_cells_voltage);
-    lv_cells_voltage_update(data);
+  case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, hv_feedbacks_status);
+    hv_feedbacks_status_update(data);
     break;
   }
+  case PRIMARY_HV_CELLS_VOLTAGE_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, hv_cells_voltage);
+    hv_cells_voltage_update(data);
+    break;
+  }
+  case PRIMARY_HV_CELLS_TEMP_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, hv_cells_temp);
+    hv_cells_temp_update(data);
+    break;
+  }
+
+  case PRIMARY_DAS_ERRORS_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, das_errors);
+    das_errors_update(data);
+    break;
+  }
+
   case PRIMARY_LV_CURRENTS_FRAME_ID: {
-    CAST_FROM_DEVICE(lv_currents);
+    CAST_FROM_DEVICE(primary, lv_currents);
     lv_currents_update(data);
     break;
   }
+  case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, lv_cells_voltage);
+    lv_cells_voltage_update(data);
+    break;
+  }
   case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
-    CAST_FROM_DEVICE(lv_cells_temp);
+    CAST_FROM_DEVICE(primary, lv_cells_temp);
     lv_cells_temp_update(data);
+    break;
+  }
+  case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, lv_total_voltage);
+    lv_total_voltage_update(data);
+    break;
+  }
+  case PRIMARY_LV_ERRORS_FRAME_ID: {
+    CAST_FROM_DEVICE(primary, lv_errors);
+    lv_errors_update(data);
     break;
   }
   }
 }
 
 void handle_secondary(can_message_t *msg) {
-#if CAN_LOG_ENABLED
-  print("Secondary network - message id %" PRIu16 "\n", msg->id);
+  if (!steering_initialized)
+    return;
+#if CAL_LOG_ENABLED
+  char name_buffer[BUFSIZ];
+  secondary_message_name_from_id(msg->id, name_buffer);
+  print("Secondary network - message id %s\n", name_buffer);
 #endif
+  can_id_t id = msg->id;
+  secondary_devices_deserialize_from_id(&secondary_can_device, id, msg->data);
 }
 
 void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan) {

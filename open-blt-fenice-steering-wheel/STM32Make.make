@@ -46,6 +46,7 @@ Core/Src/cpu.c \
 Core/Src/cpu_comp.c \
 Core/Src/dac.c \
 Core/Src/dma2d.c \
+Core/Src/eagle_logo.c \
 Core/Src/fdcan.c \
 Core/Src/file.c \
 Core/Src/flash.c \
