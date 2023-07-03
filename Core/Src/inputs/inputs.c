@@ -1,27 +1,43 @@
 #include "inputs/inputs.h"
 
-#define BUTTONS_N 8
-#define MANETTINI_N 3
-#define BUTTONS_LONG_PRESS_TIME 1500
-
 MCP23017_HandleTypeDef dev1;
 MCP23017_HandleTypeDef dev2;
 
 bool buttons[BUTTONS_N] = {true};
 uint32_t buttons_long_press_check[BUTTONS_N] = {0};
 bool buttons_long_press_activated[BUTTONS_N] = {false};
+
 uint8_t manettini[MANETTINI_N] = {0};
 uint32_t manettini_last_change;
+bool manettini_initialized[MANETTINI_N] = {false};
+
 bool tson_button_pressed = false;
-lv_timer_t *send_tson_long_press_delay = NULL;
+lv_timer_t *send_set_car_status_long_press_delay = NULL;
 bool calibration_min_sent_request[CALBOX_N];
 bool calibration_max_sent_request[CALBOX_N];
 uint32_t calibration_min_request_timestamp[CALBOX_N];
 uint32_t calibration_max_request_timestamp[CALBOX_N];
-#define CALIBRATION_TIMEOUT_RESPONSE 3000
+
 extern tab_t current_tab;
 extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
+
+extern primary_tlm_status_t tlm_status_last_message;
+extern primary_car_status_t car_status_last_message;
+extern primary_steer_status_t steer_status_last_message;
+
+// const static uint8_t button_mapping[BUTTONS_N] = BUTTON_MAPPING;
+const static uint8_t manettino_right_possible_vals[BUTTONS_N] =
+    MANETTINO_RIGHT_VALS;
+const static uint8_t manettino_center_possible_vals[BUTTONS_N] =
+    MANETTINO_CENTER_VALS;
+const static uint8_t manettino_left_possible_vals[BUTTONS_N] =
+    MANETTINO_LEFT_VALS;
+
+const static uint8_t val_power_map_mapping[MANETTINO_STEPS_N] =
+    POWER_MAP_MAPPING;
+const static uint8_t val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_INDEX;
+const static uint8_t val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_INDEX;
 
 void calibration_tool_set_min_max(bool maxv);
 
@@ -75,10 +91,17 @@ void buttons_pressed_actions(uint8_t button) {
     change_tab(false);
     break;
   case PADDLE_BOTTOM_RIGHT:
+    print("SHIFT BOX FOCUS RIGHT\n");
+    shift_box_focus(true);
+    change_errors_view(false);
     break;
   case PADDLE_BOTTOM_LEFT:
+    print("SHIFT BOX FOCUS LEFT\n");
+    shift_box_focus(false);
+    change_errors_view(true);
     break;
   case BUTTON_TOP_RIGHT:
+    print("TURN TELEMETRY ON/OFF\n");
     turn_telemetry_on_off();
     break;
   case BUTTON_TOP_LEFT:
@@ -86,10 +109,12 @@ void buttons_pressed_actions(uint8_t button) {
     activate_ptt();
     break;
   case BUTTON_BOTTOM_RIGHT:
-    print("Display notification\n");
-    display_notification("test notification popup", 500);
+    print("CALIBRATION TOOL: SET MAX\n");
+    calibration_tool_set_min_max(true);
     break;
   case BUTTON_BOTTOM_LEFT:
+    print("CALIBRATION TOOL: SET MIN\n");
+    calibration_tool_set_min_max(false);
     break;
   }
 }
@@ -138,38 +163,53 @@ void buttons_long_pressed_actions(uint8_t button) {
   }
 }
 
+// TORQUE
 void manettino_right_actions(uint8_t val) {
-  uint8_t possible_vals[] = MANETTINO_RIGHT_VALS;
-  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t));
+  for (uint8_t ival = 0;
+       ival < (sizeof(manettino_right_possible_vals) / sizeof(uint8_t));
        ++ival) {
     if (val == MANETTINO_DEBOUNCE_VALUE)
       continue;
-    if (val == possible_vals[ival]) {
-      print("manettino right step %u\n", (unsigned int)ival);
+    if (val == manettino_right_possible_vals[ival]) {
+      char title[100];
+      sprintf(title, "TORQUE VECTORING %u", (unsigned int)ival);
+      display_notification(title, 1000);
+      print("TORQUE VECTORING %u\n", (unsigned int)ival);
+      steer_status_last_message.map_tv = val_torque_map_index[ival];
       break;
     }
   }
 }
 
+// POWER MAP
 void manettino_center_actions(uint8_t val) {
-  uint8_t possible_vals[] = MANETTINO_CENTER_VALS;
-  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t));
+  for (uint8_t ival = 0;
+       ival < (sizeof(manettino_center_possible_vals) / sizeof(uint8_t));
        ++ival) {
     if (val == MANETTINO_DEBOUNCE_VALUE)
       continue;
-    if (val == possible_vals[ival]) {
-      print("manettino center step %u\n", (unsigned int)ival);
+    if (val == manettino_center_possible_vals[ival]) {
+      char title[100];
+      sprintf(title, "POWER MAP %u", (unsigned int)ival);
+      display_notification(title, 1000);
+      print("POWER MAP %u\n", (unsigned int)ival);
+      steer_status_last_message.map_pw = val_power_map_mapping[ival];
       break;
     }
   }
 }
 
+// SLIP CONTROL
 void manettino_left_actions(uint8_t val) {
-  uint8_t possible_vals[] = MANETTINO_LEFT_VALS;
-  for (uint8_t ival = 0; ival < (sizeof(possible_vals) / sizeof(uint8_t));
+  for (uint8_t ival = 0;
+       ival < (sizeof(manettino_left_possible_vals) / sizeof(uint8_t));
        ++ival) {
-    if (val == possible_vals[ival]) {
-      print("manettino left step %u\n", (unsigned int)ival);
+    if (val == manettino_left_possible_vals[ival]) {
+      char title[100];
+      sprintf(title, "SLIP CONTROL %u", (unsigned int)ival);
+      display_notification(title, 1000);
+      print("SLIP CONTROL %u\n", (unsigned int)ival);
+      steer_status_last_message.map_sc = val_slip_map_index[ival];
       break;
     }
   }
@@ -206,7 +246,8 @@ void turn_telemetry_on_off(void) {
   msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
 
-  if (steering.telemetry.status == primary_set_tlm_status_tlm_status_ON) {
+  if (tlm_status_last_message.tlm_status ==
+      primary_set_tlm_status_tlm_status_ON) {
     print("Sending Telemetry OFF\n");
     tlm.tlm_status = primary_set_tlm_status_tlm_status_OFF;
     primary_set_tlm_status_pack(msg.data, &tlm,
@@ -250,15 +291,15 @@ void calibration_request_timeout_check(uint32_t current_time) {
         calibration_min_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
             current_time) {
       calibration_min_sent_request[iel] = false;
-      lv_obj_set_style_bg_color(
-          set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+      lv_obj_set_style_bg_color(set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX),
+                                LV_PART_MAIN);
     }
     if (calibration_max_sent_request[iel] &&
         calibration_max_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
             current_time) {
       calibration_max_sent_request[iel] = false;
-      lv_obj_set_style_bg_color(
-          set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+      lv_obj_set_style_bg_color(set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX),
+                                LV_PART_MAIN);
     }
   }
 }
@@ -300,21 +341,40 @@ void calibration_tool_set_min_max(bool maxv) {
   }
 }
 
-void send_tson(void) {
-  print("Sending TSON\n");
-#if 1
+void send_set_car_status(void) {
   can_message_t msg = {0};
+  primary_set_car_status_t car_status = {0};
+  switch (car_status_last_message.car_status) {
+  case primary_car_status_car_status_IDLE: {
+    car_status.car_status_set = primary_set_car_status_car_status_set_READY;
+    display_notification("Sending SET CAR STATUS: READY", 1500);
+    print("Sending SET CAR STATUS: READY\n");
+    break;
+  }
+  case primary_car_status_car_status_WAIT_DRIVER: {
+    car_status.car_status_set = primary_set_car_status_car_status_set_DRIVE;
+    display_notification("Sending SET CAR STATUS: DRIVE", 1500);
+    print("Sending SET CAR STATUS: DRIVE\n");
+    break;
+  }
+  default: {
+    car_status.car_status_set = primary_set_car_status_car_status_set_IDLE;
+    display_notification("Sending SET CAR STATUS: IDLE", 1500);
+    print("Sending SET CAR STATUS: IDLE\n");
+    break;
+  }
+  }
   msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
   msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
-  msg.data[0] = primary_set_car_status_car_status_set_READY;
+  primary_set_car_status_pack(msg.data, &car_status,
+                              PRIMARY_SET_CAR_STATUS_BYTE_SIZE);
   can_send(&msg, &hfdcan1);
-#endif
 }
 
-void send_tson_check(lv_timer_t *tim) {
+void send_set_car_status_check(lv_timer_t *tim) {
   if (tson_button_pressed) {
-    print("TSON TIMER: sending TSON\n");
-    display_notification("Sent TSON", 1500);
+    print("TSON TIMER: sending CAR STATUS SET\n");
+    send_set_car_status();
   } else {
     print("TSON TIMER: not sending tson\n");
   }
@@ -327,13 +387,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
       print("Setting timer to check button state in 2 seconds\n");
       tson_button_pressed = true;
-      send_tson_long_press_delay = lv_timer_create(send_tson_check, 1000, NULL);
-      lv_timer_set_repeat_count(send_tson_long_press_delay, 1);
-      lv_timer_reset(send_tson_long_press_delay);
+      send_set_car_status_long_press_delay =
+          lv_timer_create(send_set_car_status_check, 1000, NULL);
+      lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
+      lv_timer_reset(send_set_car_status_long_press_delay);
     } else {
       print("tson button released and possible timer deleted\n");
       tson_button_pressed = false;
-      lv_timer_set_repeat_count(send_tson_long_press_delay, 0);
+      lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
     }
   }
 }
@@ -343,6 +404,7 @@ void read_buttons(void) {
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1,
                        &button_input, 1, 100) != HAL_OK) {
     print("Error\n");
+    return;
   }
   from_gpio_to_buttons(button_input);
   dev1.gpio[1] = button_input;
@@ -353,10 +415,12 @@ void read_manettino_1(void) {
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOA, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
     print("Error\n");
+    return;
   }
-  if (manettino_input != dev1.gpio[0]) {
+  if (manettino_input != dev1.gpio[0] && !manettini_initialized[0]) {
     manettino_left_actions(manettino_input);
   }
+  manettini_initialized[0] = true;
   manettini[0] = manettino_input;
   dev1.gpio[0] = manettino_input;
 }
@@ -366,10 +430,12 @@ void read_manettino_2(void) {
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOB, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
     print("Error\n");
+    return;
   }
-  if (manettino_input != dev2.gpio[1]) {
+  if (manettino_input != dev2.gpio[1] && !manettini_initialized[1]) {
     manettino_center_actions(manettino_input);
   }
+  manettini_initialized[1] = true;
   manettini[1] = manettino_input;
   dev2.gpio[1] = manettino_input;
 }
@@ -379,15 +445,18 @@ void read_manettino_3(void) {
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOA, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
     print("Error\n");
+    return;
   }
-  if (manettino_input != dev2.gpio[0]) {
+  if (manettino_input != dev2.gpio[0] && !manettini_initialized[2]) {
     manettino_right_actions(manettino_input);
   }
+  manettini_initialized[2] = true;
   manettini[2] = manettino_input;
   dev2.gpio[0] = manettino_input;
 }
 
-void read_inputs() {
+void read_inputs(lv_timer_t *tim) {
+  UNUSED(tim);
   read_buttons();
   if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
     manettini_last_change = HAL_GetTick();

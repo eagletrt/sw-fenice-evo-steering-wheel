@@ -6,6 +6,12 @@
 #include "mcp23017.h"
 #include "ptt.h"
 
+#define BUTTONS_N 8
+#define MANETTINI_N 3
+#define BUTTONS_LONG_PRESS_TIME 1500
+#define CALIBRATION_TIMEOUT_RESPONSE 3000
+
+#define MANETTINO_STEPS_N 8
 #define BUTTON_MAPPING                                                         \
   { 7, 5, 3, 1, 0, 6, 4, 2 }
 
@@ -28,9 +34,18 @@
 #define MANETTINO_LEFT_VALS                                                    \
   { 223, 239, 254, 253, 251, 247, 191, 127 }
 
+#define POWER_MAP_MAPPING                                                      \
+  { -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.8, 1.0 }
+#define TORQUE_MAP_INDEX                                                       \
+  { 0, 1, 2, 4, 7, 10, 12, 15 }
+#define SLIP_MAP_INDEX                                                         \
+  { 0, 1, 2, 4, 7, 10, 12, 15 }
+
 void inputs_init(void);
-void read_inputs();
-void send_tson(void);
+void read_inputs(lv_timer_t *);
+void send_set_car_status(void);
+void send_drive(void);
+void send_tsoff(void);
 void turn_telemetry_on_off(void);
 void pedal_calibration_ack(primary_pedal_calibration_ack_t *data);
 void calibration_request_timeout_check(uint32_t current_time);
