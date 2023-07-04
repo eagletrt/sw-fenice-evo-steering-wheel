@@ -378,7 +378,7 @@ CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32H723ZGTx_FLASH.ld
+LDSCRIPT = STM32H723ZGTx_FLASH_shifted.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
