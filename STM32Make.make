@@ -58,7 +58,6 @@ Core/Src/sysmem.c \
 Core/Src/system_stm32h7xx.c \
 Core/Src/test/i2c_test.c \
 Core/Src/test/sdram_test.c \
-Core/Src/test/uart_test.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
@@ -386,7 +385,7 @@ LIBDIR = \
 
 
 # Additional LD Flags from config file
-ADDITIONALLDFLAGS = -specs=nano.specs 
+ADDITIONALLDFLAGS = -specs=nano.specs -u_printf_float 
 
 LDFLAGS = $(MCU) $(ADDITIONALLDFLAGS) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 

@@ -60,8 +60,7 @@ primary_watchdog m_primary_watchdog = {0};
 secondary_watchdog m_secondary_watchdog = {0};
 
 can_id_t primary_watchdog_ids[PRIMARY_WATCHDOG_SIZE] = {
-  PRIMARY_CAR_STATUS_FRAME_ID
-};
+    PRIMARY_CAR_STATUS_FRAME_ID};
 
 can_id_t secondary_watchdog_ids[SECONDARY_WATCHDOG_SIZE] = {
 
@@ -75,7 +74,7 @@ lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void watchdog_task_fn(lv_timer_t*);
+void watchdog_task_fn(lv_timer_t *);
 
 /* USER CODE END PFP */
 
@@ -135,11 +134,17 @@ int main(void) {
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
   HAL_Delay(100);
 
+  
+
 #if 1
   led_control_init();
   led_control_set_all(&hi2c4, COLOR_BLUE);
 #endif
 
+#define I2C_TESTS 0
+#if I2C_TESTS == 1
+  i2c_test_read_write_register();
+#endif
 #define SDRAM_TESTS 0
 #if SDRAM_TESTS == 1
   sdram_test_write_all();
@@ -220,14 +225,15 @@ int main(void) {
   }
 #endif
 
-
-  for(uint64_t iindex = 0; iindex < PRIMARY_WATCHDOG_SIZE; ++iindex) {
+  for (uint64_t iindex = 0; iindex < PRIMARY_WATCHDOG_SIZE; ++iindex) {
     can_id_t id = primary_watchdog_ids[iindex];
-    CANLIB_BITSET_ARRAY(m_primary_watchdog.activated, primary_watchdog_index_from_id(id));
+    CANLIB_BITSET_ARRAY(m_primary_watchdog.activated,
+                        primary_watchdog_index_from_id(id));
   }
-  for(uint64_t iindex = 0; iindex < SECONDARY_WATCHDOG_SIZE; ++iindex) {
+  for (uint64_t iindex = 0; iindex < SECONDARY_WATCHDOG_SIZE; ++iindex) {
     can_id_t id = secondary_watchdog_ids[iindex];
-    CANLIB_BITSET_ARRAY(m_secondary_watchdog.activated, secondary_watchdog_index_from_id(id));
+    CANLIB_BITSET_ARRAY(m_secondary_watchdog.activated,
+                        secondary_watchdog_index_from_id(id));
   }
 
   lv_timer_t *steer_status_task =
@@ -364,29 +370,31 @@ void SystemClock_Config(void) {
 
 /* USER CODE BEGIN 4 */
 
-void watchdog_task_fn(lv_timer_t* main_timer) {
+void watchdog_task_fn(lv_timer_t *main_timer) {
   UNUSED(main_timer);
 
   primary_watchdog_timeout(&m_primary_watchdog, HAL_GetTick());
   secondary_watchdog_timeout(&m_secondary_watchdog, HAL_GetTick());
 
-  for(uint64_t iindex = 0; iindex < PRIMARY_WATCHDOG_SIZE; ++iindex) {
+  for (uint64_t iindex = 0; iindex < PRIMARY_WATCHDOG_SIZE; ++iindex) {
     can_id_t id = primary_watchdog_ids[iindex];
-    bool timed_out = CANLIB_BITTEST_ARRAY(m_primary_watchdog.timeout, primary_watchdog_index_from_id(id));
+    bool timed_out = CANLIB_BITTEST_ARRAY(m_primary_watchdog.timeout,
+                                          primary_watchdog_index_from_id(id));
     if (timed_out) {
       char name[128];
       primary_message_name_from_id(id, name);
       print("Primary watchdog timed out for %s\n", name);
-      switch(id) {
-        case PRIMARY_CAR_STATUS_FRAME_ID:
-          print("Primary watchdog timed out for CAR_STATUS\n");
-          break;
+      switch (id) {
+      case PRIMARY_CAR_STATUS_FRAME_ID:
+        print("Primary watchdog timed out for CAR_STATUS\n");
+        break;
       }
     }
   }
-  for(uint64_t iindex = 0; iindex < SECONDARY_WATCHDOG_SIZE; ++iindex) {
+  for (uint64_t iindex = 0; iindex < SECONDARY_WATCHDOG_SIZE; ++iindex) {
     can_id_t id = secondary_watchdog_ids[iindex];
-    bool timed_out = CANLIB_BITTEST_ARRAY(m_secondary_watchdog.timeout, secondary_watchdog_index_from_id(id));
+    bool timed_out = CANLIB_BITTEST_ARRAY(m_secondary_watchdog.timeout,
+                                          secondary_watchdog_index_from_id(id));
     if (timed_out) {
       char name[128];
       secondary_message_name_from_id(id, name);

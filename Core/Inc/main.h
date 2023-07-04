@@ -45,6 +45,7 @@ extern "C" {
 #include "steering.h"
 #include "tab_manager.h"
 #include "test/sdram_test.h"
+#include "test/i2c_test.h"
 #include <string.h>
 /* USER CODE END Includes */
 

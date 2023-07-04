@@ -35,12 +35,32 @@
 #define MANETTINO_LEFT_VALS                                                    \
   { 223, 239, 254, 253, 251, 247, 191, 127 }
 
+typedef enum {
+  RADS_AUTO,
+  RADS_OFF,
+  RADS_025,
+  RADS_050,
+  RADS_075,
+  RADS_100,
+  RADS_LENGTH
+} radiator_speed_t;
+
+typedef enum {
+  PUMPS_AUTO,
+  PUMPS_OFF,
+  PUMPS_025,
+  PUMPS_050,
+  PUMPS_075,
+  PUMPS_100,
+  P_LENGTH
+} pumps_speed_t;
+
 #define POWER_MAP_MAPPING                                                      \
   { -0.1f, 0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.8f, 1.0f }
-#define TORQUE_MAP_INDEX                                                       \
-  { 0, 1, 2, 4, 7, 10, 12, 15 }
-#define SLIP_MAP_INDEX                                                         \
-  { 0, 1, 2, 4, 7, 10, 12, 15 }
+#define TORQUE_MAP_MAPPING                                                     \
+  { 0.0f, 0.066f, 0.133f, 0.266f, 0.466f, 0.666f, 0.8f, 1.0f }
+#define SLIP_MAP_MAPPING                                                       \
+  { 0.0f, 0.066f, 0.133f, 0.266f, 0.466f, 0.666f, 0.8f, 1.0f }
 
 void inputs_init(void);
 void read_inputs(lv_timer_t *);

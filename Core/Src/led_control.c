@@ -1,14 +1,7 @@
-/*
- * led_control.c
- *
- *  Created on: Mar 6, 2023
- *      Author: tzarjakob
- */
-
 #include "led_control.h"
 
 void led_control_init() {
-  uint8_t control[] = {0x02, 0b10011111};
+  uint8_t control[] = {LED_CONTROL_REGISTER, 0b10011111};
 
   HAL_I2C_Master_Transmit(&hi2c4, ledaddr1, control, sizeof(control), 500);
   HAL_I2C_Master_Transmit(&hi2c4, ledaddr2, control, sizeof(control), 500);

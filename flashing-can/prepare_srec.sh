@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+# TODO check that the bin is compiled with the shifted linker script
+
 cp ../build/fenice-evo-steering-wheel.bin wheel.bin
 ./bin2srec -a 0x8020000 -i ./wheel.bin -o ./wheel.srec
 

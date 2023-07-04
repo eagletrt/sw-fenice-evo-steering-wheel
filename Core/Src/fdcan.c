@@ -26,6 +26,8 @@ extern steering_t steering;
 extern bool steering_initialized;
 primary_steer_status_converted_t steer_status_last_message = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
+primary_cooling_status_converted_t cooling_status_last_message = {
+    .pumps_speed = -1.0f, .radiators_speed = -1.0f};
 
 extern primary_watchdog m_primary_watchdog;
 extern secondary_watchdog m_secondary_watchdog;
@@ -431,7 +433,7 @@ void handle_primary(can_message_t *msg) {
   case PRIMARY_CAR_STATUS_FRAME_ID: {
     primary_watchdog_reset(&m_primary_watchdog, id, timestamp);
     STEER_CAN_UNPACK(primary, PRIMARY, car_status, CAR_STATUS);
-    car_status_update(&converted);    
+    car_status_update(&converted);
     break;
   }
   case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {

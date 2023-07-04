@@ -32,8 +32,8 @@ extern "C" {
 #include "lvgl.h"
 #include "primary/primary_network.h"
 #include "primary/primary_watchdog.h"
-#include "secondary/secondary_watchdog.h"
 #include "secondary/secondary_network.h"
+#include "secondary/secondary_watchdog.h"
 /* USER CODE END Includes */
 
 extern FDCAN_HandleTypeDef hfdcan1;

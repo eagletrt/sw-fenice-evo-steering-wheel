@@ -25,6 +25,7 @@ extern lv_obj_t *set_max_btn;
 extern primary_tlm_status_t tlm_status_last_message;
 extern primary_car_status_t car_status_last_message;
 extern primary_steer_status_converted_t steer_status_last_message;
+extern primary_cooling_status_converted_t cooling_status_last_message;
 
 // const static uint8_t button_mapping[BUTTONS_N] = BUTTON_MAPPING;
 const static uint8_t manettino_right_possible_vals[BUTTONS_N] =
@@ -35,8 +36,8 @@ const static uint8_t manettino_left_possible_vals[BUTTONS_N] =
     MANETTINO_LEFT_VALS;
 
 const static float val_power_map_mapping[MANETTINO_STEPS_N] = POWER_MAP_MAPPING;
-const static float val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_INDEX;
-const static float val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_INDEX;
+const static float val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_MAPPING;
+const static float val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_MAPPING;
 
 void calibration_tool_set_min_max(bool maxv);
 
@@ -170,12 +171,12 @@ void manettino_right_actions(uint8_t val) {
     if (val == MANETTINO_DEBOUNCE_VALUE)
       continue;
     if (val == manettino_right_possible_vals[ival]) {
-      steer_status_last_message.map_tv =
-          (float)val_torque_map_index[ival] / 15.0f;
+      steer_status_last_message.map_tv = (float)val_torque_map_index[ival];
       char title[100];
       sprintf(title, "%.1f", steer_status_last_message.map_tv);
       STEER_UPDATE_LABEL(steering.control.lb_torque, title)
-      sprintf(title, "TORQUE VECTORING %.1f", (float) steer_status_last_message.map_tv);
+      sprintf(title, "TORQUE VECTORING %.1f",
+              (float)steer_status_last_message.map_tv);
       print("%s\n", title);
       display_notification(title, 750);
       break;
@@ -195,7 +196,7 @@ void manettino_center_actions(uint8_t val) {
       char title[100];
       sprintf(title, "%.1f", steer_status_last_message.map_pw);
       STEER_UPDATE_LABEL(steering.control.lb_power, title)
-      sprintf(title, "POWER MAP %.1f", (float) steer_status_last_message.map_pw);
+      sprintf(title, "POWER MAP %.1f", (float)steer_status_last_message.map_pw);
       print("%s\n", title);
       display_notification(title, 750);
       break;
@@ -213,7 +214,8 @@ void manettino_left_actions(uint8_t val) {
       char title[100];
       sprintf(title, "%.1f", steer_status_last_message.map_sc);
       STEER_UPDATE_LABEL(steering.control.lb_slip, title)
-      sprintf(title, "SLIP CONTROL %.1f", (float) steer_status_last_message.map_sc);
+      sprintf(title, "SLIP CONTROL %.1f",
+              (float)steer_status_last_message.map_sc);
       print("%s\n", title);
       display_notification(title, 750);
       break;
