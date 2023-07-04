@@ -27,6 +27,9 @@ extern bool steering_initialized;
 primary_steer_status_converted_t steer_status_last_message = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
 
+extern primary_watchdog m_primary_watchdog;
+extern secondary_watchdog m_secondary_watchdog;
+
 device_t primary_can_device;
 device_t secondary_can_device;
 uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
@@ -422,11 +425,13 @@ void handle_primary(can_message_t *msg) {
   print("Primary network - message id %s\n", name_buffer);
 #endif
   can_id_t id = msg->id;
+  uint32_t timestamp = HAL_GetTick();
   primary_devices_deserialize_from_id(&primary_can_device, id, msg->data);
   switch (id) {
   case PRIMARY_CAR_STATUS_FRAME_ID: {
+    primary_watchdog_reset(&m_primary_watchdog, id, timestamp);
     STEER_CAN_UNPACK(primary, PRIMARY, car_status, CAR_STATUS);
-    car_status_update(&converted);
+    car_status_update(&converted);    
     break;
   }
   case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {

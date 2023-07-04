@@ -32,6 +32,7 @@ extern "C" {
 #include "lvgl.h"
 #include "primary/primary_network.h"
 #include "primary/primary_watchdog.h"
+#include "secondary/secondary_watchdog.h"
 #include "secondary/secondary_network.h"
 /* USER CODE END Includes */
 
