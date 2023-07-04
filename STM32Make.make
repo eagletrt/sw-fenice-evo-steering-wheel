@@ -243,9 +243,13 @@ lvgl/src/widgets/lv_switch.c \
 lvgl/src/widgets/lv_table.c \
 lvgl/src/widgets/lv_textarea.c \
 steering/can/lib/bms/bms_network.c \
+steering/can/lib/bms/bms_watchdog.c \
 steering/can/lib/inverters/inverters_network.c \
+steering/can/lib/inverters/inverters_watchdog.c \
 steering/can/lib/primary/primary_network.c \
+steering/can/lib/primary/primary_watchdog.c \
 steering/can/lib/secondary/secondary_network.c \
+steering/can/lib/secondary/secondary_watchdog.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_14.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_18.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_20.c \

@@ -38,7 +38,16 @@
         "primary_watchdog.h": "c",
         "tab_notification.h": "c",
         "usart.h": "c",
-        "primary_network.h": "c"
+        "primary_network.h": "c",
+        "led_control.h": "c",
+        "chrono": "c",
+        "compare": "c",
+        "functional": "c",
+        "istream": "c",
+        "ostream": "c",
+        "ratio": "c",
+        "tuple": "c",
+        "type_traits": "c"
     },
     "cmake.configureOnOpen": false
 }

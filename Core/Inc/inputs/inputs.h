@@ -5,6 +5,7 @@
 #include "lvgl.h"
 #include "mcp23017.h"
 #include "ptt.h"
+#include "steering.h"
 
 #define BUTTONS_N 8
 #define MANETTINI_N 3
@@ -35,7 +36,7 @@
   { 223, 239, 254, 253, 251, 247, 191, 127 }
 
 #define POWER_MAP_MAPPING                                                      \
-  { -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.8, 1.0 }
+  { -0.1f, 0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.8f, 1.0f }
 #define TORQUE_MAP_INDEX                                                       \
   { 0, 1, 2, 4, 7, 10, 12, 15 }
 #define SLIP_MAP_INDEX                                                         \
@@ -44,8 +45,6 @@
 void inputs_init(void);
 void read_inputs(lv_timer_t *);
 void send_set_car_status(void);
-void send_drive(void);
-void send_tsoff(void);
 void turn_telemetry_on_off(void);
 void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data);
 void calibration_request_timeout_check(uint32_t current_time);

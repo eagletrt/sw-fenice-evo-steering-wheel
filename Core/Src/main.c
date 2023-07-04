@@ -60,8 +60,6 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
 void lv_example_grid_4(void);
-void LTDC_switch_framebuffer(void);
-uint32_t *LTDC_get_backbuffer_address(void);
 lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
 lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
@@ -154,7 +152,6 @@ int main(void) {
 #endif
 
 #if 0
-
   uint8_t data[TSIZE];
   memcpy(data, (void *)EXTERNAL_FLASH_ADDRESS, TSIZE);
   data[TSIZE - 1] = '\0';

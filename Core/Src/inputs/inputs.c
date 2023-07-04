@@ -24,7 +24,7 @@ extern lv_obj_t *set_max_btn;
 
 extern primary_tlm_status_t tlm_status_last_message;
 extern primary_car_status_t car_status_last_message;
-extern primary_steer_status_t steer_status_last_message;
+extern primary_steer_status_converted_t steer_status_last_message;
 
 // const static uint8_t button_mapping[BUTTONS_N] = BUTTON_MAPPING;
 const static uint8_t manettino_right_possible_vals[BUTTONS_N] =
@@ -34,10 +34,9 @@ const static uint8_t manettino_center_possible_vals[BUTTONS_N] =
 const static uint8_t manettino_left_possible_vals[BUTTONS_N] =
     MANETTINO_LEFT_VALS;
 
-const static uint8_t val_power_map_mapping[MANETTINO_STEPS_N] =
-    POWER_MAP_MAPPING;
-const static uint8_t val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_INDEX;
-const static uint8_t val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_INDEX;
+const static float val_power_map_mapping[MANETTINO_STEPS_N] = POWER_MAP_MAPPING;
+const static float val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_INDEX;
+const static float val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_INDEX;
 
 void calibration_tool_set_min_max(bool maxv);
 
@@ -171,11 +170,14 @@ void manettino_right_actions(uint8_t val) {
     if (val == MANETTINO_DEBOUNCE_VALUE)
       continue;
     if (val == manettino_right_possible_vals[ival]) {
+      steer_status_last_message.map_tv =
+          (float)val_torque_map_index[ival] / 15.0f;
       char title[100];
-      sprintf(title, "TORQUE VECTORING %u", (unsigned int)ival);
+      sprintf(title, "%.1f", steer_status_last_message.map_tv);
+      STEER_UPDATE_LABEL(steering.control.lb_torque, title)
+      sprintf(title, "TORQUE VECTORING %.1f", (float) steer_status_last_message.map_tv);
+      print("%s\n", title);
       display_notification(title, 750);
-      print("TORQUE VECTORING %u\n", (unsigned int)ival);
-      steer_status_last_message.map_tv = val_torque_map_index[ival];
       break;
     }
   }
@@ -189,11 +191,13 @@ void manettino_center_actions(uint8_t val) {
     if (val == MANETTINO_DEBOUNCE_VALUE)
       continue;
     if (val == manettino_center_possible_vals[ival]) {
+      steer_status_last_message.map_pw = (float)val_power_map_mapping[ival];
       char title[100];
-      sprintf(title, "POWER MAP %u", (unsigned int)ival);
+      sprintf(title, "%.1f", steer_status_last_message.map_pw);
+      STEER_UPDATE_LABEL(steering.control.lb_power, title)
+      sprintf(title, "POWER MAP %.1f", (float) steer_status_last_message.map_pw);
+      print("%s\n", title);
       display_notification(title, 750);
-      print("POWER MAP %u\n", (unsigned int)ival);
-      steer_status_last_message.map_pw = val_power_map_mapping[ival];
       break;
     }
   }
@@ -205,11 +209,13 @@ void manettino_left_actions(uint8_t val) {
        ival < (sizeof(manettino_left_possible_vals) / sizeof(uint8_t));
        ++ival) {
     if (val == manettino_left_possible_vals[ival]) {
+      steer_status_last_message.map_sc = (float)val_slip_map_index[ival];
       char title[100];
-      sprintf(title, "SLIP CONTROL %u", (unsigned int)ival);
+      sprintf(title, "%.1f", steer_status_last_message.map_sc);
+      STEER_UPDATE_LABEL(steering.control.lb_slip, title)
+      sprintf(title, "SLIP CONTROL %.1f", (float) steer_status_last_message.map_sc);
+      print("%s\n", title);
       display_notification(title, 750);
-      print("SLIP CONTROL %u\n", (unsigned int)ival);
-      steer_status_last_message.map_sc = val_slip_map_index[ival];
       break;
     }
   }
@@ -241,25 +247,17 @@ void from_gpio_to_buttons(uint8_t gpio) {
 }
 
 void turn_telemetry_on_off(void) {
-  primary_set_tlm_status_t tlm = {0};
-  can_message_t msg = {0};
-  msg.id = PRIMARY_SET_TLM_STATUS_FRAME_ID;
-  msg.size = PRIMARY_SET_TLM_STATUS_BYTE_SIZE;
-
+  primary_set_tlm_status_converted_t converted = {0};
   if (tlm_status_last_message.tlm_status ==
       primary_set_tlm_status_tlm_status_ON) {
     print("Sending Telemetry OFF\n");
-    tlm.tlm_status = primary_set_tlm_status_tlm_status_OFF;
-    primary_set_tlm_status_pack(msg.data, &tlm,
-                                PRIMARY_SET_TLM_STATUS_BYTE_SIZE);
-    can_send(&msg, &hfdcan1);
+    converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;
   } else {
     print("Sending Telemetry ON\n");
-    tlm.tlm_status = primary_set_tlm_status_tlm_status_ON;
-    primary_set_tlm_status_pack(msg.data, &tlm,
-                                PRIMARY_SET_TLM_STATUS_BYTE_SIZE);
-    can_send(&msg, &hfdcan1);
+    converted.tlm_status = primary_set_tlm_status_tlm_status_ON;
   }
+  STEER_CAN_PACK(primary, PRIMARY, set_tlm_status, SET_TLM_STATUS);
+  can_send(&msg, &hfdcan1);
 }
 
 void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data) {
@@ -272,16 +270,13 @@ void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data) {
 }
 
 void send_calibration(bool accel, bool max) {
-  can_message_t msg = {0};
-  primary_set_pedal_calibration_t calib = {0};
-  calib.pedal = accel ? primary_set_pedal_calibration_pedal_ACCELERATOR
-                      : primary_set_pedal_calibration_pedal_BRAKE;
-  calib.bound = max ? primary_set_pedal_calibration_bound_SET_MAX
-                    : primary_set_pedal_calibration_bound_SET_MIN;
-  msg.id = PRIMARY_SET_PEDAL_CALIBRATION_FRAME_ID;
-  msg.size = PRIMARY_SET_PEDAL_CALIBRATION_BYTE_SIZE;
-  primary_set_pedal_calibration_pack(msg.data, &calib,
-                                     PRIMARY_SET_PEDAL_CALIBRATION_BYTE_SIZE);
+  primary_set_pedal_calibration_converted_t converted = {0};
+  converted.pedal = accel ? primary_set_pedal_calibration_pedal_ACCELERATOR
+                          : primary_set_pedal_calibration_pedal_BRAKE;
+  converted.bound = max ? primary_set_pedal_calibration_bound_SET_MAX
+                        : primary_set_pedal_calibration_bound_SET_MIN;
+  STEER_CAN_PACK(primary, PRIMARY, set_pedal_calibration,
+                 SET_PEDAL_CALIBRATION);
   can_send(&msg, &hfdcan1);
 }
 
@@ -342,32 +337,28 @@ void calibration_tool_set_min_max(bool maxv) {
 }
 
 void send_set_car_status(void) {
-  can_message_t msg = {0};
-  primary_set_car_status_t car_status = {0};
+  primary_set_car_status_converted_t converted = {0};
   switch (car_status_last_message.car_status) {
   case primary_car_status_car_status_IDLE: {
-    car_status.car_status_set = primary_set_car_status_car_status_set_READY;
-    display_notification("Sending SET CAR STATUS: READY", 1500);
-    print("Sending SET CAR STATUS: READY\n");
+    converted.car_status_set = primary_set_car_status_car_status_set_READY;
+    display_notification("TSON", 1500);
+    print("Sending SET CAR STATUS: TSON\n");
     break;
   }
   case primary_car_status_car_status_WAIT_DRIVER: {
-    car_status.car_status_set = primary_set_car_status_car_status_set_DRIVE;
-    display_notification("Sending SET CAR STATUS: DRIVE", 1500);
+    converted.car_status_set = primary_set_car_status_car_status_set_DRIVE;
+    display_notification("DRIVE", 1500);
     print("Sending SET CAR STATUS: DRIVE\n");
     break;
   }
   default: {
-    car_status.car_status_set = primary_set_car_status_car_status_set_IDLE;
-    display_notification("Sending SET CAR STATUS: IDLE", 1500);
+    converted.car_status_set = primary_set_car_status_car_status_set_IDLE;
+    display_notification("IDLE", 1500);
     print("Sending SET CAR STATUS: IDLE\n");
     break;
   }
   }
-  msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
-  msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
-  primary_set_car_status_pack(msg.data, &car_status,
-                              PRIMARY_SET_CAR_STATUS_BYTE_SIZE);
+  STEER_CAN_PACK(primary, PRIMARY, set_car_status, SET_CAR_STATUS);
   can_send(&msg, &hfdcan1);
 }
 

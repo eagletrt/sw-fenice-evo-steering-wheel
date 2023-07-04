@@ -45,9 +45,19 @@ extern FDCAN_HandleTypeDef hfdcan2;
   if (msg->size != PRIMARY_##type##_BYTE_SIZE)                                 \
   print("Invalid size for" #type "message")
 
-#define PRIMARY_UNPACK(type)                                                   \
-  primary_##type##_t data;                                                     \
-  primary_##type##_unpack(&data, msg->data, msg->size)
+#define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME)                         \
+  ntw##_##msg_name##_t raw;                                                    \
+  ntw##_##msg_name##_converted_t converted;                                    \
+  ntw##_##msg_name##_unpack(&raw, msg->data, PRIMARY_##MSG_NAME##_BYTE_SIZE);  \
+  ntw##_##msg_name##_raw_to_conversion_struct(&converted, &raw);
+
+#define STEER_CAN_PACK(ntw, NTW, msg_name, MSG_NAME)                           \
+  can_message_t msg = {0};                                                     \
+  msg.id = NTW##_##MSG_NAME##_FRAME_ID;                                        \
+  msg.size = NTW##_##MSG_NAME##_BYTE_SIZE;                                     \
+  ntw##_##msg_name##_t raw = {0};                                              \
+  ntw##_##msg_name##_conversion_to_raw_struct(&raw, &converted);               \
+  ntw##_##msg_name##_pack(msg.data, &raw, PRIMARY_##MSG_NAME##_BYTE_SIZE);
 
 #define CAN_PRIMARY_NETWORK hfdcan1
 #define CAN_SECONDARY_NETWORK hfdcan2
