@@ -173,10 +173,10 @@ void manettino_right_actions(uint8_t val) {
     if (val == manettino_right_possible_vals[ival]) {
       steer_status_last_message.map_tv = (float)val_torque_map_index[ival];
       char title[100];
-      sprintf(title, "%.1f", steer_status_last_message.map_tv);
+      uint16_t map_val = (uint16_t)(steer_status_last_message.map_tv * 100.0f);
+      sprintf(title, "%u", map_val);
       STEER_UPDATE_LABEL(steering.control.lb_torque, title)
-      sprintf(title, "TORQUE VECTORING %.1f",
-              (float)steer_status_last_message.map_tv);
+      sprintf(title, "TORQUE VECTORING %u", map_val);
       print("%s\n", title);
       display_notification(title, 750);
       break;
@@ -193,10 +193,11 @@ void manettino_center_actions(uint8_t val) {
       continue;
     if (val == manettino_center_possible_vals[ival]) {
       steer_status_last_message.map_pw = (float)val_power_map_mapping[ival];
+      uint16_t map_val = (uint16_t)(steer_status_last_message.map_pw * 100.0f);
       char title[100];
-      sprintf(title, "%.1f", steer_status_last_message.map_pw);
+      sprintf(title, "%u", map_val);
       STEER_UPDATE_LABEL(steering.control.lb_power, title)
-      sprintf(title, "POWER MAP %.1f", (float)steer_status_last_message.map_pw);
+      sprintf(title, "POWER MAP %u", map_val);
       print("%s\n", title);
       display_notification(title, 750);
       break;
@@ -212,10 +213,10 @@ void manettino_left_actions(uint8_t val) {
     if (val == manettino_left_possible_vals[ival]) {
       steer_status_last_message.map_sc = (float)val_slip_map_index[ival];
       char title[100];
-      sprintf(title, "%.1f", steer_status_last_message.map_sc);
+      uint16_t map_val = (uint16_t)(steer_status_last_message.map_sc * 100.0f);
+      sprintf(title, "%u", map_val);
       STEER_UPDATE_LABEL(steering.control.lb_slip, title)
-      sprintf(title, "SLIP CONTROL %.1f",
-              (float)steer_status_last_message.map_sc);
+      sprintf(title, "SLIP CONTROL %u", map_val);
       print("%s\n", title);
       display_notification(title, 750);
       break;
@@ -251,7 +252,7 @@ void from_gpio_to_buttons(uint8_t gpio) {
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};
   if (tlm_status_last_message.tlm_status ==
-      primary_set_tlm_status_tlm_status_ON) {
+      (primary_set_tlm_status_tlm_status) primary_set_tlm_status_tlm_status_ON) {
     print("Sending Telemetry OFF\n");
     converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;
   } else {
