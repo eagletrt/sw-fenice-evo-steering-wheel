@@ -66,6 +66,16 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void VectorBase_Config(void)
+{
+  /* The constant array with vectors of the vector table is declared externally in the
+   * c-startup code.
+   */
+  extern const unsigned long g_pfnVectors[];
+ 
+  /* Remap the vector table to where the vector table is located for this program. */
+  SCB->VTOR = (unsigned long)&g_pfnVectors[0];
+}
 
 /* USER CODE END 0 */
 
@@ -92,6 +102,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+
+  // VectorBase_Config();
 
   /* USER CODE END SysInit */
 
@@ -137,6 +149,9 @@ int main(void)
 
   BootInit();
 
+  uint32_t save_cpu_time_counter = 0;
+  const uint32_t save_cpu_time = 0x000FFFFF;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -144,7 +159,12 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    HAL_UART_Transmit(&hlpuart1, (uint8_t*) buffer, sizeof(buffer), 1000);
+    if (save_cpu_time_counter > save_cpu_time) {
+      HAL_UART_Transmit(&hlpuart1, (uint8_t*) buffer, sizeof(buffer), 1000);
+      save_cpu_time_counter = 0;
+    }
+    save_cpu_time_counter++;
+
     BootTask();
 
     /* USER CODE BEGIN 3 */

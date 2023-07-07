@@ -252,7 +252,7 @@ void from_gpio_to_buttons(uint8_t gpio) {
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};
   if (tlm_status_last_message.tlm_status ==
-      (primary_set_tlm_status_tlm_status) primary_set_tlm_status_tlm_status_ON) {
+      (primary_set_tlm_status_tlm_status)primary_set_tlm_status_tlm_status_ON) {
     print("Sending Telemetry OFF\n");
     converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;
   } else {
@@ -368,6 +368,7 @@ void send_set_car_status(void) {
 void send_set_car_status_check(lv_timer_t *tim) {
   if (tson_button_pressed) {
     print("TSON TIMER: sending CAR STATUS SET\n");
+    STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
     send_set_car_status();
   } else {
     print("TSON TIMER: not sending tson\n");
@@ -385,10 +386,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
           lv_timer_create(send_set_car_status_check, 1000, NULL);
       lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
       lv_timer_reset(send_set_car_status_long_press_delay);
+      STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_ORANGE_STATUS_HEX)
     } else {
       print("tson button released and possible timer deleted\n");
       tson_button_pressed = false;
       lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
+      STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
     }
   }
 }

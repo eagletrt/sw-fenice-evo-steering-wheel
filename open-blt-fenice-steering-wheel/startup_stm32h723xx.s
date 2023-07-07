@@ -307,6 +307,7 @@ g_pfnVectors:
   .word     FDCAN3_IT1_IRQHandler             /* FDCAN3 interrupt line 1  */
   .word     TIM23_IRQHandler                  /* TIM23 global interrupt   */
   .word     TIM24_IRQHandler                  /* TIM24 global interrupt   */
+  ; .word     0x8020298                         /* OpenBLT Checksum         */
 
 /*******************************************************************************
 *

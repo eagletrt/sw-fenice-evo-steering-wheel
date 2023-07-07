@@ -134,8 +134,6 @@ int main(void) {
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 4096);
   HAL_Delay(100);
 
-  
-
 #if 1
   led_control_init();
   led_control_set_all(&hi2c4, COLOR_BLUE);

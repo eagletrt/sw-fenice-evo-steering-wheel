@@ -55,6 +55,7 @@
  *         verification will always fail.
  */
 #ifndef BOOT_FLASH_VECTOR_TABLE_CS_OFFSET
+// #define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET    (0x2CC)
 #define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET    (0x298)
 #endif
 
