@@ -22,7 +22,7 @@ TARGET = fenice-evo-steering-wheel
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -Os
 
 
 #######################################
@@ -56,6 +56,7 @@ Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
 Core/Src/sysmem.c \
 Core/Src/system_stm32h7xx.c \
+Core/Src/test/fdcan_test.c \
 Core/Src/test/i2c_test.c \
 Core/Src/test/sdram_test.c \
 Core/Src/tim.c \
@@ -255,11 +256,10 @@ steering/simulator/steering/fonts/lv_font_inter_bold_20.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_22.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_30.c \
 steering/simulator/steering/fonts/lv_font_inter_bold_38.c \
-steering/simulator/steering/fonts/lv_font_inter_bold_60.c \
-steering/simulator/steering/fonts/lv_font_inter_bold_70.c \
 steering/simulator/steering/steering.c \
 steering/simulator/steering/ui/tab_calibration.c \
 steering/simulator/steering/ui/tab_debug.c \
+steering/simulator/steering/ui/tab_engineer_mode.c \
 steering/simulator/steering/ui/tab_manager.c \
 steering/simulator/steering/ui/tab_notification.c \
 steering/simulator/steering/ui/tab_racing.c \

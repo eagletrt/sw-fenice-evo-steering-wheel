@@ -22,12 +22,15 @@ extern tab_t current_tab;
 extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
 
-extern primary_tlm_status_t tlm_status_last_message;
-extern primary_car_status_t car_status_last_message;
-extern primary_steer_status_converted_t steer_status_last_message;
-extern primary_cooling_status_converted_t cooling_status_last_message;
+extern primary_tlm_status_t tlm_status_last_state;
+extern primary_car_status_t car_status_last_state;
+extern primary_steer_status_converted_t steer_status_last_state;
+extern primary_cooling_status_converted_t cooling_status_last_state;
 
-// const static uint8_t button_mapping[BUTTONS_N] = BUTTON_MAPPING;
+/***
+ * Manettini mapping
+ *
+ */
 const static uint8_t manettino_right_possible_vals[BUTTONS_N] =
     MANETTINO_RIGHT_VALS;
 const static uint8_t manettino_center_possible_vals[BUTTONS_N] =
@@ -38,6 +41,25 @@ const static uint8_t manettino_left_possible_vals[BUTTONS_N] =
 const static float val_power_map_mapping[MANETTINO_STEPS_N] = POWER_MAP_MAPPING;
 const static float val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_MAPPING;
 const static float val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_MAPPING;
+
+/***
+ * Engineer Mode
+ */
+bool engineer_mode = false;
+
+void switch_mode() {
+  if (engineer_mode) {
+    // exit EM
+    engineer_mode = false;
+    remove_engineer_mode_screen();
+    display_notification("Engineer Mode OFF", 1500);
+  } else {
+    // enter EM
+    engineer_mode = true;
+    load_engineer_mode_screen();
+    display_notification("Engineer Mode ON", 1500);
+  }
+}
 
 void calibration_tool_set_min_max(bool maxv);
 
@@ -84,12 +106,16 @@ void print_buttons(void) {
 
 void buttons_pressed_actions(uint8_t button) {
   switch (button) {
-  case PADDLE_TOP_RIGHT:
-    change_tab(true);
+  case PADDLE_TOP_RIGHT: {
+    if (!engineer_mode)
+      change_tab(true);
     break;
-  case PADDLE_TOP_LEFT:
-    change_tab(false);
+  }
+  case PADDLE_TOP_LEFT: {
+    if (!engineer_mode)
+      change_tab(false);
     break;
+  }
   case PADDLE_BOTTOM_RIGHT:
     print("SHIFT BOX FOCUS RIGHT\n");
     shift_box_focus(true);
@@ -145,6 +171,7 @@ void buttons_released_actions(uint8_t button) {
 void buttons_long_pressed_actions(uint8_t button) {
   switch (button) {
   case PADDLE_TOP_RIGHT:
+    switch_mode();
     break;
   case PADDLE_TOP_LEFT:
     break;
@@ -163,7 +190,7 @@ void buttons_long_pressed_actions(uint8_t button) {
   }
 }
 
-// TORQUE
+// TORQUE | RADIATORS
 void manettino_right_actions(uint8_t val) {
   for (uint8_t ival = 0;
        ival < (sizeof(manettino_right_possible_vals) / sizeof(uint8_t));
@@ -171,14 +198,10 @@ void manettino_right_actions(uint8_t val) {
     if (val == MANETTINO_DEBOUNCE_VALUE)
       continue;
     if (val == manettino_right_possible_vals[ival]) {
-      steer_status_last_message.map_tv = (float)val_torque_map_index[ival];
-      char title[100];
-      uint16_t map_val = (uint16_t)(steer_status_last_message.map_tv * 100.0f);
-      sprintf(title, "%u", map_val);
-      STEER_UPDATE_LABEL(steering.control.lb_torque, title)
-      sprintf(title, "TORQUE VECTORING %u", map_val);
-      print("%s\n", title);
-      display_notification(title, 750);
+      if (!engineer_mode)
+        manettino_send_torque_vectoring(ival);
+      else
+        manettino_send_set_radiators(ival);
       break;
     }
   }
@@ -192,33 +215,22 @@ void manettino_center_actions(uint8_t val) {
     if (val == MANETTINO_DEBOUNCE_VALUE)
       continue;
     if (val == manettino_center_possible_vals[ival]) {
-      steer_status_last_message.map_pw = (float)val_power_map_mapping[ival];
-      uint16_t map_val = (uint16_t)(steer_status_last_message.map_pw * 100.0f);
-      char title[100];
-      sprintf(title, "%u", map_val);
-      STEER_UPDATE_LABEL(steering.control.lb_power, title)
-      sprintf(title, "POWER MAP %u", map_val);
-      print("%s\n", title);
-      display_notification(title, 750);
+      manettino_send_power_map(ival);
       break;
     }
   }
 }
 
-// SLIP CONTROL
+// SLIP CONTROL | COOLING
 void manettino_left_actions(uint8_t val) {
   for (uint8_t ival = 0;
        ival < (sizeof(manettino_left_possible_vals) / sizeof(uint8_t));
        ++ival) {
     if (val == manettino_left_possible_vals[ival]) {
-      steer_status_last_message.map_sc = (float)val_slip_map_index[ival];
-      char title[100];
-      uint16_t map_val = (uint16_t)(steer_status_last_message.map_sc * 100.0f);
-      sprintf(title, "%u", map_val);
-      STEER_UPDATE_LABEL(steering.control.lb_slip, title)
-      sprintf(title, "SLIP CONTROL %u", map_val);
-      print("%s\n", title);
-      display_notification(title, 750);
+      if (!engineer_mode)
+        manettino_send_slip_control(ival);
+      else
+        manettino_send_set_cooling(ival);
       break;
     }
   }
@@ -251,7 +263,7 @@ void from_gpio_to_buttons(uint8_t gpio) {
 
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};
-  if (tlm_status_last_message.tlm_status ==
+  if (tlm_status_last_state.tlm_status ==
       (primary_set_tlm_status_tlm_status)primary_set_tlm_status_tlm_status_ON) {
     print("Sending Telemetry OFF\n");
     converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;
