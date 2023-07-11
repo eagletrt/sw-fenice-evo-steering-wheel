@@ -20,6 +20,7 @@ void deactivate_ptt(void) {
 void handle_ptt_message(primary_ptt_status_status val) {
   if (val == primary_ptt_status_status_OFF) {
     if (status) {
+      display_notification("PTT OFF", 400);
       led_control_init(&hi2c4);
       led_control_set(&hi2c4, (uint32_t[6]){COLOR_RED, COLOR_RED, COLOR_OFF,
                                             COLOR_OFF, COLOR_OFF, COLOR_OFF});
@@ -28,6 +29,7 @@ void handle_ptt_message(primary_ptt_status_status val) {
     print("Received status OFF");
   } else if (val == primary_ptt_status_status_ON) {
     if (!status) {
+      display_notification("PTT ON", 400);
       led_control_init(&hi2c4);
       led_control_set(&hi2c4, (uint32_t[6]){COLOR_GREEN, COLOR_GREEN, COLOR_OFF,
                                             COLOR_OFF, COLOR_OFF, COLOR_OFF});

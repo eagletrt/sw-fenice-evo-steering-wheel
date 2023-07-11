@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "inputs/inputs.h"
+#include "inverters/inverters_network.h"
 #include "led_control.h"
 #include "lvgl.h"
 #include "secondary/secondary_network.h"

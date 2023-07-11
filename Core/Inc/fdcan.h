@@ -29,7 +29,10 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
+#include "inverters/inverters_network.h"
+#include "inverters/inverters_watchdog.h"
 #include "lvgl.h"
+#include "messages.h"
 #include "primary/primary_network.h"
 #include "primary/primary_watchdog.h"
 #include "secondary/secondary_network.h"
@@ -49,7 +52,7 @@ extern FDCAN_HandleTypeDef hfdcan2;
 #define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME)                         \
   ntw##_##msg_name##_t raw;                                                    \
   ntw##_##msg_name##_converted_t converted;                                    \
-  ntw##_##msg_name##_unpack(&raw, msg->data, PRIMARY_##MSG_NAME##_BYTE_SIZE);  \
+  ntw##_##msg_name##_unpack(&raw, msg->data, NTW##_##MSG_NAME##_BYTE_SIZE);    \
   ntw##_##msg_name##_raw_to_conversion_struct(&converted, &raw);
 
 #define STEER_CAN_PACK(ntw, NTW, msg_name, MSG_NAME)                           \

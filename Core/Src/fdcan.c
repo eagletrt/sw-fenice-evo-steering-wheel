@@ -22,11 +22,14 @@
 
 /* USER CODE BEGIN 0 */
 
+bool primary_messages_updated[PRIMARY_MONITORED_MESSAGES_SIZE] = {false};
+bool secondary_messages_updated[SECONDARY_MONITORED_MESSAGES_SIZE] = {false};
+
 extern steering_t steering;
 extern bool steering_initialized;
-primary_steer_status_converted_t steer_status_last_message = {
+primary_steer_status_converted_t steer_status_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
-primary_cooling_status_converted_t cooling_status_last_message = {
+primary_cooling_status_converted_t cooling_status_last_state = {
     .pumps_speed = -1.0f, .radiators_speed = -1.0f};
 
 extern primary_watchdog m_primary_watchdog;
@@ -358,9 +361,9 @@ void send_steer_version(lv_timer_t *main_timer) {
 
 void send_steer_status(lv_timer_t *main_timer) {
   primary_steer_status_converted_t converted = {
-      .map_pw = steer_status_last_message.map_pw,
-      .map_sc = steer_status_last_message.map_sc,
-      .map_tv = steer_status_last_message.map_tv,
+      .map_pw = steer_status_last_state.map_pw,
+      .map_sc = steer_status_last_state.map_sc,
+      .map_tv = steer_status_last_state.map_tv,
   };
   STEER_CAN_PACK(primary, PRIMARY, steer_status, STEER_STATUS)
   can_send(&msg, &hfdcan1);
@@ -533,6 +536,16 @@ void handle_primary(can_message_t *msg) {
     lv_errors_update(&converted);
     break;
   }
+  case INVERTERS_INV_L_RCV_FRAME_ID: {
+    STEER_CAN_UNPACK(inverters, INVERTERS, inv_l_rcv, INV_L_RCV);
+    inv_l_rcv_update(&converted);
+    break;
+  }
+  case INVERTERS_INV_R_RCV_FRAME_ID: {
+    STEER_CAN_UNPACK(inverters, INVERTERS, inv_r_rcv, INV_R_RCV);
+    inv_r_rcv_update(&converted);
+    break;
+  }
   }
 }
 
@@ -546,6 +559,15 @@ void handle_secondary(can_message_t *msg) {
 #endif
   can_id_t id = msg->id;
   secondary_devices_deserialize_from_id(&secondary_can_device, id, msg->data);
+  switch (id) {
+  case SECONDARY_STEERING_ANGLE_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, steering_angle, STEERING_ANGLE);
+    steering_angle_update(&converted);
+    break;
+  }
+  default:
+    break;
+  }
 }
 
 void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan) {

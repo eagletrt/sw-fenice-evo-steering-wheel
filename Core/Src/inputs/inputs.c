@@ -351,37 +351,82 @@ void calibration_tool_set_min_max(bool maxv) {
   }
 }
 
-void send_set_car_status(void) {
+void manettino_send_slip_control(uint8_t ival) {
+  steer_status_last_state.map_sc = (float)val_slip_map_index[ival];
+  char title[100];
+  uint16_t map_val = (uint16_t)(steer_status_last_state.map_sc * 100.0f);
+  sprintf(title, "%u", map_val);
+  STEER_UPDATE_LABEL(steering.control.lb_slip, title)
+  sprintf(title, "SLIP CONTROL %u", map_val);
+  print("%s\n", title);
+  display_notification(title, 750);
+}
+
+void manettino_send_torque_vectoring(uint8_t ival) {
+  steer_status_last_state.map_tv = (float)val_torque_map_index[ival];
+  char title[100];
+  uint16_t map_val = (uint16_t)(steer_status_last_state.map_tv * 100.0f);
+  sprintf(title, "%u", map_val);
+  STEER_UPDATE_LABEL(steering.control.lb_torque, title)
+  sprintf(title, "TORQUE VECTORING %u", map_val);
+  print("%s\n", title);
+  display_notification(title, 750);
+}
+
+void manettino_send_power_map(uint8_t ival) {
+  steer_status_last_state.map_pw = (float)val_power_map_mapping[ival];
+  uint16_t map_val = (uint16_t)(steer_status_last_state.map_pw * 100.0f);
+  char title[100];
+  sprintf(title, "%d", map_val);
+  STEER_UPDATE_LABEL(steering.control.lb_power, title)
+  sprintf(title, "POWER MAP %d", map_val);
+  print("%s\n", title);
+  display_notification(title, 750);
+}
+
+void manettino_send_set_cooling(uint8_t ival) {
+  display_notification("qua mettere il cooling", 500);
+}
+
+void manettino_send_set_radiators(uint8_t ival) {
+  display_notification("qua mettere i radiators", 500);
+}
+
+void send_set_car_status(primary_set_car_status_car_status_set val) {
   primary_set_car_status_converted_t converted = {0};
-  switch (car_status_last_message.car_status) {
+  converted.car_status_set = val;
+  STEER_CAN_PACK(primary, PRIMARY, set_car_status, SET_CAR_STATUS);
+  can_send(&msg, &hfdcan1);
+}
+
+void prepare_set_car_status(void) {
+  switch (car_status_last_state.car_status) {
   case primary_car_status_car_status_IDLE: {
-    converted.car_status_set = primary_set_car_status_car_status_set_READY;
+    send_set_car_status(primary_set_car_status_car_status_set_READY);
     display_notification("TSON", 1500);
     print("Sending SET CAR STATUS: TSON\n");
     break;
   }
   case primary_car_status_car_status_WAIT_DRIVER: {
-    converted.car_status_set = primary_set_car_status_car_status_set_DRIVE;
+    send_set_car_status(primary_set_car_status_car_status_set_DRIVE);
     display_notification("DRIVE", 1500);
     print("Sending SET CAR STATUS: DRIVE\n");
     break;
   }
   default: {
-    converted.car_status_set = primary_set_car_status_car_status_set_IDLE;
+    send_set_car_status(primary_set_car_status_car_status_set_IDLE);
     display_notification("IDLE", 1500);
     print("Sending SET CAR STATUS: IDLE\n");
     break;
   }
   }
-  STEER_CAN_PACK(primary, PRIMARY, set_car_status, SET_CAR_STATUS);
-  can_send(&msg, &hfdcan1);
 }
 
 void send_set_car_status_check(lv_timer_t *tim) {
   if (tson_button_pressed) {
     print("TSON TIMER: sending CAR STATUS SET\n");
     STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
-    send_set_car_status();
+    prepare_set_car_status();
   } else {
     print("TSON TIMER: not sending tson\n");
   }
@@ -391,19 +436,29 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
     GPIO_PinState tson_pin_state =
         HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
-    if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
-      print("Setting timer to check button state in 2 seconds\n");
-      tson_button_pressed = true;
-      send_set_car_status_long_press_delay =
-          lv_timer_create(send_set_car_status_check, 1000, NULL);
-      lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
-      lv_timer_reset(send_set_car_status_long_press_delay);
-      STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_ORANGE_STATUS_HEX)
-    } else {
-      print("tson button released and possible timer deleted\n");
-      tson_button_pressed = false;
-      lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
-      STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
+    switch (car_status_last_state.car_status) {
+    case primary_car_status_car_status_IDLE:
+    case primary_car_status_car_status_WAIT_DRIVER: {
+      if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
+        print("Setting timer to check button state in 2 seconds\n");
+        tson_button_pressed = true;
+        send_set_car_status_long_press_delay =
+            lv_timer_create(send_set_car_status_check, 1000, NULL);
+        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
+        lv_timer_reset(send_set_car_status_long_press_delay);
+        STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_ORANGE_STATUS_HEX)
+      } else {
+        print("tson button released and possible timer deleted\n");
+        tson_button_pressed = false;
+        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
+        STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
+      }
+      break;
+    }
+    default: {
+      send_set_car_status(primary_set_car_status_car_status_set_IDLE);
+      break;
+    }
     }
   }
 }

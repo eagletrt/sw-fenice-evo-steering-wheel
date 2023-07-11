@@ -64,7 +64,15 @@ typedef enum {
 
 void inputs_init(void);
 void read_inputs(lv_timer_t *);
-void send_set_car_status(void);
+void send_set_car_status(primary_set_car_status_car_status_set);
+void prepare_set_car_status(void);
+
+void manettino_send_slip_control(uint8_t);
+void manettino_send_torque_vectoring(uint8_t);
+void manettino_send_power_map(uint8_t);
+void manettino_send_set_cooling(uint8_t);
+void manettino_send_set_radiators(uint8_t);
+
 void turn_telemetry_on_off(void);
 void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data);
 void calibration_request_timeout_check(uint32_t current_time);
