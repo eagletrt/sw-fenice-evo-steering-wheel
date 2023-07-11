@@ -42,7 +42,8 @@ const static float val_power_map_mapping[MANETTINO_STEPS_N] = POWER_MAP_MAPPING;
 const static float val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_MAPPING;
 const static float val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_MAPPING;
 const static float val_pumps_speed_index[MANETTINO_STEPS_N] = PUMPS_MAPPING;
-const static float val_radiators_speed_index[MANETTINO_STEPS_N] = RADIATORS_MAPPING;
+const static float val_radiators_speed_index[MANETTINO_STEPS_N] =
+    RADIATORS_MAPPING;
 
 /***
  * Engineer Mode
@@ -380,7 +381,7 @@ void manettino_send_power_map(uint8_t ival) {
   int map_val = (int)(steer_status_last_state.map_pw * 100.0f);
   char title[100];
   if (map_val < 0) {
-    sprintf(title, "TUPIDO", map_val);
+    sprintf(title, "TUPIDO");
     STEER_UPDATE_LABEL(steering.control.lb_power, title)
     sprintf(title, "POWER MAP TUPIDO");
   } else {
@@ -388,13 +389,13 @@ void manettino_send_power_map(uint8_t ival) {
     STEER_UPDATE_LABEL(steering.control.lb_power, title)
     sprintf(title, "POWER MAP %d", map_val);
   }
-  
+
   print("%s\n", title);
   display_notification(title, 750);
 }
 
 void manettino_send_set_pumps_speed(uint8_t ival) {
-  cooling_status_last_state.pumps_speed = (float) val_pumps_speed_index[ival];
+  cooling_status_last_state.pumps_speed = (float)val_pumps_speed_index[ival];
 
   primary_cooling_status_converted_t converted = {0};
   converted.pumps_speed = cooling_status_last_state.pumps_speed;
@@ -414,7 +415,8 @@ void manettino_send_set_pumps_speed(uint8_t ival) {
 }
 
 void manettino_send_set_radiators(uint8_t ival) {
-  cooling_status_last_state.radiators_speed = (float) val_radiators_speed_index[ival];
+  cooling_status_last_state.radiators_speed =
+      (float)val_radiators_speed_index[ival];
 
   primary_cooling_status_converted_t converted = {0};
   converted.pumps_speed = cooling_status_last_state.pumps_speed;

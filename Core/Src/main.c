@@ -386,6 +386,7 @@ void watchdog_task_fn(lv_timer_t *main_timer) {
       switch (id) {
       case PRIMARY_CAR_STATUS_FRAME_ID:
         print("Primary watchdog timed out for CAR_STATUS\n");
+
         break;
       }
     }
