@@ -1,13 +1,16 @@
 [submodule "lvgl"]
-	path = lvgl
+	path = Core/Lib/lvgl-stm32/lvgl
 	url = git@github.com:lvgl/lvgl.git
-[submodule "steering/simulator"]
-	path = steering/simulator
-	url = git@github.com:eagletrt/sw-fenice-evo-steering-wheel-simulator.git
 [submodule "steering/micro-libs"]
-	path = steering/micro-libs
+	path = Core/Lib/micro-libs
 	url = git@github.com:eagletrt/micro-libs.git
 [submodule "steering/can"]
-	path = steering/can
+	path = Core/Lib/can
 	url = git@github.com:eagletrt/can.git
 	branch = build-evo
+[submodule "Core/Lib/lv-drivers"]
+	path = Core/Lib/lvgl-linux/lv-drivers
+	url = git@github.com:lvgl/lv_drivers.git
+[submodule "Core/Lib/lvgl-linux/lvgl"]
+	path = Core/Lib/lvgl-linux/lvgl
+	url = git@github.com:eagletrt/lvgl.git

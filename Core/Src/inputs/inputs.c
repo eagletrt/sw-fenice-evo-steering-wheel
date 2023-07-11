@@ -48,7 +48,8 @@ const static float val_radiators_speed_index[MANETTINO_STEPS_N] =
 /***
  * Engineer Mode
  */
-bool engineer_mode = false;
+extern bool engineer_mode;
+
 
 void switch_mode() {
   if (engineer_mode) {

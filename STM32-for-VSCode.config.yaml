@@ -79,13 +79,11 @@ includeDirectories:
   - Drivers/CMSIS/Include
   - Inc/**
   - Core/Inc/**
-  - Core/Lib/**
   - Src/**
   - Core/Src/**
-  - Core/Lib/**
-  - lvgl
-  - steering/simulator/steering/**
-  - steering/can/lib
+  - Core/Lib/lvgl-stm32/lvgl
+  - Core/UI/steering
+  - Core/Lib/can/lib
 
 
 # Files that should be included in the compilation.
@@ -138,10 +136,9 @@ sourceFiles:
   - Core/Src/system_stm32h7xx.c
   - Src/**
   - Core/Src/**
-  - Core/Lib/**
-  - lvgl/src/**/*.c
-  - steering/simulator/steering/**/*.c
-  - steering/can/lib/**/*.c
+  - Core/Lib/lvgl-stm32/lvgl/src/**/*.c
+  - Core/UI/steering/**/*.c
+  - Core/Lib/can/lib/**/*.c
 
 
 # When no makefile is present it will show a warning pop-up.

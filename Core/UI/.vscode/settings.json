@@ -1,0 +1,26 @@
+{
+    "files.associations": {
+        "lvgl.h": "c",
+        "keyboard.h": "c",
+        "tab_manager.h": "c",
+        "utils.h": "c",
+        "steering.h": "c",
+        "exception": "c",
+        "optional": "c",
+        "functional": "c",
+        "iosfwd": "c",
+        "ranges": "c",
+        "stdexcept": "c",
+        "system_error": "c",
+        "tuple": "c",
+        "tab_racing.h": "c",
+        "sdl.h": "c",
+        "condition_variable": "c",
+        "network.h": "c",
+        "can_data.h": "c",
+        "tab_debug_hvfeedbacks.h": "c",
+        "tab_debug.h": "c",
+        "if.h": "c"
+    },
+    "cmake.sourceDirectory": "/home/fed/Eagle/sw-fenice-evo-steering-wheel-simulator/lv_drivers"
+}
