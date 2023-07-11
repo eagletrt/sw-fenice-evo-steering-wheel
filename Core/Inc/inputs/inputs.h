@@ -6,6 +6,7 @@
 #include "mcp23017.h"
 #include "ptt.h"
 #include "steering.h"
+#include "tab_manager.h"
 
 #define BUTTONS_N 8
 #define MANETTINI_N 3
@@ -61,6 +62,10 @@ typedef enum {
   { 0.0f, 0.066f, 0.133f, 0.266f, 0.466f, 0.666f, 0.8f, 1.0f }
 #define SLIP_MAP_MAPPING                                                       \
   { 0.0f, 0.066f, 0.133f, 0.266f, 0.466f, 0.666f, 0.8f, 1.0f }
+#define PUMPS_MAPPING                                                          \
+  { -1.0f, 0.0f, 0.10f, 0.20f, 0.40f, 0.60f, 0.80f, 1.0f }
+#define RADIATORS_MAPPING                                                      \
+  { -1.0f, 0.0f, 0.10f, 0.20f, 0.40f, 0.60f, 0.80f, 1.0f }
 
 void inputs_init(void);
 void read_inputs(lv_timer_t *);
@@ -70,7 +75,7 @@ void prepare_set_car_status(void);
 void manettino_send_slip_control(uint8_t);
 void manettino_send_torque_vectoring(uint8_t);
 void manettino_send_power_map(uint8_t);
-void manettino_send_set_cooling(uint8_t);
+void manettino_send_set_pumps_speed(uint8_t);
 void manettino_send_set_radiators(uint8_t);
 
 void turn_telemetry_on_off(void);

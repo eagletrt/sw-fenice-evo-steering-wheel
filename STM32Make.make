@@ -61,6 +61,7 @@ Core/Src/test/i2c_test.c \
 Core/Src/test/sdram_test.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
+Core/Src/watchdog.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dac.c \

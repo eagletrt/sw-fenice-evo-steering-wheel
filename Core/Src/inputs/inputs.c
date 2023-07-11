@@ -41,6 +41,8 @@ const static uint8_t manettino_left_possible_vals[BUTTONS_N] =
 const static float val_power_map_mapping[MANETTINO_STEPS_N] = POWER_MAP_MAPPING;
 const static float val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_MAPPING;
 const static float val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_MAPPING;
+const static float val_pumps_speed_index[MANETTINO_STEPS_N] = PUMPS_MAPPING;
+const static float val_radiators_speed_index[MANETTINO_STEPS_N] = RADIATORS_MAPPING;
 
 /***
  * Engineer Mode
@@ -52,12 +54,10 @@ void switch_mode() {
     // exit EM
     engineer_mode = false;
     remove_engineer_mode_screen();
-    display_notification("Engineer Mode OFF", 1500);
   } else {
     // enter EM
     engineer_mode = true;
     load_engineer_mode_screen();
-    display_notification("Engineer Mode ON", 1500);
   }
 }
 
@@ -230,7 +230,7 @@ void manettino_left_actions(uint8_t val) {
       if (!engineer_mode)
         manettino_send_slip_control(ival);
       else
-        manettino_send_set_cooling(ival);
+        manettino_send_set_pumps_speed(ival);
       break;
     }
   }
@@ -266,9 +266,11 @@ void turn_telemetry_on_off(void) {
   if (tlm_status_last_state.tlm_status ==
       (primary_set_tlm_status_tlm_status)primary_set_tlm_status_tlm_status_ON) {
     print("Sending Telemetry OFF\n");
+    display_notification("Sending Telemetry OFF", 800);
     converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;
   } else {
     print("Sending Telemetry ON\n");
+    display_notification("Sending Telemetry ON", 800);
     converted.tlm_status = primary_set_tlm_status_tlm_status_ON;
   }
   STEER_CAN_PACK(primary, PRIMARY, set_tlm_status, SET_TLM_STATUS);
@@ -375,21 +377,60 @@ void manettino_send_torque_vectoring(uint8_t ival) {
 
 void manettino_send_power_map(uint8_t ival) {
   steer_status_last_state.map_pw = (float)val_power_map_mapping[ival];
-  uint16_t map_val = (uint16_t)(steer_status_last_state.map_pw * 100.0f);
+  int map_val = (int)(steer_status_last_state.map_pw * 100.0f);
   char title[100];
-  sprintf(title, "%d", map_val);
-  STEER_UPDATE_LABEL(steering.control.lb_power, title)
-  sprintf(title, "POWER MAP %d", map_val);
+  if (map_val < 0) {
+    sprintf(title, "TUPIDO", map_val);
+    STEER_UPDATE_LABEL(steering.control.lb_power, title)
+    sprintf(title, "POWER MAP TUPIDO");
+  } else {
+    sprintf(title, "%d", map_val);
+    STEER_UPDATE_LABEL(steering.control.lb_power, title)
+    sprintf(title, "POWER MAP %d", map_val);
+  }
+  
   print("%s\n", title);
   display_notification(title, 750);
 }
 
-void manettino_send_set_cooling(uint8_t ival) {
-  display_notification("qua mettere il cooling", 500);
+void manettino_send_set_pumps_speed(uint8_t ival) {
+  cooling_status_last_state.pumps_speed = (float) val_pumps_speed_index[ival];
+
+  primary_cooling_status_converted_t converted = {0};
+  converted.pumps_speed = cooling_status_last_state.pumps_speed;
+  converted.radiators_speed = cooling_status_last_state.radiators_speed;
+  STEER_CAN_PACK(primary, PRIMARY, cooling_status, COOLING_STATUS);
+  can_send(&msg, &hfdcan1);
+
+  int map_val = (int)(cooling_status_last_state.pumps_speed * 100.0f);
+  char title[100];
+  if (cooling_status_last_state.pumps_speed < 0) {
+    sprintf(title, "PUMPS SPEED AUTO");
+  } else {
+    sprintf(title, "PUMPS SPEED %d", map_val);
+  }
+  print("%s\n", title);
+  display_notification(title, 750);
 }
 
 void manettino_send_set_radiators(uint8_t ival) {
-  display_notification("qua mettere i radiators", 500);
+  cooling_status_last_state.radiators_speed = (float) val_radiators_speed_index[ival];
+
+  primary_cooling_status_converted_t converted = {0};
+  converted.pumps_speed = cooling_status_last_state.pumps_speed;
+  converted.radiators_speed = cooling_status_last_state.radiators_speed;
+  STEER_CAN_PACK(primary, PRIMARY, cooling_status, COOLING_STATUS);
+  can_send(&msg, &hfdcan1);
+
+  int map_val = (int)(cooling_status_last_state.radiators_speed * 100.0f);
+  char title[100];
+  if (cooling_status_last_state.radiators_speed < 0) {
+    sprintf(title, "RADIATOR SPEED AUTO");
+  } else {
+    sprintf(title, "RADIATORS SPEED %d", map_val);
+  }
+  print("%s\n", title);
+  display_notification(title, 750);
 }
 
 void send_set_car_status(primary_set_car_status_car_status_set val) {
