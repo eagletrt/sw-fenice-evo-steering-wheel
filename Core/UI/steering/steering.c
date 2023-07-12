@@ -171,7 +171,7 @@ void hv_current_update(primary_hv_current_converted_t *data) {
   }
   if (data->soc != hv_current_last_state.soc) {
     data->soc = hv_current_last_state.soc;
-    lv_bar_set_value(steering.hv_bar, (int32_t)data->soc, LV_ANIM_OFF);
+    // lv_bar_set_value(steering.hv_bar, (int32_t)data->soc, LV_ANIM_OFF);
   }
 }
 
@@ -380,7 +380,7 @@ void lv_total_voltage_update(primary_lv_total_voltage_converted_t *data) {
   if (old_total_v != data->total_voltage) {
     lv_total_voltage_last_state.total_voltage = data->total_voltage;
     sprintf(sprintf_buffer, "%d", (int)data->total_voltage);
-    lv_bar_set_value(steering.lv_bar, (int32_t)data->total_voltage, LV_ANIM_OFF);
+    // lv_bar_set_value(steering.lv_bar, (int32_t)data->total_voltage, LV_ANIM_OFF);
     STEER_UPDATE_LABEL(steering.lv.lb_voltage, sprintf_buffer);
   }
 }
@@ -454,11 +454,11 @@ void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *data) {
 
 
 void car_status_invalidate() {
-
+  lv_label_set_text_fmt(steering.das.bottom_lb_speed, "-");
+  STEER_UPDATE_LABEL(steering.das.lb_speed, "N/A");
 }
 
 void control_output_invalidate() {
-
 }
 
 void tlm_status_invalidate() {
@@ -470,27 +470,85 @@ void ambient_temperature_invalidate() {
 }
 
 void speed_invalidate() {
-
+  if (car_status_last_state.car_status != primary_car_status_car_status_DRIVE) {
+    lv_label_set_text_fmt(steering.das.bottom_lb_speed, "-");
+    STEER_UPDATE_LABEL(steering.das.lb_speed, "N/A");
+  }
 }
 
 void hv_voltage_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.hv.lb_min_cell_voltage, "N/A")
+  STEER_UPDATE_LABEL(steering.hv.lb_max_cell_voltage, "N/A")
 }
 
 void hv_current_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.hv.lb_current, "N/A")
 }
 
 void hv_temp_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.hv.lb_average_temperature, "N/A");
 }
 
 void hv_errors_invalidate() {
-
+  STEER_ERROR_INVALIDATE(hv_errors, errors_cell_low_voltage, 0)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_cell_under_voltage, 1)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_cell_over_voltage, 2)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_cell_high_temperature, 3)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_cell_over_temperature, 4)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_over_current, 5)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_can, 6)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_int_voltage_mismatch, 7)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_cellboard_comm, 8)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_cellboard_internal, 9)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_connector_disconnected, 10)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_fans_disconnected, 11)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_feedback, 12)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_feedback_circuitry, 13)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_eeprom_comm, 14)
+  STEER_ERROR_INVALIDATE(hv_errors, errors_eeprom_write, 15)
 }
 
 void hv_feedbacks_status_invalidate() {
-
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_implausibility_detected, 0)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_imd_cockpit, 1)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_tsal_green_fault_latched, 2)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_bms_cockpit, 3)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_ext_latched, 4)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_tsal_green, 5)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_ts_over_60v_status, 6)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_airn_status, 7)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_airp_status, 8)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_airp_gate, 9)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_airn_gate, 10)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_precharge_status, 11)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_tsp_over_60v_status, 12)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_imd_fault, 13)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_check_mux, 14)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_sd_end, 15)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_sd_out, 16)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_sd_in, 17)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_sd_bms, 18)
+  STEER_ERROR_INVALIDATE(hv_feedbacks_status, 
+        feedbacks_status_feedback_sd_imd, 19)
 }
 
 void hv_cells_voltage_invalidate() {
@@ -502,11 +560,19 @@ void hv_cells_temp_invalidate() {
 }
 
 void das_errors_invalidate() {
-
+  STEER_ERROR_INVALIDATE(das_errors, das_error_pedal_adc, 0)
+  STEER_ERROR_INVALIDATE(das_errors, das_error_pedal_implausibility, 1)
+  STEER_ERROR_INVALIDATE(das_errors, das_error_imu_tout, 2)
+  STEER_ERROR_INVALIDATE(das_errors, das_error_irts_tout, 3)
+  STEER_ERROR_INVALIDATE(das_errors, das_error_ts_tout, 4)
+  STEER_ERROR_INVALIDATE(das_errors, das_error_invl_tout, 5)
+  STEER_ERROR_INVALIDATE(das_errors, das_error_invr_tout, 6)
+  STEER_ERROR_INVALIDATE(das_errors, das_error_steer_tout, 7)
+  STEER_ERROR_INVALIDATE(das_errors, das_error_fsm, 8)
 }
 
 void lv_currents_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.lv.lb_current, "N/A");
 }
 
 void lv_cells_voltage_invalidate() {
@@ -514,25 +580,43 @@ void lv_cells_voltage_invalidate() {
 }
 
 void lv_cells_temp_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.lv.lb_battery_temperature, "N/A");
 }
 
 void lv_total_voltage_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.lv.lb_voltage, "N/A");
 }
 
 void lv_errors_invalidate() {
-
+  STEER_ERROR_INVALIDATE(lv_errors, errors_cell_undervoltage, 0)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_cell_overvoltage, 1)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_battery_open_wire, 2)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_can, 3)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_spi, 4)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_over_current, 5)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_cell_under_temperature, 6)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_cell_over_temperature, 7)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_relay, 8)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_bms_monitor, 9)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_voltages_not_ready, 10)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_mcp23017, 11)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_radiator, 12)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_fan, 13)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_pump, 14)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_adc_init, 15)
+  STEER_ERROR_INVALIDATE(lv_errors, errors_mux, 16)
 }
 
 void steering_angle_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.steering.lb_steering_angle, "N/A");
 }
 
 void inv_l_rcv_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.inverters.lb_left_motor_temp, "N/A");
+  STEER_UPDATE_LABEL(steering.inverters.lb_left_inverter_temp, "N/A");
 }
 
 void inv_r_rcv_invalidate() {
-
+  STEER_UPDATE_LABEL(steering.inverters.lb_right_motor_temp, "N/A");
+  STEER_UPDATE_LABEL(steering.inverters.lb_right_inverter_temp, "N/A");
 }

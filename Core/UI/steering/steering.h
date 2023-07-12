@@ -39,6 +39,11 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
                                 LV_PART_MAIN);                                 \
   }
 
+#define STEER_ERROR_INVALIDATE(device, error_name, aindex)                     \
+  lv_obj_set_style_bg_color(steering.car_errors.device[aindex],                \
+                            lv_color_hex(COLOR_YELLOW_STATUS_HEX),             \
+                            LV_PART_MAIN);
+
 typedef struct {
   struct {
     lv_obj_t *lb_speed[NUM_TABS];
