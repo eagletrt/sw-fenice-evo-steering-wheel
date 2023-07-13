@@ -395,13 +395,16 @@ void manettino_send_power_map(uint8_t ival) {
   display_notification(title, 750);
 }
 
+void verify_pumps_speed() {
+
+}
+
 void manettino_send_set_pumps_speed(uint8_t ival) {
   cooling_status_last_state.pumps_speed = (float)val_pumps_speed_index[ival];
 
-  primary_cooling_status_converted_t converted = {0};
+  primary_set_pumps_speed_converted_t converted = {0};
   converted.pumps_speed = cooling_status_last_state.pumps_speed;
-  converted.radiators_speed = cooling_status_last_state.radiators_speed;
-  STEER_CAN_PACK(primary, PRIMARY, cooling_status, COOLING_STATUS);
+  STEER_CAN_PACK(primary, PRIMARY, set_pumps_speed, SET_PUMPS_SPEED);
   can_send(&msg, &hfdcan1);
 
   int map_val = (int)(cooling_status_last_state.pumps_speed * 100.0f);
@@ -419,10 +422,9 @@ void manettino_send_set_radiators(uint8_t ival) {
   cooling_status_last_state.radiators_speed =
       (float)val_radiators_speed_index[ival];
 
-  primary_cooling_status_converted_t converted = {0};
-  converted.pumps_speed = cooling_status_last_state.pumps_speed;
+  primary_set_radiator_speed_converted_t converted = {0};
   converted.radiators_speed = cooling_status_last_state.radiators_speed;
-  STEER_CAN_PACK(primary, PRIMARY, cooling_status, COOLING_STATUS);
+  STEER_CAN_PACK(primary, PRIMARY, set_radiator_speed, SET_RADIATOR_SPEED);
   can_send(&msg, &hfdcan1);
 
   int map_val = (int)(cooling_status_last_state.radiators_speed * 100.0f);
@@ -432,7 +434,7 @@ void manettino_send_set_radiators(uint8_t ival) {
   } else {
     sprintf(title, "RADIATORS SPEED %d", map_val);
   }
-  print("%s\n", title);
+  print("%s\n", title); 
   display_notification(title, 750);
 }
 

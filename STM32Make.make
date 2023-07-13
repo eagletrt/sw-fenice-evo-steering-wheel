@@ -216,7 +216,6 @@ Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
 Core/Src/sysmem.c \
 Core/Src/system_stm32h7xx.c \
-Core/Src/test/fdcan_test.c \
 Core/Src/test/i2c_test.c \
 Core/Src/test/sdram_test.c \
 Core/Src/tim.c \

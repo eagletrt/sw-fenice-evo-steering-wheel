@@ -160,8 +160,6 @@ void hv_current_update(primary_hv_current_converted_t *);
 void hv_temp_update(primary_hv_temp_converted_t *);
 void hv_errors_update(primary_hv_errors_converted_t *);
 void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *);
-void hv_cells_voltage_update(primary_hv_cells_voltage_converted_t *);
-void hv_cells_temp_update(primary_hv_cells_temp_converted_t *);
 
 void das_errors_update(primary_das_errors_converted_t *);
 
@@ -190,8 +188,6 @@ void hv_current_invalidate();
 void hv_temp_invalidate();
 void hv_errors_invalidate();
 void hv_feedbacks_status_invalidate();
-void hv_cells_voltage_invalidate();
-void hv_cells_temp_invalidate();
 void das_errors_invalidate();
 void lv_currents_invalidate();
 void lv_cells_voltage_invalidate();

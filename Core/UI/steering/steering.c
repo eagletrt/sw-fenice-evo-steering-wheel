@@ -26,8 +26,6 @@ primary_hv_current_converted_t hv_current_last_state = {0};
 primary_hv_temp_converted_t hv_temp_last_state = {0};
 primary_hv_errors_converted_t hv_errors_last_state = {0};
 primary_hv_feedbacks_status_converted_t hv_feedbacks_status_last_state = {0};
-primary_hv_cells_voltage_converted_t hv_cells_voltage_last_state = {0};
-primary_hv_cells_temp_converted_t hv_cells_temp_last_state = {0};
 
 primary_das_errors_converted_t das_errors_last_state = {0};
 
@@ -36,7 +34,9 @@ primary_lv_cells_voltage_converted_t lv_cells_voltage_last_state_1 = {0};
 primary_lv_cells_voltage_converted_t lv_cells_voltage_last_state_2 = {0};
 primary_lv_cells_temp_converted_t lv_cells_temp_last_state_1 = {0};
 primary_lv_cells_temp_converted_t lv_cells_temp_last_state_2 = {0};
-uint16_t lv_cells_temp_mean_last_state = 0;
+primary_lv_cells_temp_converted_t lv_cells_temp_last_state_3 = {0};
+primary_lv_cells_temp_converted_t lv_cells_temp_last_state_4 = {0};
+float lv_cells_temp_mean_last_state = 0;
 primary_lv_total_voltage_converted_t lv_total_voltage_last_state = {0};
 primary_lv_errors_converted_t lv_errors_last_state = {1};
 
@@ -115,11 +115,6 @@ void control_output_update(primary_control_output_converted_t *data) {
   if (data->estimated_velocity !=
       control_output_last_state.estimated_velocity) {
   }
-}
-
-void tlm_status_update(primary_tlm_status_converted_t *data) {}
-
-void ambient_temperature_update(primary_ambient_temperature_converted_t *data) {
 }
 
 void speed_update(primary_speed_converted_t *data) {
@@ -276,9 +271,6 @@ void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *data) {
         feedbacks_status_feedback_sd_imd, 19)
 }
 
-void hv_cells_voltage_update(primary_hv_cells_voltage_converted_t *data) {}
-
-void hv_cells_temp_update(primary_hv_cells_temp_converted_t *data) {}
 
 void das_errors_update(primary_das_errors_converted_t *data) {
   STEER_ERROR_UPDATE(das_errors, das_error_pedal_adc, 0)
@@ -301,73 +293,85 @@ void lv_currents_update(primary_lv_currents_converted_t *data) {
   }  
 }
 
-void lv_control_update(primary_control_output_converted_t *data) {}
-
-void lv_cells_voltage_update(primary_lv_cells_voltage_converted_t *data) {
-#if 0
-  float old_cells_voltage_0;
-  float old_cells_voltage_1;
-  float old_cells_voltage_2;
-  if (data->start_index == 0) {
-    old_cells_voltage_0 = lv_cells_voltage_last_state_1.voltage_0;
-    old_cells_voltage_1 = lv_cells_voltage_last_state_1.voltage_1;
-    old_cells_voltage_2 = lv_cells_voltage_last_state_1.voltage_2;
-    lv_cells_voltage_last_state_1.voltage_0 = data->voltage_0;
-    lv_cells_voltage_last_state_1.voltage_1 = data->voltage_1;
-    lv_cells_voltage_last_state_1.voltage_2 = data->voltage_2;
-  } else {
-    old_cells_voltage_0 = lv_cells_voltage_last_state_2.voltage_0;
-    old_cells_voltage_1 = lv_cells_voltage_last_state_2.voltage_1;
-    old_cells_voltage_2 = lv_cells_voltage_last_state_2.voltage_2;
-    lv_cells_voltage_last_state_2.voltage_0 = data->voltage_0;
-    lv_cells_voltage_last_state_2.voltage_1 = data->voltage_1;
-    lv_cells_voltage_last_state_2.voltage_2 = data->voltage_2;
-  }
-
-  if (old_cells_voltage_0 == data->voltage_0 &&
-      old_cells_voltage_1 == data->voltage_1 &&
-      old_cells_voltage_2 == data->voltage_2)
-    return;
-  
-  float mean = (lv_cells_voltage_last_state_1.voltage_0 +
-                lv_cells_voltage_last_state_1.voltage_1 +
-                lv_cells_voltage_last_state_1.voltage_2 +
-                lv_cells_voltage_last_state_2.voltage_0 +
-                lv_cells_voltage_last_state_2.voltage_1 +
-                lv_cells_voltage_last_state_2.voltage_2) /
-               6.0f;
-  snprintf(sprintf_buffer, sizeof(sprintf_buffer), "%d", (int)mean);
-  STEER_UPDATE_LABEL(steering.lv.lb_voltage, sprintf_buffer);
-#endif
-}
-
 void lv_cells_temp_update(primary_lv_cells_temp_converted_t *data) {
   uint8_t start_index = data->start_index;
-  float old_lv_temp_0;
-  float old_lv_temp_1;
-  float old_lv_temp_2;
-  float old_lv_temp_3;
-  float old_lv_temp_4;
-  float old_lv_temp_5;
-  if (start_index == 1) {
-    old_lv_temp_0 = lv_cells_temp_last_state_1.temp_0;
-    old_lv_temp_1 = lv_cells_temp_last_state_1.temp_1;
-    old_lv_temp_2 = lv_cells_temp_last_state_1.temp_2;
-    old_lv_temp_3 = data->temp_0;
-    old_lv_temp_4 = data->temp_1;
-    old_lv_temp_5 = data->temp_2;
-  } else {
-    old_lv_temp_0 = data->temp_0;
-    old_lv_temp_1 = data->temp_1;
-    old_lv_temp_2 = data->temp_2;
-    old_lv_temp_3 = lv_cells_temp_last_state_2.temp_0;
-    old_lv_temp_4 = lv_cells_temp_last_state_2.temp_1;
-    old_lv_temp_5 = lv_cells_temp_last_state_2.temp_2;
+  float current_lv_temp[12];
+  current_lv_temp[0] = -1.0f;
+  current_lv_temp[1] = -1.0f;
+  current_lv_temp[2] = -1.0f;
+  current_lv_temp[3] = -1.0f;
+  current_lv_temp[4] = -1.0f;
+  current_lv_temp[5] = -1.0f;
+  current_lv_temp[6] = -1.0f;
+  current_lv_temp[7] = -1.0f;
+  current_lv_temp[8] = -1.0f;
+  current_lv_temp[9] = -1.0f;
+  current_lv_temp[10] = -1.0f;
+  current_lv_temp[11] = -1.0f;
+  if (start_index == 0) {
+    current_lv_temp[0]  = data->temp_0;
+    current_lv_temp[1]  = data->temp_1;
+    current_lv_temp[2]  = data->temp_2;
+    current_lv_temp[3]  = lv_cells_temp_last_state_2.temp_0;
+    current_lv_temp[4]  = lv_cells_temp_last_state_2.temp_1;
+    current_lv_temp[5]  = lv_cells_temp_last_state_2.temp_2;
+    current_lv_temp[6]  = lv_cells_temp_last_state_3.temp_0;
+    current_lv_temp[7]  = lv_cells_temp_last_state_3.temp_1;
+    current_lv_temp[8]  = lv_cells_temp_last_state_3.temp_2;
+    current_lv_temp[9]  = lv_cells_temp_last_state_4.temp_0;
+    current_lv_temp[10] = lv_cells_temp_last_state_4.temp_1;
+    current_lv_temp[11] = lv_cells_temp_last_state_4.temp_2;
+  } else if (start_index == 3) {
+    current_lv_temp[0]  = lv_cells_temp_last_state_1.temp_0;
+    current_lv_temp[1]  = lv_cells_temp_last_state_1.temp_1;
+    current_lv_temp[2]  = lv_cells_temp_last_state_1.temp_2;
+    current_lv_temp[3]  = data->temp_0;
+    current_lv_temp[4]  = data->temp_1;
+    current_lv_temp[5]  = data->temp_2;    
+    current_lv_temp[6]  = lv_cells_temp_last_state_3.temp_0;
+    current_lv_temp[7]  = lv_cells_temp_last_state_3.temp_1;
+    current_lv_temp[8]  = lv_cells_temp_last_state_3.temp_2;
+    current_lv_temp[9]  = lv_cells_temp_last_state_4.temp_0;
+    current_lv_temp[10] = lv_cells_temp_last_state_4.temp_1;
+    current_lv_temp[11] = lv_cells_temp_last_state_4.temp_2;
+  } else if (start_index == 6) {
+    current_lv_temp[0]  = lv_cells_temp_last_state_1.temp_0;
+    current_lv_temp[1]  = lv_cells_temp_last_state_1.temp_1;
+    current_lv_temp[2]  = lv_cells_temp_last_state_1.temp_2;
+    current_lv_temp[3]  = lv_cells_temp_last_state_2.temp_0;
+    current_lv_temp[4]  = lv_cells_temp_last_state_2.temp_1;
+    current_lv_temp[5]  = lv_cells_temp_last_state_2.temp_2;    
+    current_lv_temp[6]  = data->temp_0;
+    current_lv_temp[7]  = data->temp_1;
+    current_lv_temp[8]  = data->temp_2;
+    current_lv_temp[9]  = lv_cells_temp_last_state_4.temp_0;
+    current_lv_temp[10] = lv_cells_temp_last_state_4.temp_1;
+    current_lv_temp[11] = lv_cells_temp_last_state_4.temp_2;
+  } else if (start_index == 9) {
+    current_lv_temp[0]  = lv_cells_temp_last_state_1.temp_0;
+    current_lv_temp[1]  = lv_cells_temp_last_state_1.temp_1;
+    current_lv_temp[2]  = lv_cells_temp_last_state_1.temp_2;
+    current_lv_temp[3]  = lv_cells_temp_last_state_2.temp_0;
+    current_lv_temp[4]  = lv_cells_temp_last_state_2.temp_1;
+    current_lv_temp[5]  = lv_cells_temp_last_state_2.temp_2;    
+    current_lv_temp[6]  = lv_cells_temp_last_state_3.temp_0;
+    current_lv_temp[7]  = lv_cells_temp_last_state_3.temp_1;
+    current_lv_temp[8]  = lv_cells_temp_last_state_3.temp_2;
+    current_lv_temp[9]  = data->temp_0;
+    current_lv_temp[10] = data->temp_1;
+    current_lv_temp[11] = data->temp_2;
+  }
+  
+  size_t temp_size = 0;
+  float sum = 0;
+  for (uint8_t temp_index = 0; temp_index < 12; temp_index++) {
+    if (current_lv_temp[temp_index] != -1) {
+      sum += current_lv_temp[temp_index];
+      temp_size++;
+    }
   }
 
-  uint16_t mean_temp = (old_lv_temp_0 + old_lv_temp_1 + old_lv_temp_2 +
-                        old_lv_temp_3 + old_lv_temp_4 + old_lv_temp_5) /
-                       6;
+  float mean_temp = (float) (sum / (float)temp_size);
   if (mean_temp != lv_cells_temp_mean_last_state) {
     lv_cells_temp_mean_last_state = mean_temp;
     sprintf(sprintf_buffer, "%d", (int)mean_temp);
@@ -458,14 +462,7 @@ void car_status_invalidate() {
   STEER_UPDATE_LABEL(steering.das.lb_speed, "N/A");
 }
 
-void control_output_invalidate() {
-}
-
 void tlm_status_invalidate() {
-
-}
-
-void ambient_temperature_invalidate() {
 
 }
 
@@ -551,14 +548,6 @@ void hv_feedbacks_status_invalidate() {
         feedbacks_status_feedback_sd_imd, 19)
 }
 
-void hv_cells_voltage_invalidate() {
-
-}
-
-void hv_cells_temp_invalidate() {
-
-}
-
 void das_errors_invalidate() {
   STEER_ERROR_INVALIDATE(das_errors, das_error_pedal_adc, 0)
   STEER_ERROR_INVALIDATE(das_errors, das_error_pedal_implausibility, 1)
@@ -573,10 +562,6 @@ void das_errors_invalidate() {
 
 void lv_currents_invalidate() {
   STEER_UPDATE_LABEL(steering.lv.lb_current, "N/A");
-}
-
-void lv_cells_voltage_invalidate() {
-
 }
 
 void lv_cells_temp_invalidate() {

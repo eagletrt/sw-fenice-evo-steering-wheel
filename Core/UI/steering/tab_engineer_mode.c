@@ -8,7 +8,7 @@ void init_engineer_tab_styles() {
   lv_style_set_base_dir(&engineer_label_style, LV_BASE_DIR_LTR);
   lv_style_set_bg_opa(&engineer_label_style, LV_OPA_TRANSP);
   lv_style_set_text_color(&engineer_label_style,
-                          lv_color_hex(COLOR_PRIMARY_HEX));
+                          lv_color_hex(COLOR_SECONDARY_HEX));
   lv_style_set_text_align(&engineer_label_style, LV_TEXT_ALIGN_CENTER);
   lv_style_set_align(&engineer_label_style, LV_ALIGN_CENTER);
 }
@@ -19,7 +19,7 @@ void tab_engineer_screen_create(lv_obj_t *notification_screen) {
   lv_obj_t *notification_background = lv_obj_create(notification_screen);
   lv_obj_set_size(notification_background, SCREEN_WIDTH, SCREEN_HEIGHT);
   lv_obj_set_style_bg_color(notification_background,
-                            lv_color_hex(COLOR_SECONDARY_HEX), LV_PART_MAIN);
+                            lv_color_hex(COLOR_PRIMARY_HEX), LV_PART_MAIN);
 
   lv_obj_t *label = lv_label_create(notification_background);
 

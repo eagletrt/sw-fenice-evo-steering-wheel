@@ -288,6 +288,14 @@ void foo(lv_indev_drv_t *indev_drv, uint8_t e) {
     racing_error_notification("VEZ TE GHE LE GOMME SBUSE");
     break;
 
+  case 'e':
+    load_engineer_mode_screen();
+    break;
+  
+  case 'w':
+    remove_engineer_mode_screen();
+    break;
+    
   default:
     break;
   }

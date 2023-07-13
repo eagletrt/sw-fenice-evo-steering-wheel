@@ -407,15 +407,14 @@ HAL_StatusTypeDef can_send(can_message_t *msg, FDCAN_HandleTypeDef *nwk) {
       .IdType = FDCAN_STANDARD_ID,
       .TxFrameType = FDCAN_DATA_FRAME,
       .DataLength = dlc_len,
-      .ErrorStateIndicator = FDCAN_ESI_ACTIVE, // error active
-      .BitRateSwitch = FDCAN_BRS_OFF,          // disable bit rate switching
+      .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
+      .BitRateSwitch = FDCAN_BRS_OFF,
       .FDFormat = FDCAN_CLASSIC_CAN,
       .TxEventFifoControl = FDCAN_STORE_TX_EVENTS,
       .MessageMarker = 0,
   };
 
-  // TODO CHECK if wait is necessary
-  // _can_wait(nwk);
+  _can_wait(nwk);
 
   return HAL_FDCAN_AddMessageToTxFifoQ(nwk, &header, msg->data);
 }
@@ -456,13 +455,13 @@ void handle_primary(can_message_t *msg) {
   }
   case PRIMARY_TLM_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, tlm_status, TLM_STATUS);
-    tlm_status_update(&converted);
+    // tlm_status_update(&converted);
     break;
   }
   case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, ambient_temperature,
                      AMBIENT_TEMPERATURE);
-    ambient_temperature_update(&converted);
+    // ambient_temperature_update(&converted);
     break;
   }
   case PRIMARY_SPEED_FRAME_ID: {
@@ -496,16 +495,6 @@ void handle_primary(can_message_t *msg) {
     hv_feedbacks_status_update(&converted);
     break;
   }
-  case PRIMARY_HV_CELLS_VOLTAGE_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_voltage, HV_CELLS_VOLTAGE);
-    hv_cells_voltage_update(&converted);
-    break;
-  }
-  case PRIMARY_HV_CELLS_TEMP_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_temp, HV_CELLS_TEMP);
-    hv_cells_temp_update(&converted);
-    break;
-  }
   case PRIMARY_DAS_ERRORS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, das_errors, DAS_ERRORS);
     das_errors_update(&converted);
@@ -514,11 +503,6 @@ void handle_primary(can_message_t *msg) {
   case PRIMARY_LV_CURRENTS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, lv_currents, LV_CURRENTS);
     lv_currents_update(&converted);
-    break;
-  }
-  case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_voltage, LV_CELLS_VOLTAGE);
-    lv_cells_voltage_update(&converted);
     break;
   }
   case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
