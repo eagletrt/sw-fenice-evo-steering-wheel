@@ -10,13 +10,17 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include "tab_calibration.h"
 
 typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
+void remove_trailing (char *buf);
+
 #define STEER_UPDATE_LABEL(name, value)                                        \
   for (uint32_t itab = 0; itab < NUM_TABS; itab++) {                           \
-    if (name[itab] != NULL)                                                    \
-      lv_label_set_text_fmt(name[itab], "%s", value);                          \
+    if (name[itab] != NULL){                                                    \
+      remove_trailing(value); \
+      lv_label_set_text_fmt(name[itab], "%s", value);}                          \
   }
 
 #define STEER_UPDATE_COLOR_LABEL(name, color)                                  \
@@ -80,9 +84,12 @@ typedef struct {
     lv_obj_t *lb_delta_time[NUM_TABS];
     lv_obj_t *lb_estimated_velocity[NUM_TABS];
     lv_obj_t *lb_steering_angle[NUM_TABS];
+    lv_obj_t *lb_apps[NUM_TABS];
+    lv_obj_t *lb_bse[NUM_TABS];
   } steering;
 
   struct {
+    lv_obj_t *lb_tlm_status[NUM_TABS];
     lv_obj_t *lb_lap_count[NUM_TABS];
   } telemetry;
 
@@ -170,6 +177,7 @@ void lv_total_voltage_update(primary_lv_total_voltage_converted_t *);
 void lv_errors_update(primary_lv_errors_converted_t *);
 
 void steering_angle_update(secondary_steering_angle_converted_t *);
+void pedals_output_update(secondary_pedals_output_converted_t *);
 
 void inv_l_rcv_update(inverters_inv_l_rcv_converted_t *);
 void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *);

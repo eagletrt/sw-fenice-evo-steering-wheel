@@ -26,6 +26,7 @@
 void tab_calibration(lv_obj_t *parent);
 
 void shift_box_focus(bool move_right);
+void update_slider_val(int device, int value);
 
 void init_calibration_tab_styles(void);
 void sim_calibration_tool_set_min_max(bool);

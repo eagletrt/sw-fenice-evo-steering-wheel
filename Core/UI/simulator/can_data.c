@@ -9,181 +9,138 @@
   network##_message_##message##_conversion conversion;                         \
   network##_raw_to_conversion_struct_##message(&conversion, &data);
 
-char *car_status_to_string(int car_status);
+void update_car_status(uint8_t val);
 
 void can_handle_primary(struct can_frame frame) {
-
+  
+#define CAL_LOG_ENABLED 0
+  int16_t id = frame.can_id;
   int length = frame.can_dlc;
-  uint8_t *raw = malloc(length);
-  memcpy(raw, frame.data, length * sizeof(uint8_t));
-
-  // printf("%d\n", frame.can_id);
-
-  switch (frame.can_id) {
-    /*
-    case PRIMARY_: {
-
-        // DESERIALIZE_CONVERSION(primary, SPEED);
-        // steering.general_info.estimated_velocity = conversion.encoder_l;
-
-        //LV_UPDATE_VALUE(general_info, estimated_velocity,
-    conversion.encoder_l);
-
-        //if(conversion.encoder_l > 100)
-            //LV_UPDATE_LABEL(general_info, estimated_velocity,
-    conversion.encoder_l);
-
-        break;
-    }
-
-    case primary_ID_TIMESTAMP: {
-        // DESERIALIZE(primary, TIMESTAMP);
-        //LV_UPDATE_LABEL()
-        break;
-    }
-
-    case PRIMARY_ID_DAS_VERSION: {
-        // DESERIALIZE(primary, DAS_VERSION);
-        // to be defined
-        break;
-    }
-
-    case primary_ID_HV_VERSION: {
-        // DESERIALIZE(primary, HV_VERSION);;
-        //to be defined
-        break;
-    }
-
-    case primary_ID_LV_VERSION: {
-        // DESERIALIZE(primary, LV_VERSION);
-        //to be defined
-        break;
-    }
-    case primary_ID_TLM_VERSION: {
-        // DESERIALIZE(primary, TLM_VERSION);
-        // to be defined
-        break;
-    }
-    case primary_ID_TLM_STATUS: {
-        // DESERIALIZE(primary, TLM_STATUS);
-        // to be defined -> pallino on/off
-        break;
-    }
-    case primary_ID_CAR_STATUS: {
-        // DESERIALIZE(primary, CAR_STATUS);
-        //if(steering.general_info.estimated_velocity < 100)
-        // LV_UPDATE_LABEL(low_voltage, car_status, "running");
-
-        break;
-    }
-    case primary_ID_INV_L_RESPONSE: {
-        // DESERIALIZE(primary, INV_L_RESPONSE);
-        // to be defined
-        break;
-    }
-    case primary_ID_INV_R_RESPONSE: {
-        // DESERIALIZE(primary, INV_R_RESPONSE);
-        // to be defined
-        break;
-    }
-    case primary_ID_LV_CURRENT: {
-        // DESERIALIZE(primary, LV_CURRENT);
-        // LV_UPDATE_LABEL(low_voltage, lv_current, data.current);
-        break;
-    }
-    case primary_ID_LV_VOLTAGE: {
-        // DESERIALIZE(primary, LV_VOLTAGE);
-        // LV_UPDATE_LABEL(low_voltage, lv_voltage, data.voltage_1);
-        break;
-    }
-    case primary_ID_LV_TEMPERATURE: {
-        // DESERIALIZE_CONVERSION(primary, LV_TEMPERATURE);
-        // LV_UPDATE_LABEL(low_voltage, lv_temp, conversion.bp_temperature_1);
+  
+  switch (id) {
+    #if 0
+  case PRIMARY_CAR_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, car_status, CAR_STATUS);
+    car_status_update(&converted);
     break;
-    }
-    case primary_ID_HV_CURRENT: {
-        // DESERIALIZE(primary, HV_CURRENT);
-        // LV_UPDATE_LABEL(hv, hv_current, data.current);
-        break;
-    }
-    case primary_ID_HV_VOLTAGE: {
-        // DESERIALIZE(primary, HV_VOLTAGE);
-        // LV_UPDATE_LABEL(hv, hv_voltage, data.pack_voltage);
+  }
+  #endif
+  
+
+  case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, pedal_calibration_ack,
+                     PEDAL_CALIBRATION_ACK);
+    // pedal_calibration_ack(&converted);
     break;
-    }
-    case primary_ID_HV_TEMP: {
-        // DESERIALIZE(primary, HV_TEMP);
-        // LV_UPDATE_LABEL(hv, hv_temp, data.average_temp);
-        break;
-    }
-    case primary_ID_HV_ERRORS: {
-        // DESERIALIZE(primary, HV_ERRORS);
-        // to be defined
-        break;
-    }
-    case primary_ID_TS_STATUS: {
-        // DESERIALIZE(primary, TS_STATUS);
-        // to be defined
-        break;
-    }
-    case primary_ID_HV_FEEDBACKS_STATUS: {
-        // DESERIALIZE(primary, HV_FEEDBACKS_STATUS);
-        // to be defined
-        break;
-    }
-    case primary_ID_DAS_ERRORS: {
-        // DESERIALIZE(primary, DAS_ERRORS);
-        // to be defined
-        break;
-    }
-    case primary_ID_LV_ERRORS: {
-        // DESERIALIZE(primary, LV_ERRORS);
-        // to be defined
-        break;
-    }
-    default:
-        break;*/
+  }
+  
+  case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
+    // print("Resetting for open blt\n");
+    // HAL_NVIC_SystemReset();
+    break;
+  case PRIMARY_PTT_STATUS_FRAME_ID: {
+    // STEER_CAN_UNPACK(primary, PRIMARY, ptt_status, PTT_STATUS);
+    // handle_ptt_message(converted.status);
+    break;
+  }
+  case PRIMARY_TLM_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, tlm_status, TLM_STATUS);
+    // tlm_status_update(&converted);
+    break;
+  }
+  case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, ambient_temperature,
+                     AMBIENT_TEMPERATURE);
+    // ambient_temperature_update(&converted);
+    break;
+  }
+  case PRIMARY_SPEED_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, speed, SPEED);
+    speed_update(&converted);
+    break;
+  }
+  
+  case PRIMARY_HV_VOLTAGE_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_voltage, HV_VOLTAGE);
+    hv_voltage_update(&converted);
+    break;
+  }
+  case PRIMARY_HV_CURRENT_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_current, HV_CURRENT);
+    hv_current_update(&converted);
+    break;
+  }
+  case PRIMARY_HV_TEMP_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_temp, HV_TEMP);
+    hv_temp_update(&converted);
+    break;
+  }
+  case PRIMARY_HV_ERRORS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_errors, HV_ERRORS);
+    hv_errors_update(&converted);
+    break;
+  }
+  case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_feedbacks_status,
+                     HV_FEEDBACKS_STATUS);
+    hv_feedbacks_status_update(&converted);
+    break;
+  }
+  case PRIMARY_DAS_ERRORS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, das_errors, DAS_ERRORS);
+    das_errors_update(&converted);
+    break;
+  }
+  case PRIMARY_LV_CURRENTS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, lv_currents, LV_CURRENTS);
+    lv_currents_update(&converted);
+    break;
+  }
+  case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp, LV_CELLS_TEMP);
+    lv_cells_temp_update(&converted);
+    break;
+  }
+  case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, lv_total_voltage, LV_TOTAL_VOLTAGE);
+    lv_total_voltage_update(&converted);
+    break;
+  }
+  case PRIMARY_LV_ERRORS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, lv_errors, LV_ERRORS);
+    lv_errors_update(&converted);
+    break;
+  }
+  case INVERTERS_INV_L_RCV_FRAME_ID: {
+    STEER_CAN_UNPACK(inverters, INVERTERS, inv_l_rcv, INV_L_RCV);
+    inv_l_rcv_update(&converted);
+    break;
+  }
+  case INVERTERS_INV_R_RCV_FRAME_ID: {
+    STEER_CAN_UNPACK(inverters, INVERTERS, inv_r_rcv, INV_R_RCV);
+    inv_r_rcv_update(&converted);
+    break;
+  }
   }
 }
 
-void update_lv_temp(uint8_t val) {
-  // LV_UPDATE_LABEL(low_voltage, lv_temp, val);
-}
-
-void update_car_status(uint8_t val);
 void can_handle_secondary(struct can_frame frame) {
+  int16_t id = frame.can_id;
   int length = frame.can_dlc;
-  uint8_t *raw = malloc(length);
-  memcpy(raw, frame.data, length * sizeof(uint8_t));
-
-  /*
-  switch(frame.can_id)
-  {
-      case secondary_ID_STEERING_ANGLE:{
-          // DESERIALIZE(secondary, STEERING_ANGLE);
-
-          // if(steering.curr_focus == STEER)
-              // lv_slider_set_value(steering.slider, (int)data.angle,
-  LV_ANIM_OFF);
-
-          break;
-      }
-      case secondary_ID_PEDALS_OUTPUT:{
-          // DESERIALIZE_CONVERSION(secondary, PEDALS_RANGE);
-
-          // if(steering.curr_focus == APPS)
-              // lv_slider_set_value(steering.slider, (int)conversion.apps,
-  LV_ANIM_OFF);
-          // else if(steering.curr_focus == BSE)
-              // lv_slider_set_value(steering.slider, (int)conversion.bse_front,
-  LV_ANIM_OFF);
-
-          break;
-      }
-      case secondary_ID_GPS_SPEED:{
-          // DESERIALIZE(secondary, GPS_SPEED); does not compile
-
-          break;
-      }
-  }*/
+  switch (id) {
+  case SECONDARY_STEERING_ANGLE_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, steering_angle, STEERING_ANGLE);
+    steering_angle_update(&converted);
+    break;
+  }
+  case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, pedals_output, PEDALS_OUTPUT);
+    pedals_output_update(&converted);
+    break;
+  }
+  default:
+    break;
+  }
+  
 }
+

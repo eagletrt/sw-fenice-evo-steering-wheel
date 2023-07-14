@@ -18,6 +18,7 @@ lv_obj_t *set_max_btn;
 lv_obj_t *scr_calib;
 
 extern tab_t current_tab;
+extern secondary_pedals_output_converted_t pedals_output_last_state;
 
 void init_calibration_tab_styles(void) {
   /* BOX STYLE */
@@ -146,28 +147,30 @@ void tab_calibration(lv_obj_t *parent) {
 
   lv_obj_t *set_min_btn_label = lv_label_create(set_min_btn);
   lv_obj_add_style(set_min_btn_label, &buttons_label_style, LV_PART_MAIN);
-  lv_label_set_text(set_min_btn_label, "G1 Set Min");
+  lv_label_set_text(set_min_btn_label, "Set Min");
   lv_obj_set_align(set_min_btn_label, LV_ALIGN_CENTER);
 
   lv_obj_t *center_btn = lv_obj_create(buttons_container);
   lv_obj_remove_style_all(center_btn);
   lv_obj_add_style(center_btn, &buttons_style, LV_PART_MAIN);
+  lv_obj_set_style_bg_color(center_btn, lv_color_hex(0x000000), LV_PART_MAIN);
   lv_obj_align(center_btn, LV_ALIGN_TOP_MID, 0, 10);
 
+#if 0
   lv_obj_t *center_lbl;
-  lv_obj_t *center_btn_label = lv_horizontal_pair_label(
+  steering.steering.lb_steering_angle[TAB_CALIBRATION]  = lv_horizontal_pair_label(
       center_btn, &center_lbl, "15", &lv_font_inter_bold_30, " deg",
       &lv_font_inter_bold_22);
-  lv_obj_set_align(center_btn_label, LV_ALIGN_CENTER);
-  lv_obj_set_style_text_color(lv_obj_get_child(center_btn_label, 0),
+  lv_obj_set_align(steering.steering.lb_steering_angle[TAB_CALIBRATION] , LV_ALIGN_CENTER);
+  lv_obj_set_style_text_color(lv_obj_get_child(steering.steering.lb_steering_angle[TAB_CALIBRATION] , 0),
                               lv_color_hex(COLOR_PRIMARY_HEX), LV_PART_MAIN);
   lv_obj_set_style_text_color(
-      lv_obj_get_child(lv_obj_get_child(center_btn_label, 1), 0),
+      lv_obj_get_child(lv_obj_get_child(steering.steering.lb_steering_angle[TAB_CALIBRATION] , 1), 0),
       lv_color_hex(COLOR_PRIMARY_HEX), LV_PART_MAIN);
-  lv_obj_set_grid_cell(lv_obj_get_child(center_btn_label, 1),
+  lv_obj_set_grid_cell(lv_obj_get_child(steering.steering.lb_steering_angle[TAB_CALIBRATION] , 1),
                        LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0,
                        1); // center the label "POWER"
-
+#endif
   /*
   lv_obj_t *center_btn_label = lv_label_create(center_btn);
   lv_obj_add_style(center_btn_label, &buttons_label_style, LV_PART_MAIN);
@@ -184,7 +187,7 @@ void tab_calibration(lv_obj_t *parent) {
 
   lv_obj_t *set_max_btn_label = lv_label_create(set_max_btn);
   lv_obj_add_style(set_max_btn_label, &buttons_label_style, LV_PART_MAIN);
-  lv_label_set_text(set_max_btn_label, "G2 Set Max");
+  lv_label_set_text(set_max_btn_label, "Set Max");
   lv_obj_set_align(set_max_btn_label, LV_ALIGN_CENTER);
 
   /*--- inserting CALIBRATION TOOL ---*/
@@ -282,6 +285,10 @@ void sim_calibration_tool_set_min_max(bool setting_max_value) {
             set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
     }
   }
+}
+
+void update_slider_val(int device, int value) {
+  
 }
 
 void shift_box_focus(bool move_right) {

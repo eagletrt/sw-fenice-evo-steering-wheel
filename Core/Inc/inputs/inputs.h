@@ -57,7 +57,7 @@ typedef enum {
 } pumps_speed_t;
 
 #define POWER_MAP_MAPPING                                                      \
-  { -0.1f, 0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.8f, 1.0f }
+  { -0.1f, 0.0f, 0.2f, 0.4f, 0.6f, 0.7f, 0.8f, 1.0f }
 #define TORQUE_MAP_MAPPING                                                     \
   { 0.0f, 0.066f, 0.133f, 0.266f, 0.466f, 0.666f, 0.8f, 1.0f }
 #define SLIP_MAP_MAPPING                                                       \

@@ -395,10 +395,6 @@ void manettino_send_power_map(uint8_t ival) {
   display_notification(title, 750);
 }
 
-void verify_pumps_speed() {
-
-}
-
 void manettino_send_set_pumps_speed(uint8_t ival) {
   cooling_status_last_state.pumps_speed = (float)val_pumps_speed_index[ival];
 
@@ -443,6 +439,7 @@ void send_set_car_status(primary_set_car_status_car_status_set val) {
   converted.car_status_set = val;
   STEER_CAN_PACK(primary, PRIMARY, set_car_status, SET_CAR_STATUS);
   can_send(&msg, &hfdcan1);
+  can_send(&msg, &hfdcan1);
 }
 
 void prepare_set_car_status(void) {
@@ -482,9 +479,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
     GPIO_PinState tson_pin_state =
         HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
-    switch (car_status_last_state.car_status) {
-    case primary_car_status_car_status_IDLE:
-    case primary_car_status_car_status_WAIT_DRIVER: {
       if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
         print("Setting timer to check button state in 2 seconds\n");
         tson_button_pressed = true;
@@ -499,13 +493,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
         STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
       }
-      break;
-    }
-    default: {
-      send_set_car_status(primary_set_car_status_car_status_set_IDLE);
-      break;
-    }
-    }
   }
 }
 

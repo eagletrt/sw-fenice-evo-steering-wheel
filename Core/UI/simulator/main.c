@@ -107,7 +107,7 @@ void canread(thread_data_t *thread_data) {
   while (1) {
     can_receive(&frame, thread_data->can);
     SDL_mutexP(mtx);
-    // can_handle_primary(frame);
+    can_handle_primary(frame);
     can_handle_secondary(frame);
     SDL_mutexV(mtx);
   }
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
   // lv_timer_create((lv_timer_cb_t) test_value_update_incremental, 70, NULL);
 
   /*----init structures and values to read from can----*/
-
+#define SIMULATOR_CAN
 #ifdef SIMULATOR_CAN
   mtx = SDL_CreateMutex();
   queue_init(&queue);
@@ -155,9 +155,21 @@ int main(int argc, char **argv) {
   thread_data_1.can = &can_secondary;
   thread_data_1.can_id = NETWORK_SECONDARY;
 
-  // thread_id_0 = SDL_CreateThread(canread, "thread_0", &thread_data_0);
+  thread_id_0 = SDL_CreateThread(canread, "thread_0", &thread_data_0);
   thread_id_1 = SDL_CreateThread(canread, "thread_1", &thread_data_1);
 #endif
+
+  secondary_pedals_output_converted_t converted = {
+    .apps = 0,
+    .bse_front = 0.0f,
+    .bse_rear = 0.0f
+  };
+
+  // secondary_steering_angle_converted_t angle_main = {
+    // .angle = -70.0f
+  // };
+
+  int gggcounter = 0;
 
   while (1) {
 
@@ -165,6 +177,22 @@ int main(int argc, char **argv) {
     /* Periodically call the lv_task handler.
      * It could be done in a timer interrupt or an OS task too.*/
     lv_timer_handler();
+
+#if 0
+    converted.apps = (int) (converted.apps + 3) % 50;
+    converted.bse_front += 0.1f;
+    if (converted.bse_front > 90.0f) converted.bse_front = 0.0f;
+    
+    angle_main.angle += 3.1f;
+    if (angle_main.angle > 70.0f) angle_main.angle = -70.0f;
+
+    pedals_output_update(&converted);
+    if (gggcounter > 100) {
+      steering_angle_update(&angle_main);
+      gggcounter = 0;
+    }
+    gggcounter++;
+#endif
 
     SDL_mutexV(mtx);
     usleep(5 * 1000);

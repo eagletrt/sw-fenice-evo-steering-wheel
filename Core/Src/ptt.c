@@ -8,6 +8,8 @@ void activate_ptt(void) {
   converted.status = primary_set_ptt_status_status_ON;
   STEER_CAN_PACK(primary, PRIMARY, set_ptt_status, SET_PTT_STATUS);
   can_send(&msg, &hfdcan1);
+  led_control_set(&hi2c4, (uint32_t[6]){COLOR_RED, COLOR_RED, COLOR_RED,
+                                          COLOR_RED, COLOR_RED, COLOR_RED});
 }
 
 void deactivate_ptt(void) {
@@ -22,8 +24,8 @@ void handle_ptt_message(primary_ptt_status_status val) {
     if (status) {
       display_notification("PTT OFF", 400);
       led_control_init(&hi2c4);
-      led_control_set(&hi2c4, (uint32_t[6]){COLOR_RED, COLOR_RED, COLOR_OFF,
-                                            COLOR_OFF, COLOR_OFF, COLOR_OFF});
+        led_control_set(&hi2c4, (uint32_t[6]){COLOR_OFF, COLOR_OFF, COLOR_OFF,
+                                          COLOR_OFF, COLOR_OFF, COLOR_OFF});
     }
     status = 0;
     print("Received status OFF");
@@ -31,8 +33,8 @@ void handle_ptt_message(primary_ptt_status_status val) {
     if (!status) {
       display_notification("PTT ON", 400);
       led_control_init(&hi2c4);
-      led_control_set(&hi2c4, (uint32_t[6]){COLOR_GREEN, COLOR_GREEN, COLOR_OFF,
-                                            COLOR_OFF, COLOR_OFF, COLOR_OFF});
+      led_control_set(&hi2c4, (uint32_t[6]){COLOR_GREEN, COLOR_GREEN, COLOR_GREEN,
+                                            COLOR_GREEN, COLOR_GREEN, COLOR_GREEN});
     }
     status = 1;
     print("Received status ON");

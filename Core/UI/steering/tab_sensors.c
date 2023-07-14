@@ -105,22 +105,22 @@ void tab_sensors(lv_obj_t *parent) {
 
   lv_obj_t *front_lx_temp = lv_horizontal_pair_label(
       frame_1, &steering.tyre_temps.lb_fl_temp[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22);
+      &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
   lv_obj_align(front_lx_temp, LV_ALIGN_CENTER, -60, -70);
 
   lv_obj_t *front_rx_temp = lv_horizontal_pair_label(
       frame_1, &steering.tyre_temps.lb_fr_temp[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22);
+      &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
   lv_obj_align(front_rx_temp, LV_ALIGN_CENTER, 60, -70);
 
   lv_obj_t *rear_lx_temp = lv_horizontal_pair_label(
       frame_1, &steering.tyre_temps.lb_rl_temp[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22);
+      &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
   lv_obj_align(rear_lx_temp, LV_ALIGN_CENTER, -60, 70);
 
   lv_obj_t *rear_rx_temp = lv_horizontal_pair_label(
       frame_1, &steering.tyre_temps.lb_rr_temp[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22);
+      &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
   lv_obj_align(rear_rx_temp, LV_ALIGN_CENTER, 60, 70);
 
   lv_obj_t *body_1 = lv_obj_create(frame_1);
@@ -202,22 +202,22 @@ void tab_sensors(lv_obj_t *parent) {
 
   lv_obj_t *front_lx_press = lv_horizontal_pair_label(
       frame_2, &steering.tyre_pressures.lb_fl_press[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, " bar", &lv_font_inter_bold_22);
+      &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
   lv_obj_align(front_lx_press, LV_ALIGN_CENTER, -60, -70);
 
   lv_obj_t *front_rx_press = lv_horizontal_pair_label(
       frame_2, &steering.tyre_pressures.lb_fr_press[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, " bar", &lv_font_inter_bold_22);
+      &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
   lv_obj_align(front_rx_press, LV_ALIGN_CENTER, 60, -70);
 
   lv_obj_t *rear_lx_press = lv_horizontal_pair_label(
       frame_2, &steering.tyre_pressures.lb_rl_press[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, " bar", &lv_font_inter_bold_22);
+      &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
   lv_obj_align(rear_lx_press, LV_ALIGN_CENTER, -60, 70);
 
   lv_obj_t *rear_rx_press = lv_horizontal_pair_label(
       frame_2, &steering.tyre_pressures.lb_rr_press[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, " bar", &lv_font_inter_bold_22);
+      &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
   lv_obj_align(rear_rx_press, LV_ALIGN_CENTER, 60, 70);
 
   lv_obj_t *body_2 = lv_obj_create(frame_2);
@@ -318,28 +318,28 @@ void tab_sensors(lv_obj_t *parent) {
 
   lv_obj_t *inv_l_temp_lb = lv_triple_label(
       right_data_panel, &steering.inverters.lb_left_inverter_temp[TAB_SENSORS],
-      "X", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV L",
+      "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "INV L",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(inv_l_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *inv_r_temp_lb = lv_triple_label(
       right_data_panel, &steering.inverters.lb_right_inverter_temp[TAB_SENSORS],
-      "X", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV R",
+      "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "INV R",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(inv_r_temp_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *motor_l_temp_lb = lv_triple_label(
       right_data_panel, &steering.inverters.lb_left_motor_temp[TAB_SENSORS],
-      "X", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR L",
+      "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MOTOR L",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_l_temp_lb, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *motor_r_temp_lb = lv_triple_label(
       right_data_panel, &steering.inverters.lb_right_motor_temp[TAB_SENSORS],
-      "X", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR R",
+      "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MOTOR R",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_r_temp_lb, LV_GRID_ALIGN_CENTER, 3, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
@@ -347,29 +347,29 @@ void tab_sensors(lv_obj_t *parent) {
   /* 2nd row HV */
 
   lv_obj_t *hv_temp_lb = lv_triple_label(
-      right_data_panel, &steering.hv.lb_average_temperature[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "HV",
+      right_data_panel, &steering.hv.lb_average_temperature[TAB_SENSORS], "31",
+      &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *hv_volt_lb = lv_triple_label(
-      right_data_panel, &steering.hv.lb_pack_voltage[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, " V", &lv_font_inter_bold_22, "HV",
+      right_data_panel, &steering.hv.lb_pack_voltage[TAB_SENSORS], "408",
+      &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_volt_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *hv_curr_lb =
       lv_triple_label(right_data_panel, &steering.hv.lb_current[TAB_SENSORS],
-                      "X", &lv_font_inter_bold_38, " A", &lv_font_inter_bold_22,
+                      "0", &lv_font_inter_bold_30, " A", &lv_font_inter_bold_22,
                       "HV", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_curr_lb, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *hv_minCellV_lb = lv_triple_label(
-      right_data_panel, &steering.hv.lb_min_cell_voltage[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, " V", &lv_font_inter_bold_22, "HV MIN",
+      right_data_panel, &steering.hv.lb_min_cell_voltage[TAB_SENSORS], "3.7",
+      &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "HV MIN",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_minCellV_lb, LV_GRID_ALIGN_CENTER, 3, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
@@ -378,61 +378,61 @@ void tab_sensors(lv_obj_t *parent) {
 
   lv_obj_t *lv_temp_lb = lv_triple_label(
       right_data_panel, &steering.lv.lb_battery_temperature[TAB_SENSORS], "X",
-      &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "LV",
+      &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "LV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *lv_volt_lb =
       lv_triple_label(right_data_panel, &steering.lv.lb_voltage[TAB_SENSORS],
-                      "X", &lv_font_inter_bold_38, " V", &lv_font_inter_bold_22,
+                      "X", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22,
                       "LV", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_volt_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *lv_curr_lb =
       lv_triple_label(right_data_panel, &steering.lv.lb_current[TAB_SENSORS],
-                      "X", &lv_font_inter_bold_38, " A", &lv_font_inter_bold_22,
+                      "X", &lv_font_inter_bold_30, " A", &lv_font_inter_bold_22,
                       "LV", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_curr_lb, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
-  lv_obj_t *lv_deltaV_lb =
-      lv_triple_label(right_data_panel, &steering.lv.lb_lv_delta[TAB_SENSORS],
-                      "X", &lv_font_inter_bold_38, " V", &lv_font_inter_bold_22,
-                      "LV DELTA", &lv_font_inter_bold_20);
-  lv_obj_set_grid_cell(lv_deltaV_lb, LV_GRID_ALIGN_CENTER, 3, 1,
-                       LV_GRID_ALIGN_CENTER, 2, 1);
-
+  lv_obj_t *y2 =
+      lv_triple_label(right_data_panel,
+                      &steering.telemetry.lb_tlm_status[TAB_SENSORS],
+                      "ON", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22,
+                      "TLM", &lv_font_inter_bold_20);
+  lv_obj_set_grid_cell(y2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 2,
+                       1);
 /* 4th row */
 #if 0
   lv_obj_t *cooling_rad_lb =
       lv_triple_label(right_data_panel,
                       &steering.cooling_status.lb_radiators_speed[TAB_SENSORS],
-                      "X", &lv_font_inter_bold_38, "%", &lv_font_inter_bold_22,
+                      "X", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_22,
                       "RAD", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(cooling_rad_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
   lv_obj_t *cooling_pump_lb = lv_triple_label(
       right_data_panel, &steering.cooling_status.lb_pumps_speed[TAB_SENSORS],
-      "X", &lv_font_inter_bold_38, "%", &lv_font_inter_bold_22, "PUMP",
+      "X", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_22, "PUMP",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(cooling_pump_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
   lv_obj_t *y1 = lv_triple_label(
-      right_data_panel, &steering.cooling_status.lb_pumps_speed[TAB_RACING],
-      "X", &lv_font_inter_bold_38, "%", &lv_font_inter_bold_22, "X",
+      right_data_panel, &steering.[TAB_SENSORS],
+      "X", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_22, "X",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y1, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 3,
                        1);
 
   lv_obj_t *y2 =
       lv_triple_label(right_data_panel,
-                      &steering.cooling_status.lb_pumps_speed[TAB_CALIBRATION],
-                      "X", &lv_font_inter_bold_38, "%", &lv_font_inter_bold_22,
-                      "X", &lv_font_inter_bold_20);
+                      &steering.telemetry.lb_tlm_status[TAB_SENSORS],
+                      "TLM", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
+                      "ON", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 3,
                        1);
 #endif
@@ -470,7 +470,7 @@ void tab_sensors(lv_obj_t *parent) {
   lv_obj_add_style(apps_1_bar, &bar_accel_style, LV_PART_INDICATOR);
   lv_obj_add_style(apps_1_bar, &bar_calib_back_style, LV_PART_MAIN);
   lv_bar_set_range(apps_1_bar, 0, 100);
-  lv_bar_set_value(apps_1_bar, 10, LV_ANIM_OFF);
+  lv_bar_set_value(apps_1_bar, 0, LV_ANIM_OFF);
 
   lv_obj_set_grid_cell(apps_1_bar, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
@@ -488,7 +488,7 @@ void tab_sensors(lv_obj_t *parent) {
   lv_obj_add_style(apps_2_bar, &bar_accel_style, LV_PART_INDICATOR);
   lv_obj_add_style(apps_2_bar, &bar_calib_back_style, LV_PART_MAIN);
   lv_bar_set_range(apps_2_bar, 0, 100);
-  lv_bar_set_value(apps_2_bar, 10, LV_ANIM_OFF);
+  lv_bar_set_value(apps_2_bar, 0, LV_ANIM_OFF);
   lv_obj_set_grid_cell(apps_2_bar, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
@@ -505,7 +505,7 @@ void tab_sensors(lv_obj_t *parent) {
   lv_obj_add_style(brake_f_bar, &bar_brake_style, LV_PART_INDICATOR);
   lv_obj_add_style(brake_f_bar, &bar_calib_back_style, LV_PART_MAIN);
   lv_bar_set_range(brake_f_bar, 0, 100);
-  lv_bar_set_value(brake_f_bar, 50, LV_ANIM_OFF);
+  lv_bar_set_value(brake_f_bar, 0, LV_ANIM_OFF);
   lv_obj_set_grid_cell(brake_f_bar, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
@@ -523,7 +523,7 @@ void tab_sensors(lv_obj_t *parent) {
   lv_obj_add_style(brake_r_bar, &bar_brake_style, LV_PART_INDICATOR);
   lv_obj_add_style(brake_r_bar, &bar_calib_back_style, LV_PART_MAIN);
   lv_bar_set_range(brake_r_bar, 0, 100);
-  lv_bar_set_value(brake_r_bar, 50, LV_ANIM_OFF);
+  lv_bar_set_value(brake_r_bar, 0, LV_ANIM_OFF);
   lv_obj_set_grid_cell(brake_r_bar, LV_GRID_ALIGN_CENTER, 3, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 }

@@ -47,7 +47,12 @@
         "ostream": "c",
         "ratio": "c",
         "tuple": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "can_data.h": "c",
+        "inverters_network.h": "c",
+        "optional": "c",
+        "system_error": "c"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "C_Cpp.dimInactiveRegions": false
 }

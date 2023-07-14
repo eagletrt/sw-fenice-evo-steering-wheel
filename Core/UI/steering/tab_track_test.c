@@ -76,7 +76,7 @@ void tab_track_test(lv_obj_t *parent) {
 
   lv_obj_t *speed = lv_vertical_pair_label(
       up_left_data_panel, &steering.steering.lb_estimated_velocity[TAB_SENSORS],
-      "NA", &lv_font_inter_bold_38, "KM/H", &lv_font_inter_bold_22);
+      "0", &lv_font_inter_bold_38, "KM/H", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
 
@@ -99,7 +99,7 @@ void tab_track_test(lv_obj_t *parent) {
 
   lv_obj_t *x_axis_g = lv_vertical_pair_label(
       low_left_data_panel, &steering.control.lb_inverter_speed_x[TAB_SENSORS],
-      "NA", &lv_font_inter_bold_38, "ENCODER SPEED\nAX/G",
+      "0", &lv_font_inter_bold_38, "ENCODER SPEED\nAX/G",
       &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(x_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
@@ -121,13 +121,14 @@ void tab_track_test(lv_obj_t *parent) {
   lv_obj_set_grid_cell(up_right_data_panel, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
+#if 1
   lv_obj_t *steer_angle = lv_triple_label(
       up_right_data_panel, &steering.steering.lb_steering_angle[TAB_SENSORS],
       "NA", &lv_font_inter_bold_38, "°", &lv_font_inter_bold_22,
       "STEERING ANGLE", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(steer_angle, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
-
+#endif
   /*--- cell 1,1 ----*/
 
   lv_obj_t *low_right_data_panel = lv_obj_create(data_panel);
@@ -147,7 +148,7 @@ void tab_track_test(lv_obj_t *parent) {
 
   lv_obj_t *y_axis_g = lv_vertical_pair_label(
       low_right_data_panel, &steering.control.lb_inverter_speed_y[TAB_SENSORS],
-      "NA", &lv_font_inter_bold_38, "ENCODER SPEED\nAY/G",
+      "0", &lv_font_inter_bold_38, "ENCODER SPEED\nAY/G",
       &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(y_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);

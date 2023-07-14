@@ -249,9 +249,9 @@ int main(void) {
   lv_timer_set_repeat_count(read_inputs_task, -1);
   lv_timer_reset(read_inputs_task);
 
-  lv_timer_t *watchdog_task = lv_timer_create(watchdog_task_fn, 5000, NULL);
-  lv_timer_set_repeat_count(watchdog_task, -1);
-  lv_timer_reset(watchdog_task);
+  // lv_timer_t *watchdog_task = lv_timer_create(watchdog_task_fn, 5000, NULL);
+  // lv_timer_set_repeat_count(watchdog_task, -1);
+  // lv_timer_reset(watchdog_task);
 
 #if 0
   can_message_t msg = {0};

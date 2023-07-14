@@ -5,7 +5,7 @@ PROJECT(SteeringSimulator)
 
 file(GLOB_RECURSE LVGL_SOURCES ../Lib/lvgl-linux/lvgl/**/*.c)
 file(GLOB_RECURSE LVDRIVERS_SOURCES ../Lib/lvgl-linux/lv-drivers/**/*.c)
-
+file(GLOB_RECURSE CANLIB_SOURCES ../Lib/can/lib/**/*.c)
 
 add_executable(SteeringSimulator 
     steering/steering.c
@@ -31,6 +31,7 @@ add_executable(SteeringSimulator
     simulator/queue.c
     ${LVGL_SOURCES}
     ${LVDRIVERS_SOURCES}
+    ${CANLIB_SOURCES}
 )
 
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE)

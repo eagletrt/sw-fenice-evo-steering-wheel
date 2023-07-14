@@ -530,6 +530,24 @@ void handle_primary(can_message_t *msg) {
     inv_r_rcv_update(&converted);
     break;
   }
+  #if 0
+  case 0x383: {
+    secondary_pedals_output_t raw;
+    secondary_pedals_output_converted_t converted;
+    secondary_pedals_output_unpack(&raw, msg->data, 4u);
+    secondary_pedals_output_raw_to_conversion_struct(&converted, &raw);
+    pedals_output_update(&converted);
+    break;
+  }
+  case 0x384: {
+    secondary_steering_angle_t raw;
+    secondary_steering_angle_converted_t converted;
+    secondary_steering_angle_unpack(&raw, msg->data, 4u);
+    secondary_steering_angle_raw_to_conversion_struct(&converted, &raw);
+    steering_angle_update(&converted);
+    break;
+  }
+  #endif
   }
 }
 
@@ -547,6 +565,11 @@ void handle_secondary(can_message_t *msg) {
   case SECONDARY_STEERING_ANGLE_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, steering_angle, STEERING_ANGLE);
     steering_angle_update(&converted);
+    break;
+  }
+  case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, pedals_output, PEDALS_OUTPUT);
+    pedals_output_update(&converted);
     break;
   }
   default:

@@ -44,8 +44,8 @@ void tab_racing(lv_obj_t *parent) {
 
   // lv percentage
   lv_obj_t *lv_perc = lv_horizontal_pair_label(
-      bar_panel_lv, &steering.lv.lb_lv_percent[TAB_RACING], "0",
-      &lv_font_inter_bold_38, "%", &lv_font_inter_bold_20);
+      bar_panel_lv, &steering.lv.lb_voltage[TAB_RACING], "4.0",
+      &lv_font_inter_bold_38, "V", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
   lv_obj_set_grid_cell(lv_perc, LV_GRID_ALIGN_CENTER, 0, 1,
@@ -54,6 +54,8 @@ void tab_racing(lv_obj_t *parent) {
   // lv state of charge bar
   steering.racing_lv_bar = lv_bar_create(bar_panel_lv);
   custom_side_bar(steering.racing_lv_bar);
+  lv_bar_set_range(steering.racing_lv_bar, 0, 25);
+  lv_bar_set_value(steering.racing_lv_bar, 4, LV_ANIM_OFF);
 
   lv_obj_set_grid_cell(steering.racing_lv_bar, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_END, 1, 1);
@@ -102,7 +104,8 @@ void tab_racing(lv_obj_t *parent) {
   // hv state of charge bar
   steering.racing_hv_bar = lv_bar_create(bar_panel_hv);
   custom_side_bar(steering.racing_hv_bar);
-  lv_bar_set_value(steering.racing_hv_bar, 0, LV_ANIM_OFF);
+  lv_bar_set_range(steering.racing_hv_bar, 0, 500);
+  lv_bar_set_value(steering.racing_hv_bar, 408, LV_ANIM_OFF);
   lv_obj_set_style_bg_color(steering.racing_hv_bar,
                             lv_color_hex(COLOR_ORANGE_STATUS_HEX),
                             LV_PART_INDICATOR);
@@ -250,27 +253,27 @@ void tab_racing(lv_obj_t *parent) {
 
   lv_obj_t *inverter_temp = lv_triple_label(
       right_data_panel, &steering.inverters.lb_left_inverter_temp[TAB_RACING],
-      "NA", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV",
+      "25", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(inverter_temp, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *motor_temp = lv_triple_label(
       right_data_panel, &steering.inverters.lb_left_motor_temp[TAB_RACING],
-      "NA", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR",
+      "24", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_temp, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *lv_temp = lv_triple_label(
-      right_data_panel, &steering.lv.lb_battery_temperature[TAB_RACING], "NA",
+      right_data_panel, &steering.lv.lb_battery_temperature[TAB_RACING], "28",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "LV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_temp, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *hv_temp = lv_triple_label(
-      right_data_panel, &steering.hv.lb_average_temperature[TAB_RACING], "NA",
+      right_data_panel, &steering.hv.lb_average_temperature[TAB_RACING], "31",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_temp, LV_GRID_ALIGN_CENTER, 1, 1,
@@ -320,7 +323,7 @@ void tab_racing(lv_obj_t *parent) {
   // lap counter
 
   lv_obj_t *lap_counter = lv_vertical_pair_label(
-      data_panel, &steering.telemetry.lb_lap_count[TAB_RACING], "12",
+      data_panel, &steering.telemetry.lb_lap_count[TAB_RACING], "NA",
       &lv_font_inter_bold_38, "LAP", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(lap_counter, LV_GRID_ALIGN_START, 1, 1,
                        LV_GRID_ALIGN_END, 0, 1);
@@ -436,8 +439,6 @@ void custom_side_bar(lv_obj_t *bar) {
   lv_obj_add_style(bar, &bar_back_style, LV_PART_MAIN);
   lv_obj_set_size(bar, 66, 360);
   lv_obj_center(bar);
-  lv_bar_set_range(bar, 0, 100);
-  lv_bar_set_value(bar, 0, LV_ANIM_OFF);
 
   /* adding levels for side bars */
   lv_obj_t *rect1 = lv_bar_create(bar);
