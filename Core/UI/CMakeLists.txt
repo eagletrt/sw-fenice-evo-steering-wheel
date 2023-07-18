@@ -18,6 +18,8 @@ add_executable(SteeringSimulator
     steering/tab_sensors.c
     steering/tab_track_test.c
     steering/utils.c
+    steering/controls.c
+    steering/can_messages.c
     steering/fonts/lv_font_inter_bold_14.c
     steering/fonts/lv_font_inter_bold_18.c
     steering/fonts/lv_font_inter_bold_20.c
@@ -25,7 +27,6 @@ add_executable(SteeringSimulator
     steering/fonts/lv_font_inter_bold_30.c
     steering/fonts/lv_font_inter_bold_38.c
     simulator/can.c
-    simulator/can_data.c
     simulator/main.c
     simulator/mouse_cursor_icon.c
     simulator/queue.c

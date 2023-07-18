@@ -29,7 +29,8 @@
 #include "can.h"
 #include "queue.h"
 
-#include "can_data.h"
+#include "../steering/can_messages.h"
+#include "../steering/controls.h"
 
 /*********************
  *      DEFINES
@@ -50,7 +51,6 @@ typedef struct thread_data_t {
  **********************/
 static void hal_init(void);
 static int tick_thread(void *data);
-static void data_init(void);
 
 /**********************
  *  STATIC VARIABLES
@@ -103,12 +103,16 @@ SDL_Thread *thread_id_1;
 #ifdef SIMULATOR_CAN
 void canread(thread_data_t *thread_data) {
   struct can_frame frame;
+  can_message_t msg;
   int res;
   while (1) {
     can_receive(&frame, thread_data->can);
+    msg.id = frame.can_id;
+    msg.size = frame.len;
+    memcpy(msg.data, frame.data, frame.len);
     SDL_mutexP(mtx);
-    can_handle_primary(frame);
-    can_handle_secondary(frame);
+    handle_primary(&msg);
+    handle_secondary(&msg);
     SDL_mutexV(mtx);
   }
 }
@@ -123,7 +127,6 @@ int main(int argc, char **argv) {
 
   /*Initialize the HAL (display, input devices, tick) for LVGL*/
   hal_init();
-  data_init();
 
   // steering_values_init();
 
@@ -132,7 +135,6 @@ int main(int argc, char **argv) {
   // lv_timer_create((lv_timer_cb_t) test_value_update_incremental, 70, NULL);
 
   /*----init structures and values to read from can----*/
-#define SIMULATOR_CAN
 #ifdef SIMULATOR_CAN
   mtx = SDL_CreateMutex();
   queue_init(&queue);
@@ -329,7 +331,19 @@ void foo(lv_indev_drv_t *indev_drv, uint8_t e) {
   }
 }
 
-void data_init(void) {
-  STEER_UPDATE_LABEL(steering.steering.lb_estimated_velocity, "0");
-  STEER_UPDATE_LABEL(steering.control.lb_power, "80");
+
+bool can_send(can_message_t *msg, bool to_primary_network) {
+
+}
+
+void openblt_reset(void) {
+
+}
+
+uint32_t get_current_time_ms(void) {
+  return SDL_GetTicks();
+}
+
+void handle_ptt_message(primary_ptt_status_status val) {
+
 }

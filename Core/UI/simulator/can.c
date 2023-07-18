@@ -46,7 +46,7 @@ int can_close_socket(struct can_t *can) {
   return 1;
 }
 
-int can_send(int id, char *data, int len, struct can_t *can) {
+int simulator_can_send(int id, char *data, int len, struct can_t *can) {
   if (len <= 0 || len > 8)
     return -1;
 

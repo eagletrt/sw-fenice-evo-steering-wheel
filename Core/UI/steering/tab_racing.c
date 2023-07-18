@@ -44,7 +44,7 @@ void tab_racing(lv_obj_t *parent) {
 
   // lv percentage
   lv_obj_t *lv_perc = lv_horizontal_pair_label(
-      bar_panel_lv, &steering.lv.lb_voltage[TAB_RACING], "4.0",
+      bar_panel_lv, &steering.lv.lb_voltage[TAB_RACING], "0",
       &lv_font_inter_bold_38, "V", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
@@ -55,7 +55,7 @@ void tab_racing(lv_obj_t *parent) {
   steering.racing_lv_bar = lv_bar_create(bar_panel_lv);
   custom_side_bar(steering.racing_lv_bar);
   lv_bar_set_range(steering.racing_lv_bar, 0, 25);
-  lv_bar_set_value(steering.racing_lv_bar, 4, LV_ANIM_OFF);
+  lv_bar_set_value(steering.racing_lv_bar, 0, LV_ANIM_OFF);
 
   lv_obj_set_grid_cell(steering.racing_lv_bar, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_END, 1, 1);
@@ -253,27 +253,27 @@ void tab_racing(lv_obj_t *parent) {
 
   lv_obj_t *inverter_temp = lv_triple_label(
       right_data_panel, &steering.inverters.lb_left_inverter_temp[TAB_RACING],
-      "25", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV",
+      "0", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(inverter_temp, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *motor_temp = lv_triple_label(
       right_data_panel, &steering.inverters.lb_left_motor_temp[TAB_RACING],
-      "24", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR",
+      "0", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_temp, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *lv_temp = lv_triple_label(
-      right_data_panel, &steering.lv.lb_battery_temperature[TAB_RACING], "28",
+      right_data_panel, &steering.lv.lb_battery_temperature[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "LV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_temp, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *hv_temp = lv_triple_label(
-      right_data_panel, &steering.hv.lb_average_temperature[TAB_RACING], "31",
+      right_data_panel, &steering.hv.lb_average_temperature[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_temp, LV_GRID_ALIGN_CENTER, 1, 1,

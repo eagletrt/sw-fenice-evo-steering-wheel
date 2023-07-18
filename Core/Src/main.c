@@ -20,7 +20,6 @@
 #include "main.h"
 #include "dac.h"
 #include "dma2d.h"
-#include "fdcan.h"
 #include "fmc.h"
 #include "gpio.h"
 #include "i2c.h"
@@ -253,17 +252,6 @@ int main(void) {
   // lv_timer_set_repeat_count(watchdog_task, -1);
   // lv_timer_reset(watchdog_task);
 
-#if 0
-  can_message_t msg = {0};
-  primary_set_car_status_t car_status = {0};
-  car_status.car_status_set = primary_set_car_status_car_status_set_READY;
-  msg.id = PRIMARY_SET_CAR_STATUS_FRAME_ID;
-  msg.size = PRIMARY_SET_CAR_STATUS_BYTE_SIZE;
-  primary_set_car_status_pack(msg.data, &car_status,
-                              PRIMARY_SET_CAR_STATUS_BYTE_SIZE);
-  can_send(&msg, &hfdcan1);
-#endif
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -273,26 +261,6 @@ int main(void) {
 
 #if SCREEN_ENABLED == 1
     lv_tasks();
-#endif
-
-#if 0
-    HAL_StatusTypeDef retval =
-        HAL_UART_Transmit(&hlpuart1, (uint8_t *)"Hello\n", 6, 100);
-    if (retval != HAL_OK) {
-      Error_Handler();
-    }
-#endif
-#if 0
-    can_message_t msg;
-    msg.id = 0x2;
-    msg.size = 4;
-    msg.data[0] = 3;
-    msg.data[1] = 4;
-    msg.data[2] = 5;
-    msg.data[3] = 6;
-    print("Sending CAN message with id %" PRIu32 "\n", msg.id);
-    can_send(&msg, &hfdcan1);
-    HAL_Delay(1000);
 #endif
 
     /* USER CODE END WHILE */
@@ -368,6 +336,13 @@ void SystemClock_Config(void) {
 }
 
 /* USER CODE BEGIN 4 */
+
+void openblt_reset(void) {
+  print("Resetting for open blt\n");
+  HAL_NVIC_SystemReset();
+}
+
+uint32_t get_current_time_ms(void) { return HAL_GetTick(); }
 
 void watchdog_task_fn(lv_timer_t *main_timer) {
   UNUSED(main_timer);

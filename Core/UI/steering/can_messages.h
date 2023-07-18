@@ -1,30 +1,22 @@
-#ifndef CAN_DATA_H
-#define CAN_DATA_H
+#ifndef CAN_MESSAGES_H
+#define CAN_MESSAGES_H
 
-#include <stdio.h>
-#include <string.h>
-
-#include <errno.h>
-#include <inttypes.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
-#include "../steering/steering.h"
-
-#include <linux/can.h>
-#include <linux/can/raw.h>
-
+#include <stdint.h>
+#include <stdbool.h>
+#include "lvgl.h"
+#include "steering.h"
+#include "messages.h"
 #include "primary/primary_network.h"
+#include "primary/primary_watchdog.h"
 #include "secondary/secondary_network.h"
+#include "secondary/secondary_watchdog.h"
 #include "inverters/inverters_network.h"
-
+#include "inverters/inverters_watchdog.h"
 
 #define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME)                         \
   ntw##_##msg_name##_t raw;                                                    \
   ntw##_##msg_name##_converted_t converted;                                    \
-  ntw##_##msg_name##_unpack(&raw, frame.data, NTW##_##MSG_NAME##_BYTE_SIZE);    \
+  ntw##_##msg_name##_unpack(&raw, msg->data, NTW##_##MSG_NAME##_BYTE_SIZE);    \
   ntw##_##msg_name##_raw_to_conversion_struct(&converted, &raw);
 
 #define STEER_CAN_PACK(ntw, NTW, msg_name, MSG_NAME)                           \
@@ -35,13 +27,27 @@
   ntw##_##msg_name##_conversion_to_raw_struct(&raw, &converted);               \
   ntw##_##msg_name##_pack(msg.data, &raw, PRIMARY_##MSG_NAME##_BYTE_SIZE);
 
-#include "can.h"
-#include "queue.h"
+#define CAN_LOG_ENABLED 0
 
-void can_handle_primary(struct can_frame frame);
+typedef uint16_t can_id_t;
 
-void update_lv_temp(uint8_t val);
+typedef struct {
+  can_id_t id;
+  uint8_t size;
+  uint8_t data[8];
+} can_message_t;
 
-void can_handle_secondary(struct can_frame frame);
+bool can_send(can_message_t *msg, bool to_primary_network);
+void openblt_reset(void);
 
-#endif
+void send_steer_version(lv_timer_t *);
+void send_steer_status(lv_timer_t *);
+void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data);
+void handle_ptt_message(primary_ptt_status_status val);
+
+void handle_primary(can_message_t *msg);
+void handle_secondary(can_message_t *msg);
+
+uint32_t get_current_time_ms(void);
+
+#endif // CAN_MESSAGES_H

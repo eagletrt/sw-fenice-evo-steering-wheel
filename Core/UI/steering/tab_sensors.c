@@ -347,14 +347,14 @@ void tab_sensors(lv_obj_t *parent) {
   /* 2nd row HV */
 
   lv_obj_t *hv_temp_lb = lv_triple_label(
-      right_data_panel, &steering.hv.lb_average_temperature[TAB_SENSORS], "31",
+      right_data_panel, &steering.hv.lb_average_temperature[TAB_SENSORS], "0",
       &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *hv_volt_lb = lv_triple_label(
-      right_data_panel, &steering.hv.lb_pack_voltage[TAB_SENSORS], "408",
+      right_data_panel, &steering.hv.lb_pack_voltage[TAB_SENSORS], "0",
       &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_volt_lb, LV_GRID_ALIGN_CENTER, 1, 1,
@@ -368,7 +368,7 @@ void tab_sensors(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *hv_minCellV_lb = lv_triple_label(
-      right_data_panel, &steering.hv.lb_min_cell_voltage[TAB_SENSORS], "3.7",
+      right_data_panel, &steering.hv.lb_min_cell_voltage[TAB_SENSORS], "0",
       &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "HV MIN",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_minCellV_lb, LV_GRID_ALIGN_CENTER, 3, 1,

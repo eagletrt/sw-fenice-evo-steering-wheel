@@ -70,7 +70,7 @@ uint64_t can_get_bytes_exchanged(can_t *can);
  * @param can pointer to struct Can
  * return success
  */
-int can_send(int id, char *data, int len, can_t *can);
+int simulator_can_send(int id, char *data, int len, can_t *can);
 
 /**
  * Receive a can frame from device

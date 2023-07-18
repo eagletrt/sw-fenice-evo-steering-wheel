@@ -1,46 +1,64 @@
-#include "can_data.h"
+#include "can_messages.h"
 
-#define DESERIALIZE(network, message)                                          \
-  network##_message_##message data;                                            \
-  network##_deserialize_##message(&data, raw);
+bool primary_messages_updated[PRIMARY_MONITORED_MESSAGES_SIZE] = {false};
+bool secondary_messages_updated[SECONDARY_MONITORED_MESSAGES_SIZE] = {false};
 
-#define DESERIALIZE_CONVERSION(network, message)                               \
-  DESERIALIZE(network, message)                                                \
-  network##_message_##message##_conversion conversion;                         \
-  network##_raw_to_conversion_struct_##message(&conversion, &data);
+extern steering_t steering;
+extern bool steering_initialized;
+primary_steer_status_converted_t steer_status_last_state = {
+    .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
+primary_cooling_status_converted_t cooling_status_last_state = {
+    .pumps_speed = -1.0f, .radiators_speed = -1.0f};
 
-void update_car_status(uint8_t val);
 
-void can_handle_primary(struct can_frame frame) {
-  
-#define CAL_LOG_ENABLED 0
-  int16_t id = frame.can_id;
-  int length = frame.can_dlc;
-  
+
+void send_steer_version(lv_timer_t *main_timer) {
+  primary_steer_version_converted_t converted = {
+      .canlib_build_time = CANLIB_BUILD_TIME, .component_version = 1};
+  STEER_CAN_PACK(primary, PRIMARY, steer_version, STEER_VERSION)
+  can_send(&msg, true);
+}
+
+void send_steer_status(lv_timer_t *main_timer) {
+  primary_steer_status_converted_t converted = {
+      .map_pw = steer_status_last_state.map_pw,
+      .map_sc = steer_status_last_state.map_sc,
+      .map_tv = steer_status_last_state.map_tv,
+  };
+  STEER_CAN_PACK(primary, PRIMARY, steer_status, STEER_STATUS)
+  can_send(&msg, true);
+}
+
+
+
+void handle_primary(can_message_t *msg) {
+  if (!steering_initialized)
+    return;
+#if CAN_LOG_ENABLED
+  char name_buffer[BUFSIZ];
+  primary_message_name_from_id(msg->id, name_buffer);
+  print("Primary network - message id %s\n", name_buffer);
+#endif
+  can_id_t id = msg->id;
+  uint32_t timestamp = get_current_time_ms();
   switch (id) {
-    #if 0
   case PRIMARY_CAR_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, car_status, CAR_STATUS);
     car_status_update(&converted);
     break;
   }
-  #endif
-  
-
   case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, pedal_calibration_ack,
                      PEDAL_CALIBRATION_ACK);
-    // pedal_calibration_ack(&converted);
+    pedal_calibration_ack(&converted);
     break;
   }
-  
   case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
-    // print("Resetting for open blt\n");
-    // HAL_NVIC_SystemReset();
+    openblt_reset();
     break;
   case PRIMARY_PTT_STATUS_FRAME_ID: {
-    // STEER_CAN_UNPACK(primary, PRIMARY, ptt_status, PTT_STATUS);
-    // handle_ptt_message(converted.status);
+    STEER_CAN_UNPACK(primary, PRIMARY, ptt_status, PTT_STATUS);
+    handle_ptt_message(converted.status);
     break;
   }
   case PRIMARY_TLM_STATUS_FRAME_ID: {
@@ -59,7 +77,6 @@ void can_handle_primary(struct can_frame frame) {
     speed_update(&converted);
     break;
   }
-  
   case PRIMARY_HV_VOLTAGE_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_voltage, HV_VOLTAGE);
     hv_voltage_update(&converted);
@@ -124,9 +141,15 @@ void can_handle_primary(struct can_frame frame) {
   }
 }
 
-void can_handle_secondary(struct can_frame frame) {
-  int16_t id = frame.can_id;
-  int length = frame.can_dlc;
+void handle_secondary(can_message_t *msg) {
+  if (!steering_initialized)
+    return;
+#if CAN_LOG_ENABLED
+  char name_buffer[BUFSIZ];
+  secondary_message_name_from_id(msg->id, name_buffer);
+  print("Secondary network - message id %s\n", name_buffer);
+#endif
+  can_id_t id = msg->id;
   switch (id) {
   case SECONDARY_STEERING_ANGLE_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, steering_angle, STEERING_ANGLE);
@@ -141,6 +164,4 @@ void can_handle_secondary(struct can_frame frame) {
   default:
     break;
   }
-  
 }
-

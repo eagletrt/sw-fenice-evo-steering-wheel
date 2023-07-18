@@ -11,21 +11,10 @@ uint8_t manettini[MANETTINI_N] = {0};
 uint32_t manettini_last_change;
 bool manettini_initialized[MANETTINI_N] = {false};
 
-bool tson_button_pressed = false;
+extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
-bool calibration_min_sent_request[CALBOX_N];
-bool calibration_max_sent_request[CALBOX_N];
-uint32_t calibration_min_request_timestamp[CALBOX_N];
-uint32_t calibration_max_request_timestamp[CALBOX_N];
 
-extern tab_t current_tab;
-extern lv_obj_t *set_min_btn;
-extern lv_obj_t *set_max_btn;
-
-extern primary_tlm_status_t tlm_status_last_state;
-extern primary_car_status_t car_status_last_state;
-extern primary_steer_status_converted_t steer_status_last_state;
-extern primary_cooling_status_converted_t cooling_status_last_state;
+extern bool engineer_mode;
 
 /***
  * Manettini mapping
@@ -45,25 +34,6 @@ const static float val_pumps_speed_index[MANETTINO_STEPS_N] = PUMPS_MAPPING;
 const static float val_radiators_speed_index[MANETTINO_STEPS_N] =
     RADIATORS_MAPPING;
 
-/***
- * Engineer Mode
- */
-extern bool engineer_mode;
-
-
-void switch_mode() {
-  if (engineer_mode) {
-    // exit EM
-    engineer_mode = false;
-    remove_engineer_mode_screen();
-  } else {
-    // enter EM
-    engineer_mode = true;
-    load_engineer_mode_screen();
-  }
-}
-
-void calibration_tool_set_min_max(bool maxv);
 
 void configure_internal_pull_up_resistors() {
   uint8_t cdata = 0xFF;
@@ -192,6 +162,7 @@ void buttons_long_pressed_actions(uint8_t button) {
   }
 }
 
+
 // TORQUE | RADIATORS
 void manettino_right_actions(uint8_t val) {
   for (uint8_t ival = 0;
@@ -201,9 +172,9 @@ void manettino_right_actions(uint8_t val) {
       continue;
     if (val == manettino_right_possible_vals[ival]) {
       if (!engineer_mode)
-        manettino_send_torque_vectoring(ival);
+        manettino_send_torque_vectoring(val_torque_map_index[ival]);
       else
-        manettino_send_set_radiators(ival);
+        manettino_send_set_radiators(val_radiators_speed_index[ival]);
       break;
     }
   }
@@ -217,7 +188,7 @@ void manettino_center_actions(uint8_t val) {
     if (val == MANETTINO_DEBOUNCE_VALUE)
       continue;
     if (val == manettino_center_possible_vals[ival]) {
-      manettino_send_power_map(ival);
+      manettino_send_power_map(val_power_map_mapping[ival]);
       break;
     }
   }
@@ -230,9 +201,9 @@ void manettino_left_actions(uint8_t val) {
        ++ival) {
     if (val == manettino_left_possible_vals[ival]) {
       if (!engineer_mode)
-        manettino_send_slip_control(ival);
+        manettino_send_slip_control(val_slip_map_index[ival]);
       else
-        manettino_send_set_pumps_speed(ival);
+        manettino_send_set_pumps_speed(val_pumps_speed_index[ival]);
       break;
     }
   }
@@ -260,218 +231,6 @@ void from_gpio_to_buttons(uint8_t gpio) {
       buttons_long_pressed_actions(i);
       buttons_long_press_activated[i] = true;
     }
-  }
-}
-
-void turn_telemetry_on_off(void) {
-  primary_set_tlm_status_converted_t converted = {0};
-  if (tlm_status_last_state.tlm_status ==
-      (primary_set_tlm_status_tlm_status)primary_set_tlm_status_tlm_status_ON) {
-    print("Sending Telemetry OFF\n");
-    display_notification("Sending Telemetry OFF", 800);
-    converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;
-  } else {
-    print("Sending Telemetry ON\n");
-    display_notification("Sending Telemetry ON", 800);
-    converted.tlm_status = primary_set_tlm_status_tlm_status_ON;
-  }
-  STEER_CAN_PACK(primary, PRIMARY, set_tlm_status, SET_TLM_STATUS);
-  can_send(&msg, &hfdcan1);
-}
-
-void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data) {
-  primary_pedal_calibration_ack_bound bound = data->bound;
-
-  lv_obj_set_style_bg_color(bound == primary_pedal_calibration_ack_bound_SET_MAX
-                                ? set_max_btn
-                                : set_min_btn,
-                            lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
-}
-
-void send_calibration(bool accel, bool max) {
-  primary_set_pedal_calibration_converted_t converted = {0};
-  converted.pedal = accel ? primary_set_pedal_calibration_pedal_ACCELERATOR
-                          : primary_set_pedal_calibration_pedal_BRAKE;
-  converted.bound = max ? primary_set_pedal_calibration_bound_SET_MAX
-                        : primary_set_pedal_calibration_bound_SET_MIN;
-  STEER_CAN_PACK(primary, PRIMARY, set_pedal_calibration,
-                 SET_PEDAL_CALIBRATION);
-  can_send(&msg, &hfdcan1);
-}
-
-void calibration_request_timeout_check(uint32_t current_time) {
-  for (uint8_t iel = 0; iel < CALBOX_N; ++iel) {
-    if (calibration_min_sent_request[iel] &&
-        calibration_min_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
-            current_time) {
-      calibration_min_sent_request[iel] = false;
-      lv_obj_set_style_bg_color(set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX),
-                                LV_PART_MAIN);
-    }
-    if (calibration_max_sent_request[iel] &&
-        calibration_max_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
-            current_time) {
-      calibration_max_sent_request[iel] = false;
-      lv_obj_set_style_bg_color(set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX),
-                                LV_PART_MAIN);
-    }
-  }
-}
-
-void calibration_tool_set_min_max(bool maxv) {
-  if (current_tab == TAB_CALIBRATION) {
-    calibration_box_t curr_focus = steering.curr_focus;
-    if (curr_focus == STEER)
-      return;
-    switch (curr_focus) {
-    case BSE: {
-      send_calibration(false, maxv);
-      if (maxv) {
-        calibration_max_sent_request[BSE] = true;
-        calibration_max_request_timestamp[BSE] = HAL_GetTick();
-      } else {
-        calibration_min_sent_request[BSE] = true;
-        calibration_min_request_timestamp[BSE] = HAL_GetTick();
-      }
-      break;
-    }
-    case APPS: {
-      send_calibration(true, maxv);
-      if (maxv) {
-        calibration_max_sent_request[APPS] = true;
-        calibration_max_request_timestamp[APPS] = HAL_GetTick();
-      } else {
-        calibration_min_sent_request[APPS] = true;
-        calibration_min_request_timestamp[APPS] = HAL_GetTick();
-      }
-      break;
-    }
-    default:
-      return;
-    }
-    lv_obj_set_style_bg_color(maxv ? set_max_btn : set_min_btn,
-                              lv_color_hex(COLOR_ORANGE_STATUS_HEX),
-                              LV_PART_MAIN);
-  }
-}
-
-void manettino_send_slip_control(uint8_t ival) {
-  steer_status_last_state.map_sc = (float)val_slip_map_index[ival];
-  char title[100];
-  uint16_t map_val = (uint16_t)(steer_status_last_state.map_sc * 100.0f);
-  sprintf(title, "%u", map_val);
-  STEER_UPDATE_LABEL(steering.control.lb_slip, title)
-  sprintf(title, "SLIP CONTROL %u", map_val);
-  print("%s\n", title);
-  display_notification(title, 750);
-}
-
-void manettino_send_torque_vectoring(uint8_t ival) {
-  steer_status_last_state.map_tv = (float)val_torque_map_index[ival];
-  char title[100];
-  uint16_t map_val = (uint16_t)(steer_status_last_state.map_tv * 100.0f);
-  sprintf(title, "%u", map_val);
-  STEER_UPDATE_LABEL(steering.control.lb_torque, title)
-  sprintf(title, "TORQUE VECTORING %u", map_val);
-  print("%s\n", title);
-  display_notification(title, 750);
-}
-
-void manettino_send_power_map(uint8_t ival) {
-  steer_status_last_state.map_pw = (float)val_power_map_mapping[ival];
-  int map_val = (int)(steer_status_last_state.map_pw * 100.0f);
-  char title[100];
-  if (map_val < 0) {
-    sprintf(title, "TUPIDO");
-    STEER_UPDATE_LABEL(steering.control.lb_power, title)
-    sprintf(title, "POWER MAP TUPIDO");
-  } else {
-    sprintf(title, "%d", map_val);
-    STEER_UPDATE_LABEL(steering.control.lb_power, title)
-    sprintf(title, "POWER MAP %d", map_val);
-  }
-
-  print("%s\n", title);
-  display_notification(title, 750);
-}
-
-void manettino_send_set_pumps_speed(uint8_t ival) {
-  cooling_status_last_state.pumps_speed = (float)val_pumps_speed_index[ival];
-
-  primary_set_pumps_speed_converted_t converted = {0};
-  converted.pumps_speed = cooling_status_last_state.pumps_speed;
-  STEER_CAN_PACK(primary, PRIMARY, set_pumps_speed, SET_PUMPS_SPEED);
-  can_send(&msg, &hfdcan1);
-
-  int map_val = (int)(cooling_status_last_state.pumps_speed * 100.0f);
-  char title[100];
-  if (cooling_status_last_state.pumps_speed < 0) {
-    sprintf(title, "PUMPS SPEED AUTO");
-  } else {
-    sprintf(title, "PUMPS SPEED %d", map_val);
-  }
-  print("%s\n", title);
-  display_notification(title, 750);
-}
-
-void manettino_send_set_radiators(uint8_t ival) {
-  cooling_status_last_state.radiators_speed =
-      (float)val_radiators_speed_index[ival];
-
-  primary_set_radiator_speed_converted_t converted = {0};
-  converted.radiators_speed = cooling_status_last_state.radiators_speed;
-  STEER_CAN_PACK(primary, PRIMARY, set_radiator_speed, SET_RADIATOR_SPEED);
-  can_send(&msg, &hfdcan1);
-
-  int map_val = (int)(cooling_status_last_state.radiators_speed * 100.0f);
-  char title[100];
-  if (cooling_status_last_state.radiators_speed < 0) {
-    sprintf(title, "RADIATOR SPEED AUTO");
-  } else {
-    sprintf(title, "RADIATORS SPEED %d", map_val);
-  }
-  print("%s\n", title); 
-  display_notification(title, 750);
-}
-
-void send_set_car_status(primary_set_car_status_car_status_set val) {
-  primary_set_car_status_converted_t converted = {0};
-  converted.car_status_set = val;
-  STEER_CAN_PACK(primary, PRIMARY, set_car_status, SET_CAR_STATUS);
-  can_send(&msg, &hfdcan1);
-  can_send(&msg, &hfdcan1);
-}
-
-void prepare_set_car_status(void) {
-  switch (car_status_last_state.car_status) {
-  case primary_car_status_car_status_IDLE: {
-    send_set_car_status(primary_set_car_status_car_status_set_READY);
-    display_notification("TSON", 1500);
-    print("Sending SET CAR STATUS: TSON\n");
-    break;
-  }
-  case primary_car_status_car_status_WAIT_DRIVER: {
-    send_set_car_status(primary_set_car_status_car_status_set_DRIVE);
-    display_notification("DRIVE", 1500);
-    print("Sending SET CAR STATUS: DRIVE\n");
-    break;
-  }
-  default: {
-    send_set_car_status(primary_set_car_status_car_status_set_IDLE);
-    display_notification("IDLE", 1500);
-    print("Sending SET CAR STATUS: IDLE\n");
-    break;
-  }
-  }
-}
-
-void send_set_car_status_check(lv_timer_t *tim) {
-  if (tson_button_pressed) {
-    print("TSON TIMER: sending CAR STATUS SET\n");
-    STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
-    prepare_set_car_status();
-  } else {
-    print("TSON TIMER: not sending tson\n");
   }
 }
 

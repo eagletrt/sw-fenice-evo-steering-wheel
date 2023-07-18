@@ -31,6 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "fdcan.h"
 #include "inputs/inputs.h"
 #include "inverters/inverters_network.h"
 #include "led_control.h"
