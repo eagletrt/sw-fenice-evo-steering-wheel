@@ -236,9 +236,9 @@ void from_gpio_to_buttons(uint8_t gpio) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
-    GPIO_PinState tson_pin_state =
-        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
-      if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
+    bool tson_pin_state =
+        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin) == GPIO_PIN_SET ? true : false;
+      if (!tson_pin_state && !tson_button_pressed) {
         print("Setting timer to check button state in 2 seconds\n");
         tson_button_pressed = true;
         send_set_car_status_long_press_delay =

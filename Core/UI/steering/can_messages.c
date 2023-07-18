@@ -138,6 +138,10 @@ void handle_primary(can_message_t *msg) {
     inv_r_rcv_update(&converted);
     break;
   }
+  case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT);
+    control_output_update(&converted);
+  }
   }
 }
 

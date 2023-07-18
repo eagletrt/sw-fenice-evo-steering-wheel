@@ -23,6 +23,14 @@
 #define BUTTON_WIDTH BOX_WIDTH
 #define BUTTON_HEIGHT 45
 
+#define STEERING_ANGLE_RANGE_LOW -150
+#define STEERING_ANGLE_RANGE_HIGH 150
+#define APPS_RANGE_LOW 0
+#define APPS_RANGE_HIGH 130
+#define BRAKE_RANGE_LOW 0
+#define BRAKE_RANGE_HIGH 180
+
+
 void tab_calibration(lv_obj_t *parent);
 
 void shift_box_focus(bool move_right);

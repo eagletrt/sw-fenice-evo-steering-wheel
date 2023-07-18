@@ -44,8 +44,8 @@ void tab_racing(lv_obj_t *parent) {
 
   // lv percentage
   lv_obj_t *lv_perc = lv_horizontal_pair_label(
-      bar_panel_lv, &steering.lv.lb_voltage[TAB_RACING], "0",
-      &lv_font_inter_bold_38, "V", &lv_font_inter_bold_20);
+      bar_panel_lv, &steering.lv.lb_current[TAB_RACING], "0",
+      &lv_font_inter_bold_30, "V", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
   lv_obj_set_grid_cell(lv_perc, LV_GRID_ALIGN_CENTER, 0, 1,
@@ -54,7 +54,7 @@ void tab_racing(lv_obj_t *parent) {
   // lv state of charge bar
   steering.racing_lv_bar = lv_bar_create(bar_panel_lv);
   custom_side_bar(steering.racing_lv_bar);
-  lv_bar_set_range(steering.racing_lv_bar, 0, 25);
+  lv_bar_set_range(steering.racing_lv_bar, 0, 12);
   lv_bar_set_value(steering.racing_lv_bar, 0, LV_ANIM_OFF);
 
   lv_obj_set_grid_cell(steering.racing_lv_bar, LV_GRID_ALIGN_CENTER, 0, 1,
@@ -85,8 +85,8 @@ void tab_racing(lv_obj_t *parent) {
 
   // hv percentage
   lv_obj_t *hv_perc = lv_horizontal_pair_label(
-      bar_panel_hv, &steering.hv.lb_hv_percent[TAB_RACING], "0",
-      &lv_font_inter_bold_38, "%", &lv_font_inter_bold_20);
+      bar_panel_hv, &steering.hv.lb_current[TAB_RACING], "0",
+      &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(hv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
   lv_obj_set_grid_cell(hv_perc, LV_GRID_ALIGN_CENTER, 0, 1,
@@ -104,8 +104,8 @@ void tab_racing(lv_obj_t *parent) {
   // hv state of charge bar
   steering.racing_hv_bar = lv_bar_create(bar_panel_hv);
   custom_side_bar(steering.racing_hv_bar);
-  lv_bar_set_range(steering.racing_hv_bar, 0, 500);
-  lv_bar_set_value(steering.racing_hv_bar, 408, LV_ANIM_OFF);
+  lv_bar_set_range(steering.racing_hv_bar, 0, 60);
+  lv_bar_set_value(steering.racing_hv_bar, 0, LV_ANIM_OFF);
   lv_obj_set_style_bg_color(steering.racing_hv_bar,
                             lv_color_hex(COLOR_ORANGE_STATUS_HEX),
                             LV_PART_INDICATOR);

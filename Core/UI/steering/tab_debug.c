@@ -47,10 +47,10 @@ void init_debug_styles(void) {
   lv_style_set_pad_row(&box_debug_style_yellow, 0);
   lv_style_set_bg_opa(&box_debug_style_yellow, LV_OPA_COVER);
   lv_style_set_border_color(&box_debug_style_yellow,
-                            lv_color_hex(COLOR_YELLOW_STATUS_HEX));
+                            lv_color_hex(COLOR_SECONDARY_HEX));
   lv_style_set_border_width(&box_debug_style_yellow, 3);
   lv_style_set_bg_color(&box_debug_style_yellow,
-                        lv_color_hex(COLOR_YELLOW_STATUS_HEX));
+                        lv_color_hex(COLOR_SECONDARY_HEX));
   lv_style_set_radius(&box_debug_style_yellow, 10);
 
   /*setting box_debug_style_green*/
@@ -490,36 +490,29 @@ void change_errors_view(bool dir_left) {
       errors_focus %= NUM_TYPE_ERRORS;
     }
 
-    // printf("%d", curr_focus);
-    // fflush(stdout);
-
     switch (errors_focus) {
     case HV_FEEDBACKS:
       lv_obj_set_style_opa(hv_feedbacks_panel, LV_OPA_COVER, LV_PART_MAIN);
       lv_obj_set_style_opa(hv_errors_panel, LV_OPA_0, LV_PART_MAIN);
       lv_obj_set_style_opa(lv_errors_panel, LV_OPA_0, LV_PART_MAIN);
-
       break;
 
     case HV_ERRORS:
       lv_obj_set_style_opa(hv_errors_panel, LV_OPA_COVER, LV_PART_MAIN);
       lv_obj_set_style_opa(hv_feedbacks_panel, LV_OPA_0, LV_PART_MAIN);
       lv_obj_set_style_opa(das_errors_panel, LV_OPA_0, LV_PART_MAIN);
-
       break;
 
     case DAS_ERRORS:
       lv_obj_set_style_opa(das_errors_panel, LV_OPA_COVER, LV_PART_MAIN);
       lv_obj_set_style_opa(hv_errors_panel, LV_OPA_0, LV_PART_MAIN);
       lv_obj_set_style_opa(lv_errors_panel, LV_OPA_0, LV_PART_MAIN);
-
       break;
 
     case LV_ERRORS:
       lv_obj_set_style_opa(lv_errors_panel, LV_OPA_COVER, LV_PART_MAIN);
       lv_obj_set_style_opa(das_errors_panel, LV_OPA_0, LV_PART_MAIN);
       lv_obj_set_style_opa(hv_feedbacks_panel, LV_OPA_0, LV_PART_MAIN);
-
       break;
 
     default:

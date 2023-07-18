@@ -153,32 +153,20 @@ void tab_calibration(lv_obj_t *parent) {
   lv_obj_t *center_btn = lv_obj_create(buttons_container);
   lv_obj_remove_style_all(center_btn);
   lv_obj_add_style(center_btn, &buttons_style, LV_PART_MAIN);
-  lv_obj_set_style_bg_color(center_btn, lv_color_hex(0x000000), LV_PART_MAIN);
   lv_obj_align(center_btn, LV_ALIGN_TOP_MID, 0, 10);
 
-#if 0
-  lv_obj_t *center_lbl;
-  steering.steering.lb_steering_angle[TAB_CALIBRATION]  = lv_horizontal_pair_label(
-      center_btn, &center_lbl, "15", &lv_font_inter_bold_30, " deg",
+  lv_obj_t *center_lbl = lv_horizontal_pair_label(
+      center_btn, &steering.steering.lb_steering_angle[TAB_CALIBRATION], "0", &lv_font_inter_bold_30, " deg",
       &lv_font_inter_bold_22);
-  lv_obj_set_align(steering.steering.lb_steering_angle[TAB_CALIBRATION] , LV_ALIGN_CENTER);
-  lv_obj_set_style_text_color(lv_obj_get_child(steering.steering.lb_steering_angle[TAB_CALIBRATION] , 0),
+  lv_obj_set_align(center_lbl, LV_ALIGN_CENTER);
+  lv_obj_set_style_text_color(lv_obj_get_child(center_lbl, 0),
                               lv_color_hex(COLOR_PRIMARY_HEX), LV_PART_MAIN);
   lv_obj_set_style_text_color(
-      lv_obj_get_child(lv_obj_get_child(steering.steering.lb_steering_angle[TAB_CALIBRATION] , 1), 0),
+      lv_obj_get_child(lv_obj_get_child(center_lbl, 1), 0),
       lv_color_hex(COLOR_PRIMARY_HEX), LV_PART_MAIN);
-  lv_obj_set_grid_cell(lv_obj_get_child(steering.steering.lb_steering_angle[TAB_CALIBRATION] , 1),
+  lv_obj_set_grid_cell(lv_obj_get_child(center_lbl, 1),
                        LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0,
                        1); // center the label "POWER"
-#endif
-  /*
-  lv_obj_t *center_btn_label = lv_label_create(center_btn);
-  lv_obj_add_style(center_btn_label, &buttons_label_style, LV_PART_MAIN);
-  lv_label_set_text(center_btn_label, "60 deg");
-  lv_obj_set_style_text_color(center_btn_label,
-  lv_color_hex(COLOR_TERTIARY_HEX), LV_PART_MAIN);
-  lv_obj_set_align(center_btn_label, LV_ALIGN_CENTER);
-  */
 
   set_max_btn = lv_obj_create(buttons_container);
   lv_obj_remove_style_all(set_max_btn);
@@ -210,9 +198,7 @@ void tab_calibration(lv_obj_t *parent) {
   lv_obj_set_size(steering.slider, 744, 55);
   lv_obj_center(steering.slider);
   lv_slider_set_mode(steering.slider, LV_BAR_MODE_SYMMETRICAL);
-  lv_slider_set_range(steering.slider, -80,
-                      80); // se range 45 e max value 180 -> set_value( 0.25 *
-                           // gradi_inclinazione )
+  lv_slider_set_range(steering.slider, STEERING_ANGLE_RANGE_LOW, STEERING_ANGLE_RANGE_HIGH);
   lv_slider_set_value(steering.slider, 15, LV_ANIM_OFF);
   lv_obj_set_style_radius(steering.slider, 0, LV_PART_INDICATOR);
 
@@ -320,7 +306,7 @@ void shift_box_focus(bool move_right) {
                                   LV_PART_MAIN);
 
         lv_slider_set_mode(steering.slider, LV_BAR_MODE_RANGE);
-        lv_slider_set_range(steering.slider, 0, 100);
+        lv_slider_set_range(steering.slider, BRAKE_RANGE_LOW, BRAKE_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_LEFT_MID, 0, 0);
 
@@ -342,9 +328,7 @@ void shift_box_focus(bool move_right) {
                                   LV_PART_MAIN);
 
         lv_slider_set_mode(steering.slider, LV_BAR_MODE_SYMMETRICAL);
-        lv_slider_set_range(steering.slider, -80,
-                            80); // se range 45 e max value 180 -> set_value(
-                                 // 0.25 * gradi_inclinazione )
+        lv_slider_set_range(steering.slider, STEERING_ANGLE_RANGE_LOW, STEERING_ANGLE_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_CENTER, 0, 0);
 
@@ -364,7 +348,7 @@ void shift_box_focus(bool move_right) {
                                   LV_PART_MAIN);
 
         lv_slider_set_mode(steering.slider, LV_BAR_MODE_RANGE);
-        lv_slider_set_range(steering.slider, 0, 100);
+        lv_slider_set_range(steering.slider, APPS_RANGE_LOW, APPS_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_LEFT_MID, 0, 0);
 

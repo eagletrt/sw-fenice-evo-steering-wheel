@@ -18,6 +18,4 @@
 
 void tab_track_test(lv_obj_t *parent);
 
-void init_tab_track_test_styles(void);
-
 #endif // TAB_SENSORS_H

@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include "tab_calibration.h"
 
+#define INV_MAX_SPEED 6500.f // MOT_RPM_LIMIT_REAL
+
 typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
 void remove_trailing (char *buf);
@@ -33,14 +35,21 @@ void remove_trailing (char *buf);
 #define STEER_ERROR_UPDATE(device, error_name, aindex)                         \
   if (device##_last_state.error_name != data->error_name) {                    \
     device##_last_state.error_name = data->error_name;                         \
-    if (data->error_name)                                                      \
+    if (data->error_name) {                                                    \
+      lv_obj_set_style_border_color(steering.car_errors.device[aindex],        \
+                                    lv_color_hex(COLOR_GREEN_STATUS_HEX),      \
+                                    LV_PART_MAIN);                             \
       lv_obj_set_style_bg_color(steering.car_errors.device[aindex],            \
                                 lv_color_hex(COLOR_GREEN_STATUS_HEX),          \
                                 LV_PART_MAIN);                                 \
-    else                                                                       \
+    }                                                                          \
+    else {                                                                     \
+      lv_obj_set_style_border_color(steering.car_errors.device[aindex],        \
+      lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);                       \
       lv_obj_set_style_bg_color(steering.car_errors.device[aindex],            \
                                 lv_color_hex(COLOR_RED_STATUS_HEX),            \
                                 LV_PART_MAIN);                                 \
+    }                                                                          \
   }
 
 #define STEER_ERROR_INVALIDATE(device, error_name, aindex)                     \
@@ -182,28 +191,4 @@ void pedals_output_update(secondary_pedals_output_converted_t *);
 void inv_l_rcv_update(inverters_inv_l_rcv_converted_t *);
 void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *);
 
-/*
- * INVALIDATE
- */
-
-void car_status_invalidate();
-void control_output_invalidate();
-void tlm_status_invalidate();
-void ambient_temperature_invalidate();
-void speed_invalidate();
-void hv_voltage_invalidate();
-void hv_current_invalidate();
-void hv_temp_invalidate();
-void hv_errors_invalidate();
-void hv_feedbacks_status_invalidate();
-void das_errors_invalidate();
-void lv_currents_invalidate();
-void lv_cells_voltage_invalidate();
-void lv_cells_temp_invalidate();
-void lv_total_voltage_invalidate();
-void lv_errors_invalidate();
-void steering_angle_invalidate();
-void inv_l_rcv_invalidate();
-void inv_r_rcv_invalidate();
-
-#endif
+#endif /* STEERING_H */

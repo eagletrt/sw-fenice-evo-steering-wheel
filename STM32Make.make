@@ -221,6 +221,8 @@ Core/Src/test/sdram_test.c \
 Core/Src/tim.c \
 Core/Src/usart.c \
 Core/Src/watchdog.c \
+Core/UI/steering/can_messages.c \
+Core/UI/steering/controls.c \
 Core/UI/steering/fonts/lv_font_inter_bold_14.c \
 Core/UI/steering/fonts/lv_font_inter_bold_18.c \
 Core/UI/steering/fonts/lv_font_inter_bold_20.c \

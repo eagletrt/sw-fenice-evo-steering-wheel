@@ -75,7 +75,7 @@ void tab_track_test(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *speed = lv_vertical_pair_label(
-      up_left_data_panel, &steering.steering.lb_estimated_velocity[TAB_SENSORS],
+      up_left_data_panel, &steering.das.lb_speed[TAB_SENSORS],
       "0", &lv_font_inter_bold_38, "KM/H", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
