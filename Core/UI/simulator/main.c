@@ -17,9 +17,8 @@
 #include "lv-drivers/indev/mouse.h"
 #include "lv-drivers/indev/mousewheel.h"
 #include "lvgl.h"
-#include "../steering/steering.h"
-#include "../steering/tab_calibration.h"
-#include "../steering/tab_manager.h"
+#include "steering.h"
+#include "tab_manager.h"
 #include <SDL2/SDL.h>
 
 /*canlib libraries*/

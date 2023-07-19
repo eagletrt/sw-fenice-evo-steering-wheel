@@ -40,7 +40,6 @@ void handle_primary(can_message_t *msg) {
   print("Primary network - message id %s\n", name_buffer);
 #endif
   can_id_t id = msg->id;
-  uint32_t timestamp = get_current_time_ms();
   switch (id) {
   case PRIMARY_CAR_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, car_status, CAR_STATUS);

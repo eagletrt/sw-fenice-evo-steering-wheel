@@ -51,7 +51,9 @@
         "can_data.h": "c",
         "inverters_network.h": "c",
         "optional": "c",
-        "system_error": "c"
+        "system_error": "c",
+        "tab_debug.h": "c",
+        "can_messages.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false

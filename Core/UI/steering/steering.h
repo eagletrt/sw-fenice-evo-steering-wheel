@@ -10,9 +10,15 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-#include "tab_calibration.h"
 
 #define INV_MAX_SPEED 6500.f // MOT_RPM_LIMIT_REAL
+
+#define STEERING_ANGLE_RANGE_LOW -150
+#define STEERING_ANGLE_RANGE_HIGH 150
+#define APPS_RANGE_LOW 0
+#define APPS_RANGE_HIGH 130
+#define BRAKE_RANGE_LOW 0
+#define BRAKE_RANGE_HIGH 180
 
 typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 

@@ -9,14 +9,14 @@ file(GLOB_RECURSE CANLIB_SOURCES ../Lib/can/lib/**/*.c)
 
 add_executable(SteeringSimulator 
     steering/steering.c
-    steering/tab_calibration.c
-    steering/tab_debug.c
-    steering/tab_engineer_mode.c
     steering/tab_manager.c
-    steering/tab_notification.c
-    steering/tab_racing.c
-    steering/tab_sensors.c
-    steering/tab_track_test.c
+    steering/engineer_mode/tab_engineer_mode.c
+    steering/racing_tabs/tab_calibration.c
+    steering/racing_tabs/tab_debug.c
+    steering/racing_tabs/tab_notification.c
+    steering/racing_tabs/tab_racing.c
+    steering/racing_tabs/tab_sensors.c
+    steering/racing_tabs/tab_track_test.c
     steering/utils.c
     steering/controls.c
     steering/can_messages.c
@@ -40,5 +40,6 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/can/lib)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/lvgl-linux/lvgl)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/lvgl-linux)
+TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/steering)
 
 TARGET_LINK_LIBRARIES(SteeringSimulator pthread SDL2)
