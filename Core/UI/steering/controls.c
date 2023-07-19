@@ -34,6 +34,12 @@ void switch_mode(void) {
   }
 }
 
+void steering_change_tab(bool forward) {
+  if (!engineer_mode) {
+    change_tab(forward);
+  }
+}
+
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};
   if (tlm_status_last_state.tlm_status ==

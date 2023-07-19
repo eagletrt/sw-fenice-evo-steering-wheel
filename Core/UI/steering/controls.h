@@ -58,6 +58,7 @@ typedef enum {
   { -1.0f, 0.0f, 0.10f, 0.20f, 0.40f, 0.60f, 0.80f, 1.0f }
 
 void switch_mode(void);
+void steering_change_tab(bool forward);
 
 void send_set_car_status(primary_set_car_status_car_status_set);
 void prepare_set_car_status(void);

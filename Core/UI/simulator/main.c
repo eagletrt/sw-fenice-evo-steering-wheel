@@ -64,7 +64,7 @@ static int tick_thread(void *data);
  *   GLOBAL FUNCTIONS
  **********************/
 
-void foo(lv_indev_drv_t *indev_drv, uint8_t e);
+void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e);
 
 /*********************
  *      DEFINES
@@ -251,7 +251,7 @@ static void hal_init(void) {
   lv_indev_drv_init(&indev_drv_2); /*Basic initialization*/
   indev_drv_2.type = LV_INDEV_TYPE_KEYPAD;
   indev_drv_2.read_cb = keyboard_read;
-  indev_drv_2.feedback_cb = foo;
+  indev_drv_2.feedback_cb = keyboard_fn;
   lv_indev_t *kb_indev = lv_indev_drv_register(&indev_drv_2);
   lv_indev_set_group(kb_indev, g);
 }
@@ -272,60 +272,37 @@ static int tick_thread(void *data) {
   return 0;
 }
 
-/*
- ** Handles keyboard events
- * used for testing
- */
-void foo(lv_indev_drv_t *indev_drv, uint8_t e) {
+void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
   lv_indev_data_t data;
   keyboard_read(indev_drv, &data);
 
-  /*to see witch key was taken as input*/
-  printf("data: %c\n", data.key);
-
   switch (data.key) {
-  case ' ':
-    change_tab(true);
+    case 'z': {
+    steering_change_tab(true);
     break;
-
-  case 'b':
-    change_tab(false);
+  }
+  case 'x': {
+    steering_change_tab(false);
     break;
-
-  case 'l':
-    shift_box_focus(false);
-    change_errors_view(true);
+  }
+  case 'c': {
+    switch_mode();
     break;
-
-  case 'r':
+  }
+  case 'a':
     shift_box_focus(true);
     change_errors_view(false);
     break;
-
-  case 'o':
-    sim_calibration_tool_set_min_max(false); // setting min value
+  case 's':
+    shift_box_focus(false);
+    change_errors_view(true);
     break;
-
-  case 'p':
-    sim_calibration_tool_set_min_max(true); // setting max value
-    break;
-
-  case 'm':
-    display_notification("90 GRADI", 1000);
-    break;
-
   case 'd':
-    racing_error_notification("VEZ TE GHE LE GOMME SBUSE");
+    calibration_tool_set_min_max(true);
     break;
-
-  case 'e':
-    load_engineer_mode_screen();
+  case 'f':
+    calibration_tool_set_min_max(false);
     break;
-  
-  case 'w':
-    remove_engineer_mode_screen();
-    break;
-    
   default:
     break;
   }
