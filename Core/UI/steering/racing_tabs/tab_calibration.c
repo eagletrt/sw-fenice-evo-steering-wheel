@@ -156,16 +156,16 @@ void tab_calibration(lv_obj_t *parent) {
   lv_obj_align(center_btn, LV_ALIGN_TOP_MID, 0, 10);
 
   lv_obj_t *center_lbl = lv_horizontal_pair_label(
-      center_btn, &steering.steering.lb_steering_angle[TAB_CALIBRATION], "0", &lv_font_inter_bold_30, " deg",
-      &lv_font_inter_bold_22);
+      center_btn, &steering.steering.lb_steering_angle[TAB_CALIBRATION], "0",
+      &lv_font_inter_bold_30, " deg", &lv_font_inter_bold_22);
   lv_obj_set_align(center_lbl, LV_ALIGN_CENTER);
   lv_obj_set_style_text_color(lv_obj_get_child(center_lbl, 0),
                               lv_color_hex(COLOR_PRIMARY_HEX), LV_PART_MAIN);
   lv_obj_set_style_text_color(
       lv_obj_get_child(lv_obj_get_child(center_lbl, 1), 0),
       lv_color_hex(COLOR_PRIMARY_HEX), LV_PART_MAIN);
-  lv_obj_set_grid_cell(lv_obj_get_child(center_lbl, 1),
-                       LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0,
+  lv_obj_set_grid_cell(lv_obj_get_child(center_lbl, 1), LV_GRID_ALIGN_CENTER, 1,
+                       1, LV_GRID_ALIGN_CENTER, 0,
                        1); // center the label "POWER"
 
   set_max_btn = lv_obj_create(buttons_container);
@@ -198,7 +198,8 @@ void tab_calibration(lv_obj_t *parent) {
   lv_obj_set_size(steering.slider, 744, 55);
   lv_obj_center(steering.slider);
   lv_slider_set_mode(steering.slider, LV_BAR_MODE_SYMMETRICAL);
-  lv_slider_set_range(steering.slider, STEERING_ANGLE_RANGE_LOW, STEERING_ANGLE_RANGE_HIGH);
+  lv_slider_set_range(steering.slider, STEERING_ANGLE_RANGE_LOW,
+                      STEERING_ANGLE_RANGE_HIGH);
   lv_slider_set_value(steering.slider, 15, LV_ANIM_OFF);
   lv_obj_set_style_radius(steering.slider, 0, LV_PART_INDICATOR);
 
@@ -273,9 +274,7 @@ void sim_calibration_tool_set_min_max(bool setting_max_value) {
   }
 }
 
-void update_slider_val(int device, int value) {
-  
-}
+void update_slider_val(int device, int value) {}
 
 void shift_box_focus(bool move_right) {
 
@@ -328,7 +327,8 @@ void shift_box_focus(bool move_right) {
                                   LV_PART_MAIN);
 
         lv_slider_set_mode(steering.slider, LV_BAR_MODE_SYMMETRICAL);
-        lv_slider_set_range(steering.slider, STEERING_ANGLE_RANGE_LOW, STEERING_ANGLE_RANGE_HIGH);
+        lv_slider_set_range(steering.slider, STEERING_ANGLE_RANGE_LOW,
+                            STEERING_ANGLE_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_CENTER, 0, 0);
 

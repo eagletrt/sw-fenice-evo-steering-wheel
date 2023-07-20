@@ -22,13 +22,14 @@
 
 typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
-void remove_trailing (char *buf);
+void remove_trailing(char *buf);
 
 #define STEER_UPDATE_LABEL(name, value)                                        \
   for (uint32_t itab = 0; itab < NUM_TABS; itab++) {                           \
-    if (name[itab] != NULL){                                                    \
-      remove_trailing(value); \
-      lv_label_set_text_fmt(name[itab], "%s", value);}                          \
+    if (name[itab] != NULL) {                                                  \
+      remove_trailing(value);                                                  \
+      lv_label_set_text_fmt(name[itab], "%s", value);                          \
+    }                                                                          \
   }
 
 #define STEER_UPDATE_COLOR_LABEL(name, color)                                  \
@@ -43,17 +44,17 @@ void remove_trailing (char *buf);
     device##_last_state.error_name = data->error_name;                         \
     if (data->error_name) {                                                    \
       lv_obj_set_style_border_color(steering.car_errors.device[aindex],        \
-                                    lv_color_hex(COLOR_RED_STATUS_HEX),      \
+                                    lv_color_hex(COLOR_RED_STATUS_HEX),        \
                                     LV_PART_MAIN);                             \
       lv_obj_set_style_bg_color(steering.car_errors.device[aindex],            \
-                                lv_color_hex(COLOR_RED_STATUS_HEX),          \
+                                lv_color_hex(COLOR_RED_STATUS_HEX),            \
                                 LV_PART_MAIN);                                 \
-    }                                                                          \
-    else {                                                                     \
+    } else {                                                                   \
       lv_obj_set_style_border_color(steering.car_errors.device[aindex],        \
-      lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);                       \
+                                    lv_color_hex(COLOR_GREEN_STATUS_HEX),      \
+                                    LV_PART_MAIN);                             \
       lv_obj_set_style_bg_color(steering.car_errors.device[aindex],            \
-                                lv_color_hex(COLOR_GREEN_STATUS_HEX),            \
+                                lv_color_hex(COLOR_GREEN_STATUS_HEX),          \
                                 LV_PART_MAIN);                                 \
     }                                                                          \
   }

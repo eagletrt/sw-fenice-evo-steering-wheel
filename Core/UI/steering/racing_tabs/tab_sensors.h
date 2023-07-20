@@ -1,8 +1,8 @@
 #ifndef TAB_SENSORS_H
 #define TAB_SENSORS_H
 
-#include "steering.h"
 #include "lvgl.h"
+#include "steering.h"
 #include "utils.h"
 
 #define TAB_SENSORS_CENTRAL_PANEL_WIDTH 660

@@ -168,12 +168,14 @@ int main(void) {
 
   HAL_TIM_Base_Start_IT(&htim7);
 
-  for (uint64_t iindex = 0; iindex < primary_watchdog_monitored_ids_size; ++iindex) {
+  for (uint64_t iindex = 0; iindex < primary_watchdog_monitored_ids_size;
+       ++iindex) {
     can_id_t id = primary_watchdog_monitored_ids[iindex];
     CANLIB_BITSET_ARRAY(m_primary_watchdog.activated,
                         primary_watchdog_index_from_id(id));
   }
-  for (uint64_t iindex = 0; iindex < secondary_watchdog_monitored_ids_size; ++iindex) {
+  for (uint64_t iindex = 0; iindex < secondary_watchdog_monitored_ids_size;
+       ++iindex) {
     can_id_t id = secondary_watchdog_monitored_ids[iindex];
     CANLIB_BITSET_ARRAY(m_secondary_watchdog.activated,
                         secondary_watchdog_index_from_id(id));
@@ -295,7 +297,8 @@ void watchdog_task_fn(lv_timer_t *main_timer) {
   primary_watchdog_timeout(&m_primary_watchdog, HAL_GetTick());
   secondary_watchdog_timeout(&m_secondary_watchdog, HAL_GetTick());
 
-  for (uint64_t iindex = 0; iindex < primary_watchdog_monitored_ids_size; ++iindex) {
+  for (uint64_t iindex = 0; iindex < primary_watchdog_monitored_ids_size;
+       ++iindex) {
     can_id_t id = primary_watchdog_monitored_ids[iindex];
     bool timed_out = CANLIB_BITTEST_ARRAY(m_primary_watchdog.timeout,
                                           primary_watchdog_index_from_id(id));
@@ -308,7 +311,8 @@ void watchdog_task_fn(lv_timer_t *main_timer) {
       }
     }
   }
-  for (uint64_t iindex = 0; iindex < secondary_watchdog_monitored_ids_size; ++iindex) {
+  for (uint64_t iindex = 0; iindex < secondary_watchdog_monitored_ids_size;
+       ++iindex) {
     can_id_t id = secondary_watchdog_monitored_ids[iindex];
     bool timed_out = CANLIB_BITTEST_ARRAY(m_secondary_watchdog.timeout,
                                           secondary_watchdog_index_from_id(id));

@@ -17,12 +17,10 @@ primary_steer_status_converted_t steer_status_last_state = {
 primary_cooling_status_converted_t cooling_status_last_state = {
     .pumps_speed = -1.0f, .radiators_speed = -1.0f};
 
-
 /***
  * Engineer Mode
  */
 extern bool engineer_mode;
-
 
 void switch_mode(void) {
   if (engineer_mode) {
@@ -215,37 +213,37 @@ void send_set_car_status(primary_set_car_status_car_status_set val) {
 void prepare_set_car_status(void) {
   switch (car_status_last_state.car_status) {
   case primary_car_status_car_status_INIT:
-	case primary_car_status_car_status_ENABLE_INV_UPDATES:
-	case primary_car_status_car_status_CHECK_INV_SETTINGS: {
+  case primary_car_status_car_status_ENABLE_INV_UPDATES:
+  case primary_car_status_car_status_CHECK_INV_SETTINGS: {
     send_set_car_status(primary_set_car_status_car_status_set_IDLE);
     display_notification("ECU not in IDLE yet, sending IDLE anyway", 1500);
     break;
   }
-	case primary_car_status_car_status_IDLE: {
+  case primary_car_status_car_status_IDLE: {
     send_set_car_status(primary_set_car_status_car_status_set_READY);
     display_notification("TSON", 1500);
     break;
   }
-	case primary_car_status_car_status_START_TS_PRECHARGE:
-	case primary_car_status_car_status_WAIT_TS_PRECHARGE: {
+  case primary_car_status_car_status_START_TS_PRECHARGE:
+  case primary_car_status_car_status_WAIT_TS_PRECHARGE: {
     display_notification("Precharge not finished yet", 1500);
     break;
   }
-	case primary_car_status_car_status_WAIT_DRIVER: {
+  case primary_car_status_car_status_WAIT_DRIVER: {
     send_set_car_status(primary_set_car_status_car_status_set_DRIVE);
     display_notification("DRIVE", 1500);
     break;
   }
-	case primary_car_status_car_status_ENABLE_INV_DRIVE:
-	case primary_car_status_car_status_DRIVE:
-	case primary_car_status_car_status_DISABLE_INV_DRIVE:
-	case primary_car_status_car_status_START_TS_DISCHARGE:
-	case primary_car_status_car_status_WAIT_TS_DISCHARGE: {
+  case primary_car_status_car_status_ENABLE_INV_DRIVE:
+  case primary_car_status_car_status_DRIVE:
+  case primary_car_status_car_status_DISABLE_INV_DRIVE:
+  case primary_car_status_car_status_START_TS_DISCHARGE:
+  case primary_car_status_car_status_WAIT_TS_DISCHARGE: {
     send_set_car_status(primary_set_car_status_car_status_set_IDLE);
     display_notification("IDLE", 1500);
     break;
   }
-	case primary_car_status_car_status_FATAL_ERROR: {
+  case primary_car_status_car_status_FATAL_ERROR: {
     send_set_car_status(primary_set_car_status_car_status_set_IDLE);
     display_notification("ECU in FATAL ERROR, sending IDLE anyway", 1500);
     break;

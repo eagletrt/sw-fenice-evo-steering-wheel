@@ -259,8 +259,8 @@ void tab_racing(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *motor_temp = lv_triple_label(
-      right_data_panel, &steering.inverters.lb_left_motor_temp[TAB_RACING],
-      "0", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR",
+      right_data_panel, &steering.inverters.lb_left_motor_temp[TAB_RACING], "0",
+      &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_temp, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);

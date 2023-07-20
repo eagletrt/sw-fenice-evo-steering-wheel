@@ -397,11 +397,10 @@ void tab_sensors(lv_obj_t *parent) {
   lv_obj_set_grid_cell(lv_curr_lb, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
-  lv_obj_t *y2 =
-      lv_triple_label(right_data_panel,
-                      &steering.telemetry.lb_tlm_status[TAB_SENSORS],
-                      "-", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22,
-                      "TLM", &lv_font_inter_bold_20);
+  lv_obj_t *y2 = lv_triple_label(
+      right_data_panel, &steering.telemetry.lb_tlm_status[TAB_SENSORS], "-",
+      &lv_font_inter_bold_30, "", &lv_font_inter_bold_22, "TLM",
+      &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 2,
                        1);
 /* 4th row */

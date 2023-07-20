@@ -1,7 +1,7 @@
 #ifndef TAB_MANAGER_H
 #define TAB_MANAGER_H
 
-#include "steering.h"
+#include "engineer_mode/tab_engineer_mode.h"
 #include "lvgl.h"
 #include "racing_tabs/tab_calibration.h"
 #include "racing_tabs/tab_debug.h"
@@ -9,7 +9,7 @@
 #include "racing_tabs/tab_racing.h"
 #include "racing_tabs/tab_sensors.h"
 #include "racing_tabs/tab_track_test.h"
-#include "engineer_mode/tab_engineer_mode.h"
+#include "steering.h"
 #include "utils.h"
 #ifndef STM32H723xx
 #include "lv-drivers/indev/keyboard.h"

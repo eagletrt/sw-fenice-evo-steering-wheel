@@ -1,14 +1,14 @@
 #ifndef CONTROLS_H
 #define CONTROLS_H
 
-#include <stdint.h>
 #include "can_messages.h"
-#include "tab_manager.h"
+#include "inverters/inverters_network.h"
 #include "lvgl.h"
-#include "steering.h"
 #include "primary/primary_network.h"
 #include "secondary/secondary_network.h"
-#include "inverters/inverters_network.h"
+#include "steering.h"
+#include "tab_manager.h"
+#include <stdint.h>
 
 #define BUTTONS_N 8
 #define MANETTINI_N 3

@@ -161,13 +161,10 @@ int main(int argc, char **argv) {
 #endif
 
   secondary_pedals_output_converted_t converted = {
-    .apps = 0,
-    .bse_front = 0.0f,
-    .bse_rear = 0.0f
-  };
+      .apps = 0, .bse_front = 0.0f, .bse_rear = 0.0f};
 
   // secondary_steering_angle_converted_t angle_main = {
-    // .angle = -70.0f
+  // .angle = -70.0f
   // };
 
   int gggcounter = 0;
@@ -276,7 +273,7 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
   keyboard_read(indev_drv, &data);
 
   switch (data.key) {
-    case 'z': {
+  case 'z': {
     steering_change_tab(true);
     break;
   }
@@ -307,19 +304,10 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
   }
 }
 
+bool can_send(can_message_t *msg, bool to_primary_network) {}
 
-bool can_send(can_message_t *msg, bool to_primary_network) {
+void openblt_reset(void) {}
 
-}
+uint32_t get_current_time_ms(void) { return SDL_GetTicks(); }
 
-void openblt_reset(void) {
-
-}
-
-uint32_t get_current_time_ms(void) {
-  return SDL_GetTicks();
-}
-
-void handle_ptt_message(primary_ptt_status_status val) {
-
-}
+void handle_ptt_message(primary_ptt_status_status val) {}

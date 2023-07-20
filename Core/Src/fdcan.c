@@ -276,11 +276,11 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 void _CAN_error_handler(char *msg) { printf("%s\n", msg); }
 
 void init_can_device(device_t *can_device) {
-  #if 0
+#if 0
   device_init(can_device);
   device_set_address(can_device, &_raw, primary_MAX_STRUCT_SIZE_RAW,
                      &_converted, primary_MAX_STRUCT_SIZE_CONVERSION);
-  #endif
+#endif
 }
 
 /**
@@ -392,7 +392,8 @@ bool can_send(can_message_t *msg, bool to_primary_network) {
 
   _can_wait(&nwk);
 
-  HAL_StatusTypeDef result = HAL_FDCAN_AddMessageToTxFifoQ(&nwk, &header, msg->data);
+  HAL_StatusTypeDef result =
+      HAL_FDCAN_AddMessageToTxFifoQ(&nwk, &header, msg->data);
   return result == HAL_OK;
 }
 

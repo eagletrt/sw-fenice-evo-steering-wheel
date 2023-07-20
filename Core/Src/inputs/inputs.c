@@ -23,17 +23,13 @@ float power_map_last_state = 0.0f;
  *
  */
 const static uint8_t MANETTINO_VALS_MAPPING[MANETTINI_N][BUTTONS_N] = {
-  MANETTINO_LEFT_VALS,
-  MANETTINO_CENTER_VALS,
-  MANETTINO_RIGHT_VALS
-};
+    MANETTINO_LEFT_VALS, MANETTINO_CENTER_VALS, MANETTINO_RIGHT_VALS};
 
 const static float val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_MAPPING;
 const static float val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_MAPPING;
 const static float val_pumps_speed_index[MANETTINO_STEPS_N] = PUMPS_MAPPING;
 const static float val_radiators_speed_index[MANETTINO_STEPS_N] =
     RADIATORS_MAPPING;
-
 
 void configure_internal_pull_up_resistors() {
   uint8_t cdata = 0xFF;
@@ -56,12 +52,8 @@ void configure_internal_pull_up_resistors() {
   CHECK_ERROR(cdata);
 }
 
-float min(float a, float b) {
-  return a < b ? a : b;
-}
-float max(float a, float b) {
-  return a > b ? a : b;
-}
+float min(float a, float b) { return a < b ? a : b; }
+float max(float a, float b) { return a > b ? a : b; }
 
 void inputs_init(void) {
   dev1 = (MCP23017_HandleTypeDef){
@@ -197,28 +189,31 @@ void from_gpio_to_buttons(uint8_t gpio) {
 }
 
 void send_set_car_status_check(lv_timer_t *tim) {
- if (tson_button_pressed) {
-   STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
-   prepare_set_car_status();
- }
+  if (tson_button_pressed) {
+    STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
+    prepare_set_car_status();
+  }
 }
-
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
     bool tson_pin_state =
-        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin) == GPIO_PIN_SET ? true : false;
+        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin) == GPIO_PIN_SET
+            ? true
+            : false;
     if (tson_pin_state) {
       if (!tson_button_pressed) {
-        // tson button pressed -> activate timer or send set_car_status directly if we are in certain states
+        // tson button pressed -> activate timer or send set_car_status directly
+        // if we are in certain states
         if (!send_set_car_status_directly()) {
           tson_button_pressed = true;
           send_set_car_status_long_press_delay =
               lv_timer_create(send_set_car_status_check, 1000, NULL);
           lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
           lv_timer_reset(send_set_car_status_long_press_delay);
-          STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_ORANGE_STATUS_HEX)
-        } 
+          STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed,
+                                   COLOR_ORANGE_STATUS_HEX)
+        }
       }
     } else {
       if (tson_button_pressed) {
@@ -245,23 +240,28 @@ void read_buttons(void) {
 void manettini_actions(uint8_t value, uint8_t manettino) {
   if (!manettini_initialized[manettino]) {
     manettini_initialized[manettino] = true;
-    manettini[manettino] = from_manettino_value_to_index(value, manettino) == MANETTINO_INVALID_VALUE ? 0 : value;
+    manettini[manettino] = from_manettino_value_to_index(value, manettino) ==
+                                   MANETTINO_INVALID_VALUE
+                               ? 0
+                               : value;
     return;
   }
   uint8_t new_manettino_index = from_manettino_value_to_index(value, manettino);
   if (new_manettino_index == MANETTINO_INVALID_VALUE)
     return;
-  switch (manettino)
-  {
+  switch (manettino) {
   case MANETTINO_RIGHT_INDEX: {
     if (!engineer_mode)
-      manettino_send_torque_vectoring(val_torque_map_index[new_manettino_index]);
+      manettino_send_torque_vectoring(
+          val_torque_map_index[new_manettino_index]);
     else
-      manettino_send_set_radiators(val_radiators_speed_index[new_manettino_index]);
+      manettino_send_set_radiators(
+          val_radiators_speed_index[new_manettino_index]);
     break;
   }
   case MANETTINO_CENTER_INDEX: {
-    power_map_last_state += ((new_manettino_index - manettini[MANETTINO_CENTER_INDEX]) * 0.1f);
+    power_map_last_state +=
+        ((new_manettino_index - manettini[MANETTINO_CENTER_INDEX]) * 0.1f);
     power_map_last_state = min(power_map_last_state, 1.0f);
     power_map_last_state = max(power_map_last_state, -0.1f);
     manettino_send_power_map(power_map_last_state);
@@ -271,7 +271,8 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     if (!engineer_mode)
       manettino_send_slip_control(val_slip_map_index[new_manettino_index]);
     else
-      manettino_send_set_pumps_speed(val_pumps_speed_index[new_manettino_index]);
+      manettino_send_set_pumps_speed(
+          val_pumps_speed_index[new_manettino_index]);
     break;
   }
   }
@@ -298,7 +299,8 @@ void read_manettino_center(void) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev2.gpio[1] && manettini_initialized[MANETTINO_CENTER_INDEX]) {
+  if (manettino_input != dev2.gpio[1] &&
+      manettini_initialized[MANETTINO_CENTER_INDEX]) {
     manettini_actions(manettino_input, MANETTINO_CENTER_INDEX);
     dev2.gpio[1] = manettino_input;
   }
@@ -311,7 +313,8 @@ void read_manettino_right(void) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev2.gpio[0] && manettini_initialized[MANETTINO_RIGHT_INDEX]) {
+  if (manettino_input != dev2.gpio[0] &&
+      manettini_initialized[MANETTINO_RIGHT_INDEX]) {
     manettini_actions(manettino_input, MANETTINO_RIGHT_INDEX);
     dev2.gpio[0] = manettino_input;
   }

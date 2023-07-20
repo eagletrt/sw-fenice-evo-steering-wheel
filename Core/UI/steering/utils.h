@@ -64,7 +64,8 @@ lv_obj_t *lv_horizontal_pair_label(lv_obj_t *parent, lv_obj_t **main_l,
                                    const lv_font_t *left_text_font,
                                    const char *right_text,
                                    const lv_font_t *right_text_font);
-lv_obj_t *lv_triple_label(lv_obj_t *parent, lv_obj_t **main_l, const char *left_text,
+lv_obj_t *
+lv_triple_label(lv_obj_t *parent, lv_obj_t **main_l, const char *left_text,
                 const lv_font_t *left_text_font, const char *right_text,
                 const lv_font_t *right_text_font, const char *bottom_text,
                 const lv_font_t *bottom_text_font);

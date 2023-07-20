@@ -1,17 +1,17 @@
 #ifndef CAN_MESSAGES_H
 #define CAN_MESSAGES_H
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "inverters/inverters_network.h"
+#include "inverters/inverters_watchdog.h"
 #include "lvgl.h"
-#include "steering.h"
 #include "messages.h"
 #include "primary/primary_network.h"
 #include "primary/primary_watchdog.h"
 #include "secondary/secondary_network.h"
 #include "secondary/secondary_watchdog.h"
-#include "inverters/inverters_network.h"
-#include "inverters/inverters_watchdog.h"
+#include "steering.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 bool can_send(can_message_t *msg, bool to_primary_network);
 void openblt_reset(void);
