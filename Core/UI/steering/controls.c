@@ -231,10 +231,3 @@ void prepare_set_car_status(void) {
   }
   }
 }
-
- void send_set_car_status_check(lv_timer_t *tim) {
-  if (tson_button_pressed) {
-    STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
-    prepare_set_car_status();
-  }
-}

@@ -196,22 +196,36 @@ void from_gpio_to_buttons(uint8_t gpio) {
   }
 }
 
+void send_set_car_status_check(lv_timer_t *tim) {
+ if (tson_button_pressed) {
+   STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
+   prepare_set_car_status();
+ }
+}
+
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
     bool tson_pin_state =
         HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin) == GPIO_PIN_SET ? true : false;
-      if (!tson_pin_state && !tson_button_pressed) {
+    if (tson_pin_state) {
+      if (!tson_button_pressed) {
+        // tson button pressed -> activate timer
         tson_button_pressed = true;
         send_set_car_status_long_press_delay =
             lv_timer_create(send_set_car_status_check, 1000, NULL);
         lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
         lv_timer_reset(send_set_car_status_long_press_delay);
         STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_ORANGE_STATUS_HEX)
-      } else {
+      }
+    } else {
+      if (tson_button_pressed) {
+        // released button -> delete timer
         tson_button_pressed = false;
         lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
         STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
       }
+    }
   }
 }
 
