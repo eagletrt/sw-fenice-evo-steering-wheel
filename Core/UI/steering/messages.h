@@ -1,6 +1,8 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
+#include <stdint.h>
+
 #define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME)                         \
   ntw##_##msg_name##_t raw;                                                    \
   ntw##_##msg_name##_converted_t converted;                                    \
