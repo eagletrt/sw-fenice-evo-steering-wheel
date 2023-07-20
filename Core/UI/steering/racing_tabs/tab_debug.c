@@ -2,8 +2,6 @@
 #include <stdio.h>
 
 lv_style_t box_debug_style_yellow;
-lv_style_t box_debug_style_green;
-lv_style_t box_debug_style_red;
 lv_style_t box_debug_label_style;
 
 lv_obj_t *scr_debug;
@@ -47,41 +45,11 @@ void init_debug_styles(void) {
   lv_style_set_pad_row(&box_debug_style_yellow, 0);
   lv_style_set_bg_opa(&box_debug_style_yellow, LV_OPA_COVER);
   lv_style_set_border_color(&box_debug_style_yellow,
-                            lv_color_hex(COLOR_SECONDARY_HEX));
+                            lv_color_hex(COLOR_GREEN_STATUS_HEX));
   lv_style_set_border_width(&box_debug_style_yellow, 3);
   lv_style_set_bg_color(&box_debug_style_yellow,
-                        lv_color_hex(COLOR_SECONDARY_HEX));
-  lv_style_set_radius(&box_debug_style_yellow, 10);
-
-  /*setting box_debug_style_green*/
-  lv_style_init(&box_debug_style_green);
-  lv_style_set_pad_all(&box_debug_style_green, 0);
-  lv_style_set_pad_bottom(&box_debug_style_green, 0);
-  lv_style_set_pad_column(&box_debug_style_green, 0);
-  lv_style_set_pad_top(&box_debug_style_green, 0);
-  lv_style_set_pad_row(&box_debug_style_green, 0);
-  lv_style_set_bg_opa(&box_debug_style_green, LV_OPA_COVER);
-  lv_style_set_border_color(&box_debug_style_green,
-                            lv_color_hex(COLOR_GREEN_STATUS_HEX));
-  lv_style_set_border_width(&box_debug_style_green, 3);
-  lv_style_set_bg_color(&box_debug_style_green,
                         lv_color_hex(COLOR_GREEN_STATUS_HEX));
-  lv_style_set_radius(&box_debug_style_green, 10);
-
-  /*setting box_debug_style_red*/
-  lv_style_init(&box_debug_style_red);
-  lv_style_set_pad_all(&box_debug_style_red, 0);
-  lv_style_set_pad_bottom(&box_debug_style_red, 0);
-  lv_style_set_pad_column(&box_debug_style_red, 0);
-  lv_style_set_pad_top(&box_debug_style_red, 0);
-  lv_style_set_pad_row(&box_debug_style_red, 0);
-  lv_style_set_bg_opa(&box_debug_style_red, LV_OPA_COVER);
-  lv_style_set_border_color(&box_debug_style_red,
-                            lv_color_hex(COLOR_RED_STATUS_HEX));
-  lv_style_set_border_width(&box_debug_style_red, 3);
-  lv_style_set_bg_color(&box_debug_style_red,
-                        lv_color_hex(COLOR_RED_STATUS_HEX));
-  lv_style_set_radius(&box_debug_style_red, 10);
+  lv_style_set_radius(&box_debug_style_yellow, 10);
 
   /*setting label style*/
   lv_style_init(&box_debug_label_style);

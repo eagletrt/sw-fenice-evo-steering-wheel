@@ -43,17 +43,17 @@ void remove_trailing (char *buf);
     device##_last_state.error_name = data->error_name;                         \
     if (data->error_name) {                                                    \
       lv_obj_set_style_border_color(steering.car_errors.device[aindex],        \
-                                    lv_color_hex(COLOR_GREEN_STATUS_HEX),      \
+                                    lv_color_hex(COLOR_RED_STATUS_HEX),      \
                                     LV_PART_MAIN);                             \
       lv_obj_set_style_bg_color(steering.car_errors.device[aindex],            \
-                                lv_color_hex(COLOR_GREEN_STATUS_HEX),          \
+                                lv_color_hex(COLOR_RED_STATUS_HEX),          \
                                 LV_PART_MAIN);                                 \
     }                                                                          \
     else {                                                                     \
       lv_obj_set_style_border_color(steering.car_errors.device[aindex],        \
-      lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);                       \
+      lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);                       \
       lv_obj_set_style_bg_color(steering.car_errors.device[aindex],            \
-                                lv_color_hex(COLOR_RED_STATUS_HEX),            \
+                                lv_color_hex(COLOR_GREEN_STATUS_HEX),            \
                                 LV_PART_MAIN);                                 \
     }                                                                          \
   }

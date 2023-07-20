@@ -24,8 +24,8 @@ primary_speed_converted_t speed_last_state = {0};
 primary_hv_voltage_converted_t hv_voltage_last_state = {0};
 primary_hv_current_converted_t hv_current_last_state = {0};
 primary_hv_temp_converted_t hv_temp_last_state = {0};
-primary_hv_errors_converted_t hv_errors_last_state;
-primary_hv_feedbacks_status_converted_t hv_feedbacks_status_last_state;
+primary_hv_errors_converted_t hv_errors_last_state = {0};
+primary_hv_feedbacks_status_converted_t hv_feedbacks_status_last_state = {0};
 
 primary_das_errors_converted_t das_errors_last_state;
 
@@ -38,7 +38,7 @@ primary_lv_cells_temp_converted_t lv_cells_temp_last_state_3 = {0};
 primary_lv_cells_temp_converted_t lv_cells_temp_last_state_4 = {0};
 float lv_cells_temp_mean_last_state = 0;
 primary_lv_total_voltage_converted_t lv_total_voltage_last_state = {0};
-primary_lv_errors_converted_t lv_errors_last_state;
+primary_lv_errors_converted_t lv_errors_last_state = {0};
 
 secondary_steering_angle_converted_t steering_angle_converted = {0};
 secondary_pedals_output_converted_t pedals_output_last_state = {0};
@@ -148,7 +148,7 @@ void speed_update(primary_speed_converted_t *data) {
             data->encoder_r != speed_last_state.encoder_r) {
         speed_last_state.encoder_l = data->encoder_l;
         speed_last_state.encoder_r = data->encoder_r;
-        #if 1
+        #if 0 // this is very broken
         const float wheel_radius = 0.2368760861f;
         float velocity = wheel_radius * ((data->encoder_l + data->encoder_r) / 2.0f);
         sprintf(sprintf_buffer, "%.1f", velocity);
@@ -440,12 +440,14 @@ void inv_l_rcv_update(inverters_inv_l_rcv_converted_t *data) {
         sprintf(sprintf_buffer, "%.0f", new_value);
         STEER_UPDATE_LABEL(steering.inverters.lb_left_inverter_temp, sprintf_buffer);
     }
+    #if 0
     if (data->n_actual_filt != inv_l_last_state.n_actual_filt && data->rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE) {
         float new_value = data->n_actual_filt * 0.1f;
         inv_l_last_state.n_actual_filt = new_value;
         sprintf(sprintf_buffer, "%.0f", new_value);
         STEER_UPDATE_LABEL(steering.das.lb_speed, sprintf_buffer);
     }
+    #endif
 }
 
 void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *data) {
@@ -461,6 +463,7 @@ void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *data) {
         sprintf(sprintf_buffer, "%.0f", new_value);
         STEER_UPDATE_LABEL(steering.inverters.lb_right_inverter_temp, sprintf_buffer);
     }
+    #if 0
     // net_signals["INV_L_RCV_ELAB"]["n_actual_filt"].push((net_signals["INV_L_RCV"]["n_actual_filt"][i] * INV_MAX_SPEED) / 32767.f);
     if (data->n_actual_filt != inv_r_last_state.n_actual_filt && data->rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE) {
         float new_value = (data->n_actual_filt * INV_MAX_SPEED) / 32767.f;
@@ -468,4 +471,5 @@ void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *data) {
         sprintf(sprintf_buffer, "%.0f", new_value);
         STEER_UPDATE_LABEL(steering.das.lb_speed, sprintf_buffer);
     }
+    #endif
 }
