@@ -70,10 +70,14 @@ void car_status_update(primary_car_status_converted_t *data) {
         switch (data->car_status) {
         case primary_car_status_car_status_INIT:
         case primary_car_status_car_status_ENABLE_INV_UPDATES:
-        case primary_car_status_car_status_CHECK_INV_SETTINGS:
+        case primary_car_status_car_status_CHECK_INV_SETTINGS: {
+            lv_label_set_text_fmt(steering.das.bottom_lb_speed, "-");
+            STEER_UPDATE_LABEL(steering.das.lb_speed, "INIT");
+            break;
+        }
         case primary_car_status_car_status_IDLE: {
             lv_label_set_text_fmt(steering.das.bottom_lb_speed, "-");
-            STEER_UPDATE_LABEL(steering.das.lb_speed, "IDLE");
+            STEER_UPDATE_LABEL(steering.das.lb_speed, " IDLE ");
             break;
         }
         case primary_car_status_car_status_START_TS_PRECHARGE:
@@ -85,6 +89,11 @@ void car_status_update(primary_car_status_converted_t *data) {
         case primary_car_status_car_status_WAIT_DRIVER: {
             lv_label_set_text_fmt(steering.das.bottom_lb_speed, "-");
             STEER_UPDATE_LABEL(steering.das.lb_speed, "SETUP");
+            break;
+        }
+         case primary_car_status_car_status_ENABLE_INV_DRIVE: {
+            lv_label_set_text_fmt(steering.das.bottom_lb_speed, "-");
+            STEER_UPDATE_LABEL(steering.das.lb_speed, "ENINV");
             break;
         }
         case primary_car_status_car_status_DRIVE: {
