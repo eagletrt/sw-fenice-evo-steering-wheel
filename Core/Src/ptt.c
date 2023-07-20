@@ -28,7 +28,6 @@ void handle_ptt_message(primary_ptt_status_status val) {
                                           COLOR_OFF, COLOR_OFF, COLOR_OFF});
     }
     status = 0;
-    print("Received status OFF");
   } else if (val == primary_ptt_status_status_ON) {
     if (!status) {
       display_notification("PTT ON", 400);
@@ -37,6 +36,5 @@ void handle_ptt_message(primary_ptt_status_status val) {
                                             COLOR_GREEN, COLOR_GREEN, COLOR_GREEN});
     }
     status = 1;
-    print("Received status ON");
   }
 }

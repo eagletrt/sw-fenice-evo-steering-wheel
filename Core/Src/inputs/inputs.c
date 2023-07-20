@@ -96,29 +96,23 @@ void buttons_pressed_actions(uint8_t button) {
     break;
   }
   case PADDLE_BOTTOM_RIGHT:
-    print("SHIFT BOX FOCUS RIGHT\n");
     shift_box_focus(true);
     change_errors_view(false);
     break;
   case PADDLE_BOTTOM_LEFT:
-    print("SHIFT BOX FOCUS LEFT\n");
     shift_box_focus(false);
     change_errors_view(true);
     break;
   case BUTTON_TOP_RIGHT:
-    print("TURN TELEMETRY ON/OFF\n");
     turn_telemetry_on_off();
     break;
   case BUTTON_TOP_LEFT:
-    print("ACTIVATE ptt\n");
     activate_ptt();
     break;
   case BUTTON_BOTTOM_RIGHT:
-    print("CALIBRATION TOOL: SET MAX\n");
     calibration_tool_set_min_max(true);
     break;
   case BUTTON_BOTTOM_LEFT:
-    print("CALIBRATION TOOL: SET MIN\n");
     calibration_tool_set_min_max(false);
     break;
   }
@@ -137,7 +131,6 @@ void buttons_released_actions(uint8_t button) {
   case BUTTON_TOP_RIGHT:
     break;
   case BUTTON_TOP_LEFT:
-    print("DEACTIVATE ptt\n");
     deactivate_ptt();
     break;
   case BUTTON_BOTTOM_RIGHT:
@@ -208,7 +201,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     bool tson_pin_state =
         HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin) == GPIO_PIN_SET ? true : false;
       if (!tson_pin_state && !tson_button_pressed) {
-        print("Setting timer to check button state in 2 seconds\n");
         tson_button_pressed = true;
         send_set_car_status_long_press_delay =
             lv_timer_create(send_set_car_status_check, 1000, NULL);
@@ -216,7 +208,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         lv_timer_reset(send_set_car_status_long_press_delay);
         STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_ORANGE_STATUS_HEX)
       } else {
-        print("tson button released and possible timer deleted\n");
         tson_button_pressed = false;
         lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
         STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
