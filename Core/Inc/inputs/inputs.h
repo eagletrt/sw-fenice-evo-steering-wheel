@@ -14,7 +14,13 @@
 
 #define MANETTINO_DEBOUNCE 50
 
+#define MANETTINO_LEFT_INDEX 0
+#define MANETTINO_CENTER_INDEX 1
+#define MANETTINO_RIGHT_INDEX 2
+
 #define MANETTINO_DEBOUNCE_VALUE 255 // value to be ignored
+#define MANETTINO_INVALID_VALUE 0xFF
+
 #define MANETTINO_RIGHT_VALS                                                   \
   { 253, 251, 239, 127, 191, 223, 247, 254 }
 #define MANETTINO_CENTER_VALS                                                  \

@@ -3,6 +3,8 @@
 MCP23017_HandleTypeDef dev1;
 MCP23017_HandleTypeDef dev2;
 
+extern bool engineer_mode;
+
 bool buttons[BUTTONS_N] = {true};
 uint32_t buttons_long_press_check[BUTTONS_N] = {0};
 bool buttons_long_press_activated[BUTTONS_N] = {false};
@@ -14,20 +16,18 @@ bool manettini_initialized[MANETTINI_N] = {false};
 extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
-extern bool engineer_mode;
+float power_map_last_state = 0.0f;
 
 /***
  * Manettini mapping
  *
  */
-const static uint8_t manettino_right_possible_vals[BUTTONS_N] =
-    MANETTINO_RIGHT_VALS;
-const static uint8_t manettino_center_possible_vals[BUTTONS_N] =
-    MANETTINO_CENTER_VALS;
-const static uint8_t manettino_left_possible_vals[BUTTONS_N] =
-    MANETTINO_LEFT_VALS;
+const static uint8_t MANETTINO_VALS_MAPPING[MANETTINI_N][BUTTONS_N] = {
+  MANETTINO_LEFT_VALS,
+  MANETTINO_CENTER_VALS,
+  MANETTINO_RIGHT_VALS
+};
 
-const static float val_power_map_mapping[MANETTINO_STEPS_N] = POWER_MAP_MAPPING;
 const static float val_torque_map_index[MANETTINO_STEPS_N] = TORQUE_MAP_MAPPING;
 const static float val_slip_map_index[MANETTINO_STEPS_N] = SLIP_MAP_MAPPING;
 const static float val_pumps_speed_index[MANETTINO_STEPS_N] = PUMPS_MAPPING;
@@ -54,6 +54,13 @@ void configure_internal_pull_up_resistors() {
   CHECK_ERROR(cdata);
   mcp23017_read(&dev2, REGISTER_GPPUB, &cdata);
   CHECK_ERROR(cdata);
+}
+
+float min(float a, float b) {
+  return a < b ? a : b;
+}
+float max(float a, float b) {
+  return a > b ? a : b;
 }
 
 void inputs_init(void) {
@@ -162,51 +169,13 @@ void buttons_long_pressed_actions(uint8_t button) {
   }
 }
 
-
-// TORQUE | RADIATORS
-void manettino_right_actions(uint8_t val) {
-  for (uint8_t ival = 0;
-       ival < (sizeof(manettino_right_possible_vals) / sizeof(uint8_t));
-       ++ival) {
-    if (val == MANETTINO_DEBOUNCE_VALUE)
-      continue;
-    if (val == manettino_right_possible_vals[ival]) {
-      if (!engineer_mode)
-        manettino_send_torque_vectoring(val_torque_map_index[ival]);
-      else
-        manettino_send_set_radiators(val_radiators_speed_index[ival]);
-      break;
+uint8_t from_manettino_value_to_index(uint8_t value, uint8_t manettino) {
+  for (uint8_t ival = 0; ival < BUTTONS_N; ++ival) {
+    if (value == MANETTINO_VALS_MAPPING[manettino][ival]) {
+      return ival;
     }
   }
-}
-
-// POWER MAP
-void manettino_center_actions(uint8_t val) {
-  for (uint8_t ival = 0;
-       ival < (sizeof(manettino_center_possible_vals) / sizeof(uint8_t));
-       ++ival) {
-    if (val == MANETTINO_DEBOUNCE_VALUE)
-      continue;
-    if (val == manettino_center_possible_vals[ival]) {
-      manettino_send_power_map(val_power_map_mapping[ival]);
-      break;
-    }
-  }
-}
-
-// SLIP CONTROL | COOLING
-void manettino_left_actions(uint8_t val) {
-  for (uint8_t ival = 0;
-       ival < (sizeof(manettino_left_possible_vals) / sizeof(uint8_t));
-       ++ival) {
-    if (val == manettino_left_possible_vals[ival]) {
-      if (!engineer_mode)
-        manettino_send_slip_control(val_slip_map_index[ival]);
-      else
-        manettino_send_set_pumps_speed(val_pumps_speed_index[ival]);
-      break;
-    }
-  }
+  return MANETTINO_INVALID_VALUE;
 }
 
 void from_gpio_to_buttons(uint8_t gpio) {
@@ -266,49 +235,79 @@ void read_buttons(void) {
   dev1.gpio[1] = button_input;
 }
 
-void read_manettino_1(void) {
+void manettini_actions(uint8_t value, uint8_t manettino) {
+  if (!manettini_initialized[manettino]) {
+    manettini_initialized[manettino] = true;
+    manettini[manettino] = from_manettino_value_to_index(value, manettino) == MANETTINO_INVALID_VALUE ? 0 : value;
+    return;
+  }
+  uint8_t new_manettino_index = from_manettino_value_to_index(value, manettino);
+  if (new_manettino_index == MANETTINO_INVALID_VALUE)
+    return;
+  switch (manettino)
+  {
+  case MANETTINO_RIGHT_INDEX: {
+    if (!engineer_mode)
+      manettino_send_torque_vectoring(val_torque_map_index[new_manettino_index]);
+    else
+      manettino_send_set_radiators(val_radiators_speed_index[new_manettino_index]);
+    break;
+  }
+  case MANETTINO_CENTER_INDEX: {
+    power_map_last_state += ((new_manettino_index - manettini[MANETTINO_CENTER_INDEX]) * 0.1f);
+    power_map_last_state = min(power_map_last_state, 1.0f);
+    power_map_last_state = max(power_map_last_state, -0.1f);
+    manettino_send_power_map(power_map_last_state);
+    break;
+  }
+  case MANETTINO_LEFT_INDEX: {
+    if (!engineer_mode)
+      manettino_send_slip_control(val_slip_map_index[new_manettino_index]);
+    else
+      manettino_send_set_pumps_speed(val_pumps_speed_index[new_manettino_index]);
+    break;
+  }
+  }
+  manettini[manettino] = new_manettino_index;
+}
+
+void read_manettino_left(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOA, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev1.gpio[0] && manettini_initialized[0]) {
-    manettino_left_actions(manettino_input);
+  if (manettino_input != dev1.gpio[0]) {
+    manettini_actions(manettino_input, MANETTINO_LEFT_INDEX);
+    dev1.gpio[0] = manettino_input;
   }
-  manettini_initialized[0] = true;
-  manettini[0] = manettino_input;
-  dev1.gpio[0] = manettino_input;
 }
 
-void read_manettino_2(void) {
+void read_manettino_center(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOB, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev2.gpio[1] && manettini_initialized[1]) {
-    manettino_center_actions(manettino_input);
+  if (manettino_input != dev2.gpio[1] && manettini_initialized[MANETTINO_CENTER_INDEX]) {
+    manettini_actions(manettino_input, MANETTINO_CENTER_INDEX);
+    dev2.gpio[1] = manettino_input;
   }
-  manettini_initialized[1] = true;
-  manettini[1] = manettino_input;
-  dev2.gpio[1] = manettino_input;
 }
 
-void read_manettino_3(void) {
+void read_manettino_right(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOA, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev2.gpio[0] && manettini_initialized[2]) {
-    manettino_right_actions(manettino_input);
+  if (manettino_input != dev2.gpio[0] && manettini_initialized[MANETTINO_RIGHT_INDEX]) {
+    manettini_actions(manettino_input, MANETTINO_RIGHT_INDEX);
+    dev2.gpio[0] = manettino_input;
   }
-  manettini_initialized[2] = true;
-  manettini[2] = manettino_input;
-  dev2.gpio[0] = manettino_input;
 }
 
 void read_inputs(lv_timer_t *tim) {
@@ -316,8 +315,8 @@ void read_inputs(lv_timer_t *tim) {
   read_buttons();
   if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
     manettini_last_change = HAL_GetTick();
-    read_manettino_1();
-    read_manettino_2();
-    read_manettino_3();
+    read_manettino_left();
+    read_manettino_center();
+    read_manettino_right();
   }
 }
