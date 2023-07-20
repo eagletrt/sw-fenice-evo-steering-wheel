@@ -1,16 +1,8 @@
 #include "can_messages.h"
 
-bool primary_messages_updated[PRIMARY_MONITORED_MESSAGES_SIZE] = {false};
-bool secondary_messages_updated[SECONDARY_MONITORED_MESSAGES_SIZE] = {false};
-
 extern steering_t steering;
 extern bool steering_initialized;
-primary_steer_status_converted_t steer_status_last_state = {
-    .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
-primary_cooling_status_converted_t cooling_status_last_state = {
-    .pumps_speed = -1.0f, .radiators_speed = -1.0f};
-
-
+extern primary_steer_status_converted_t steer_status_last_state;
 
 void send_steer_version(lv_timer_t *main_timer) {
   primary_steer_version_converted_t converted = {
@@ -28,8 +20,6 @@ void send_steer_status(lv_timer_t *main_timer) {
   STEER_CAN_PACK(primary, PRIMARY, steer_status, STEER_STATUS)
   can_send(&msg, true);
 }
-
-
 
 void handle_primary(can_message_t *msg) {
   if (!steering_initialized)
@@ -58,17 +48,6 @@ void handle_primary(can_message_t *msg) {
   case PRIMARY_PTT_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, ptt_status, PTT_STATUS);
     handle_ptt_message(converted.status);
-    break;
-  }
-  case PRIMARY_TLM_STATUS_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, tlm_status, TLM_STATUS);
-    // tlm_status_update(&converted);
-    break;
-  }
-  case PRIMARY_AMBIENT_TEMPERATURE_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, ambient_temperature,
-                     AMBIENT_TEMPERATURE);
-    // ambient_temperature_update(&converted);
     break;
   }
   case PRIMARY_SPEED_FRAME_ID: {

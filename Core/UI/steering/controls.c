@@ -12,8 +12,10 @@ extern lv_obj_t *set_max_btn;
 
 extern primary_tlm_status_t tlm_status_last_state;
 extern primary_car_status_t car_status_last_state;
-extern primary_steer_status_converted_t steer_status_last_state;
-extern primary_cooling_status_converted_t cooling_status_last_state;
+primary_steer_status_converted_t steer_status_last_state = {
+    .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
+primary_cooling_status_converted_t cooling_status_last_state = {
+    .pumps_speed = -1.0f, .radiators_speed = -1.0f};
 
 
 /***

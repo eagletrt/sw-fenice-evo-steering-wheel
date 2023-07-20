@@ -473,7 +473,7 @@ void tab_debug(lv_obj_t *parent) {
       cell_create(lv_errors_panel, "MUX", 0, 5, &box_debug_style_yellow);
 }
 
-ErrorTabID errors_focus = HV_ERRORS;
+ErrorTabID errors_focus = TAB_HV_ERRORS;
 
 void change_errors_view(bool dir_left) {
 
@@ -481,7 +481,7 @@ void change_errors_view(bool dir_left) {
 
     if (dir_left) {
       if (errors_focus == 0)
-        errors_focus = LV_ERRORS;
+        errors_focus = TAB_LV_ERRORS;
       else
         errors_focus--;
 
@@ -491,25 +491,25 @@ void change_errors_view(bool dir_left) {
     }
 
     switch (errors_focus) {
-    case HV_FEEDBACKS:
+    case TAB_HV_FEEDBACKS:
       lv_obj_set_style_opa(hv_feedbacks_panel, LV_OPA_COVER, LV_PART_MAIN);
       lv_obj_set_style_opa(hv_errors_panel, LV_OPA_0, LV_PART_MAIN);
       lv_obj_set_style_opa(lv_errors_panel, LV_OPA_0, LV_PART_MAIN);
       break;
 
-    case HV_ERRORS:
+    case TAB_HV_ERRORS:
       lv_obj_set_style_opa(hv_errors_panel, LV_OPA_COVER, LV_PART_MAIN);
       lv_obj_set_style_opa(hv_feedbacks_panel, LV_OPA_0, LV_PART_MAIN);
       lv_obj_set_style_opa(das_errors_panel, LV_OPA_0, LV_PART_MAIN);
       break;
 
-    case DAS_ERRORS:
+    case TAB_DAS_ERRORS:
       lv_obj_set_style_opa(das_errors_panel, LV_OPA_COVER, LV_PART_MAIN);
       lv_obj_set_style_opa(hv_errors_panel, LV_OPA_0, LV_PART_MAIN);
       lv_obj_set_style_opa(lv_errors_panel, LV_OPA_0, LV_PART_MAIN);
       break;
 
-    case LV_ERRORS:
+    case TAB_LV_ERRORS:
       lv_obj_set_style_opa(lv_errors_panel, LV_OPA_COVER, LV_PART_MAIN);
       lv_obj_set_style_opa(das_errors_panel, LV_OPA_0, LV_PART_MAIN);
       lv_obj_set_style_opa(hv_feedbacks_panel, LV_OPA_0, LV_PART_MAIN);

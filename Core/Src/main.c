@@ -41,9 +41,6 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define PRIMARY_WATCHDOG_SIZE 1
-#define SECONDARY_WATCHDOG_SIZE 0
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -58,11 +55,12 @@
 primary_watchdog m_primary_watchdog = {0};
 secondary_watchdog m_secondary_watchdog = {0};
 
-can_id_t primary_watchdog_monitored_ids[PRIMARY_MONITORED_MESSAGES_SIZE] =
-    PRIMARY_MONITORED_MESSAGES;
+can_id_t primary_watchdog_monitored_ids[] = PRIMARY_MONITORED_MESSAGES;
+const size_t primary_watchdog_monitored_ids_size =
+    sizeof(primary_watchdog_monitored_ids) / sizeof(can_id_t);
 
 can_id_t secondary_watchdog_monitored_ids[] = SECONDARY_MONITORED_MESSAGES;
-const uint16_t secondary_watchdog_monitored_ids_size =
+const size_t secondary_watchdog_monitored_ids_size =
     sizeof(secondary_watchdog_monitored_ids) / sizeof(can_id_t);
 
 lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
@@ -223,12 +221,12 @@ int main(void) {
   }
 #endif
 
-  for (uint64_t iindex = 0; iindex < PRIMARY_WATCHDOG_SIZE; ++iindex) {
+  for (uint64_t iindex = 0; iindex < primary_watchdog_monitored_ids_size; ++iindex) {
     can_id_t id = primary_watchdog_monitored_ids[iindex];
     CANLIB_BITSET_ARRAY(m_primary_watchdog.activated,
                         primary_watchdog_index_from_id(id));
   }
-  for (uint64_t iindex = 0; iindex < SECONDARY_WATCHDOG_SIZE; ++iindex) {
+  for (uint64_t iindex = 0; iindex < secondary_watchdog_monitored_ids_size; ++iindex) {
     can_id_t id = secondary_watchdog_monitored_ids[iindex];
     CANLIB_BITSET_ARRAY(m_secondary_watchdog.activated,
                         secondary_watchdog_index_from_id(id));
@@ -350,7 +348,7 @@ void watchdog_task_fn(lv_timer_t *main_timer) {
   primary_watchdog_timeout(&m_primary_watchdog, HAL_GetTick());
   secondary_watchdog_timeout(&m_secondary_watchdog, HAL_GetTick());
 
-  for (uint64_t iindex = 0; iindex < PRIMARY_WATCHDOG_SIZE; ++iindex) {
+  for (uint64_t iindex = 0; iindex < primary_watchdog_monitored_ids_size; ++iindex) {
     can_id_t id = primary_watchdog_monitored_ids[iindex];
     bool timed_out = CANLIB_BITTEST_ARRAY(m_primary_watchdog.timeout,
                                           primary_watchdog_index_from_id(id));
@@ -365,7 +363,7 @@ void watchdog_task_fn(lv_timer_t *main_timer) {
       }
     }
   }
-  for (uint64_t iindex = 0; iindex < SECONDARY_WATCHDOG_SIZE; ++iindex) {
+  for (uint64_t iindex = 0; iindex < secondary_watchdog_monitored_ids_size; ++iindex) {
     can_id_t id = secondary_watchdog_monitored_ids[iindex];
     bool timed_out = CANLIB_BITTEST_ARRAY(m_secondary_watchdog.timeout,
                                           secondary_watchdog_index_from_id(id));

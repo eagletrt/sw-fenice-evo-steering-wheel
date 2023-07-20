@@ -53,7 +53,11 @@
         "optional": "c",
         "system_error": "c",
         "tab_debug.h": "c",
-        "can_messages.h": "c"
+        "can_messages.h": "c",
+        "ctype.h": "c",
+        "fcntl.h": "c",
+        "libgen.h": "c",
+        "messages.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false

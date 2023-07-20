@@ -20,7 +20,7 @@
 
 #define NUM_TYPE_ERRORS 4
 
-typedef enum { HV_FEEDBACKS, HV_ERRORS, DAS_ERRORS, LV_ERRORS } ErrorTabID;
+typedef enum { TAB_HV_FEEDBACKS, TAB_HV_ERRORS, TAB_DAS_ERRORS, TAB_LV_ERRORS } ErrorTabID;
 
 void tab_debug(lv_obj_t *parent);
 void init_debug_styles(void);
