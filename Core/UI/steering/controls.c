@@ -217,7 +217,8 @@ void prepare_set_car_status(void) {
   case primary_car_status_car_status_INIT:
 	case primary_car_status_car_status_ENABLE_INV_UPDATES:
 	case primary_car_status_car_status_CHECK_INV_SETTINGS: {
-    display_notification("ECU not in IDLE yet", 1500);
+    send_set_car_status(primary_set_car_status_car_status_set_IDLE);
+    display_notification("ECU not in IDLE yet, sending IDLE anyway", 1500);
     break;
   }
 	case primary_car_status_car_status_IDLE: {
@@ -245,8 +246,23 @@ void prepare_set_car_status(void) {
     break;
   }
 	case primary_car_status_car_status_FATAL_ERROR: {
-    display_notification("ECU in FATAL ERROR", 1500);
+    send_set_car_status(primary_set_car_status_car_status_set_IDLE);
+    display_notification("ECU in FATAL ERROR, sending IDLE anyway", 1500);
     break;
   }
   }
+}
+
+bool send_set_car_status_directly(void) {
+  switch (car_status_last_state.car_status) {
+  case primary_car_status_car_status_IDLE:
+  case primary_car_status_car_status_WAIT_DRIVER: {
+    return false;
+  }
+  default: {
+    prepare_set_car_status();
+    return true;
+  }
+  }
+  return true;
 }

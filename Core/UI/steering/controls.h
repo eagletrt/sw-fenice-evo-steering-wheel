@@ -60,8 +60,8 @@ typedef enum {
 void switch_mode(void);
 void steering_change_tab(bool forward);
 
-void send_set_car_status(primary_set_car_status_car_status_set);
 void prepare_set_car_status(void);
+bool send_set_car_status_directly(void);
 
 void manettino_send_slip_control(float);
 void manettino_send_torque_vectoring(float);

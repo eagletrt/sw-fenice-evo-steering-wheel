@@ -210,13 +210,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin) == GPIO_PIN_SET ? true : false;
     if (tson_pin_state) {
       if (!tson_button_pressed) {
-        // tson button pressed -> activate timer
-        tson_button_pressed = true;
-        send_set_car_status_long_press_delay =
-            lv_timer_create(send_set_car_status_check, 1000, NULL);
-        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
-        lv_timer_reset(send_set_car_status_long_press_delay);
-        STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_ORANGE_STATUS_HEX)
+        // tson button pressed -> activate timer or send set_car_status directly if we are in certain states
+        if (!send_set_car_status_directly()) {
+          tson_button_pressed = true;
+          send_set_car_status_long_press_delay =
+              lv_timer_create(send_set_car_status_check, 1000, NULL);
+          lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
+          lv_timer_reset(send_set_car_status_long_press_delay);
+          STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_ORANGE_STATUS_HEX)
+        } 
       }
     } else {
       if (tson_button_pressed) {
