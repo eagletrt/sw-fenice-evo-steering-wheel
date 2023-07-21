@@ -9,6 +9,7 @@ Steering wheel firmware of the E-Agle TRT car <em>Fenice Evo</em>.
 ```bash
 git clone git@github.com:eagletrt/sw-fenice-evo-steering-wheel.git
 cd sw-fenice-evo-steering-wheel
+git submodule init
 git pull --recurse-submodules
 ```
 
