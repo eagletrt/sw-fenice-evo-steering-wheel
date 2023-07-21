@@ -22,7 +22,7 @@ typedef enum {
   TAB_TRACK_TEST,
   TAB_SENSORS,
   // add here new tabs
-  NUM_TABS
+  NUM_RACING_TABS
 } racing_tab_t;
 
 typedef enum {

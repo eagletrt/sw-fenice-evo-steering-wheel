@@ -188,7 +188,7 @@ void from_gpio_to_buttons(uint8_t gpio) {
 
 void send_set_car_status_check(lv_timer_t *tim) {
   if (tson_button_pressed) {
-    STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
+    STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
     prepare_set_car_status();
   }
 }
@@ -209,8 +209,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
               lv_timer_create(send_set_car_status_check, 1000, NULL);
           lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
           lv_timer_reset(send_set_car_status_long_press_delay);
-          STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed,
-                                   COLOR_ORANGE_STATUS_HEX)
+          STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
         }
       }
     } else {
@@ -218,7 +217,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         // released button -> delete timer
         tson_button_pressed = false;
         lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
-        STEER_UPDATE_COLOR_LABEL(steering.das.lb_speed, COLOR_TERTIARY_HEX)
+        STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
       }
     }
   }

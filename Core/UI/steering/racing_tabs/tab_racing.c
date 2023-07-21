@@ -44,7 +44,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // lv percentage
   lv_obj_t *lv_perc = lv_horizontal_pair_label(
-      bar_panel_lv, &steering.lv.lb_current[TAB_RACING], "0",
+      bar_panel_lv, &steering.lb_lv_current[TAB_RACING], "0",
       &lv_font_inter_bold_30, "V", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
@@ -85,7 +85,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // hv percentage
   lv_obj_t *hv_perc = lv_horizontal_pair_label(
-      bar_panel_hv, &steering.hv.lb_current[TAB_RACING], "0",
+      bar_panel_hv, &steering.lb_hv_current[TAB_RACING], "0",
       &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(hv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
@@ -177,7 +177,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   /* inserting data into data left panel */
   lv_obj_t *best_time = lv_vertical_pair_label(
-      left_data_panel, &steering.steering.lb_best_time[TAB_RACING], "0:00:00",
+      left_data_panel, &steering.lb_best_time[TAB_RACING], "0:00:00",
       &lv_font_inter_bold_38, "BEST TIME", &lv_font_inter_bold_22);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(best_time, 1), 0),
                LV_ALIGN_LEFT_MID, 10, 0); // change bottom label position
@@ -187,7 +187,7 @@ void tab_racing_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *last_time = lv_vertical_pair_label(
-      left_data_panel, &steering.steering.lb_last_time[TAB_RACING], "0:00:00",
+      left_data_panel, &steering.lb_last_time[TAB_RACING], "0:00:00",
       &lv_font_inter_bold_38, "LAST TIME", &lv_font_inter_bold_22);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(last_time, 1), 0),
                LV_ALIGN_LEFT_MID, 10, 0); // change bottom label position
@@ -197,7 +197,7 @@ void tab_racing_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *delta = lv_vertical_pair_label(
-      left_data_panel, &steering.steering.lb_delta_time[TAB_RACING], "NA",
+      left_data_panel, &steering.lb_delta_time[TAB_RACING], "NA",
       &lv_font_inter_bold_38, "DELTA", &lv_font_inter_bold_22);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(delta, 0), 0),
                LV_ALIGN_LEFT_MID, 10, 0); // change upper label position
@@ -230,13 +230,13 @@ void tab_racing_create(lv_obj_t *parent) {
 
   /*inserting data into data right panel*/
   lv_obj_t *trq = lv_vertical_pair_label(
-      right_data_panel, &steering.control.lb_torque[TAB_RACING], "NA",
+      right_data_panel, &steering.lb_torque[TAB_RACING], "NA",
       &lv_font_inter_bold_38, "TRQ", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(trq, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0,
                        1);
 
   lv_obj_t *slip = lv_vertical_pair_label(
-      right_data_panel, &steering.control.lb_slip[TAB_RACING], "NA",
+      right_data_panel, &steering.lb_slip[TAB_RACING], "NA",
       &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(slip, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
@@ -252,28 +252,28 @@ void tab_racing_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_START, 1, 1);
 
   lv_obj_t *inverter_temp = lv_triple_label(
-      right_data_panel, &steering.inverters.lb_left_inverter_temp[TAB_RACING],
-      "0", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV",
+      right_data_panel, &steering.lb_left_inverter_temp[TAB_RACING], "0",
+      &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(inverter_temp, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *motor_temp = lv_triple_label(
-      right_data_panel, &steering.inverters.lb_left_motor_temp[TAB_RACING], "0",
+      right_data_panel, &steering.lb_left_motor_temp[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_temp, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *lv_temp = lv_triple_label(
-      right_data_panel, &steering.lv.lb_battery_temperature[TAB_RACING], "0",
+      right_data_panel, &steering.lb_battery_temperature[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "LV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_temp, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *hv_temp = lv_triple_label(
-      right_data_panel, &steering.hv.lb_average_temperature[TAB_RACING], "0",
+      right_data_panel, &steering.lb_average_temperature[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_temp, LV_GRID_ALIGN_CENTER, 1, 1,
@@ -283,7 +283,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // power
   lv_obj_t *power = lv_horizontal_pair_label(
-      central_panel, &steering.control.lb_power[TAB_RACING], "0",
+      central_panel, &steering.lb_power[TAB_RACING], "0",
       &lv_font_inter_bold_38, " POWER", &lv_font_inter_bold_22);
 
   lv_obj_set_grid_cell(lv_obj_get_child(power, 1), LV_GRID_ALIGN_CENTER, 1, 1,
@@ -300,8 +300,8 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // speedometer
   lv_obj_t *speed = lv_vertical_pair_two_labels(
-      data_panel, &steering.das.lb_speed[TAB_RACING], "IDLE",
-      &lv_font_inter_bold_38, &steering.das.bottom_lb_speed, "-",
+      data_panel, &steering.lb_speed[TAB_RACING], "IDLE",
+      &lv_font_inter_bold_38, &steering.bottom_lb_speed, "-",
       &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
@@ -323,7 +323,7 @@ void tab_racing_create(lv_obj_t *parent) {
   // lap counter
 
   lv_obj_t *lap_counter = lv_vertical_pair_label(
-      data_panel, &steering.telemetry.lb_lap_count[TAB_RACING], "NA",
+      data_panel, &steering.lb_lap_count[TAB_RACING], "NA",
       &lv_font_inter_bold_38, "LAP", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(lap_counter, LV_GRID_ALIGN_START, 1, 1,
                        LV_GRID_ALIGN_END, 0, 1);
@@ -332,7 +332,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // ???
   lv_obj_t *km_counter = lv_vertical_pair_label(
-      data_panel, &steering.telemetry.lb_lap_count[TAB_RACING], "0",
+      data_panel, &steering.lb_lap_count[TAB_RACING], "0",
       &lv_font_inter_bold_38, "KM", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(km_counter, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_END,
                        0, 1);

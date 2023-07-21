@@ -156,7 +156,7 @@ void tab_calibration_create(lv_obj_t *parent) {
   lv_obj_align(center_btn, LV_ALIGN_TOP_MID, 0, 10);
 
   lv_obj_t *center_lbl = lv_horizontal_pair_label(
-      center_btn, &steering.steering.lb_steering_angle[TAB_CALIBRATION], "0",
+      center_btn, &steering.lb_steering_angle[TAB_CALIBRATION], "0",
       &lv_font_inter_bold_30, " deg", &lv_font_inter_bold_22);
   lv_obj_set_align(center_lbl, LV_ALIGN_CENTER);
   lv_obj_set_style_text_color(lv_obj_get_child(center_lbl, 0),

@@ -112,7 +112,7 @@ void manettino_send_slip_control(float val) {
   char title[100];
   uint16_t map_val = (uint16_t)(steer_status_last_state.map_sc * 100.0f);
   sprintf(title, "%u", map_val);
-  STEER_UPDATE_LABEL(steering.control.lb_slip, title)
+  STEER_UPDATE_LABEL(steering.lb_slip, title)
   sprintf(title, "SLIP CONTROL %u", map_val);
   display_notification(title, 750);
 }
@@ -122,7 +122,7 @@ void manettino_send_torque_vectoring(float val) {
   char title[100];
   uint16_t map_val = (uint16_t)(steer_status_last_state.map_tv * 100.0f);
   sprintf(title, "%u", map_val);
-  STEER_UPDATE_LABEL(steering.control.lb_torque, title)
+  STEER_UPDATE_LABEL(steering.lb_torque, title)
   sprintf(title, "TORQUE VECTORING %u", map_val);
   display_notification(title, 750);
 }
@@ -133,11 +133,11 @@ void manettino_send_power_map(float val) {
   char title[100];
   if (map_val < 0) {
     sprintf(title, "TUPIDO");
-    STEER_UPDATE_LABEL(steering.control.lb_power, title)
+    STEER_UPDATE_LABEL(steering.lb_power, title)
     sprintf(title, "POWER MAP TUPIDO");
   } else {
     sprintf(title, "%d", map_val);
-    STEER_UPDATE_LABEL(steering.control.lb_power, title)
+    STEER_UPDATE_LABEL(steering.lb_power, title)
     sprintf(title, "POWER MAP %d", map_val);
   }
 

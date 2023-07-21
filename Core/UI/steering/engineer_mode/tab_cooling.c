@@ -1,6 +1,6 @@
 #include "tab_cooling.h"
 
-extern steering_t steering;
+extern steering_tabs_t steering;
 lv_style_t cooling_label_style;
 
 void init_cooling_tab_styles() {

@@ -124,9 +124,9 @@ void load_current_engineering_tab() {
 
 void change_racing_tab(bool forward) {
   if (forward)
-    current_racing_tab = (current_racing_tab + 1) % NUM_TABS;
+    current_racing_tab = (current_racing_tab + 1) % NUM_RACING_TABS;
   else
-    current_racing_tab = (current_racing_tab + NUM_TABS - 1) % NUM_TABS;
+    current_racing_tab = (current_racing_tab + NUM_RACING_TABS - 1) % NUM_RACING_TABS;
 
   load_current_racing_tab();
 }

@@ -25,7 +25,7 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 void remove_trailing(char *buf);
 
 #define STEER_UPDATE_LABEL(name, value)                                        \
-  for (uint32_t itab = 0; itab < NUM_TABS; itab++) {                           \
+  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                           \
     if (name[itab] != NULL) {                                                  \
       remove_trailing(value);                                                  \
       lv_label_set_text_fmt(name[itab], "%s", value);                          \
@@ -33,7 +33,7 @@ void remove_trailing(char *buf);
   }
 
 #define STEER_UPDATE_COLOR_LABEL(name, color)                                  \
-  for (uint32_t itab = 0; itab < NUM_TABS; itab++) {                           \
+  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                           \
     if (name[itab] != NULL)                                                    \
       lv_obj_set_style_text_color(name[itab], lv_color_hex(color),             \
                                   LV_PART_MAIN);                               \
@@ -43,105 +43,83 @@ void remove_trailing(char *buf);
   if (device##_last_state.error_name != data->error_name) {                    \
     device##_last_state.error_name = data->error_name;                         \
     if (data->error_name) {                                                    \
-      lv_obj_set_style_border_color(steering.car_errors.device[aindex],        \
+      lv_obj_set_style_border_color(steering.device[aindex],                   \
                                     lv_color_hex(COLOR_RED_STATUS_HEX),        \
                                     LV_PART_MAIN);                             \
-      lv_obj_set_style_bg_color(steering.car_errors.device[aindex],            \
+      lv_obj_set_style_bg_color(steering.device[aindex],                       \
                                 lv_color_hex(COLOR_RED_STATUS_HEX),            \
                                 LV_PART_MAIN);                                 \
     } else {                                                                   \
-      lv_obj_set_style_border_color(steering.car_errors.device[aindex],        \
+      lv_obj_set_style_border_color(steering.device[aindex],                   \
                                     lv_color_hex(COLOR_GREEN_STATUS_HEX),      \
                                     LV_PART_MAIN);                             \
-      lv_obj_set_style_bg_color(steering.car_errors.device[aindex],            \
+      lv_obj_set_style_bg_color(steering.device[aindex],                       \
                                 lv_color_hex(COLOR_GREEN_STATUS_HEX),          \
                                 LV_PART_MAIN);                                 \
     }                                                                          \
   }
 
 #define STEER_ERROR_INVALIDATE(device, error_name, aindex)                     \
-  lv_obj_set_style_bg_color(steering.car_errors.device[aindex],                \
+  lv_obj_set_style_bg_color(steering.device[aindex],                           \
                             lv_color_hex(COLOR_YELLOW_STATUS_HEX),             \
                             LV_PART_MAIN);
 
 typedef struct {
-  struct {
-    lv_obj_t *lb_speed[NUM_TABS];
-    lv_obj_t *bottom_lb_speed;
-  } das;
+  lv_obj_t *lb_speed[NUM_RACING_TABS];
+  lv_obj_t *bottom_lb_speed;
 
-  struct {
-    lv_obj_t *lb_max_cell_voltage[NUM_TABS];
-    lv_obj_t *lb_min_cell_voltage[NUM_TABS];
-    lv_obj_t *lb_current[NUM_TABS];
-    lv_obj_t *lb_average_temperature[NUM_TABS];
-    lv_obj_t *lb_hv_percent[NUM_TABS];
-    lv_obj_t *lb_pack_voltage[NUM_TABS];
-  } hv;
+  lv_obj_t *lb_max_cell_voltage[NUM_RACING_TABS];
+  lv_obj_t *lb_min_cell_voltage[NUM_RACING_TABS];
+  lv_obj_t *lb_hv_current[NUM_RACING_TABS];
+  lv_obj_t *lb_average_temperature[NUM_RACING_TABS];
+  lv_obj_t *lb_hv_percent[NUM_RACING_TABS];
+  lv_obj_t *lb_pack_voltage[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *lb_right_motor_temp[NUM_TABS];
-    lv_obj_t *lb_right_inverter_temp[NUM_TABS];
-    lv_obj_t *lb_left_motor_temp[NUM_TABS];
-    lv_obj_t *lb_left_inverter_temp[NUM_TABS];
-  } inverters;
+  lv_obj_t *lb_right_motor_temp[NUM_RACING_TABS];
+  lv_obj_t *lb_right_inverter_temp[NUM_RACING_TABS];
+  lv_obj_t *lb_left_motor_temp[NUM_RACING_TABS];
+  lv_obj_t *lb_left_inverter_temp[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *lb_current[NUM_TABS];
-    lv_obj_t *lb_voltage[NUM_TABS];
-    lv_obj_t *lb_battery_temperature[NUM_TABS];
-    lv_obj_t *lb_lv_percent[NUM_TABS];
-    lv_obj_t *lb_lv_delta[NUM_TABS];
-  } lv;
+  lv_obj_t *lb_lv_current[NUM_RACING_TABS];
+  lv_obj_t *lb_voltage[NUM_RACING_TABS];
+  lv_obj_t *lb_battery_temperature[NUM_RACING_TABS];
+  lv_obj_t *lb_lv_percent[NUM_RACING_TABS];
+  lv_obj_t *lb_lv_delta[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *lb_best_time[NUM_TABS];
-    lv_obj_t *lb_last_time[NUM_TABS];
-    lv_obj_t *lb_delta_time[NUM_TABS];
-    lv_obj_t *lb_estimated_velocity[NUM_TABS];
-    lv_obj_t *lb_steering_angle[NUM_TABS];
-    lv_obj_t *lb_apps[NUM_TABS];
-    lv_obj_t *lb_bse[NUM_TABS];
-  } steering;
+  lv_obj_t *lb_best_time[NUM_RACING_TABS];
+  lv_obj_t *lb_last_time[NUM_RACING_TABS];
+  lv_obj_t *lb_delta_time[NUM_RACING_TABS];
+  lv_obj_t *lb_estimated_velocity[NUM_RACING_TABS];
+  lv_obj_t *lb_steering_angle[NUM_RACING_TABS];
+  lv_obj_t *lb_apps[NUM_RACING_TABS];
+  lv_obj_t *lb_bse[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *lb_tlm_status[NUM_TABS];
-    lv_obj_t *lb_lap_count[NUM_TABS];
-  } telemetry;
+  lv_obj_t *lb_tlm_status[NUM_RACING_TABS];
+  lv_obj_t *lb_lap_count[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *lb_power[NUM_TABS];
-    lv_obj_t *lb_torque[NUM_TABS];
-    lv_obj_t *lb_slip[NUM_TABS];
-    lv_obj_t *lb_inverter_speed_x[NUM_TABS];
-    lv_obj_t *lb_inverter_speed_y[NUM_TABS];
-  } control;
+  lv_obj_t *lb_power[NUM_RACING_TABS];
+  lv_obj_t *lb_torque[NUM_RACING_TABS];
+  lv_obj_t *lb_slip[NUM_RACING_TABS];
+  lv_obj_t *lb_inverter_speed_x[NUM_RACING_TABS];
+  lv_obj_t *lb_inverter_speed_y[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *lb_fl_temp[NUM_TABS];
-    lv_obj_t *lb_fr_temp[NUM_TABS];
-    lv_obj_t *lb_rl_temp[NUM_TABS];
-    lv_obj_t *lb_rr_temp[NUM_TABS];
-  } tyre_temps;
+  lv_obj_t *lb_fl_temp[NUM_RACING_TABS];
+  lv_obj_t *lb_fr_temp[NUM_RACING_TABS];
+  lv_obj_t *lb_rl_temp[NUM_RACING_TABS];
+  lv_obj_t *lb_rr_temp[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *lb_fl_press[NUM_TABS];
-    lv_obj_t *lb_fr_press[NUM_TABS];
-    lv_obj_t *lb_rl_press[NUM_TABS];
-    lv_obj_t *lb_rr_press[NUM_TABS];
-  } tyre_pressures;
+  lv_obj_t *lb_fl_press[NUM_RACING_TABS];
+  lv_obj_t *lb_fr_press[NUM_RACING_TABS];
+  lv_obj_t *lb_rl_press[NUM_RACING_TABS];
+  lv_obj_t *lb_rr_press[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *lb_radiators_speed[NUM_TABS];
-    lv_obj_t *lb_pumps_speed[NUM_TABS];
-  } cooling_status;
+  lv_obj_t *lb_radiators_speed[NUM_RACING_TABS];
+  lv_obj_t *lb_pumps_speed[NUM_RACING_TABS];
 
-  struct {
-    lv_obj_t *hv_feedbacks_status[20];
-    lv_obj_t *hv_errors[16];
-    lv_obj_t *das_errors[9];
-    lv_obj_t *lv_errors[17];
-  } car_errors;
+  lv_obj_t *hv_feedbacks_status[20];
+  lv_obj_t *hv_errors[16];
+  lv_obj_t *das_errors[9];
+  lv_obj_t *lv_errors[17];
 
   lv_obj_t *notification_screen_label;
 
@@ -164,9 +142,9 @@ typedef struct {
 
   uint32_t timestamp;
 
-} steering_t;
+} steering_tabs_t;
 
-extern steering_t steering;
+extern steering_tabs_t steering;
 
 /*
  * UPDATE

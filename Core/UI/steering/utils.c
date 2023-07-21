@@ -165,7 +165,7 @@ lv_triple_label(lv_obj_t *parent, lv_obj_t **main_l, const char *left_text,
 lv_style_t bubble_small_style;
 lv_style_t bubble_large_style;
 
-char *notch_labels[NUM_TABS] = {"RACE", "CALIBRATE", "DEBUG", "TEST",
+char *notch_labels[NUM_RACING_TABS] = {"RACE", "CALIBRATE", "DEBUG", "TEST",
                                 "SENSORS"};
 lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
 
@@ -196,7 +196,7 @@ lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
   // lv_obj_set_size(center_o, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
   lv_obj_t *center_l = lv_label_create(center_o);
   lv_obj_add_style(center_l, &label_style, LV_PART_MAIN);
-  lv_label_set_text(center_l, notch_labels[(TabId++) % NUM_TABS]);
+  lv_label_set_text(center_l, notch_labels[(TabId++) % NUM_RACING_TABS]);
   lv_obj_set_style_text_font(center_l, &lv_font_inter_bold_22, LV_PART_MAIN);
   lv_obj_align(center_l, LV_ALIGN_TOP_MID, 0, NOTCH_BAR_HEIGHT_L + 5);
   lv_obj_set_size(center_l, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -215,7 +215,7 @@ lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
   // lv_obj_set_size(right_o, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
   lv_obj_t *right_l = lv_label_create(right_o);
   lv_obj_add_style(right_l, &label_style, LV_PART_MAIN);
-  lv_label_set_text(right_l, notch_labels[(TabId++) % NUM_TABS]);
+  lv_label_set_text(right_l, notch_labels[(TabId++) % NUM_RACING_TABS]);
   lv_obj_set_style_text_font(right_l, &lv_font_inter_bold_14, LV_PART_MAIN);
   lv_obj_align(right_l, LV_ALIGN_TOP_MID, 0, NOTCH_BAR_HEIGHT_S + 5);
   lv_obj_set_grid_cell(right_o, LV_GRID_ALIGN_CENTER, 3, 1,
@@ -232,7 +232,7 @@ lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
   // lv_obj_set_size(most_right_o, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
   lv_obj_t *most_right_l = lv_label_create(most_right_o);
   lv_obj_add_style(most_right_l, &label_style, LV_PART_MAIN);
-  lv_label_set_text(most_right_l, notch_labels[(TabId++) % NUM_TABS]);
+  lv_label_set_text(most_right_l, notch_labels[(TabId++) % NUM_RACING_TABS]);
   lv_obj_align(most_right_l, LV_ALIGN_TOP_MID, 0, NOTCH_BAR_HEIGHT_S + 5);
   lv_obj_set_style_text_font(most_right_l, &lv_font_inter_bold_14,
                              LV_PART_MAIN);
@@ -250,7 +250,7 @@ lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
   // lv_obj_set_size(most_left_o, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
   lv_obj_t *most_left_l = lv_label_create(most_left_o);
   lv_obj_add_style(most_left_l, &label_style, LV_PART_MAIN);
-  lv_label_set_text(most_left_l, notch_labels[(TabId++) % NUM_TABS]);
+  lv_label_set_text(most_left_l, notch_labels[(TabId++) % NUM_RACING_TABS]);
   lv_obj_set_style_text_font(most_left_l, &lv_font_inter_bold_14, LV_PART_MAIN);
   lv_obj_align(most_left_l, LV_ALIGN_TOP_MID, 0, NOTCH_BAR_HEIGHT_S + 5);
   lv_obj_set_grid_cell(most_left_o, LV_GRID_ALIGN_CENTER, 0, 1,
@@ -267,7 +267,7 @@ lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
   // lv_obj_set_size(left_o, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
   lv_obj_t *left_l = lv_label_create(left_o);
   lv_obj_add_style(left_l, &label_style, LV_PART_MAIN);
-  lv_label_set_text(left_l, notch_labels[(TabId++) % NUM_TABS]);
+  lv_label_set_text(left_l, notch_labels[(TabId++) % NUM_RACING_TABS]);
   lv_obj_set_style_text_font(left_l, &lv_font_inter_bold_14, LV_PART_MAIN);
   lv_obj_align(left_l, LV_ALIGN_TOP_MID, 0, NOTCH_BAR_HEIGHT_S + 5);
   lv_obj_set_grid_cell(left_o, LV_GRID_ALIGN_CENTER, 1, 1,

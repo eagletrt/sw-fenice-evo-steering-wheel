@@ -1,6 +1,6 @@
 #include "tab_cansniffer.h"
 
-extern steering_t steering;
+extern steering_tabs_t steering;
 lv_style_t cansniffer_label_style;
 
 void init_cansniffer_tab_styles() {
