@@ -23,7 +23,7 @@
 #define BUTTON_WIDTH BOX_WIDTH
 #define BUTTON_HEIGHT 45
 
-void tab_calibration(lv_obj_t *parent);
+void tab_calibration_create(lv_obj_t *parent);
 
 void shift_box_focus(bool move_right);
 void update_slider_val(int device, int value);

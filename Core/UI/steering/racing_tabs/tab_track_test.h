@@ -16,6 +16,6 @@
 #define DATA_RIGHT_WIDTH 185
 #define DATA_CENTER_WIDTH 290
 
-void tab_track_test(lv_obj_t *parent);
+void tab_track_test_create(lv_obj_t *parent);
 
 #endif // TAB_SENSORS_H

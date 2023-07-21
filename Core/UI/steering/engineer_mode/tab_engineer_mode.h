@@ -4,6 +4,6 @@
 #include "steering.h"
 #include "utils.h"
 
-void tab_engineer_screen_create(lv_obj_t *notification_screen);
+void tab_engineer_screen_create(lv_obj_t *parent);
 
 #endif

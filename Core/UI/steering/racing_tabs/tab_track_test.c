@@ -4,7 +4,7 @@
 #define CELL_HEIGHT 200
 #define CELL_WIDTH 350
 
-void tab_track_test(lv_obj_t *parent) {
+void tab_track_test_create(lv_obj_t *parent) {
 
   /*---creating MAIN GRID ---*/
 

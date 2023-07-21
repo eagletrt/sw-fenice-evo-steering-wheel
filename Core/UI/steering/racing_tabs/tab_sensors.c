@@ -25,7 +25,7 @@ void init_sensors_styles(void) {
   lv_style_set_height(&bar_calib_back_style, 405);
 }
 
-void tab_sensors(lv_obj_t *parent) {
+void tab_sensors_create(lv_obj_t *parent) {
   init_sensors_styles();
 
   /*---creating MAIN GRID ---*/

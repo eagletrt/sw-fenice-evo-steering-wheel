@@ -27,7 +27,7 @@ typedef enum {
   TAB_LV_ERRORS
 } ErrorTabID;
 
-void tab_debug(lv_obj_t *parent);
+void tab_debug_create(lv_obj_t *parent);
 void init_debug_styles(void);
 
 lv_obj_t *cell_create(lv_obj_t *parent, const char *text, uint8_t pos_row,

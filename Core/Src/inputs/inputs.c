@@ -78,13 +78,11 @@ void print_buttons(void) {
 void buttons_pressed_actions(uint8_t button) {
   switch (button) {
   case PADDLE_TOP_RIGHT: {
-    if (!engineer_mode)
-      change_tab(true);
+    steering_change_tab(true);
     break;
   }
   case PADDLE_TOP_LEFT: {
-    if (!engineer_mode)
-      change_tab(false);
+    steering_change_tab(false);
     break;
   }
   case PADDLE_BOTTOM_RIGHT:

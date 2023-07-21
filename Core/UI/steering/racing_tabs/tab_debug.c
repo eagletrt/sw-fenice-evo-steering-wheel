@@ -11,7 +11,7 @@ lv_obj_t *hv_errors_panel;
 lv_obj_t *lv_errors_panel;
 lv_obj_t *das_errors_panel;
 
-extern tab_t current_tab;
+extern racing_tab_t current_racing_tab;
 
 lv_obj_t *cell_create(lv_obj_t *parent, const char *text, uint8_t pos_col,
                       uint8_t pos_row, lv_style_t *style) {
@@ -62,7 +62,7 @@ void init_debug_styles(void) {
   lv_style_set_align(&box_debug_label_style, LV_ALIGN_CENTER);
 }
 
-void tab_debug(lv_obj_t *parent) {
+void tab_debug_create(lv_obj_t *parent) {
   init_debug_styles();
 
   scr_debug = parent;
@@ -445,7 +445,7 @@ ErrorTabID errors_focus = TAB_HV_ERRORS;
 
 void change_errors_view(bool dir_left) {
 
-  if (current_tab == TAB_DEBUG) {
+  if (current_racing_tab == TAB_DEBUG) {
 
     if (dir_left) {
       if (errors_focus == 0)

@@ -16,7 +16,7 @@
 #define DATA_RIGHT_WIDTH 185
 #define DATA_CENTER_WIDTH 290
 
-void tab_sensors(lv_obj_t *parent);
+void tab_sensors_create(lv_obj_t *parent);
 
 void init_sensors_styles(void);
 

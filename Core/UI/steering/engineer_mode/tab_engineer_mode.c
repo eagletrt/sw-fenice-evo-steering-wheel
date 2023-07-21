@@ -13,10 +13,10 @@ void init_engineer_tab_styles() {
   lv_style_set_align(&engineer_label_style, LV_ALIGN_CENTER);
 }
 
-void tab_engineer_screen_create(lv_obj_t *notification_screen) {
+void tab_engineer_screen_create(lv_obj_t *parent) {
   init_engineer_tab_styles();
 
-  lv_obj_t *notification_background = lv_obj_create(notification_screen);
+  lv_obj_t *notification_background = lv_obj_create(parent);
   lv_obj_set_size(notification_background, SCREEN_WIDTH, SCREEN_HEIGHT);
   lv_obj_set_style_bg_color(notification_background,
                             lv_color_hex(COLOR_PRIMARY_HEX), LV_PART_MAIN);

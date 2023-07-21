@@ -21,13 +21,20 @@ typedef enum {
   TAB_DEBUG,
   TAB_TRACK_TEST,
   TAB_SENSORS,
+  // add here new tabs
   NUM_TABS
-} tab_t;
+} racing_tab_t;
+
+typedef enum {
+  TAB_ENGINEER_MODE,
+  TAB_COOLING,
+  TAB_CANSNIFFER,
+  // add here new tabs
+  NUM_ENGINEER_TABS
+} engineer_tab_t;
 
 #define COLOR_PRIMARY_HEX 0x000000 // black background
-#define COLOR_SECONDARY_HEX                                                    \
-  0xF2F3F5                          // 0XD3D3D3 //light grey -> changed to
-                                    // white
+#define COLOR_SECONDARY_HEX 0xF2F3F5
 #define COLOR_TERTIARY_HEX 0xF2F3F5 // white
 #define COLOR_YELLOW_STATUS_HEX 0xFFFA14
 #define COLOR_BLUE_STATUS_HEX 0x0000FF
@@ -70,6 +77,6 @@ lv_triple_label(lv_obj_t *parent, lv_obj_t **main_l, const char *left_text,
                 const lv_font_t *right_text_font, const char *bottom_text,
                 const lv_font_t *bottom_text_font);
 
-lv_obj_t *create_notch(lv_obj_t *parent, tab_t TabId);
+lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId);
 
 #endif

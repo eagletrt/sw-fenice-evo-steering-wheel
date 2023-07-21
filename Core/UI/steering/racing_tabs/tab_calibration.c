@@ -17,7 +17,7 @@ lv_obj_t *set_max_btn;
 
 lv_obj_t *scr_calib;
 
-extern tab_t current_tab;
+extern racing_tab_t current_racing_tab;
 extern secondary_pedals_output_converted_t pedals_output_last_state;
 
 void init_calibration_tab_styles(void) {
@@ -66,7 +66,7 @@ void init_calibration_tab_styles(void) {
   lv_style_set_bg_opa(&calib_tool_bar_style, LV_OPA_COVER);
 }
 
-void tab_calibration(lv_obj_t *parent) {
+void tab_calibration_create(lv_obj_t *parent) {
   init_calibration_tab_styles();
 
   scr_calib = parent;
@@ -278,7 +278,7 @@ void update_slider_val(int device, int value) {}
 
 void shift_box_focus(bool move_right) {
 
-  if (current_tab == TAB_CALIBRATION) {
+  if (current_racing_tab == TAB_CALIBRATION) {
 
     calibration_box_t previous_focus = steering.curr_focus;
 

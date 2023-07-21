@@ -16,7 +16,7 @@
 #define RACING_TAB_DATA_RIGHT_WIDTH 185
 #define RACING_TAB_DATA_CENTER_WIDTH 290
 
-void tab_racing(lv_obj_t *parent);
+void tab_racing_create(lv_obj_t *parent);
 
 void init_racing_style(void);
 void lv_custom_meter(lv_obj_t **custom_meter,

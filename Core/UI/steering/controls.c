@@ -6,7 +6,7 @@ bool calibration_max_sent_request[CALBOX_N];
 uint32_t calibration_min_request_timestamp[CALBOX_N];
 uint32_t calibration_max_request_timestamp[CALBOX_N];
 
-extern tab_t current_tab;
+extern racing_tab_t current_racing_tab;
 extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
 
@@ -16,29 +16,6 @@ primary_steer_status_converted_t steer_status_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
 primary_cooling_status_converted_t cooling_status_last_state = {
     .pumps_speed = -1.0f, .radiators_speed = -1.0f};
-
-/***
- * Engineer Mode
- */
-extern bool engineer_mode;
-
-void switch_mode(void) {
-  if (engineer_mode) {
-    // exit EM
-    engineer_mode = false;
-    remove_engineer_mode_screen();
-  } else {
-    // enter EM
-    engineer_mode = true;
-    load_engineer_mode_screen();
-  }
-}
-
-void steering_change_tab(bool forward) {
-  if (!engineer_mode) {
-    change_tab(forward);
-  }
-}
 
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};
@@ -94,7 +71,7 @@ void calibration_request_timeout_check(uint32_t current_time) {
 }
 
 void calibration_tool_set_min_max(bool maxv) {
-  if (current_tab == TAB_CALIBRATION) {
+  if (current_racing_tab == TAB_CALIBRATION) {
     calibration_box_t curr_focus = steering.curr_focus;
     if (curr_focus == STEER)
       return;

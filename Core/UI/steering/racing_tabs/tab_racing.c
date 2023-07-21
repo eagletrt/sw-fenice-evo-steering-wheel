@@ -6,7 +6,7 @@ lv_style_t bar_back_style;
 
 lv_obj_t *bottom_bar;
 
-void tab_racing(lv_obj_t *parent) {
+void tab_racing_create(lv_obj_t *parent) {
   init_racing_style();
 
   static lv_coord_t main_panel_cols[] = {
