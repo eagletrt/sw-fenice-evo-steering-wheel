@@ -59,7 +59,8 @@
         "libgen.h": "c",
         "messages.h": "c",
         "limits": "c",
-        "tab_cansniffer.h": "c"
+        "tab_cansniffer.h": "c",
+        "utils.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false

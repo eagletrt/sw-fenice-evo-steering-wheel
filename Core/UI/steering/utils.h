@@ -2,6 +2,9 @@
 #define UTILS_H
 
 #include "lvgl.h"
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 480

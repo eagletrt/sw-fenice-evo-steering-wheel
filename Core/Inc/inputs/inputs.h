@@ -26,7 +26,7 @@
 #define MANETTINO_CENTER_VALS                                                  \
   { 239, 247, 251, 254, 223, 191, 127, 253 }
 #define MANETTINO_LEFT_VALS                                                    \
-  { 223, 239, 254, 253, 251, 247, 191, 127 }
+  { 127, 191, 247, 251, 253, 254, 239, 223 }
 
 void inputs_init(void);
 void read_inputs(lv_timer_t *);

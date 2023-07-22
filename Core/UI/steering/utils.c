@@ -166,7 +166,7 @@ lv_style_t bubble_small_style;
 lv_style_t bubble_large_style;
 
 char *notch_labels[NUM_RACING_TABS] = {"RACE", "CALIBRATE", "DEBUG", "TEST",
-                                "SENSORS"};
+                                       "SENSORS"};
 lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
 
   lv_obj_t *notch = lv_obj_create(parent);

@@ -197,20 +197,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
     GPIO_PinState tson_pin_state =
         HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
-      if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
-        print("Setting timer to check button state in 2 seconds\n");
-        tson_button_pressed = true;
-        send_set_car_status_long_press_delay =
-            lv_timer_create(send_set_car_status_check, 1000, NULL);
-        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
-        lv_timer_reset(send_set_car_status_long_press_delay);
-        STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
-      } else {
-        print("tson button released and possible timer deleted\n");
-        tson_button_pressed = false;
-        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
-        STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
-      }
+    if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
+      print("Setting timer to check button state in 2 seconds\n");
+      tson_button_pressed = true;
+      send_set_car_status_long_press_delay =
+          lv_timer_create(send_set_car_status_check, 500, NULL);
+      lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
+      lv_timer_reset(send_set_car_status_long_press_delay);
+      STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
+    } else {
+      print("tson button released and possible timer deleted\n");
+      tson_button_pressed = false;
+      lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
+      STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
+    }
   }
 }
 
@@ -279,8 +279,10 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
   }
   case MANETTINO_CENTER_INDEX: {
     int dstep = new_manettino_index - manettini[MANETTINO_CENTER_INDEX];
-    if (dstep == -7) dstep = 1;
-    if (dstep == 7) dstep = -1;
+    if (dstep == -7)
+      dstep = 1;
+    if (dstep == 7)
+      dstep = -1;
     power_map_last_state += (dstep * 10);
     power_map_last_state = min(power_map_last_state, 100);
     power_map_last_state = max(power_map_last_state, -10);
