@@ -31,6 +31,9 @@ void handle_primary(can_message_t *msg) {
 #endif
   can_id_t id = msg->id;
   switch (id) {
+  case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
+    openblt_reset();
+    break;
   case PRIMARY_CAR_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, car_status, CAR_STATUS);
     car_status_update(&converted);
@@ -42,9 +45,16 @@ void handle_primary(can_message_t *msg) {
     pedal_calibration_ack(&converted);
     break;
   }
-  case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
-    openblt_reset();
+  case PRIMARY_COOLING_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, cooling_status, COOLING_STATUS);
+    cooling_status_update(&converted);
     break;
+  }
+  case PRIMARY_HV_FANS_OVERRIDE_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_override, HV_FANS_OVERRIDE);
+    hv_fans_override_update(&converted);
+    break;
+  }
   case PRIMARY_PTT_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, ptt_status, PTT_STATUS);
     handle_ptt_message(converted.status);

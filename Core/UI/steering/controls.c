@@ -14,7 +14,7 @@ extern primary_tlm_status_t tlm_status_last_state;
 extern primary_car_status_t car_status_last_state;
 primary_steer_status_converted_t steer_status_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
-primary_cooling_status_converted_t cooling_status_last_state = {
+primary_cooling_status_converted_t steering_cooling_settings = {
     .pumps_speed = -1.0f, .radiators_speed = -1.0f};
 
 void turn_telemetry_on_off(void) {
@@ -145,16 +145,16 @@ void manettino_send_power_map(float val) {
 }
 
 void manettino_send_set_pumps_speed(float val) {
-  cooling_status_last_state.pumps_speed = val;
+  steering_cooling_settings.pumps_speed = val;
 
   primary_set_pumps_speed_converted_t converted = {0};
-  converted.pumps_speed = cooling_status_last_state.pumps_speed;
+  converted.pumps_speed = steering_cooling_settings.pumps_speed;
   STEER_CAN_PACK(primary, PRIMARY, set_pumps_speed, SET_PUMPS_SPEED);
   can_send(&msg, true);
 
-  int map_val = (int)(cooling_status_last_state.pumps_speed * 100.0f);
+  int map_val = (int)(steering_cooling_settings.pumps_speed * 100.0f);
   char title[100];
-  if (cooling_status_last_state.pumps_speed < 0) {
+  if (steering_cooling_settings.pumps_speed < 0) {
     sprintf(title, "PUMPS SPEED AUTO");
   } else {
     sprintf(title, "PUMPS SPEED %d", map_val);
@@ -163,15 +163,15 @@ void manettino_send_set_pumps_speed(float val) {
 }
 
 void manettino_send_set_radiators(float val) {
-  cooling_status_last_state.radiators_speed = val;
+  steering_cooling_settings.radiators_speed = val;
   primary_set_radiator_speed_converted_t converted = {0};
-  converted.radiators_speed = cooling_status_last_state.radiators_speed;
+  converted.radiators_speed = steering_cooling_settings.radiators_speed;
   STEER_CAN_PACK(primary, PRIMARY, set_radiator_speed, SET_RADIATOR_SPEED);
   can_send(&msg, true);
 
-  int map_val = (int)(cooling_status_last_state.radiators_speed * 100.0f);
+  int map_val = (int)(steering_cooling_settings.radiators_speed * 100.0f);
   char title[100];
-  if (cooling_status_last_state.radiators_speed < 0) {
+  if (steering_cooling_settings.radiators_speed < 0) {
     sprintf(title, "RADIATOR SPEED AUTO");
   } else {
     sprintf(title, "RADIATORS SPEED %d", map_val);

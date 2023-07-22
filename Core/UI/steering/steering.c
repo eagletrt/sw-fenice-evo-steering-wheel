@@ -26,6 +26,7 @@ primary_hv_current_converted_t hv_current_last_state = {0};
 primary_hv_temp_converted_t hv_temp_last_state = {0};
 primary_hv_errors_converted_t hv_errors_last_state = {0};
 primary_hv_feedbacks_status_converted_t hv_feedbacks_status_last_state = {0};
+primary_hv_fans_override_converted_t hv_fans_override_last_state = {0};
 
 primary_das_errors_converted_t das_errors_last_state;
 
@@ -39,6 +40,7 @@ primary_lv_cells_temp_converted_t lv_cells_temp_last_state_4 = {0};
 float lv_cells_temp_mean_last_state = 0;
 primary_lv_total_voltage_converted_t lv_total_voltage_last_state = {0};
 primary_lv_errors_converted_t lv_errors_last_state = {0};
+primary_cooling_status_converted_t cooling_status_last_state = {0};
 
 secondary_steering_angle_converted_t steering_angle_converted = {0};
 secondary_pedals_output_converted_t pedals_output_last_state = {0};
@@ -134,6 +136,19 @@ void control_output_update(primary_control_output_converted_t *data) {
     control_output_last_state.estimated_velocity = data->estimated_velocity;
     sprintf(sprintf_buffer, "%.1f", data->estimated_velocity);
     STEER_UPDATE_LABEL(steering.lb_estimated_velocity, sprintf_buffer);
+  }
+}
+
+void cooling_status_update(primary_cooling_status_converted_t *data) {
+  if (data->pumps_speed != cooling_status_last_state.pumps_speed) {
+    cooling_status_last_state.pumps_speed = data->pumps_speed;
+    set_pumps_speed_bar(data->pumps_speed * 100);
+    set_pumps_speed_value_label(data->pumps_speed);
+  }
+  if (data->radiators_speed != cooling_status_last_state.radiators_speed) {
+    cooling_status_last_state.radiators_speed = data->radiators_speed;
+    set_radiators_speed_bar(data->radiators_speed * 100);
+    set_radiators_speed_value_label(data->radiators_speed);
   }
 }
 
@@ -253,6 +268,14 @@ void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *data) {
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_in, 17)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_bms, 18)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_imd, 19)
+}
+
+void hv_fans_override_update(primary_hv_fans_override_converted_t *data) {
+  if (data->fans_speed != hv_fans_override_last_state.fans_speed) {
+    hv_fans_override_last_state.fans_speed = data->fans_speed;
+    set_pork_speed_bar(data->fans_speed * 100);
+    set_pork_speed_value_label(data->fans_speed);
+  }
 }
 
 void das_errors_update(primary_das_errors_converted_t *data) {

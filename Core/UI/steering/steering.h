@@ -1,6 +1,7 @@
 #ifndef STEERING_H
 #define STEERING_H
 
+#include "engineer_mode/tab_cooling.h"
 #include "inverters/inverters_network.h"
 #include "lvgl.h"
 #include "primary/primary_network.h"
@@ -25,7 +26,7 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 void remove_trailing(char *buf);
 
 #define STEER_UPDATE_LABEL(name, value)                                        \
-  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                           \
+  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                    \
     if (name[itab] != NULL) {                                                  \
       remove_trailing(value);                                                  \
       lv_label_set_text_fmt(name[itab], "%s", value);                          \
@@ -33,7 +34,7 @@ void remove_trailing(char *buf);
   }
 
 #define STEER_UPDATE_COLOR_LABEL(name, color)                                  \
-  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                           \
+  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                    \
     if (name[itab] != NULL)                                                    \
       lv_obj_set_style_text_color(name[itab], lv_color_hex(color),             \
                                   LV_PART_MAIN);                               \
@@ -161,6 +162,7 @@ void hv_current_update(primary_hv_current_converted_t *);
 void hv_temp_update(primary_hv_temp_converted_t *);
 void hv_errors_update(primary_hv_errors_converted_t *);
 void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *);
+void hv_fans_override_update(primary_hv_fans_override_converted_t *);
 
 void das_errors_update(primary_das_errors_converted_t *);
 
@@ -169,6 +171,7 @@ void lv_cells_voltage_update(primary_lv_cells_voltage_converted_t *);
 void lv_cells_temp_update(primary_lv_cells_temp_converted_t *);
 void lv_total_voltage_update(primary_lv_total_voltage_converted_t *);
 void lv_errors_update(primary_lv_errors_converted_t *);
+void cooling_status_update(primary_cooling_status_converted_t *);
 
 void steering_angle_update(secondary_steering_angle_converted_t *);
 void pedals_output_update(secondary_pedals_output_converted_t *);
