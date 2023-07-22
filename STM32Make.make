@@ -222,8 +222,8 @@ Core/Src/tim.c \
 Core/Src/usart.c \
 Core/Src/watchdog.c \
 Core/UI/steering/can_messages.c \
+Core/UI/steering/cansniffer.c \
 Core/UI/steering/controls.c \
-Core/UI/steering/engineer_mode/cansniffer.c \
 Core/UI/steering/engineer_mode/tab_cansniffer.c \
 Core/UI/steering/engineer_mode/tab_cooling.c \
 Core/UI/steering/engineer_mode/tab_engineer_mode.c \

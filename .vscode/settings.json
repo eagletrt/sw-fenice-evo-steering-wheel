@@ -60,8 +60,14 @@
         "messages.h": "c",
         "limits": "c",
         "tab_cansniffer.h": "c",
-        "utils.h": "c"
+        "utils.h": "c",
+        "stdbool.h": "c",
+        "cansniffer.h": "c",
+        "assert.h": "c",
+        "can.h": "c",
+        "tab_primary_cansniffer.h": "c"
     },
     "cmake.configureOnOpen": false,
-    "C_Cpp.dimInactiveRegions": false
+    "C_Cpp.dimInactiveRegions": false,
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc"
 }

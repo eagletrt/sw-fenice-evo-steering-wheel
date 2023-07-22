@@ -29,6 +29,7 @@
 #include "queue.h"
 
 #include "../steering/can_messages.h"
+#include "../steering/cansniffer.h"
 #include "../steering/controls.h"
 
 /*********************
@@ -55,6 +56,9 @@ static int tick_thread(void *data);
  *  STATIC VARIABLES
  **********************/
 
+cansniffer_elem_t *primary_cansniffer_buffer;
+cansniffer_elem_t *secondary_cansniffer_buffer;
+
 /**********************
  *      MACROS
  **********************/
@@ -64,6 +68,7 @@ static int tick_thread(void *data);
  **********************/
 
 void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e);
+void save_cansniffer_data(lv_timer_t *timer);
 
 /*********************
  *      DEFINES
@@ -129,6 +134,16 @@ int main(int argc, char **argv) {
 
   // steering_values_init();
 
+  cansniffer_elem_t primary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
+  primary_cansniffer_buffer = primary_cansniffer_buffer_init;
+  cansniffer_elem_t secondary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
+  secondary_cansniffer_buffer = secondary_cansniffer_buffer_init;
+  // primary_cansniffer_buffer = (cansniffer_elem_t*)
+  // malloc(CANSNIFFER_ELEM_T_SIZE * sizeof(cansniffer_elem_t));
+  // secondary_cansniffer_buffer = (cansniffer_elem_t*)
+  // malloc(CANSNIFFER_ELEM_T_SIZE * sizeof(cansniffer_elem_t));
+  cansniffer_buffer_init();
+
   tab_manager();
 
   // lv_timer_create((lv_timer_cb_t) test_value_update_incremental, 70, NULL);
@@ -169,6 +184,11 @@ int main(int argc, char **argv) {
 
   int gggcounter = 0;
 
+  // lv_timer_t* save_cansniffer_data_timer = lv_timer_create((lv_timer_cb_t)
+  // save_cansniffer_data, 200, NULL);
+  // lv_timer_set_repeat_count(save_cansniffer_data_timer, -1);
+  // lv_timer_reset(save_cansniffer_data_timer);
+
   while (1) {
 
     SDL_mutexP(mtx);
@@ -202,6 +222,21 @@ int main(int argc, char **argv) {
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+void save_cansniffer_data(lv_timer_t *timer) {
+  for (int i = 0; i < CAN_POSSIBLE_IDS; i++) {
+    if (primary_cansniffer_buffer[i].timestamp != 0) {
+      printf("primary_cansniffer_buffer[%d].timestamp = %d\n", i,
+             primary_cansniffer_buffer[i].timestamp);
+    }
+  }
+  for (int i = 0; i < CAN_POSSIBLE_IDS; i++) {
+    if (secondary_cansniffer_buffer[i].timestamp != 0) {
+      printf("secondary_cansniffer_buffer[%d].timestamp = %d\n", i,
+             secondary_cansniffer_buffer[i].timestamp);
+    }
+  }
+}
 
 /**
  * Initialize the Hardware Abstraction Layer (HAL) for the LVGL graphics

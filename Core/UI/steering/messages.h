@@ -1,7 +1,11 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
+#include <assert.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME)                         \
   ntw##_##msg_name##_t raw;                                                    \
@@ -43,5 +47,7 @@ typedef struct {
 
 #define SECONDARY_MONITORED_MESSAGES                                           \
   { SECONDARY_STEERING_ANGLE_FRAME_ID, SECONDARY_PEDALS_OUTPUT_FRAME_ID }
+
+uint32_t get_current_time_ms(void);
 
 #endif

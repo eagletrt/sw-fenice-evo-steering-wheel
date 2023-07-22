@@ -1,6 +1,7 @@
 #ifndef CAN_MESSAGES_H
 #define CAN_MESSAGES_H
 
+#include "cansniffer.h"
 #include "inverters/inverters_network.h"
 #include "inverters/inverters_watchdog.h"
 #include "lvgl.h"
@@ -23,7 +24,5 @@ void handle_ptt_message(primary_ptt_status_status val);
 
 void handle_primary(can_message_t *msg);
 void handle_secondary(can_message_t *msg);
-
-uint32_t get_current_time_ms(void);
 
 #endif // CAN_MESSAGES_H

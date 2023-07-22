@@ -11,7 +11,6 @@ add_executable(SteeringSimulator
     steering/steering.c
     steering/tab_manager.c
     steering/engineer_mode/tab_engineer_mode.c
-    steering/engineer_mode/tab_cansniffer.c
     steering/engineer_mode/tab_cooling.c
     steering/racing_tabs/tab_calibration.c
     steering/racing_tabs/tab_debug.c
@@ -19,8 +18,8 @@ add_executable(SteeringSimulator
     steering/racing_tabs/tab_racing.c
     steering/racing_tabs/tab_sensors.c
     steering/racing_tabs/tab_track_test.c
-    steering/engineer_mode/cansniffer.c
-    steering/engineer_mode/tab_cansniffer.c
+    steering/cansniffer.c
+    steering/engineer_mode/tab_primary_cansniffer.c
     steering/utils.c
     steering/controls.c
     steering/can_messages.c

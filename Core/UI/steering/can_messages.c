@@ -4,6 +4,9 @@ extern steering_tabs_t steering;
 extern bool steering_initialized;
 extern primary_steer_status_converted_t steer_status_last_state;
 
+extern cansniffer_elem_t *primary_cansniffer_buffer;
+extern cansniffer_elem_t *secondary_cansniffer_buffer;
+
 void send_steer_version(lv_timer_t *main_timer) {
   primary_steer_version_converted_t converted = {
       .canlib_build_time = CANLIB_BUILD_TIME, .component_version = 1};
@@ -29,6 +32,7 @@ void handle_primary(can_message_t *msg) {
   primary_message_name_from_id(msg->id, name_buffer);
   print("Primary network - message id %s\n", name_buffer);
 #endif
+  cansniffer_primary_new_message(msg);
   can_id_t id = msg->id;
   switch (id) {
   case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
@@ -143,6 +147,7 @@ void handle_secondary(can_message_t *msg) {
   secondary_message_name_from_id(msg->id, name_buffer);
   print("Secondary network - message id %s\n", name_buffer);
 #endif
+  cansniffer_secondary_new_message(msg);
   can_id_t id = msg->id;
   switch (id) {
   case SECONDARY_STEERING_ANGLE_FRAME_ID: {

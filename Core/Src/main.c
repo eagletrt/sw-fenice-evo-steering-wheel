@@ -159,6 +159,8 @@ int main(void) {
   }
 #endif
 
+  cansniffer_buffer_init();
+
 #define SCREEN_ENABLED 1
 #if SCREEN_ENABLED == 1
   lv_init();
