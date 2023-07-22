@@ -120,6 +120,8 @@ void handle_primary(can_message_t *msg) {
     STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT);
     control_output_update(&converted);
   }
+  default:
+    break;
   }
 }
 

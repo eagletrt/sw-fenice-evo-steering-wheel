@@ -182,7 +182,7 @@ void hv_voltage_update(primary_hv_voltage_converted_t *data) {
 
 void hv_current_update(primary_hv_current_converted_t *data) {
   if (data->current != hv_current_last_state.current) {
-    hv_current_last_state.current = data->current + 10;
+    hv_current_last_state.current = data->current;
     sprintf(sprintf_buffer, "%.1f", hv_current_last_state.current);
     STEER_UPDATE_LABEL(steering.lb_hv_current, sprintf_buffer)
     lv_bar_set_value(steering.racing_hv_bar, hv_current_last_state.current,

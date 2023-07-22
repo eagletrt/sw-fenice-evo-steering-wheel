@@ -57,9 +57,9 @@ float max(float a, float b) { return a > b ? a : b; }
 
 void inputs_init(void) {
   dev1 = (MCP23017_HandleTypeDef){
-      .addr = MCP23017_DEV1_ADDR, .hi2c = &hi2c4, .gpio = {0}};
+      .addr = MCP23017_DEV1_ADDR, .hi2c = &hi2c4, .gpio = {0xFF, 0xFF}};
   dev2 = (MCP23017_HandleTypeDef){
-      .addr = MCP23017_DEV2_ADDR, .hi2c = &hi2c4, .gpio = {0}};
+      .addr = MCP23017_DEV2_ADDR, .hi2c = &hi2c4, .gpio = {0xFF, 0xFF}};
   mcp23017_init(&dev1);
   mcp23017_init(&dev2);
 }
@@ -195,30 +195,28 @@ void send_set_car_status_check(lv_timer_t *tim) {
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
-    bool tson_pin_state =
-        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin) == GPIO_PIN_SET
-            ? true
-            : false;
-    if (tson_pin_state) {
+    GPIO_PinState tson_pin_state =
+        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
+    if (tson_pin_state == GPIO_PIN_RESET) {
       if (!tson_button_pressed) {
         // tson button pressed -> activate timer or send set_car_status directly
         // if we are in certain states
-        if (!send_set_car_status_directly()) {
+        // if (!send_set_car_status_directly()) {
           tson_button_pressed = true;
           send_set_car_status_long_press_delay =
               lv_timer_create(send_set_car_status_check, 1000, NULL);
           lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
           lv_timer_reset(send_set_car_status_long_press_delay);
           STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
-        }
+        // }
       }
     } else {
       if (tson_button_pressed) {
         // released button -> delete timer
-        tson_button_pressed = false;
         lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
         STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
       }
+      tson_button_pressed = false;
     }
   }
 }
@@ -257,10 +255,14 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     break;
   }
   case MANETTINO_CENTER_INDEX: {
-    power_map_last_state +=
-        ((new_manettino_index - manettini[MANETTINO_CENTER_INDEX]) * 0.1f);
+    int dstep = new_manettino_index - manettini[MANETTINO_CENTER_INDEX];
+    if (dstep == -7) dstep = 1;
+    if (dstep == 7) dstep = -1;
+    power_map_last_state += (dstep * 0.1f);
     power_map_last_state = min(power_map_last_state, 1.0f);
     power_map_last_state = max(power_map_last_state, -0.1f);
+    // round up
+    power_map_last_state = ceilf(power_map_last_state * 100) / 100;
     manettino_send_power_map(power_map_last_state);
     break;
   }
@@ -296,8 +298,7 @@ void read_manettino_center(void) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev2.gpio[1] &&
-      manettini_initialized[MANETTINO_CENTER_INDEX]) {
+  if (manettino_input != dev2.gpio[1]) {
     manettini_actions(manettino_input, MANETTINO_CENTER_INDEX);
     dev2.gpio[1] = manettino_input;
   }
@@ -310,8 +311,7 @@ void read_manettino_right(void) {
     print("Error\n");
     return;
   }
-  if (manettino_input != dev2.gpio[0] &&
-      manettini_initialized[MANETTINO_RIGHT_INDEX]) {
+  if (manettino_input != dev2.gpio[0]) {
     manettini_actions(manettino_input, MANETTINO_RIGHT_INDEX);
     dev2.gpio[0] = manettino_input;
   }
