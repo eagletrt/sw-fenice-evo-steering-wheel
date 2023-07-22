@@ -16,7 +16,7 @@ bool manettini_initialized[MANETTINI_N] = {false};
 extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
-float power_map_last_state = 0.0f;
+int power_map_last_state = 0;
 
 /***
  * Manettini mapping
@@ -197,6 +197,28 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
     GPIO_PinState tson_pin_state =
         HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
+      if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
+        print("Setting timer to check button state in 2 seconds\n");
+        tson_button_pressed = true;
+        send_set_car_status_long_press_delay =
+            lv_timer_create(send_set_car_status_check, 1000, NULL);
+        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
+        lv_timer_reset(send_set_car_status_long_press_delay);
+        STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
+      } else {
+        print("tson button released and possible timer deleted\n");
+        tson_button_pressed = false;
+        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
+        STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
+      }
+  }
+}
+
+/*
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  if (GPIO_Pin == ExtraButton_Pin) {
+    GPIO_PinState tson_pin_state =
+        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
     if (tson_pin_state == GPIO_PIN_RESET) {
       if (!tson_button_pressed) {
         // tson button pressed -> activate timer or send set_car_status directly
@@ -220,6 +242,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     }
   }
 }
+*/
 
 void read_buttons(void) {
   uint8_t button_input;
@@ -258,12 +281,10 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     int dstep = new_manettino_index - manettini[MANETTINO_CENTER_INDEX];
     if (dstep == -7) dstep = 1;
     if (dstep == 7) dstep = -1;
-    power_map_last_state += (dstep * 0.1f);
-    power_map_last_state = min(power_map_last_state, 1.0f);
-    power_map_last_state = max(power_map_last_state, -0.1f);
-    // round up
-    power_map_last_state = ceilf(power_map_last_state * 100) / 100;
-    manettino_send_power_map(power_map_last_state);
+    power_map_last_state += (dstep * 10);
+    power_map_last_state = min(power_map_last_state, 100);
+    power_map_last_state = max(power_map_last_state, -10);
+    manettino_send_power_map((float)power_map_last_state / 100.0f);
     break;
   }
   case MANETTINO_LEFT_INDEX: {
