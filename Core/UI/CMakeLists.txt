@@ -19,6 +19,7 @@ add_executable(SteeringSimulator
     steering/racing_tabs/tab_sensors.c
     steering/racing_tabs/tab_track_test.c
     steering/cansniffer.c
+    steering/maxheap.c
     steering/engineer_mode/tab_primary_cansniffer.c
     steering/utils.c
     steering/controls.c

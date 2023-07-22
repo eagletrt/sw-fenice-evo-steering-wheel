@@ -20,6 +20,9 @@ void cansniffer_buffer_init(void) {
 
 void cansniffer_primary_new_message(can_message_t *msg) {
   uint32_t id = msg->id;
+  if (id >= CAN_POSSIBLE_IDS) {
+    return;
+  }
   primary_cansniffer_buffer[id].timestamp = get_current_time_ms();
   primary_cansniffer_buffer[id].id = msg->id;
   primary_cansniffer_buffer[id].len = msg->size;
@@ -28,6 +31,9 @@ void cansniffer_primary_new_message(can_message_t *msg) {
 
 void cansniffer_secondary_new_message(can_message_t *msg) {
   uint32_t id = msg->id;
+  if (id >= CAN_POSSIBLE_IDS) {
+    return;
+  }
   secondary_cansniffer_buffer[id].timestamp = get_current_time_ms();
   secondary_cansniffer_buffer[id].id = msg->id;
   secondary_cansniffer_buffer[id].len = msg->size;
