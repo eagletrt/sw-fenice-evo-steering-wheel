@@ -224,15 +224,16 @@ Core/Src/watchdog.c \
 Core/UI/steering/can_messages.c \
 Core/UI/steering/cansniffer.c \
 Core/UI/steering/controls.c \
-Core/UI/steering/engineer_mode/tab_cansniffer.c \
 Core/UI/steering/engineer_mode/tab_cooling.c \
 Core/UI/steering/engineer_mode/tab_engineer_mode.c \
+Core/UI/steering/engineer_mode/tab_primary_cansniffer.c \
 Core/UI/steering/fonts/lv_font_inter_bold_14.c \
 Core/UI/steering/fonts/lv_font_inter_bold_18.c \
 Core/UI/steering/fonts/lv_font_inter_bold_20.c \
 Core/UI/steering/fonts/lv_font_inter_bold_22.c \
 Core/UI/steering/fonts/lv_font_inter_bold_30.c \
 Core/UI/steering/fonts/lv_font_inter_bold_38.c \
+Core/UI/steering/maxheap.c \
 Core/UI/steering/racing_tabs/tab_calibration.c \
 Core/UI/steering/racing_tabs/tab_debug.c \
 Core/UI/steering/racing_tabs/tab_notification.c \

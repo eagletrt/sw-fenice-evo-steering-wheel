@@ -1,8 +1,9 @@
 /**
  ******************************************************************************
- * @file    mt48lc4m32b2.h
+ * @file    memdriver.h
  * @author  MCD Application Team
- * @brief   This file contains all the description of the MT48LC4M32B2 SDRAM
+ * @author  Giacomo Mazzucchi
+ * @brief   This file contains all the description of the MICRON MT48LC4M16A2 SDRAM
  *          memory.
  *
  ******************************************************************************
@@ -20,8 +21,8 @@
  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef MT48LC4M32B2_H
-#define MT48LC4M32B2_H
+#ifndef MICRON_STEER_H
+#define MICRON_STEER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +38,7 @@ extern "C" {
  * @{
  */
 
-/** @addtogroup MT48LC4M32B2
+/** @addtogroup MICRON_STEER
  * @{
  */
 
@@ -45,9 +46,9 @@ extern "C" {
 
 #define REFRESH_COUNT ((uint32_t)0x0603) /* SDRAM refresh counter */
 
-#define MT48LC4M32B2_TIMEOUT ((uint32_t)0xFFFF)
+#define MICRON_STEER_TIMEOUT ((uint32_t)0xFFFF)
 
-/** @defgroup MT48LC4M32B2_Exported_Types MT48LC4M32B2 Exported Types
+/** @defgroup MicronSteer_Exported_Types MICRON_STEER Exported Types
  * @{
  */
 typedef struct {
@@ -59,64 +60,64 @@ typedef struct {
   uint32_t CASLatency;     /*!< CAS Latency                             */
   uint32_t OperationMode;  /*!< Operation Mode                          */
   uint32_t WriteBurstMode; /*!< Write Burst Mode                        */
-} MT48LC4M32B2_Context_t;
+} MICRON_STEER_Context_t;
 
 /**
  * @}
  */
 
-/** @defgroup MT48LC4M32B2_Exported_Constants MT48LC4M32B2 Exported Constants
+/** @defgroup MicronSteer_Exported_Constants MICRON_STEER Exported Constants
  * @{
  */
-#define MT48LC4M32B2_OK (0)
-#define MT48LC4M32B2_ERROR (-1)
+#define MICRON_STEER_OK (0)
+#define MICRON_STEER_ERROR (-1)
 
 /* Register Mode */
-#define MT48LC4M32B2_BURST_LENGTH_1 0x00000000U
-#define MT48LC4M32B2_BURST_LENGTH_2 0x00000001U
-#define MT48LC4M32B2_BURST_LENGTH_4 0x00000002U
-#define MT48LC4M32B2_BURST_LENGTH_8 0x00000004U
-#define MT48LC4M32B2_BURST_TYPE_SEQUENTIAL 0x00000000U
-#define MT48LC4M32B2_BURST_TYPE_INTERLEAVED 0x00000008U
-#define MT48LC4M32B2_CAS_LATENCY_2 0x00000020U
-#define MT48LC4M32B2_CAS_LATENCY_3 0x00000030U
-#define MT48LC4M32B2_OPERATING_MODE_STANDARD 0x00000000U
-#define MT48LC4M32B2_WRITEBURST_MODE_PROGRAMMED 0x00000000U
-#define MT48LC4M32B2_WRITEBURST_MODE_SINGLE 0x00000200U
+#define MICRON_STEER_BURST_LENGTH_1 0x00000000U
+#define MICRON_STEER_BURST_LENGTH_2 0x00000001U
+#define MICRON_STEER_BURST_LENGTH_4 0x00000002U
+#define MICRON_STEER_BURST_LENGTH_8 0x00000004U
+#define MICRON_STEER_BURST_TYPE_SEQUENTIAL 0x00000000U
+#define MICRON_STEER_BURST_TYPE_INTERLEAVED 0x00000008U
+#define MICRON_STEER_CAS_LATENCY_2 0x00000020U
+#define MICRON_STEER_CAS_LATENCY_3 0x00000030U
+#define MICRON_STEER_OPERATING_MODE_STANDARD 0x00000000U
+#define MICRON_STEER_WRITEBURST_MODE_PROGRAMMED 0x00000000U
+#define MICRON_STEER_WRITEBURST_MODE_SINGLE 0x00000200U
 
 /* Command Mode */
-#define MT48LC4M32B2_NORMAL_MODE_CMD 0x00000000U
-#define MT48LC4M32B2_CLK_ENABLE_CMD 0x00000001U
-#define MT48LC4M32B2_PALL_CMD 0x00000002U
-#define MT48LC4M32B2_AUTOREFRESH_MODE_CMD 0x00000003U
-#define MT48LC4M32B2_LOAD_MODE_CMD 0x00000004U
-#define MT48LC4M32B2_SELFREFRESH_MODE_CMD 0x00000005U
-#define MT48LC4M32B2_POWERDOWN_MODE_CMD 0x00000006U
+#define MICRON_STEER_NORMAL_MODE_CMD 0x00000000U
+#define MICRON_STEER_CLK_ENABLE_CMD 0x00000001U
+#define MICRON_STEER_PALL_CMD 0x00000002U
+#define MICRON_STEER_AUTOREFRESH_MODE_CMD 0x00000003U
+#define MICRON_STEER_LOAD_MODE_CMD 0x00000004U
+#define MICRON_STEER_SELFREFRESH_MODE_CMD 0x00000005U
+#define MICRON_STEER_POWERDOWN_MODE_CMD 0x00000006U
 
 /**
  * @}
  */
 
-/** @addtogroup MT48LC4M32B2_Exported_Functions
+/** @addtogroup MicronSteer_Exported_Functions
  * @{
  */
-int32_t MT48LC4M32B2_Init(SDRAM_HandleTypeDef *Ctx,
-                          MT48LC4M32B2_Context_t *pRegMode);
-int32_t MT48LC4M32B2_ClockEnable(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
-int32_t MT48LC4M32B2_Precharge(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
-int32_t MT48LC4M32B2_ModeRegConfig(SDRAM_HandleTypeDef *Ctx,
-                                   MT48LC4M32B2_Context_t *pRegMode);
-int32_t MT48LC4M32B2_TimingConfig(SDRAM_HandleTypeDef *Ctx,
+int32_t MicronSteer_Init(SDRAM_HandleTypeDef *Ctx,
+                          MICRON_STEER_Context_t *pRegMode);
+int32_t MicronSteer_ClockEnable(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
+int32_t MicronSteer_Precharge(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
+int32_t MicronSteer_ModeRegConfig(SDRAM_HandleTypeDef *Ctx,
+                                   MICRON_STEER_Context_t *pRegMode);
+int32_t MicronSteer_TimingConfig(SDRAM_HandleTypeDef *Ctx,
                                   FMC_SDRAM_TimingTypeDef *pTiming);
-int32_t MT48LC4M32B2_RefreshMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface,
+int32_t MicronSteer_RefreshMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface,
                                  uint32_t RefreshMode);
-int32_t MT48LC4M32B2_RefreshRate(SDRAM_HandleTypeDef *Ctx,
+int32_t MicronSteer_RefreshRate(SDRAM_HandleTypeDef *Ctx,
                                  uint32_t RefreshCount);
-int32_t MT48LC4M32B2_EnterPowerMode(SDRAM_HandleTypeDef *Ctx,
+int32_t MicronSteer_EnterPowerMode(SDRAM_HandleTypeDef *Ctx,
                                     uint32_t Interface);
-int32_t MT48LC4M32B2_ExitPowerMode(SDRAM_HandleTypeDef *Ctx,
+int32_t MicronSteer_ExitPowerMode(SDRAM_HandleTypeDef *Ctx,
                                    uint32_t Interface);
-int32_t MT48LC4M32B2_Sendcmd(SDRAM_HandleTypeDef *Ctx,
+int32_t MicronSteer_Sendcmd(SDRAM_HandleTypeDef *Ctx,
                              FMC_SDRAM_CommandTypeDef *SdramCmd);
 
 /**
@@ -127,7 +128,7 @@ int32_t MT48LC4M32B2_Sendcmd(SDRAM_HandleTypeDef *Ctx,
 }
 #endif
 
-#endif /* MT48LC4M32B2_H */
+#endif /* MICRON_STEER_H */
 
 /**
  * @}

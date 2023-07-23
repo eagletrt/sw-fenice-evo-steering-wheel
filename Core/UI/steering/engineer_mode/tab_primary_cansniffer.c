@@ -86,7 +86,7 @@ void tab_cansniffer_create(lv_obj_t *parent) {
 
   for (int i = 1; i < TAB_CANSNIFFER_N_MESSAGES_SHOWN; i++) {
     cansniffer_timestamp_labels[i] = lv_label_create(cont); // timestamp label
-    lv_label_set_text_fmt(cansniffer_timestamp_labels[i], "t", i);
+    lv_label_set_text_fmt(cansniffer_timestamp_labels[i], "t");
     lv_obj_add_style(cansniffer_timestamp_labels[i], &cansniffer_label_style,
                      0);
     lv_obj_set_grid_cell(cansniffer_timestamp_labels[i], LV_GRID_ALIGN_CENTER,
