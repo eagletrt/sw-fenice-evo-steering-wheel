@@ -175,6 +175,7 @@ void cooling_status_update(primary_cooling_status_converted_t *);
 
 void steering_angle_update(secondary_steering_angle_converted_t *);
 void pedals_output_update(secondary_pedals_output_converted_t *);
+void imu_acceleration_update(secondary_imu_acceleration_converted_t *);
 
 void inv_l_rcv_update(inverters_inv_l_rcv_converted_t *);
 void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *);

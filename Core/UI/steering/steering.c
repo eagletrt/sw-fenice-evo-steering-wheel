@@ -44,6 +44,7 @@ primary_cooling_status_converted_t cooling_status_last_state = {0};
 
 secondary_steering_angle_converted_t steering_angle_converted = {0};
 secondary_pedals_output_converted_t pedals_output_last_state = {0};
+secondary_imu_acceleration_converted_t imu_acceleration_last_state = {0};
 
 inverters_inv_r_rcv_converted_t inv_r_last_state = {0};
 inverters_inv_l_rcv_converted_t inv_l_last_state = {0};
@@ -455,6 +456,19 @@ void pedals_output_update(secondary_pedals_output_converted_t *data) {
       lv_slider_set_range(steering.slider, BRAKE_RANGE_LOW, BRAKE_RANGE_HIGH);
       lv_slider_set_value(steering.slider, data->bse_front, LV_ANIM_OFF);
     }
+  }
+}
+
+void imu_acceleration_update(secondary_imu_acceleration_converted_t * data) {
+  if (imu_acceleration_last_state.accel_x != data->accel_x) {
+    imu_acceleration_last_state.accel_x = data->accel_x;
+    sprintf(sprintf_buffer, "%.1f", data->accel_x);
+    STEER_UPDATE_LABEL(steering.lb_inverter_speed_x, sprintf_buffer);
+  }
+  if (imu_acceleration_last_state.accel_y != data->accel_y) {
+    imu_acceleration_last_state.accel_y = data->accel_y;
+    sprintf(sprintf_buffer, "%.1f", data->accel_y);
+    STEER_UPDATE_LABEL(steering.lb_inverter_speed_y, sprintf_buffer);
   }
 }
 

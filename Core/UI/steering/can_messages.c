@@ -160,6 +160,11 @@ void handle_secondary(can_message_t *msg) {
     pedals_output_update(&converted);
     break;
   }
+  case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION);
+    imu_acceleration_update(&converted);
+    break;
+  }
   default:
     break;
   }
