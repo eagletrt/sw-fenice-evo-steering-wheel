@@ -30,9 +30,11 @@ uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
 uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
 
 cansniffer_elem_t primary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
-cansniffer_elem_t * primary_cansniffer_buffer = (cansniffer_elem_t*) primary_cansniffer_buffer_init;
+cansniffer_elem_t *primary_cansniffer_buffer =
+    (cansniffer_elem_t *)primary_cansniffer_buffer_init;
 cansniffer_elem_t secondary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
-cansniffer_elem_t * secondary_cansniffer_buffer = (cansniffer_elem_t*) secondary_cansniffer_buffer_init;
+cansniffer_elem_t *secondary_cansniffer_buffer =
+    (cansniffer_elem_t *)secondary_cansniffer_buffer_init;
 
 #if 0
 cansniffer_elem_t *primary_cansniffer_buffer =
@@ -117,13 +119,13 @@ void MX_FDCAN2_Init(void) {
   hfdcan2.Init.AutoRetransmission = DISABLE;
   hfdcan2.Init.TransmitPause = DISABLE;
   hfdcan2.Init.ProtocolException = DISABLE;
-  hfdcan2.Init.NominalPrescaler = 2;
+  hfdcan2.Init.NominalPrescaler = 1;
   hfdcan2.Init.NominalSyncJumpWidth = 64;
-  hfdcan2.Init.NominalTimeSeg1 = 9;
-  hfdcan2.Init.NominalTimeSeg2 = 2;
+  hfdcan2.Init.NominalTimeSeg1 = 18;
+  hfdcan2.Init.NominalTimeSeg2 = 5;
   hfdcan2.Init.DataPrescaler = 1;
   hfdcan2.Init.DataSyncJumpWidth = 1;
-  hfdcan2.Init.DataTimeSeg1 = 2;
+  hfdcan2.Init.DataTimeSeg1 = 1;
   hfdcan2.Init.DataTimeSeg2 = 1;
   hfdcan2.Init.MessageRAMOffset = 0;
   hfdcan2.Init.StdFiltersNbr = 1;
@@ -436,26 +438,26 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
   msg.size = 0;
 
   switch (header.DataLength) {
-    case FDCAN_DLC_BYTES_0:
-      msg.size = 0;
-    case FDCAN_DLC_BYTES_1:
-      msg.size = 1;
-    case FDCAN_DLC_BYTES_2:
-      msg.size = 2;
-    case FDCAN_DLC_BYTES_3:
-      msg.size = 3;
-    case FDCAN_DLC_BYTES_4:
-      msg.size = 4;
-    case FDCAN_DLC_BYTES_5:
-      msg.size = 5;
-    case FDCAN_DLC_BYTES_6:
-      msg.size = 6;
-    case FDCAN_DLC_BYTES_7:
-      msg.size = 7;
-    case FDCAN_DLC_BYTES_8:
-      msg.size = 8;
+  case FDCAN_DLC_BYTES_0:
+    msg.size = 0;
+  case FDCAN_DLC_BYTES_1:
+    msg.size = 1;
+  case FDCAN_DLC_BYTES_2:
+    msg.size = 2;
+  case FDCAN_DLC_BYTES_3:
+    msg.size = 3;
+  case FDCAN_DLC_BYTES_4:
+    msg.size = 4;
+  case FDCAN_DLC_BYTES_5:
+    msg.size = 5;
+  case FDCAN_DLC_BYTES_6:
+    msg.size = 6;
+  case FDCAN_DLC_BYTES_7:
+    msg.size = 7;
+  case FDCAN_DLC_BYTES_8:
+    msg.size = 8;
   }
-  
+
   if (hfdcan == &hfdcan1) {
 
 #if CAN_LOG_ENABLED
@@ -490,24 +492,24 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
   msg.size = 0;
 
   switch (header.DataLength) {
-    case FDCAN_DLC_BYTES_0:
-      msg.size = 0;
-    case FDCAN_DLC_BYTES_1:
-      msg.size = 1;
-    case FDCAN_DLC_BYTES_2:
-      msg.size = 2;
-    case FDCAN_DLC_BYTES_3:
-      msg.size = 3;
-    case FDCAN_DLC_BYTES_4:
-      msg.size = 4;
-    case FDCAN_DLC_BYTES_5:
-      msg.size = 5;
-    case FDCAN_DLC_BYTES_6:
-      msg.size = 6;
-    case FDCAN_DLC_BYTES_7:
-      msg.size = 7;
-    case FDCAN_DLC_BYTES_8:
-      msg.size = 8;
+  case FDCAN_DLC_BYTES_0:
+    msg.size = 0;
+  case FDCAN_DLC_BYTES_1:
+    msg.size = 1;
+  case FDCAN_DLC_BYTES_2:
+    msg.size = 2;
+  case FDCAN_DLC_BYTES_3:
+    msg.size = 3;
+  case FDCAN_DLC_BYTES_4:
+    msg.size = 4;
+  case FDCAN_DLC_BYTES_5:
+    msg.size = 5;
+  case FDCAN_DLC_BYTES_6:
+    msg.size = 6;
+  case FDCAN_DLC_BYTES_7:
+    msg.size = 7;
+  case FDCAN_DLC_BYTES_8:
+    msg.size = 8;
   }
 
   if (hfdcan == &hfdcan1) {

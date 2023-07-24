@@ -20,6 +20,7 @@
 #include "main.h"
 #include "dac.h"
 #include "dma2d.h"
+#include "fdcan.h"
 #include "fmc.h"
 #include "gpio.h"
 #include "i2c.h"
@@ -122,9 +123,9 @@ int main(void) {
   MX_OCTOSPI1_Init();
   MX_I2C4_Init();
   MX_TIM5_Init();
-  MX_DAC1_Init();
   MX_TIM7_Init();
   MX_DMA2D_Init();
+  MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
 
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);

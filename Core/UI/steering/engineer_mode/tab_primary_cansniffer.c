@@ -22,7 +22,7 @@ void init_cansniffer_tab_styles() {
   lv_style_set_align(&cansniffer_label_style, LV_ALIGN_CENTER);
 }
 
-lv_obj_t *cansniffer_timestamp_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN ];
+lv_obj_t *cansniffer_timestamp_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 lv_obj_t *cansniffer_id_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 lv_obj_t *cansniffer_message_name_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 lv_obj_t *cansniffer_len_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
@@ -148,33 +148,32 @@ void tab_cansniffer_create(lv_obj_t *parent) {
   lv_obj_t *cs_l1 = lv_label_create(cont); // timestamp label
   lv_label_set_text(cs_l1, "Time");
   lv_obj_add_style(cs_l1, &cansniffer_label_style, 0);
-  lv_obj_set_grid_cell(cs_l1, LV_GRID_ALIGN_CENTER, 0,
-                       1, LV_GRID_ALIGN_CENTER, 0, 1);
+  lv_obj_set_grid_cell(cs_l1, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
+                       0, 1);
 
   lv_obj_t *cs_l2 = lv_label_create(cont); // id label
   lv_label_set_text(cs_l2, "ID");
   lv_obj_add_style(cs_l2, &cansniffer_label_style, 0);
-  lv_obj_set_grid_cell(cs_l2, LV_GRID_ALIGN_CENTER, 1, 1,
-                       LV_GRID_ALIGN_CENTER, 0, 1);
+  lv_obj_set_grid_cell(cs_l2, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,
+                       0, 1);
 
   lv_obj_t *cs_l3 = lv_label_create(cont); // message name label
   lv_label_set_text(cs_l3, "Message Name");
-  lv_obj_add_style(cs_l3, &cansniffer_label_style,
-                   0);
-  lv_obj_set_grid_cell(cs_l3, LV_GRID_ALIGN_CENTER,
-                       2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+  lv_obj_add_style(cs_l3, &cansniffer_label_style, 0);
+  lv_obj_set_grid_cell(cs_l3, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER,
+                       0, 1);
 
   lv_obj_t *cs_l4 = lv_label_create(cont); // len label
   lv_label_set_text(cs_l4, "Len");
   lv_obj_add_style(cs_l4, &cansniffer_label_style, 0);
-  lv_obj_set_grid_cell(cs_l4, LV_GRID_ALIGN_CENTER, 3, 1,
-                       LV_GRID_ALIGN_CENTER, 0, 1);
+  lv_obj_set_grid_cell(cs_l4, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER,
+                       0, 1);
 
   lv_obj_t *cs_l5 = lv_label_create(cont); // data label
   lv_label_set_text(cs_l5, "Data");
   lv_obj_add_style(cs_l5, &cansniffer_label_style, 0);
-  lv_obj_set_grid_cell(cs_l5, LV_GRID_ALIGN_CENTER, 4, 1,
-                       LV_GRID_ALIGN_CENTER, 0, 1);
+  lv_obj_set_grid_cell(cs_l5, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER,
+                       0, 1);
 
   for (int i = 0; i < TAB_CANSNIFFER_N_MESSAGES_SHOWN; i++) {
     cansniffer_timestamp_labels[i] = lv_label_create(cont); // timestamp label
@@ -197,8 +196,8 @@ void tab_cansniffer_create(lv_obj_t *parent) {
     lv_obj_add_style(cansniffer_message_name_labels[i], &cansniffer_label_style,
                      0);
     lv_obj_set_grid_cell(cansniffer_message_name_labels[i],
-                         LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, i + 1,
-                         1);
+                         LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER,
+                         i + 1, 1);
 
     cansniffer_len_labels[i] = lv_label_create(cont); // len label
     lv_label_set_text(cansniffer_len_labels[i], "0");
