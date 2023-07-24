@@ -29,11 +29,18 @@ device_t secondary_can_device;
 uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
 uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
 
+cansniffer_elem_t primary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
+cansniffer_elem_t * primary_cansniffer_buffer = (cansniffer_elem_t*) primary_cansniffer_buffer_init;
+cansniffer_elem_t secondary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
+cansniffer_elem_t * secondary_cansniffer_buffer = (cansniffer_elem_t*) secondary_cansniffer_buffer_init;
+
+#if 0
 cansniffer_elem_t *primary_cansniffer_buffer =
     (cansniffer_elem_t *)CANSNIFFER_MEMORY_POOL_ADDRESS;
 cansniffer_elem_t *secondary_cansniffer_buffer =
     (cansniffer_elem_t *)CANSNIFFER_MEMORY_POOL_ADDRESS +
     (CAN_POSSIBLE_IDS * CANSNIFFER_ELEM_T_SIZE);
+#endif
 
 void _CAN_error_handler(char *msg);
 void _CAN_Init_primary();
@@ -426,7 +433,29 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
 #endif
 
   msg.id = header.Identifier;
-  msg.size = header.DataLength;
+  msg.size = 0;
+
+  switch (header.DataLength) {
+    case FDCAN_DLC_BYTES_0:
+      msg.size = 0;
+    case FDCAN_DLC_BYTES_1:
+      msg.size = 1;
+    case FDCAN_DLC_BYTES_2:
+      msg.size = 2;
+    case FDCAN_DLC_BYTES_3:
+      msg.size = 3;
+    case FDCAN_DLC_BYTES_4:
+      msg.size = 4;
+    case FDCAN_DLC_BYTES_5:
+      msg.size = 5;
+    case FDCAN_DLC_BYTES_6:
+      msg.size = 6;
+    case FDCAN_DLC_BYTES_7:
+      msg.size = 7;
+    case FDCAN_DLC_BYTES_8:
+      msg.size = 8;
+  }
+  
   if (hfdcan == &hfdcan1) {
 
 #if CAN_LOG_ENABLED
@@ -458,7 +487,29 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
 #endif
 
   msg.id = header.Identifier;
-  msg.size = header.DataLength;
+  msg.size = 0;
+
+  switch (header.DataLength) {
+    case FDCAN_DLC_BYTES_0:
+      msg.size = 0;
+    case FDCAN_DLC_BYTES_1:
+      msg.size = 1;
+    case FDCAN_DLC_BYTES_2:
+      msg.size = 2;
+    case FDCAN_DLC_BYTES_3:
+      msg.size = 3;
+    case FDCAN_DLC_BYTES_4:
+      msg.size = 4;
+    case FDCAN_DLC_BYTES_5:
+      msg.size = 5;
+    case FDCAN_DLC_BYTES_6:
+      msg.size = 6;
+    case FDCAN_DLC_BYTES_7:
+      msg.size = 7;
+    case FDCAN_DLC_BYTES_8:
+      msg.size = 8;
+  }
+
   if (hfdcan == &hfdcan1) {
 
 #if CAN_LOG_ENABLED

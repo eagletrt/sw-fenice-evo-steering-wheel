@@ -22,7 +22,7 @@ void init_cansniffer_tab_styles() {
   lv_style_set_align(&cansniffer_label_style, LV_ALIGN_CENTER);
 }
 
-lv_obj_t *cansniffer_timestamp_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
+lv_obj_t *cansniffer_timestamp_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN ];
 lv_obj_t *cansniffer_id_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 lv_obj_t *cansniffer_message_name_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 lv_obj_t *cansniffer_len_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
@@ -64,7 +64,6 @@ void update_primary_cansniffer_value(size_t iindex, size_t id) {
 }
 
 void update_primary_cansniffer_ui(lv_timer_t *tim) {
-  heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size);
   for (size_t iindex = 0; iindex < primary_cansniffer_ids_size &&
                           iindex < TAB_CANSNIFFER_N_MESSAGES_SHOWN;
        ++iindex) {
@@ -98,6 +97,7 @@ void cansniffer_primary_new_message(can_message_t *msg) {
   if (id >= CAN_POSSIBLE_IDS) {
     return;
   }
+  size_t old = primary_cansniffer_ids_size;
   if (primary_cansniffer_buffer[id].id == 0) {
     primary_cansniffer_ids[primary_cansniffer_ids_size] = (int)(id);
     primary_cansniffer_ids_size++;
@@ -107,6 +107,8 @@ void cansniffer_primary_new_message(can_message_t *msg) {
   primary_cansniffer_buffer[id].id = msg->id;
   primary_cansniffer_buffer[id].len = msg->size;
   memcpy(primary_cansniffer_buffer[id].data, msg->data, 8);
+  if (old != primary_cansniffer_ids_size)
+    heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size);
 }
 
 void tab_cansniffer_create(lv_obj_t *parent) {
