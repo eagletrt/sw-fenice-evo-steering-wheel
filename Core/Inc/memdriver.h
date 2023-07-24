@@ -3,8 +3,8 @@
  * @file    memdriver.h
  * @author  MCD Application Team
  * @author  Giacomo Mazzucchi
- * @brief   This file contains all the description of the MICRON MT48LC4M16A2 SDRAM
- *          memory.
+ * @brief   This file contains all the description of the MICRON MT48LC4M16A2
+ *SDRAM memory.
  *
  ******************************************************************************
  * @attention
@@ -102,23 +102,22 @@ typedef struct {
  * @{
  */
 int32_t MicronSteer_Init(SDRAM_HandleTypeDef *Ctx,
-                          MICRON_STEER_Context_t *pRegMode);
+                         MICRON_STEER_Context_t *pRegMode);
 int32_t MicronSteer_ClockEnable(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
 int32_t MicronSteer_Precharge(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
 int32_t MicronSteer_ModeRegConfig(SDRAM_HandleTypeDef *Ctx,
-                                   MICRON_STEER_Context_t *pRegMode);
+                                  MICRON_STEER_Context_t *pRegMode);
 int32_t MicronSteer_TimingConfig(SDRAM_HandleTypeDef *Ctx,
-                                  FMC_SDRAM_TimingTypeDef *pTiming);
+                                 FMC_SDRAM_TimingTypeDef *pTiming);
 int32_t MicronSteer_RefreshMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface,
-                                 uint32_t RefreshMode);
+                                uint32_t RefreshMode);
 int32_t MicronSteer_RefreshRate(SDRAM_HandleTypeDef *Ctx,
-                                 uint32_t RefreshCount);
+                                uint32_t RefreshCount);
 int32_t MicronSteer_EnterPowerMode(SDRAM_HandleTypeDef *Ctx,
-                                    uint32_t Interface);
-int32_t MicronSteer_ExitPowerMode(SDRAM_HandleTypeDef *Ctx,
                                    uint32_t Interface);
+int32_t MicronSteer_ExitPowerMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
 int32_t MicronSteer_Sendcmd(SDRAM_HandleTypeDef *Ctx,
-                             FMC_SDRAM_CommandTypeDef *SdramCmd);
+                            FMC_SDRAM_CommandTypeDef *SdramCmd);
 
 /**
  * @}

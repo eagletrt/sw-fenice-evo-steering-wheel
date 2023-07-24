@@ -1,6 +1,7 @@
 #ifndef CANSNIFFER_H
 #define CANSNIFFER_H
 
+#include "maxheap.h"
 #include "messages.h"
 
 #define CANSNIFFER_MEMORY_POOL_ADDRESS                                         \
@@ -19,7 +20,5 @@ typedef struct {
 } cansniffer_elem_t;
 
 void cansniffer_buffer_init(void);
-void cansniffer_primary_new_message(can_message_t *msg);
-void cansniffer_secondary_new_message(can_message_t *msg);
 
 #endif // CANSNIFFER_H

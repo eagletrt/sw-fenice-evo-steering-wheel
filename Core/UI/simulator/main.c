@@ -31,6 +31,7 @@
 #include "../steering/can_messages.h"
 #include "../steering/cansniffer.h"
 #include "../steering/controls.h"
+#include "../steering/engineer_mode/tab_primary_cansniffer.h"
 
 /*********************
  *      DEFINES
@@ -58,6 +59,8 @@ static int tick_thread(void *data);
 
 cansniffer_elem_t *primary_cansniffer_buffer;
 cansniffer_elem_t *secondary_cansniffer_buffer;
+
+extern bool engineer_mode;
 
 /**********************
  *      MACROS
@@ -138,10 +141,6 @@ int main(int argc, char **argv) {
   primary_cansniffer_buffer = primary_cansniffer_buffer_init;
   cansniffer_elem_t secondary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
   secondary_cansniffer_buffer = secondary_cansniffer_buffer_init;
-  // primary_cansniffer_buffer = (cansniffer_elem_t*)
-  // malloc(CANSNIFFER_ELEM_T_SIZE * sizeof(cansniffer_elem_t));
-  // secondary_cansniffer_buffer = (cansniffer_elem_t*)
-  // malloc(CANSNIFFER_ELEM_T_SIZE * sizeof(cansniffer_elem_t));
   cansniffer_buffer_init();
 
   tab_manager();
@@ -183,11 +182,6 @@ int main(int argc, char **argv) {
   // };
 
   int gggcounter = 0;
-
-  // lv_timer_t* save_cansniffer_data_timer = lv_timer_create((lv_timer_cb_t)
-  // save_cansniffer_data, 200, NULL);
-  // lv_timer_set_repeat_count(save_cansniffer_data_timer, -1);
-  // lv_timer_reset(save_cansniffer_data_timer);
 
   while (1) {
 
@@ -334,6 +328,14 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
   case 'f':
     calibration_tool_set_min_max(false);
     break;
+  case 'g': {
+    if (engineer_mode) {
+      switch_primary_cansniffer();
+    } else {
+      turn_telemetry_on_off();
+    }
+  }
+
   default:
     break;
   }

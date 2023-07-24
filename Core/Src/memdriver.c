@@ -63,7 +63,7 @@ static int32_t MICRON_STEER_Delay(uint32_t Delay);
  * @retval error status
  */
 int32_t MicronSteer_Init(SDRAM_HandleTypeDef *Ctx,
-                          MICRON_STEER_Context_t *pRegMode) {
+                         MICRON_STEER_Context_t *pRegMode) {
   int32_t ret = MICRON_STEER_ERROR;
 
   /* Step 1: Configure a clock configuration enable command */
@@ -76,7 +76,7 @@ int32_t MicronSteer_Init(SDRAM_HandleTypeDef *Ctx,
     if (MicronSteer_Precharge(Ctx, pRegMode->TargetBank) == MICRON_STEER_OK) {
       /* Step 4: Configure a Refresh command */
       if (MicronSteer_RefreshMode(Ctx, pRegMode->TargetBank,
-                                   pRegMode->RefreshMode) == MICRON_STEER_OK) {
+                                  pRegMode->RefreshMode) == MICRON_STEER_OK) {
         /* Step 5: Program the external memory mode register */
         if (MicronSteer_ModeRegConfig(Ctx, pRegMode) == MICRON_STEER_OK) {
           /* Step 6: Set the refresh rate counter */
@@ -140,7 +140,7 @@ int32_t MicronSteer_Precharge(SDRAM_HandleTypeDef *Ctx, uint32_t Interface) {
  * @retval error status
  */
 int32_t MicronSteer_ModeRegConfig(SDRAM_HandleTypeDef *Ctx,
-                                   MICRON_STEER_Context_t *pRegMode) {
+                                  MICRON_STEER_Context_t *pRegMode) {
   uint32_t tmpmrd;
 
   /* Program the external memory mode register */
@@ -168,7 +168,7 @@ int32_t MicronSteer_ModeRegConfig(SDRAM_HandleTypeDef *Ctx,
  * @retval error status
  */
 int32_t MicronSteer_TimingConfig(SDRAM_HandleTypeDef *Ctx,
-                                  FMC_SDRAM_TimingTypeDef *pTiming) {
+                                 FMC_SDRAM_TimingTypeDef *pTiming) {
   /* Program the SDRAM timing */
   if (HAL_SDRAM_Init(Ctx, pTiming) != HAL_OK) {
     return MICRON_STEER_ERROR;
@@ -187,7 +187,7 @@ int32_t MicronSteer_TimingConfig(SDRAM_HandleTypeDef *Ctx,
  * @retval error status
  */
 int32_t MicronSteer_RefreshMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface,
-                                 uint32_t RefreshMode) {
+                                uint32_t RefreshMode) {
   Command.CommandMode = RefreshMode;
   Command.CommandTarget = Interface;
   Command.AutoRefreshNumber = 8;
@@ -208,7 +208,7 @@ int32_t MicronSteer_RefreshMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface,
  * @retval error status
  */
 int32_t MicronSteer_RefreshRate(SDRAM_HandleTypeDef *Ctx,
-                                 uint32_t RefreshCount) {
+                                uint32_t RefreshCount) {
   /* Set the device refresh rate */
   if (HAL_SDRAM_ProgramRefreshRate(Ctx, RefreshCount) != HAL_OK) {
     return MICRON_STEER_ERROR;
@@ -225,7 +225,7 @@ int32_t MicronSteer_RefreshRate(SDRAM_HandleTypeDef *Ctx,
  * @retval error status
  */
 int32_t MicronSteer_EnterPowerMode(SDRAM_HandleTypeDef *Ctx,
-                                    uint32_t Interface) {
+                                   uint32_t Interface) {
   Command.CommandMode = MICRON_STEER_POWERDOWN_MODE_CMD;
   Command.CommandTarget = Interface;
   Command.AutoRefreshNumber = 1;
@@ -247,7 +247,7 @@ int32_t MicronSteer_EnterPowerMode(SDRAM_HandleTypeDef *Ctx,
  * @retval error status
  */
 int32_t MicronSteer_ExitPowerMode(SDRAM_HandleTypeDef *Ctx,
-                                   uint32_t Interface) {
+                                  uint32_t Interface) {
   Command.CommandMode = MICRON_STEER_NORMAL_MODE_CMD;
   Command.CommandTarget = Interface;
   Command.AutoRefreshNumber = 1;
@@ -268,7 +268,7 @@ int32_t MicronSteer_ExitPowerMode(SDRAM_HandleTypeDef *Ctx,
  * @retval SDRAM status
  */
 int32_t MicronSteer_Sendcmd(SDRAM_HandleTypeDef *Ctx,
-                             FMC_SDRAM_CommandTypeDef *SdramCmd) {
+                            FMC_SDRAM_CommandTypeDef *SdramCmd) {
   if (HAL_SDRAM_SendCommand(Ctx, SdramCmd, MICRON_STEER_TIMEOUT) != HAL_OK) {
     return MICRON_STEER_ERROR;
   } else {

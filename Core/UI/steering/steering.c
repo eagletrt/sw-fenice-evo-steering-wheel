@@ -459,7 +459,7 @@ void pedals_output_update(secondary_pedals_output_converted_t *data) {
   }
 }
 
-void imu_acceleration_update(secondary_imu_acceleration_converted_t * data) {
+void imu_acceleration_update(secondary_imu_acceleration_converted_t *data) {
   if (imu_acceleration_last_state.accel_x != data->accel_x) {
     imu_acceleration_last_state.accel_x = data->accel_x;
     sprintf(sprintf_buffer, "%.1f", data->accel_x);

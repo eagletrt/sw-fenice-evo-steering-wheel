@@ -65,7 +65,8 @@
         "cansniffer.h": "c",
         "assert.h": "c",
         "can.h": "c",
-        "tab_primary_cansniffer.h": "c"
+        "tab_primary_cansniffer.h": "c",
+        "maxheap.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

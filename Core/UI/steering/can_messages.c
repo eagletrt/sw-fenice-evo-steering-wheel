@@ -147,7 +147,7 @@ void handle_secondary(can_message_t *msg) {
   secondary_message_name_from_id(msg->id, name_buffer);
   print("Secondary network - message id %s\n", name_buffer);
 #endif
-  cansniffer_secondary_new_message(msg);
+  // cansniffer_secondary_new_message(msg);
   can_id_t id = msg->id;
   switch (id) {
   case SECONDARY_STEERING_ANGLE_FRAME_ID: {

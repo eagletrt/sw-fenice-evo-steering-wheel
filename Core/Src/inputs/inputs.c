@@ -94,7 +94,11 @@ void buttons_pressed_actions(uint8_t button) {
     change_errors_view(true);
     break;
   case BUTTON_TOP_RIGHT:
-    turn_telemetry_on_off();
+    if (engineer_mode) {
+      switch_primary_cansniffer();
+    } else {
+      turn_telemetry_on_off();
+    }
     break;
   case BUTTON_TOP_LEFT:
     activate_ptt();
