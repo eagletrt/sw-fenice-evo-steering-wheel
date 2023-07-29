@@ -25,6 +25,8 @@
 #define primary_NETWORK_IMPLEMENTATION
 #define secondary_NETWORK_IMPLEMENTATION
 
+#define MAX(x, y) x > y ? x : y;
+
 #include "can.h"
 #include "queue.h"
 
@@ -32,6 +34,8 @@
 #include "../steering/cansniffer.h"
 #include "../steering/controls.h"
 #include "../steering/engineer_mode/tab_primary_cansniffer.h"
+
+extern int cansniffer_start_index;
 
 /*********************
  *      DEFINES
@@ -57,10 +61,12 @@ static int tick_thread(void *data);
  *  STATIC VARIABLES
  **********************/
 
-cansniffer_elem_t *primary_cansniffer_buffer;
-cansniffer_elem_t *secondary_cansniffer_buffer;
+cansniffer_elem_t primary_cansniffer_buffer[CAN_POSSIBLE_IDS];
+cansniffer_elem_t secondary_cansniffer_buffer[CAN_POSSIBLE_IDS];
 
 extern bool engineer_mode;
+
+int cansniffer_start_index = 0;
 
 /**********************
  *      MACROS
@@ -137,10 +143,6 @@ int main(int argc, char **argv) {
 
   // steering_values_init();
 
-  cansniffer_elem_t primary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
-  primary_cansniffer_buffer = primary_cansniffer_buffer_init;
-  cansniffer_elem_t secondary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
-  secondary_cansniffer_buffer = secondary_cansniffer_buffer_init;
   cansniffer_buffer_init();
 
   tab_manager();
@@ -334,6 +336,20 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
     } else {
       turn_telemetry_on_off();
     }
+    break;
+  }
+  case 'h': {
+    cansniffer_start_index++;
+    update_primary_cansniffer_ui(NULL);
+    break;
+  }
+  case 'j': {
+    if (cansniffer_start_index != 0) {
+      cansniffer_start_index--;
+      cansniffer_start_index = MAX(cansniffer_start_index, 0);
+      update_primary_cansniffer_ui(NULL);
+    }
+    break;
   }
 
   default:

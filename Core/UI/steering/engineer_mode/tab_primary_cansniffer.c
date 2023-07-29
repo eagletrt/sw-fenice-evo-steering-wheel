@@ -10,7 +10,9 @@ extern bool engineer_mode;
 extern int primary_cansniffer_ids[CAN_POSSIBLE_IDS];
 extern size_t primary_cansniffer_ids_size;
 
-extern cansniffer_elem_t *primary_cansniffer_buffer;
+extern cansniffer_elem_t primary_cansniffer_buffer[CAN_POSSIBLE_IDS];
+
+extern int cansniffer_start_index;
 
 void init_cansniffer_tab_styles() {
   lv_style_init(&cansniffer_label_style);
@@ -31,20 +33,24 @@ lv_obj_t *cansniffer_data_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 char primary_cansniffer_id_name[128] = {0};
 char primary_cansniffer_data_string[128];
 
+void clear_primary_cansniffer_ui_item(size_t i) {
+  lv_label_set_text_fmt(cansniffer_timestamp_labels[i], "-");
+  lv_label_set_text(cansniffer_id_labels[i], "0x000");
+  lv_label_set_text_fmt(cansniffer_message_name_labels[i], "-");
+  lv_label_set_text(cansniffer_len_labels[i], "-");
+  lv_label_set_text(cansniffer_data_labels[i], "-");
+}
+
 void clear_primary_cansniffer_ui() {
   lv_label_set_text(cansniffer_timestamp_labels[0], "Time");
   lv_label_set_text(cansniffer_id_labels[0], "ID");
-  lv_label_set_text(cansniffer_message_name_labels[0], "Message Name");
+  lv_label_set_text(cansniffer_message_name_labels[0],
+                    "Primary Network Message Name");
   lv_label_set_text(cansniffer_len_labels[0], "Len");
   lv_label_set_text(cansniffer_data_labels[0], "Data");
 
-  for (int i = 0; i < TAB_CANSNIFFER_N_MESSAGES_SHOWN; i++) {
-    lv_label_set_text_fmt(cansniffer_timestamp_labels[i], "t");
-    lv_label_set_text(cansniffer_id_labels[i], "0x000");
-    lv_label_set_text_fmt(cansniffer_message_name_labels[i], "placeholder %d",
-                          i);
-    lv_label_set_text(cansniffer_len_labels[i], "0");
-    lv_label_set_text(cansniffer_data_labels[i], "********");
+  for (size_t i = 0; i < TAB_CANSNIFFER_N_MESSAGES_SHOWN; i++) {
+    clear_primary_cansniffer_ui_item(i);
   }
 }
 
@@ -52,7 +58,7 @@ void update_primary_cansniffer_value(size_t iindex, size_t id) {
   if (iindex >= TAB_CANSNIFFER_N_MESSAGES_SHOWN)
     return;
   lv_label_set_text_fmt(cansniffer_timestamp_labels[iindex], "%u",
-                        (unsigned int)primary_cansniffer_buffer[id].timestamp);
+                        (unsigned int)primary_cansniffer_buffer[id].delta);
   lv_label_set_text_fmt(cansniffer_id_labels[iindex], "%04X",
                         primary_cansniffer_buffer[id].id);
   lv_label_set_text_fmt(cansniffer_message_name_labels[iindex], "%s",
@@ -64,18 +70,30 @@ void update_primary_cansniffer_value(size_t iindex, size_t id) {
 }
 
 void update_primary_cansniffer_ui(lv_timer_t *tim) {
-  for (size_t iindex = 0; iindex < primary_cansniffer_ids_size &&
-                          iindex < TAB_CANSNIFFER_N_MESSAGES_SHOWN;
+  if (TAB_CANSNIFFER_N_MESSAGES_SHOWN * cansniffer_start_index >
+          primary_cansniffer_ids_size &&
+      primary_cansniffer_ids_size > 1)
+    cansniffer_start_index--;
+  for (size_t iindex = TAB_CANSNIFFER_N_MESSAGES_SHOWN * cansniffer_start_index;
+       iindex <
+       (TAB_CANSNIFFER_N_MESSAGES_SHOWN * (cansniffer_start_index + 1));
        ++iindex) {
-    can_id_t id = (can_id_t)(primary_cansniffer_ids[iindex]);
-    primary_message_name_from_id(id, primary_cansniffer_id_name);
-    for (size_t iindex = 0; iindex < primary_cansniffer_buffer[id].len;
-         ++iindex) {
-      sprintf(primary_cansniffer_data_string + iindex * 3, "%02X ",
-              primary_cansniffer_buffer[id].data[iindex]);
+    if (iindex >= primary_cansniffer_ids_size) {
+      clear_primary_cansniffer_ui_item(
+          iindex - (TAB_CANSNIFFER_N_MESSAGES_SHOWN * cansniffer_start_index));
+    } else {
+      can_id_t id = (can_id_t)(primary_cansniffer_ids[iindex]);
+      primary_message_name_from_id(id, primary_cansniffer_id_name);
+      for (size_t jindex = 0; jindex < primary_cansniffer_buffer[id].len;
+           ++jindex) {
+        sprintf(primary_cansniffer_data_string + jindex * 3, "%02X ",
+                primary_cansniffer_buffer[id].data[jindex]);
+      }
+      update_primary_cansniffer_value(
+          iindex - (TAB_CANSNIFFER_N_MESSAGES_SHOWN * cansniffer_start_index),
+          id);
+      sprintf(primary_cansniffer_id_name, "unknown");
     }
-    update_primary_cansniffer_value(iindex, id);
-    sprintf(primary_cansniffer_id_name, "unknown");
   }
 }
 
@@ -85,7 +103,7 @@ void switch_primary_cansniffer() {
     lv_timer_set_repeat_count(primary_cansniffer_update_task, 0);
   } else {
     primary_cansniffer_update_task =
-        lv_timer_create(update_primary_cansniffer_ui, 500, NULL);
+        lv_timer_create(update_primary_cansniffer_ui, 200, NULL);
     lv_timer_set_repeat_count(primary_cansniffer_update_task, -1);
     lv_timer_reset(primary_cansniffer_update_task);
   }
@@ -102,8 +120,10 @@ void cansniffer_primary_new_message(can_message_t *msg) {
     primary_cansniffer_ids[primary_cansniffer_ids_size] = (int)(id);
     primary_cansniffer_ids_size++;
   }
-  primary_cansniffer_buffer[id].timestamp =
-      0; // get_current_time_ms() - primary_cansniffer_buffer[id].timestamp;
+  uint32_t current_time = get_current_time_ms();
+  primary_cansniffer_buffer[id].delta =
+      current_time - primary_cansniffer_buffer[id].timestamp;
+  primary_cansniffer_buffer[id].timestamp = current_time;
   primary_cansniffer_buffer[id].id = msg->id;
   primary_cansniffer_buffer[id].len = msg->size;
   memcpy(primary_cansniffer_buffer[id].data, msg->data, 8);
@@ -158,7 +178,7 @@ void tab_cansniffer_create(lv_obj_t *parent) {
                        0, 1);
 
   lv_obj_t *cs_l3 = lv_label_create(cont); // message name label
-  lv_label_set_text(cs_l3, "Message Name");
+  lv_label_set_text(cs_l3, "Primary Network Message Name");
   lv_obj_add_style(cs_l3, &cansniffer_label_style, 0);
   lv_obj_set_grid_cell(cs_l3, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);

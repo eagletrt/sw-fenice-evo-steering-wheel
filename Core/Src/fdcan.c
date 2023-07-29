@@ -29,20 +29,8 @@ device_t secondary_can_device;
 uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
 uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
 
-cansniffer_elem_t primary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
-cansniffer_elem_t *primary_cansniffer_buffer =
-    (cansniffer_elem_t *)primary_cansniffer_buffer_init;
-cansniffer_elem_t secondary_cansniffer_buffer_init[CAN_POSSIBLE_IDS];
-cansniffer_elem_t *secondary_cansniffer_buffer =
-    (cansniffer_elem_t *)secondary_cansniffer_buffer_init;
-
-#if 0
-cansniffer_elem_t *primary_cansniffer_buffer =
-    (cansniffer_elem_t *)CANSNIFFER_MEMORY_POOL_ADDRESS;
-cansniffer_elem_t *secondary_cansniffer_buffer =
-    (cansniffer_elem_t *)CANSNIFFER_MEMORY_POOL_ADDRESS +
-    (CAN_POSSIBLE_IDS * CANSNIFFER_ELEM_T_SIZE);
-#endif
+cansniffer_elem_t primary_cansniffer_buffer[CAN_POSSIBLE_IDS];
+cansniffer_elem_t secondary_cansniffer_buffer[CAN_POSSIBLE_IDS];
 
 void _CAN_error_handler(char *msg);
 void _CAN_Init_primary();

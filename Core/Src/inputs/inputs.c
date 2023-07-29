@@ -17,6 +17,7 @@ extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
 int power_map_last_state = 0;
+int cansniffer_start_index = 0;
 
 /***
  * Manettini mapping
@@ -85,14 +86,27 @@ void buttons_pressed_actions(uint8_t button) {
     steering_change_tab(false);
     break;
   }
-  case PADDLE_BOTTOM_RIGHT:
-    shift_box_focus(true);
-    change_errors_view(false);
+  case PADDLE_BOTTOM_RIGHT: {
+    if (!engineer_mode) {
+      shift_box_focus(true);
+      change_errors_view(false);
+    } else {
+      cansniffer_start_index++;
+      update_primary_cansniffer_ui(NULL);
+    }
     break;
-  case PADDLE_BOTTOM_LEFT:
-    shift_box_focus(false);
-    change_errors_view(true);
+  }
+  case PADDLE_BOTTOM_LEFT: {
+    if (!engineer_mode) {
+      shift_box_focus(false);
+      change_errors_view(true);
+    } else {
+      cansniffer_start_index--;
+      cansniffer_start_index = max(cansniffer_start_index, 0);
+      update_primary_cansniffer_ui(NULL);
+    }
     break;
+  }
   case BUTTON_TOP_RIGHT:
     if (engineer_mode) {
       switch_primary_cansniffer();
@@ -287,10 +301,14 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       dstep = 1;
     if (dstep == 7)
       dstep = -1;
-    power_map_last_state += (dstep * 10);
-    power_map_last_state = min(power_map_last_state, 100);
-    power_map_last_state = max(power_map_last_state, -10);
-    manettino_send_power_map((float)power_map_last_state / 100.0f);
+    if (!engineer_mode) {
+      power_map_last_state += (dstep * 10);
+      power_map_last_state = min(power_map_last_state, 100);
+      power_map_last_state = max(power_map_last_state, -10);
+      manettino_send_power_map((float)power_map_last_state / 100.0f);
+    } else {
+      // pork cooling
+    }
     break;
   }
   case MANETTINO_LEFT_INDEX: {
