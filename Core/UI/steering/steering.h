@@ -170,7 +170,8 @@ void lv_cells_temp_update(primary_lv_cells_temp_converted_t *);
 void lv_total_voltage_update(primary_lv_total_voltage_converted_t *);
 void lv_errors_update(primary_lv_errors_converted_t *);
 void cooling_status_update(primary_cooling_status_converted_t *);
-void hv_fans_override_status_update(primary_hv_fans_override_status_converted_t *);
+void hv_fans_override_status_update(
+    primary_hv_fans_override_status_converted_t *);
 
 void steering_angle_update(secondary_steering_angle_converted_t *);
 void pedals_output_update(secondary_pedals_output_converted_t *);

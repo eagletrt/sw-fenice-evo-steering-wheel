@@ -301,15 +301,24 @@ void _CAN_Init_primary() {
   f.FilterID2 = 0x7FF;
   f.RxBufferIndex = 0;
   f.IsCalibrationMsg = 0;
-  if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK)
+  if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Failed to initialize CAN1 filter\n");
+#endif
+  }
 
   if ((s = HAL_FDCAN_ActivateNotification(
-           &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK)
+           &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Failed to activate CAN1 interrupt\n");
+#endif
+  }
 
-  if ((s = HAL_FDCAN_Start(&hfdcan1)) != HAL_OK)
+  if ((s = HAL_FDCAN_Start(&hfdcan1)) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Failed to start CAN1\n");
+#endif
+  }
 }
 
 /**
@@ -328,15 +337,24 @@ void _CAN_Init_secondary() {
   f.RxBufferIndex = 0;
   f.IsCalibrationMsg = 0;
 
-  if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK)
+  if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Failed to initialize CAN2 filter\n");
+#endif
+  }
 
   if ((s = HAL_FDCAN_ActivateNotification(
-           &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0)) != HAL_OK)
+           &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0)) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Failed to activate CAN2 interrupt\n");
+#endif
+  }
 
-  if ((s = HAL_FDCAN_Start(&hfdcan2)) != HAL_OK)
+  if ((s = HAL_FDCAN_Start(&hfdcan2)) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Failed to start CAN2\n");
+#endif
+  }
 }
 
 void _can_wait(FDCAN_HandleTypeDef *nwk) {
@@ -402,9 +420,13 @@ bool can_send(can_message_t *msg, bool to_primary_network) {
 
 void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan) {
   if (hfdcan == &hfdcan1) {
+#ifdef STEERING_LOG_ENABLED
     print("CAN0 error %" PRIu32 "\n", (uint32_t)hfdcan->ErrorCode);
+#endif
   } else {
+#ifdef STEERING_LOG_ENABLED
     print("CAN1 error %" PRIu32 "\n", (uint32_t)hfdcan->ErrorCode);
+#endif
   }
 }
 

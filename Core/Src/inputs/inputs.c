@@ -63,6 +63,7 @@ void inputs_init(void) {
 }
 
 void print_buttons(void) {
+#ifdef STEERING_LOG_ENABLED
   char buffer[100];
   uint32_t len = 0;
   len += sprintf(buffer + len, "Buttons: ");
@@ -71,6 +72,7 @@ void print_buttons(void) {
   }
   len += sprintf(buffer + len, "\n");
   print("%s", buffer);
+#endif
 }
 
 void buttons_pressed_actions(uint8_t button) {
@@ -210,15 +212,26 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     GPIO_PinState tson_pin_state =
         HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
     if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
-      print("Setting timer to check button state in 2 seconds\n");
-      tson_button_pressed = true;
-      send_set_car_status_long_press_delay =
-          lv_timer_create(send_set_car_status_check, 500, NULL);
-      lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
-      lv_timer_reset(send_set_car_status_long_press_delay);
-      STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
+      if (send_set_car_status_directly()) {
+#ifdef STEERING_LOG_ENABLED
+        print("Sending set_car_status directly\n");
+#endif
+        prepare_set_car_status();
+      } else {
+#ifdef STEERING_LOG_ENABLED
+        print("Setting timer to check button state in 2 seconds\n");
+#endif
+        tson_button_pressed = true;
+        send_set_car_status_long_press_delay =
+            lv_timer_create(send_set_car_status_check, 500, NULL);
+        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
+        lv_timer_reset(send_set_car_status_long_press_delay);
+        STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
+      }
     } else {
+#ifdef STEERING_LOG_ENABLED
       print("tson button released and possible timer deleted\n");
+#endif
       tson_button_pressed = false;
       lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
       STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
@@ -260,7 +273,9 @@ void read_buttons(void) {
   uint8_t button_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1,
                        &button_input, 1, 100) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Error\n");
+#endif
     return;
   }
   from_gpio_to_buttons(button_input);
@@ -325,7 +340,9 @@ void read_manettino_left(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOA, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Error\n");
+#endif
     return;
   }
   if (manettino_input != dev1.gpio[0]) {
@@ -338,7 +355,9 @@ void read_manettino_center(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOB, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Error\n");
+#endif
     return;
   }
   if (manettino_input != dev2.gpio[1]) {
@@ -351,7 +370,9 @@ void read_manettino_right(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOA, 1,
                        &manettino_input, 1, 100) != HAL_OK) {
+#ifdef STEERING_LOG_ENABLED
     print("Error\n");
+#endif
     return;
   }
   if (manettino_input != dev2.gpio[0]) {

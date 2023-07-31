@@ -41,7 +41,9 @@ extern UART_HandleTypeDef hlpuart1;
 void MX_LPUART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+#ifdef STEERING_LOG_ENABLED
 void print(const char *fmt, ...);
+#endif
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -54,11 +54,6 @@ void handle_primary(can_message_t *msg) {
     cooling_status_update(&converted);
     break;
   }
-  case PRIMARY_HV_FANS_OVERRIDE_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_override, HV_FANS_OVERRIDE);
-    hv_fans_override_status_update(&converted);
-    break;
-  }
   case PRIMARY_PTT_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, ptt_status, PTT_STATUS);
     handle_ptt_message(converted.status);

@@ -11,13 +11,17 @@ bool i2c_test_read_write_register() {
   HAL_I2C_Mem_Read(&hi2c4, ledaddr1, LED_CONTROL_REGISTER, 1, read_data, 1,
                    200);
   if (read_data[0] != control[0]) {
+#ifdef STEERING_LOG_ENABLED
     print("Not equal: %d != %d\n", read_data[0], control[0]);
+#endif
     return false;
   }
   HAL_I2C_Mem_Read(&hi2c4, ledaddr2, LED_CONTROL_REGISTER, 1, read_data, 1,
                    200);
   if (read_data[0] != control[0]) {
+#ifdef STEERING_LOG_ENABLED
     print("Not equal: %d != %d\n", read_data[0], control[0]);
+#endif
     return false;
   }
   return true;

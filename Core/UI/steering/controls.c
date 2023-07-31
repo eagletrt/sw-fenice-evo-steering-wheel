@@ -14,7 +14,7 @@ extern engineer_tab_t current_engineer_tab;
 extern bool engineer_mode;
 extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
-extern char* sprintf_buffer;
+extern char *sprintf_buffer;
 
 extern primary_tlm_status_t tlm_status_last_state;
 extern primary_car_status_t car_status_last_state;
@@ -23,9 +23,8 @@ primary_steer_status_converted_t steer_status_last_state = {
 primary_cooling_status_converted_t steering_cooling_settings = {
     .pumps_speed = -1.0f, .radiators_speed = -1.0f};
 primary_hv_fans_override_converted_t hv_fans_override_settings = {
-  .fans_override = primary_hv_fans_override_fans_override_OFF,
-  .fans_speed = 0.0f
-};
+    .fans_override = primary_hv_fans_override_fans_override_OFF,
+    .fans_speed = 0.0f};
 
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};

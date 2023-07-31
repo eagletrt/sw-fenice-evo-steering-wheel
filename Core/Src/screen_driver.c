@@ -103,8 +103,6 @@ void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
   HAL_DMA2D_PollForTransfer(&hdma2d, 10);   // Wait for transfer to be over
 }
 
-void steering_log(const char *buf) { print(buf); }
-
 void lv_tasks() {
 #if LV_TICK_CUSTOM == 1
   lv_timer_handler();

@@ -288,7 +288,9 @@ void SystemClock_Config(void) {
 /* USER CODE BEGIN 4 */
 
 void openblt_reset(void) {
+#ifdef STEERING_LOG_ENABLED
   print("Resetting for open blt\n");
+#endif
   HAL_NVIC_SystemReset();
 }
 
