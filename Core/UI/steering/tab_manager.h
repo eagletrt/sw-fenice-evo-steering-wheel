@@ -4,6 +4,7 @@
 #include "engineer_mode/tab_cooling.h"
 #include "engineer_mode/tab_engineer_mode.h"
 #include "engineer_mode/tab_primary_cansniffer.h"
+#include "engineer_mode/tab_secondary_cansniffer.h"
 #include "lvgl.h"
 #include "racing_tabs/tab_calibration.h"
 #include "racing_tabs/tab_debug.h"

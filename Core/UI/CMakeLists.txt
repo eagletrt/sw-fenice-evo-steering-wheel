@@ -21,6 +21,7 @@ add_executable(SteeringSimulator
     steering/cansniffer.c
     steering/maxheap.c
     steering/engineer_mode/tab_primary_cansniffer.c
+    steering/engineer_mode/tab_secondary_cansniffer.c
     steering/utils.c
     steering/controls.c
     steering/can_messages.c
@@ -46,4 +47,4 @@ TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/lvgl-linux)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/steering)
 
-TARGET_LINK_LIBRARIES(SteeringSimulator pthread SDL2)
+TARGET_LINK_LIBRARIES(SteeringSimulator pthread SDL2 m)

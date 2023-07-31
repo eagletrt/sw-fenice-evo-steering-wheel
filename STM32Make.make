@@ -227,6 +227,7 @@ Core/UI/steering/controls.c \
 Core/UI/steering/engineer_mode/tab_cooling.c \
 Core/UI/steering/engineer_mode/tab_engineer_mode.c \
 Core/UI/steering/engineer_mode/tab_primary_cansniffer.c \
+Core/UI/steering/engineer_mode/tab_secondary_cansniffer.c \
 Core/UI/steering/fonts/lv_font_inter_bold_14.c \
 Core/UI/steering/fonts/lv_font_inter_bold_18.c \
 Core/UI/steering/fonts/lv_font_inter_bold_20.c \

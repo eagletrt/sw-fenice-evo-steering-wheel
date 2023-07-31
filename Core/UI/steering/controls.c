@@ -6,7 +6,12 @@ bool calibration_max_sent_request[CALBOX_N];
 uint32_t calibration_min_request_timestamp[CALBOX_N];
 uint32_t calibration_max_request_timestamp[CALBOX_N];
 
+int primary_cansniffer_start_index = 0;
+int secondary_cansniffer_start_index = 0;
+
 extern racing_tab_t current_racing_tab;
+extern engineer_tab_t current_engineer_tab;
+extern bool engineer_mode;
 extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
 
@@ -240,4 +245,39 @@ bool send_set_car_status_directly(void) {
   }
   }
   return true;
+}
+
+void switch_cansniffer(void) {
+  if (!engineer_mode)
+    return;
+  if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
+    switch_primary_cansniffer();
+  } else if (current_engineer_tab == TAB_SECONDARY_CANSNIFFER) {
+    switch_secondary_cansniffer();
+  }
+}
+
+void change_cansniffer_index(bool plus) {
+  if (!engineer_mode)
+    return;
+  if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
+    if (plus) {
+      primary_cansniffer_start_index++;
+      update_primary_cansniffer_ui(NULL);
+    } else {
+      primary_cansniffer_start_index--;
+      primary_cansniffer_start_index = fmax(primary_cansniffer_start_index, 0);
+      update_primary_cansniffer_ui(NULL);
+    }
+  } else if (current_engineer_tab == TAB_SECONDARY_CANSNIFFER) {
+    if (plus) {
+      secondary_cansniffer_start_index++;
+      update_secondary_cansniffer_ui(NULL);
+    } else {
+      secondary_cansniffer_start_index--;
+      secondary_cansniffer_start_index =
+          fmax(secondary_cansniffer_start_index, 0);
+      update_secondary_cansniffer_ui(NULL);
+    }
+  }
 }

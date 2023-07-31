@@ -1,7 +1,7 @@
 #ifndef CAN_MESSAGES_H
 #define CAN_MESSAGES_H
 
-#include "engineer_mode/tab_primary_cansniffer.h"
+#include "cansniffer.h"
 #include "inverters/inverters_network.h"
 #include "inverters/inverters_watchdog.h"
 #include "lvgl.h"

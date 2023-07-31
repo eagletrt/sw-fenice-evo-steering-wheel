@@ -1,4 +1,4 @@
-#ifndef TAB_DEBUG_h
+#ifndef TAB_DEBUG_H
 #define TAB_DEBUG_H
 
 #include "lvgl.h"

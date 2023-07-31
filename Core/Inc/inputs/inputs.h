@@ -8,6 +8,7 @@
 #include "ptt.h"
 #include "steering.h"
 #include "tab_manager.h"
+#include <math.h>
 
 #define BUTTON_MAPPING                                                         \
   { 7, 5, 3, 1, 0, 6, 4, 2 }

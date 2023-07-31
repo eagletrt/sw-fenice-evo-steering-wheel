@@ -17,7 +17,6 @@ extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
 int power_map_last_state = 0;
-int cansniffer_start_index = 0;
 
 /***
  * Manettini mapping
@@ -52,9 +51,6 @@ void configure_internal_pull_up_resistors() {
   mcp23017_read(&dev2, REGISTER_GPPUB, &cdata);
   CHECK_ERROR(cdata);
 }
-
-float min(float a, float b) { return a < b ? a : b; }
-float max(float a, float b) { return a > b ? a : b; }
 
 void inputs_init(void) {
   dev1 = (MCP23017_HandleTypeDef){
@@ -91,8 +87,7 @@ void buttons_pressed_actions(uint8_t button) {
       shift_box_focus(true);
       change_errors_view(false);
     } else {
-      cansniffer_start_index++;
-      update_primary_cansniffer_ui(NULL);
+      change_cansniffer_index(true);
     }
     break;
   }
@@ -101,15 +96,13 @@ void buttons_pressed_actions(uint8_t button) {
       shift_box_focus(false);
       change_errors_view(true);
     } else {
-      cansniffer_start_index--;
-      cansniffer_start_index = max(cansniffer_start_index, 0);
-      update_primary_cansniffer_ui(NULL);
+      change_cansniffer_index(false);
     }
     break;
   }
   case BUTTON_TOP_RIGHT:
     if (engineer_mode) {
-      switch_primary_cansniffer();
+      switch_cansniffer();
     } else {
       turn_telemetry_on_off();
     }
@@ -303,8 +296,8 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       dstep = -1;
     if (!engineer_mode) {
       power_map_last_state += (dstep * 10);
-      power_map_last_state = min(power_map_last_state, 100);
-      power_map_last_state = max(power_map_last_state, -10);
+      power_map_last_state = fmin(power_map_last_state, 100);
+      power_map_last_state = fmax(power_map_last_state, -10);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
     } else {
       // pork cooling

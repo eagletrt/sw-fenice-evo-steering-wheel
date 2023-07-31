@@ -8,6 +8,7 @@
 #include "secondary/secondary_network.h"
 #include "steering.h"
 #include "tab_manager.h"
+#include <math.h>
 #include <stdint.h>
 
 #define BUTTONS_N 8
@@ -69,5 +70,8 @@ void manettino_send_set_radiators(float);
 void turn_telemetry_on_off(void);
 void calibration_tool_set_min_max(bool);
 void calibration_request_timeout_check(uint32_t);
+
+void switch_cansniffer(void);
+void change_cansniffer_index(bool);
 
 #endif

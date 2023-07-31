@@ -33,9 +33,6 @@
 #include "../steering/can_messages.h"
 #include "../steering/cansniffer.h"
 #include "../steering/controls.h"
-#include "../steering/engineer_mode/tab_primary_cansniffer.h"
-
-extern int cansniffer_start_index;
 
 /*********************
  *      DEFINES
@@ -65,8 +62,6 @@ cansniffer_elem_t primary_cansniffer_buffer[CAN_POSSIBLE_IDS];
 cansniffer_elem_t secondary_cansniffer_buffer[CAN_POSSIBLE_IDS];
 
 extern bool engineer_mode;
-
-int cansniffer_start_index = 0;
 
 /**********************
  *      MACROS
@@ -332,23 +327,18 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
     break;
   case 'g': {
     if (engineer_mode) {
-      switch_primary_cansniffer();
+      switch_cansniffer();
     } else {
       turn_telemetry_on_off();
     }
     break;
   }
   case 'h': {
-    cansniffer_start_index++;
-    update_primary_cansniffer_ui(NULL);
+    change_cansniffer_index(true);
     break;
   }
   case 'j': {
-    if (cansniffer_start_index != 0) {
-      cansniffer_start_index--;
-      cansniffer_start_index = MAX(cansniffer_start_index, 0);
-      update_primary_cansniffer_ui(NULL);
-    }
+    change_cansniffer_index(false);
     break;
   }
 
