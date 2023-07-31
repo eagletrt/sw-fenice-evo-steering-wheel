@@ -17,6 +17,7 @@ extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
 int power_map_last_state = 0;
+int hv_fans_override_last_state = 0;
 
 /***
  * Manettini mapping
@@ -301,6 +302,10 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       manettino_send_power_map((float)power_map_last_state / 100.0f);
     } else {
       // pork cooling
+      hv_fans_override_last_state += (dstep * 10);
+      hv_fans_override_last_state = fmin(hv_fans_override_last_state, 100);
+      hv_fans_override_last_state = fmax(hv_fans_override_last_state, -10);
+      send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
     }
     break;
   }

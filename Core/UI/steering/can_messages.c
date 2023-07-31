@@ -56,7 +56,7 @@ void handle_primary(can_message_t *msg) {
   }
   case PRIMARY_HV_FANS_OVERRIDE_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_override, HV_FANS_OVERRIDE);
-    hv_fans_override_update(&converted);
+    hv_fans_override_status_update(&converted);
     break;
   }
   case PRIMARY_PTT_STATUS_FRAME_ID: {
@@ -93,6 +93,12 @@ void handle_primary(can_message_t *msg) {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_feedbacks_status,
                      HV_FEEDBACKS_STATUS);
     hv_feedbacks_status_update(&converted);
+    break;
+  }
+  case PRIMARY_HV_FANS_OVERRIDE_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_override_status,
+                     HV_FANS_OVERRIDE_STATUS);
+    hv_fans_override_status_update(&converted);
     break;
   }
   case PRIMARY_DAS_ERRORS_FRAME_ID: {
