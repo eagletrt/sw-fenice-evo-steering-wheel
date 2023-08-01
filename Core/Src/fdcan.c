@@ -133,7 +133,7 @@ void MX_FDCAN2_Init(void) {
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN2_Init 2 */
-  // _CAN_Init_secondary();
+  _CAN_Init_secondary();
 
   /* USER CODE END FDCAN2_Init 2 */
 }
