@@ -414,7 +414,7 @@ void lv_custom_meter(lv_obj_t **custom_meter,
   lv_meter_set_indicator_start_value(*custom_meter, back, 0);
   lv_meter_set_indicator_end_value(*custom_meter, back, 100);
 
-  lv_meter_set_indicator_start_value(*custom_meter, *indicator_white, 1);
+  lv_meter_set_indicator_start_value(*custom_meter, *indicator_white, 0);
   lv_meter_set_indicator_end_value(*custom_meter, *indicator_white,
                                    100); /*range values 0-100*/
 

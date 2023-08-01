@@ -7,6 +7,7 @@
 #include "primary/primary_network.h"
 #include "secondary/secondary_network.h"
 #include "utils.h"
+#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -24,6 +25,7 @@
 typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
 void remove_trailing(char *buf);
+void reload_racing_tab(racing_tab_t tab);
 
 #define STEER_UPDATE_LABEL(name, value)                                        \
   for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                    \
@@ -176,6 +178,8 @@ void hv_fans_override_status_update(
 void steering_angle_update(secondary_steering_angle_converted_t *);
 void pedals_output_update(secondary_pedals_output_converted_t *);
 void imu_acceleration_update(secondary_imu_acceleration_converted_t *);
+void lap_count_update(secondary_lap_count_converted_t *);
+void lc_status_update(secondary_lc_status_converted_t *);
 
 void inv_l_rcv_update(inverters_inv_l_rcv_converted_t *);
 void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *);

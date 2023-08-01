@@ -7,6 +7,8 @@ extern primary_steer_status_converted_t steer_status_last_state;
 extern cansniffer_elem_t *primary_cansniffer_buffer;
 extern cansniffer_elem_t *secondary_cansniffer_buffer;
 
+char name_buffer[BUFSIZ];
+
 void send_steer_version(lv_timer_t *main_timer) {
   primary_steer_version_converted_t converted = {
       .canlib_build_time = CANLIB_BUILD_TIME, .component_version = 1};
@@ -28,7 +30,6 @@ void handle_primary(can_message_t *msg) {
   if (!steering_initialized)
     return;
 #if CAN_LOG_ENABLED
-  char name_buffer[BUFSIZ];
   primary_message_name_from_id(msg->id, name_buffer);
   print("Primary network - message id %s\n", name_buffer);
 #endif
@@ -144,7 +145,6 @@ void handle_secondary(can_message_t *msg) {
   if (!steering_initialized)
     return;
 #if CAN_LOG_ENABLED
-  char name_buffer[BUFSIZ];
   secondary_message_name_from_id(msg->id, name_buffer);
   print("Secondary network - message id %s\n", name_buffer);
 #endif
@@ -164,6 +164,16 @@ void handle_secondary(can_message_t *msg) {
   case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION);
     imu_acceleration_update(&converted);
+    break;
+  }
+  case SECONDARY_LAP_COUNT_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, lap_count, LAP_COUNT);
+    lap_count_update(&converted);
+    break;
+  }
+  case SECONDARY_LC_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, lc_status, LC_STATUS);
+    lc_status_update(&converted);
     break;
   }
   default:
