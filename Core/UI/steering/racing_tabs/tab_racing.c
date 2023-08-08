@@ -64,9 +64,9 @@ void tab_racing_create(lv_obj_t *parent) {
 
   lv_obj_t *label_lv = lv_label_create(bar_panel_lv);
   lv_obj_add_style(label_lv, &label_style, LV_PART_MAIN);
-  lv_obj_set_style_text_font(label_lv, &lv_font_inter_bold_30,
+  lv_obj_set_style_text_font(label_lv, &lv_font_inter_bold_22,
                              LV_STATE_DEFAULT);
-  lv_label_set_text(label_lv, "LV");
+  lv_label_set_text(label_lv, "HV-V");
   lv_obj_set_grid_cell(label_lv, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
@@ -86,7 +86,7 @@ void tab_racing_create(lv_obj_t *parent) {
   // hv percentage
   lv_obj_t *hv_perc = lv_horizontal_pair_label(
       bar_panel_hv, &steering.lb_hv_current[TAB_RACING], "0",
-      &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+      &lv_font_inter_bold_30, "A", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(hv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
   lv_obj_set_grid_cell(hv_perc, LV_GRID_ALIGN_CENTER, 0, 1,
@@ -95,9 +95,9 @@ void tab_racing_create(lv_obj_t *parent) {
   // hv label
   lv_obj_t *label_hv = lv_label_create(bar_panel_hv);
   lv_obj_add_style(label_hv, &label_style, LV_PART_MAIN);
-  lv_obj_set_style_text_font(label_hv, &lv_font_inter_bold_30,
+  lv_obj_set_style_text_font(label_hv, &lv_font_inter_bold_22,
                              LV_STATE_DEFAULT);
-  lv_label_set_text(label_hv, "HV");
+  lv_label_set_text(label_hv, "HV-A");
   lv_obj_set_grid_cell(label_hv, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 

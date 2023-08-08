@@ -200,6 +200,8 @@ void hv_voltage_update(primary_hv_voltage_converted_t *data) {
     hv_voltage_last_state.pack_voltage = data->pack_voltage;
     sprintf(sprintf_buffer, "%.1f", data->pack_voltage);
     STEER_UPDATE_LABEL(steering.lb_pack_voltage, sprintf_buffer);
+    lv_bar_set_value(steering.racing_lv_bar, data->pack_voltage,
+                     LV_ANIM_OFF);
   }
   if (data->bus_voltage != hv_voltage_last_state.bus_voltage) {
     hv_voltage_last_state.bus_voltage = data->bus_voltage;
@@ -312,8 +314,6 @@ void lv_currents_update(primary_lv_currents_converted_t *data) {
     lv_currents_last_state.current_lv_battery = data->current_lv_battery;
     sprintf(sprintf_buffer, "%.1f", data->current_lv_battery);
     STEER_UPDATE_LABEL(steering.lb_lv_current, sprintf_buffer);
-    lv_bar_set_value(steering.racing_lv_bar, data->current_lv_battery,
-                     LV_ANIM_OFF);
   }
 }
 
