@@ -48,6 +48,4 @@ typedef struct {
 #define SECONDARY_MONITORED_MESSAGES                                           \
   { SECONDARY_STEERING_ANGLE_FRAME_ID, SECONDARY_PEDALS_OUTPUT_FRAME_ID }
 
-uint32_t get_current_time_ms(void);
-
 #endif

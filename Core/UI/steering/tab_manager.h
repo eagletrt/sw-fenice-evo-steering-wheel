@@ -26,7 +26,4 @@ void switch_mode(void);
 
 void steering_change_tab(bool forward);
 
-void display_notification(const char *, uint32_t);
-void restore_previous_screen(lv_timer_t *timer);
-
 #endif

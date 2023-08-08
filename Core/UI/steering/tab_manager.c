@@ -190,3 +190,27 @@ void restore_previous_screen(lv_timer_t *timer) {
   }
   on_animation = false;
 }
+
+/***
+ * Keep Lap Counter on screen for a couple of seconds
+ * to allow the driver to see the lap time
+ */
+
+bool on_lap_keep = false;
+lv_timer_t *lap_counter_timer;
+
+void keep_lap_counter_value(uint32_t timeout_ms) {
+  if (on_lap_keep) {
+    lv_timer_set_repeat_count(lap_counter_timer, 0);
+  }
+  on_lap_keep = true;
+  lap_counter_timer = lv_timer_create(remove_keep_lap_counter, timeout_ms, NULL);
+  lv_timer_set_repeat_count(lap_counter_timer, 1);
+  lv_scr_load(tab_racing_ptr);
+  lv_timer_reset(lap_counter_timer);
+}
+
+void remove_keep_lap_counter(lv_timer_t* timer) {
+  on_lap_keep = false;
+  lv_timer_set_repeat_count(lap_counter_timer, 0);
+}

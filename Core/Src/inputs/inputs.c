@@ -16,8 +16,8 @@ bool manettini_initialized[MANETTINI_N] = {false};
 extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
-int power_map_last_state = 0;
-int hv_fans_override_last_state = 0;
+float power_map_last_state = 0.0f;
+float hv_fans_override_last_state = 0.0f;
 
 /***
  * Manettini mapping
@@ -181,12 +181,10 @@ void from_gpio_to_buttons(uint8_t gpio) {
     uint8_t current_button_val = ((gpio >> mapping[i]) & 1);
     if (buttons[i] != current_button_val) {
       if (current_button_val == 0) {
-        // button pressed action
         buttons_long_press_activated[i] = false;
         buttons_long_press_check[i] = HAL_GetTick();
         buttons_pressed_actions(i);
       } else {
-        // button released action
         buttons_released_actions(i);
       }
       buttons[i] = current_button_val;
@@ -239,36 +237,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   }
 }
 
-/*
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  if (GPIO_Pin == ExtraButton_Pin) {
-    GPIO_PinState tson_pin_state =
-        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
-    if (tson_pin_state == GPIO_PIN_RESET) {
-      if (!tson_button_pressed) {
-        // tson button pressed -> activate timer or send set_car_status directly
-        // if we are in certain states
-        // if (!send_set_car_status_directly()) {
-          tson_button_pressed = true;
-          send_set_car_status_long_press_delay =
-              lv_timer_create(send_set_car_status_check, 1000, NULL);
-          lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
-          lv_timer_reset(send_set_car_status_long_press_delay);
-          STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
-        // }
-      }
-    } else {
-      if (tson_button_pressed) {
-        // released button -> delete timer
-        lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
-        STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
-      }
-      tson_button_pressed = false;
-    }
-  }
-}
-*/
-
 void read_buttons(void) {
   uint8_t button_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1,
@@ -311,15 +279,15 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     if (dstep == 7)
       dstep = -1;
     if (!engineer_mode) {
-      power_map_last_state += (dstep * 10);
-      power_map_last_state = fmin(power_map_last_state, 100);
-      power_map_last_state = fmax(power_map_last_state, -10);
+      power_map_last_state += ((float)dstep * 10.0f);
+      power_map_last_state = fmin((float) power_map_last_state, 100.0f);
+      power_map_last_state = fmax((float) power_map_last_state, -10.0f);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
     } else {
       // pork cooling
-      hv_fans_override_last_state += (dstep * 10);
-      hv_fans_override_last_state = fmin(hv_fans_override_last_state, 100);
-      hv_fans_override_last_state = fmax(hv_fans_override_last_state, -10);
+      hv_fans_override_last_state += ((float)dstep * 10.0f);
+      hv_fans_override_last_state = fmin((float)hv_fans_override_last_state, 100.0f);
+      hv_fans_override_last_state = fmax((float)hv_fans_override_last_state, -10.0f);
       send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
     }
     break;

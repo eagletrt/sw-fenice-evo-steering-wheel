@@ -180,8 +180,17 @@ void pedals_output_update(secondary_pedals_output_converted_t *);
 void imu_acceleration_update(secondary_imu_acceleration_converted_t *);
 void lap_count_update(secondary_lap_count_converted_t *);
 void lc_status_update(secondary_lc_status_converted_t *);
+void timestamp_update(secondary_timestamp_converted_t *);
 
 void inv_l_rcv_update(inverters_inv_l_rcv_converted_t *);
 void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *);
+
+void keep_lap_counter_value(uint32_t);
+void remove_keep_lap_counter(lv_timer_t* timer);
+
+void display_notification(const char *, uint32_t);
+void restore_previous_screen(lv_timer_t *timer);
+
+uint32_t get_current_time_ms(void);
 
 #endif /* STEERING_H */

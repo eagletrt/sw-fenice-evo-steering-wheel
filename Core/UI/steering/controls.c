@@ -163,7 +163,7 @@ void manettino_send_set_pumps_speed(float val) {
 
   int map_val = (int)(steering_cooling_settings.pumps_speed * 100.0f);
 
-  if (steering_cooling_settings.pumps_speed < 0) {
+  if (steering_cooling_settings.pumps_speed < 0.0f) {
     sprintf(sprintf_buffer, "PUMPS SPEED AUTO");
   } else {
     sprintf(sprintf_buffer, "PUMPS SPEED %d", map_val);
@@ -180,7 +180,7 @@ void manettino_send_set_radiators(float val) {
 
   int map_val = (int)(steering_cooling_settings.radiators_speed * 100.0f);
 
-  if (steering_cooling_settings.radiators_speed < 0) {
+  if (steering_cooling_settings.radiators_speed < 0.0f) {
     sprintf(sprintf_buffer, "RADIATOR SPEED AUTO");
   } else {
     sprintf(sprintf_buffer, "RADIATORS SPEED %d", map_val);
@@ -189,10 +189,10 @@ void manettino_send_set_radiators(float val) {
 }
 
 void send_pork_fans_status(float val) {
-  if (val < 0) {
-    hv_fans_override_settings.fans_override = false;
+  if (val < 0.0f) {
+    hv_fans_override_settings.fans_override = primary_hv_fans_override_fans_override_OFF;
   } else {
-    hv_fans_override_settings.fans_override = true;
+    hv_fans_override_settings.fans_override = primary_hv_fans_override_fans_override_ON;
     hv_fans_override_settings.fans_speed = fmax(0.0f, fmin(1.0f, val));
   }
   primary_hv_fans_override_converted_t converted = {0};
@@ -202,7 +202,7 @@ void send_pork_fans_status(float val) {
   can_send(&msg, true);
 
   int map_val = (int)(hv_fans_override_settings.fans_speed * 100.0f);
-  if (hv_fans_override_settings.fans_override == false) {
+  if (hv_fans_override_settings.fans_override == primary_hv_fans_override_fans_override_OFF) {
     sprintf(sprintf_buffer, "FANS AUTO");
   } else {
     sprintf(sprintf_buffer, "FANS %d", map_val);

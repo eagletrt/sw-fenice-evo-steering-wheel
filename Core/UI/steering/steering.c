@@ -49,6 +49,8 @@ secondary_imu_acceleration_converted_t imu_acceleration_last_state = {0};
 secondary_lap_count_converted_t lap_count_last_state = {0};
 secondary_lc_status_converted_t lc_status_last_state = {0};
 float current_delta_state = 0.0f;
+secondary_timestamp_converted_t timestamp_last_state = {0};
+uint32_t timestamp_start_lap = 0;
 
 inverters_inv_r_rcv_converted_t inv_r_last_state = {0};
 inverters_inv_l_rcv_converted_t inv_l_last_state = {0};
@@ -486,14 +488,26 @@ void imu_acceleration_update(secondary_imu_acceleration_converted_t *data) {
 }
 
 void lap_count_update(secondary_lap_count_converted_t *data) {
+  keep_lap_counter_value(2000);
+  timestamp_start_lap = get_current_time_ms();
+  float last_time_seconds = data->lap_time;
+  int minutes = (int)(last_time_seconds / 60);
+  int seconds = (int)(last_time_seconds - minutes * 60);
+  sprintf(sprintf_buffer, "%02d:%02d", minutes, seconds);
+  STEER_UPDATE_LABEL(steering.lb_last_time, sprintf_buffer);
+  float delta = last_time_seconds - lc_status_last_state.best_time;
+  sprintf(sprintf_buffer, "%+.2f", delta);
+  STEER_UPDATE_LABEL(steering.lb_delta_time, sprintf_buffer);
 }
+
+extern bool on_lap_keep;
 
 void lc_status_update(secondary_lc_status_converted_t *data) {
   if (data->best_time != lc_status_last_state.best_time) {
     float best_time_seconds = data->best_time;
     lc_status_last_state.best_time = best_time_seconds;
-    int minutes = (int)(best_time_seconds / 60);
-    int seconds = (int)(best_time_seconds - minutes * 60);
+    int minutes = (int)(best_time_seconds / 60.0f);
+    int seconds = (int)(best_time_seconds - minutes * 60.0f);
     sprintf(sprintf_buffer, "%02d:%02d", minutes, seconds);
     STEER_UPDATE_LABEL(steering.lb_best_time, sprintf_buffer);
     float delta = data->last_time - best_time_seconds;
@@ -502,23 +516,24 @@ void lc_status_update(secondary_lc_status_converted_t *data) {
       STEER_UPDATE_LABEL(steering.lb_delta_time, sprintf_buffer);
     }
   }
-  if (data->last_time != lc_status_last_state.last_time) {
+  if (data->last_time != lc_status_last_state.last_time && !on_lap_keep) {
     float last_time_seconds = data->last_time;
     lc_status_last_state.last_time = last_time_seconds;
     int minutes = (int)(last_time_seconds / 60);
     int seconds = (int)(last_time_seconds - minutes * 60);
     sprintf(sprintf_buffer, "%02d:%02d", minutes, seconds);
     STEER_UPDATE_LABEL(steering.lb_last_time, sprintf_buffer);
-    float delta = last_time_seconds - data->best_time;
-    if (delta != current_delta_state) {
-      sprintf(sprintf_buffer, "%+.2f", delta);
-      STEER_UPDATE_LABEL(steering.lb_delta_time, sprintf_buffer);
-    }
   }
   if (data->lap_number != lc_status_last_state.lap_number) {
     lc_status_last_state.lap_number = data->lap_number;
     sprintf(sprintf_buffer, "%d", (int)data->lap_number);
     STEER_UPDATE_LABEL(steering.lb_lap_count, sprintf_buffer);
+  }
+}
+
+void timestamp_update(secondary_timestamp_converted_t *data) {
+  if (data->timestamp != timestamp_last_state.timestamp) {
+    timestamp_last_state.timestamp = data->timestamp;
   }
 }
 

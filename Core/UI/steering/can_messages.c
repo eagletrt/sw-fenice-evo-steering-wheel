@@ -176,6 +176,10 @@ void handle_secondary(can_message_t *msg) {
     lc_status_update(&converted);
     break;
   }
+  case SECONDARY_TIMESTAMP_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, timestamp, TIMESTAMP);
+    timestamp_update(&converted);
+  }
   default:
     break;
   }
