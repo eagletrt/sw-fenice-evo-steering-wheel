@@ -10,7 +10,7 @@ extern bool engineer_mode;
 extern int primary_cansniffer_ids[CAN_POSSIBLE_IDS];
 extern size_t primary_cansniffer_ids_size;
 
-extern cansniffer_elem_t primary_cansniffer_buffer[CAN_POSSIBLE_IDS];
+extern cansniffer_elem_t *primary_cansniffer_buffer;
 
 extern int primary_cansniffer_start_index;
 

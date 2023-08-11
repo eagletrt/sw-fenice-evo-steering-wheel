@@ -8,8 +8,10 @@ static_assert(
 primary_cansniffer_buffer -> 32768 Bytes
 secondary_cansniffer_buffer -> 32768 Bytes
 */
-extern cansniffer_elem_t primary_cansniffer_buffer[CAN_POSSIBLE_IDS];
-extern cansniffer_elem_t secondary_cansniffer_buffer[CAN_POSSIBLE_IDS];
+extern cansniffer_elem_t *primary_cansniffer_buffer;
+extern cansniffer_elem_t *secondary_cansniffer_buffer;
+
+bool cansniffer_initialized = false;
 
 int primary_cansniffer_ids[CAN_POSSIBLE_IDS];
 size_t primary_cansniffer_ids_size = 0;

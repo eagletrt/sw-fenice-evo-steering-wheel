@@ -58,8 +58,9 @@ static int tick_thread(void *data);
  *  STATIC VARIABLES
  **********************/
 
-cansniffer_elem_t primary_cansniffer_buffer[CAN_POSSIBLE_IDS];
-cansniffer_elem_t secondary_cansniffer_buffer[CAN_POSSIBLE_IDS];
+cansniffer_elem_t *primary_cansniffer_buffer;
+cansniffer_elem_t *secondary_cansniffer_buffer;
+extern bool cansniffer_initialized;
 
 extern bool engineer_mode;
 
@@ -130,6 +131,13 @@ int main(int argc, char **argv) {
   (void)argc; /*Unused*/
   (void)argv; /*Unused*/
 
+  primary_cansniffer_buffer =
+      malloc(sizeof(cansniffer_elem_t) * CAN_POSSIBLE_IDS);
+  secondary_cansniffer_buffer =
+      malloc(sizeof(cansniffer_elem_t) * CAN_POSSIBLE_IDS);
+  cansniffer_buffer_init();
+  cansniffer_initialized = true;
+
   /*Initialize LVGL*/
   lv_init();
 
@@ -137,8 +145,6 @@ int main(int argc, char **argv) {
   hal_init();
 
   // steering_values_init();
-
-  cansniffer_buffer_init();
 
   tab_manager();
 

@@ -29,8 +29,8 @@ device_t secondary_can_device;
 uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
 uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
 
-cansniffer_elem_t primary_cansniffer_buffer[CAN_POSSIBLE_IDS];
-cansniffer_elem_t secondary_cansniffer_buffer[CAN_POSSIBLE_IDS];
+extern cansniffer_elem_t *primary_cansniffer_buffer;
+extern cansniffer_elem_t *secondary_cansniffer_buffer;
 
 void _CAN_error_handler(char *msg);
 void _CAN_Init_primary();

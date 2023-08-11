@@ -5,8 +5,6 @@
 #include "maxheap.h"
 #include "messages.h"
 
-#define CANSNIFFER_MEMORY_POOL_ADDRESS                                         \
-  0xC0600000 // ends memory usage in address 0xC0610000
 #define CAN_POSSIBLE_IDS 2048
 #define CANSNIFFER_ELEM_T_SIZE 20
 

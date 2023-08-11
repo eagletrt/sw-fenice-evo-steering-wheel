@@ -7,6 +7,8 @@ extern primary_steer_status_converted_t steer_status_last_state;
 extern cansniffer_elem_t *primary_cansniffer_buffer;
 extern cansniffer_elem_t *secondary_cansniffer_buffer;
 
+extern bool cansniffer_initialized;
+
 char name_buffer[BUFSIZ];
 
 void send_steer_version(lv_timer_t *main_timer) {
@@ -29,11 +31,13 @@ void send_steer_status(lv_timer_t *main_timer) {
 void handle_primary(can_message_t *msg) {
   if (!steering_initialized)
     return;
+  if (cansniffer_initialized) {
+    cansniffer_primary_new_message(msg);
+  }
 #if CAN_LOG_ENABLED
   primary_message_name_from_id(msg->id, name_buffer);
   print("Primary network - message id %s\n", name_buffer);
 #endif
-  cansniffer_primary_new_message(msg);
   can_id_t id = msg->id;
   switch (id) {
   case PRIMARY_STEERING_JMP_TO_BLT_FRAME_ID:
@@ -91,6 +95,11 @@ void handle_primary(can_message_t *msg) {
     hv_feedbacks_status_update(&converted);
     break;
   }
+  case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, lv_feedbacks, LV_FEEDBACKS);
+    lv_feedbacks_update(&converted);
+    break;
+  }
   case PRIMARY_HV_FANS_OVERRIDE_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_override_status,
                      HV_FANS_OVERRIDE_STATUS);
@@ -144,11 +153,13 @@ void handle_primary(can_message_t *msg) {
 void handle_secondary(can_message_t *msg) {
   if (!steering_initialized)
     return;
+  if (cansniffer_initialized) {
+    cansniffer_secondary_new_message(msg);
+  }
 #if CAN_LOG_ENABLED
   secondary_message_name_from_id(msg->id, name_buffer);
   print("Secondary network - message id %s\n", name_buffer);
 #endif
-  cansniffer_secondary_new_message(msg);
   can_id_t id = msg->id;
   switch (id) {
   case SECONDARY_STEERING_ANGLE_FRAME_ID: {
