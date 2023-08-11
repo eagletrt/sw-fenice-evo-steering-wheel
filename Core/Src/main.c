@@ -83,9 +83,11 @@ cansniffer_elem_t *secondary_cansniffer_buffer = (cansniffer_elem_t *)
 #if DEBUG_RX_BUFFERS_ENABLED == 1
 extern uint32_t debug_rx_counters[4];
 
-void update_rx_fn(lv_timer_t* tim) {
+void update_rx_fn(lv_timer_t *tim) {
   char buffer[128];
-  sprintf(buffer, "{ secondary_rx1 = %lu, secondary_rx0 = %lu, primary_rx1 = %lu, primary_rx0 = %lu }",
+  sprintf(buffer,
+          "{ secondary_rx1 = %lu, secondary_rx0 = %lu, primary_rx1 = %lu, "
+          "primary_rx0 = %lu }",
           debug_rx_counters[0], debug_rx_counters[1], debug_rx_counters[2],
           debug_rx_counters[3]);
   tab_terminal_new_message(buffer);

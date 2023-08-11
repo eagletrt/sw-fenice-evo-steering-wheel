@@ -55,8 +55,6 @@ void MX_FDCAN1_Init(void) {
 
   /* USER CODE BEGIN FDCAN1_Init 0 */
 
-  init_can_device(&primary_can_device);
-
   /* USER CODE END FDCAN1_Init 0 */
 
   /* USER CODE BEGIN FDCAN1_Init 1 */
@@ -77,7 +75,7 @@ void MX_FDCAN1_Init(void) {
   hfdcan1.Init.DataTimeSeg1 = 1;
   hfdcan1.Init.DataTimeSeg2 = 1;
   hfdcan1.Init.MessageRAMOffset = 0;
-  hfdcan1.Init.StdFiltersNbr = 0;
+  hfdcan1.Init.StdFiltersNbr = 1;
   hfdcan1.Init.ExtFiltersNbr = 0;
   hfdcan1.Init.RxFifo0ElmtsNbr = 64;
   hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
@@ -102,8 +100,6 @@ void MX_FDCAN1_Init(void) {
 void MX_FDCAN2_Init(void) {
 
   /* USER CODE BEGIN FDCAN2_Init 0 */
-
-  init_can_device(&secondary_can_device);
 
   /* USER CODE END FDCAN2_Init 0 */
 
@@ -142,7 +138,7 @@ void MX_FDCAN2_Init(void) {
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN2_Init 2 */
-  _CAN_Init_secondary();
+  // _CAN_Init_secondary();
 
   /* USER CODE END FDCAN2_Init 2 */
 }
@@ -187,6 +183,8 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     /* FDCAN1 interrupt Init */
     HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
+    HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
     /* USER CODE BEGIN FDCAN1_MspInit 1 */
 
     /* USER CODE END FDCAN1_MspInit 1 */
@@ -222,6 +220,8 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* FDCAN2 interrupt Init */
+    HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
     HAL_NVIC_SetPriority(FDCAN2_IT1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(FDCAN2_IT1_IRQn);
     /* USER CODE BEGIN FDCAN2_MspInit 1 */
@@ -250,6 +250,7 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
     /* FDCAN1 interrupt Deinit */
     HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
+    HAL_NVIC_DisableIRQ(FDCAN1_IT1_IRQn);
     /* USER CODE BEGIN FDCAN1_MspDeInit 1 */
 
     /* USER CODE END FDCAN1_MspDeInit 1 */
@@ -270,6 +271,7 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12 | GPIO_PIN_13);
 
     /* FDCAN2 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(FDCAN2_IT0_IRQn);
     HAL_NVIC_DisableIRQ(FDCAN2_IT1_IRQn);
     /* USER CODE BEGIN FDCAN2_MspDeInit 1 */
 
@@ -279,16 +281,6 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
 /* USER CODE BEGIN 1 */
 
-void _CAN_error_handler(char *msg) { printf("%s\n", msg); }
-
-void init_can_device(device_t *can_device) {
-#if 0
-  device_init(can_device);
-  device_set_address(can_device, &_raw, primary_MAX_STRUCT_SIZE_RAW,
-                     &_converted, primary_MAX_STRUCT_SIZE_CONVERSION);
-#endif
-}
-
 /**
  * @brief Create the CAN filter for the primary CAN network
  * @param f A CAN_FilterTypeDef in which to store the filter data
@@ -297,12 +289,11 @@ void _CAN_Init_primary() {
   FDCAN_FilterTypeDef f = {0};
   HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
-  f.FilterIndex = 0;
-  f.FilterType = FDCAN_FILTER_RANGE;
+  f.FilterIndex = 1;
+  f.FilterType = FDCAN_FILTER_MASK;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
   f.FilterID1 = 0;
-  f.FilterID2 = 0x7FF;
-  f.RxBufferIndex = 0; // ignored
+  f.FilterID2 = 0;
   f.IsCalibrationMsg = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK) {
     primary_can_fatal_error = true;
@@ -310,7 +301,7 @@ void _CAN_Init_primary() {
 
   if ((s = HAL_FDCAN_ActivateNotification(
            &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
-      primary_can_fatal_error = true;
+    primary_can_fatal_error = true;
   }
 
   if ((s = HAL_FDCAN_Start(&hfdcan1)) != HAL_OK) {
@@ -326,12 +317,11 @@ void _CAN_Init_secondary() {
   FDCAN_FilterTypeDef f = {0};
   HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
-  f.FilterIndex = 1;
+  f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_MASK;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
   f.FilterID1 = 0;
-  f.FilterID2 = 0x7FF;
-  f.RxBufferIndex = 0; // ignored
+  f.FilterID2 = 0;
   f.IsCalibrationMsg = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK) {
     secondary_can_fatal_error = true;
@@ -356,7 +346,7 @@ void _can_wait(FDCAN_HandleTypeDef *nwk) {
 
 bool can_send(can_message_t *msg, bool to_primary_network) {
 
-  FDCAN_HandleTypeDef* nwk = to_primary_network ? &hfdcan1 : &hfdcan2;
+  FDCAN_HandleTypeDef *nwk = to_primary_network ? &hfdcan1 : &hfdcan2;
 
   uint32_t dlc_len = 0;
   switch (msg->size) {
