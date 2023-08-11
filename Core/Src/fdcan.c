@@ -38,6 +38,13 @@ void _CAN_error_handler(char *msg);
 void _CAN_Init_primary();
 void _CAN_Init_secondary();
 
+#if DEBUG_RX_BUFFERS_ENABLED == 1
+void debug_rx_count(bool is_primary, bool is_rx0);
+#endif
+
+bool primary_can_fatal_error = false;
+bool secondary_can_fatal_error = false;
+
 /* USER CODE END 0 */
 
 FDCAN_HandleTypeDef hfdcan1;
@@ -287,8 +294,8 @@ void init_can_device(device_t *can_device) {
  * @param f A CAN_FilterTypeDef in which to store the filter data
  * */
 void _CAN_Init_primary() {
-  FDCAN_FilterTypeDef f;
-  HAL_StatusTypeDef s;
+  FDCAN_FilterTypeDef f = {0};
+  HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
   f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_RANGE;
@@ -298,22 +305,16 @@ void _CAN_Init_primary() {
   f.RxBufferIndex = 0; // ignored
   f.IsCalibrationMsg = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK) {
-#ifdef STEERING_LOG_ENABLED
-    print("Failed to initialize CAN1 filter\n");
-#endif
+    primary_can_fatal_error = true;
   }
 
   if ((s = HAL_FDCAN_ActivateNotification(
            &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
-#ifdef STEERING_LOG_ENABLED
-    print("Failed to activate CAN1 interrupt\n");
-#endif
+      primary_can_fatal_error = true;
   }
 
   if ((s = HAL_FDCAN_Start(&hfdcan1)) != HAL_OK) {
-#ifdef STEERING_LOG_ENABLED
-    print("Failed to start CAN1\n");
-#endif
+    primary_can_fatal_error = true;
   }
 }
 
@@ -322,8 +323,8 @@ void _CAN_Init_primary() {
  * @param f A CAN_FilterTypeDef in which to store the filter data
  * */
 void _CAN_Init_secondary() {
-  FDCAN_FilterTypeDef f;
-  HAL_StatusTypeDef s;
+  FDCAN_FilterTypeDef f = {0};
+  HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
   f.FilterIndex = 1;
   f.FilterType = FDCAN_FILTER_MASK;
@@ -332,24 +333,17 @@ void _CAN_Init_secondary() {
   f.FilterID2 = 0x7FF;
   f.RxBufferIndex = 0; // ignored
   f.IsCalibrationMsg = 0;
-
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK) {
-#ifdef STEERING_LOG_ENABLED
-    print("Failed to initialize CAN2 filter\n");
-#endif
+    secondary_can_fatal_error = true;
   }
 
   if ((s = HAL_FDCAN_ActivateNotification(
            &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0)) != HAL_OK) {
-#ifdef STEERING_LOG_ENABLED
-    print("Failed to activate CAN2 interrupt\n");
-#endif
+    secondary_can_fatal_error = true;
   }
 
   if ((s = HAL_FDCAN_Start(&hfdcan2)) != HAL_OK) {
-#ifdef STEERING_LOG_ENABLED
-    print("Failed to start CAN2\n");
-#endif
+    secondary_can_fatal_error = true;
   }
 }
 
@@ -362,7 +356,7 @@ void _can_wait(FDCAN_HandleTypeDef *nwk) {
 
 bool can_send(can_message_t *msg, bool to_primary_network) {
 
-  FDCAN_HandleTypeDef nwk = to_primary_network ? hfdcan1 : hfdcan2;
+  FDCAN_HandleTypeDef* nwk = to_primary_network ? &hfdcan1 : &hfdcan2;
 
   uint32_t dlc_len = 0;
   switch (msg->size) {
@@ -407,10 +401,10 @@ bool can_send(can_message_t *msg, bool to_primary_network) {
       .MessageMarker = 0,
   };
 
-  _can_wait(&nwk);
+  _can_wait(nwk);
 
   HAL_StatusTypeDef result =
-      HAL_FDCAN_AddMessageToTxFifoQ(&nwk, &header, msg->data);
+      HAL_FDCAN_AddMessageToTxFifoQ(nwk, &header, msg->data);
   return result == HAL_OK;
 }
 
@@ -446,27 +440,42 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
   switch (header.DataLength) {
   case FDCAN_DLC_BYTES_0:
     msg.size = 0;
+    break;
   case FDCAN_DLC_BYTES_1:
     msg.size = 1;
+    break;
   case FDCAN_DLC_BYTES_2:
     msg.size = 2;
+    break;
   case FDCAN_DLC_BYTES_3:
     msg.size = 3;
+    break;
   case FDCAN_DLC_BYTES_4:
     msg.size = 4;
+    break;
   case FDCAN_DLC_BYTES_5:
     msg.size = 5;
+    break;
   case FDCAN_DLC_BYTES_6:
     msg.size = 6;
+    break;
   case FDCAN_DLC_BYTES_7:
     msg.size = 7;
+    break;
   case FDCAN_DLC_BYTES_8:
     msg.size = 8;
+    break;
   }
 
   if (hfdcan == &hfdcan1) {
+#if DEBUG_RX_BUFFERS_ENABLED == 1
+    debug_rx_count(true, true);
+#endif
     handle_primary(&msg);
-  } else {
+  } else if (hfdcan == &hfdcan2) {
+#if DEBUG_RX_BUFFERS_ENABLED == 1
+    debug_rx_count(false, true);
+#endif
     handle_secondary(&msg);
   }
 }
@@ -491,29 +500,52 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
   switch (header.DataLength) {
   case FDCAN_DLC_BYTES_0:
     msg.size = 0;
+    break;
   case FDCAN_DLC_BYTES_1:
     msg.size = 1;
+    break;
   case FDCAN_DLC_BYTES_2:
     msg.size = 2;
+    break;
   case FDCAN_DLC_BYTES_3:
     msg.size = 3;
+    break;
   case FDCAN_DLC_BYTES_4:
     msg.size = 4;
+    break;
   case FDCAN_DLC_BYTES_5:
     msg.size = 5;
+    break;
   case FDCAN_DLC_BYTES_6:
     msg.size = 6;
+    break;
   case FDCAN_DLC_BYTES_7:
     msg.size = 7;
+    break;
   case FDCAN_DLC_BYTES_8:
     msg.size = 8;
+    break;
   }
 
   if (hfdcan == &hfdcan1) {
+#if DEBUG_RX_BUFFERS_ENABLED == 1
+    debug_rx_count(true, false);
+#endif
     handle_primary(&msg);
-  } else {
+  } else if (hfdcan == &hfdcan2) {
+#if DEBUG_RX_BUFFERS_ENABLED == 1
+    debug_rx_count(false, false);
+#endif
     handle_secondary(&msg);
   }
 }
+
+#if DEBUG_RX_BUFFERS_ENABLED == 1
+uint32_t debug_rx_counters[4] = {0};
+void debug_rx_count(bool is_primary, bool is_rx0) {
+  // { primary_rx0, primary_rx1, secondary_rx0, secondary_rx1 }
+  debug_rx_counters[is_primary * 2 + is_rx0] += 1;
+}
+#endif
 
 /* USER CODE END 1 */

@@ -80,6 +80,21 @@ cansniffer_elem_t *secondary_cansniffer_buffer = (cansniffer_elem_t *)
     init_sbuf; // (cansniffer_elem_t*) SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS;
 #endif
 
+#if DEBUG_RX_BUFFERS_ENABLED == 1
+extern uint32_t debug_rx_counters[4];
+
+void update_rx_fn(lv_timer_t* tim) {
+  char buffer[128];
+  sprintf(buffer, "{ secondary_rx1 = %lu, secondary_rx0 = %lu, primary_rx1 = %lu, primary_rx0 = %lu }",
+          debug_rx_counters[0], debug_rx_counters[1], debug_rx_counters[2],
+          debug_rx_counters[3]);
+  tab_terminal_new_message(buffer);
+}
+#endif
+
+extern bool primary_can_fatal_error;
+extern bool secondary_can_fatal_error;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -212,6 +227,21 @@ int main(void) {
   lv_timer_t *read_inputs_task = lv_timer_create(read_inputs, 100, NULL);
   lv_timer_set_repeat_count(read_inputs_task, -1);
   lv_timer_reset(read_inputs_task);
+
+#if DEBUG_RX_BUFFERS_ENABLED == 1
+  lv_timer_t *update_rx_task = lv_timer_create(update_rx_fn, 2000, NULL);
+  lv_timer_set_repeat_count(update_rx_task, -1);
+  lv_timer_reset(update_rx_task);
+#endif
+
+  if (primary_can_fatal_error) {
+    enter_fatal_error_mode("Primary CAN fatal error");
+    Error_Handler();
+  }
+  if (secondary_can_fatal_error) {
+    enter_fatal_error_mode("Secondary CAN fatal error");
+    Error_Handler();
+  }
 
   // lv_timer_t *watchdog_task = lv_timer_create(watchdog_task_fn, 5000, NULL);
   // lv_timer_set_repeat_count(watchdog_task, -1);
