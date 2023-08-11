@@ -259,7 +259,11 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
                                : value;
     return;
   }
+  // return;
   uint8_t new_manettino_index = from_manettino_value_to_index(value, manettino);
+  // return;
+  // float x = val_torque_map_index[new_manettino_index];
+  // return;
   if (new_manettino_index == MANETTINO_INVALID_VALUE)
     return;
   switch (manettino) {
@@ -280,14 +284,16 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       dstep = -1;
     if (!engineer_mode) {
       power_map_last_state += ((float)dstep * 10.0f);
-      power_map_last_state = fmin((float) power_map_last_state, 100.0f);
-      power_map_last_state = fmax((float) power_map_last_state, -10.0f);
+      power_map_last_state = fmin((float)power_map_last_state, 100.0f);
+      power_map_last_state = fmax((float)power_map_last_state, -10.0f);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
     } else {
       // pork cooling
       hv_fans_override_last_state += ((float)dstep * 10.0f);
-      hv_fans_override_last_state = fmin((float)hv_fans_override_last_state, 100.0f);
-      hv_fans_override_last_state = fmax((float)hv_fans_override_last_state, -10.0f);
+      hv_fans_override_last_state =
+          fmin((float)hv_fans_override_last_state, 100.0f);
+      hv_fans_override_last_state =
+          fmax((float)hv_fans_override_last_state, -10.0f);
       send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
     }
     break;
@@ -310,6 +316,7 @@ void read_manettino_left(void) {
                        &manettino_input, 1, 100) != HAL_OK) {
 #ifdef STEERING_LOG_ENABLED
     print("Error\n");
+    // TODO COUNTER AND TAB FATAL ERROR
 #endif
     return;
   }
@@ -325,6 +332,7 @@ void read_manettino_center(void) {
                        &manettino_input, 1, 100) != HAL_OK) {
 #ifdef STEERING_LOG_ENABLED
     print("Error\n");
+    // TODO COUNTER AND TAB FATAL ERROR
 #endif
     return;
   }
@@ -340,6 +348,7 @@ void read_manettino_right(void) {
                        &manettino_input, 1, 100) != HAL_OK) {
 #ifdef STEERING_LOG_ENABLED
     print("Error\n");
+    // TODO COUNTER AND TAB FATAL ERROR
 #endif
     return;
   }

@@ -190,9 +190,11 @@ void manettino_send_set_radiators(float val) {
 
 void send_pork_fans_status(float val) {
   if (val < 0.0f) {
-    hv_fans_override_settings.fans_override = primary_hv_fans_override_fans_override_OFF;
+    hv_fans_override_settings.fans_override =
+        primary_hv_fans_override_fans_override_OFF;
   } else {
-    hv_fans_override_settings.fans_override = primary_hv_fans_override_fans_override_ON;
+    hv_fans_override_settings.fans_override =
+        primary_hv_fans_override_fans_override_ON;
     hv_fans_override_settings.fans_speed = fmax(0.0f, fmin(1.0f, val));
   }
   primary_hv_fans_override_converted_t converted = {0};
@@ -202,7 +204,8 @@ void send_pork_fans_status(float val) {
   can_send(&msg, true);
 
   int map_val = (int)(hv_fans_override_settings.fans_speed * 100.0f);
-  if (hv_fans_override_settings.fans_override == primary_hv_fans_override_fans_override_OFF) {
+  if (hv_fans_override_settings.fans_override ==
+      primary_hv_fans_override_fans_override_OFF) {
     sprintf(sprintf_buffer, "FANS AUTO");
   } else {
     sprintf(sprintf_buffer, "FANS %d", map_val);

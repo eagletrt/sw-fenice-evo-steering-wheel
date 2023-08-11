@@ -42,6 +42,7 @@ primary_lv_errors_converted_t lv_errors_last_state = {0};
 primary_cooling_status_converted_t cooling_status_last_state = {0};
 primary_hv_fans_override_status_converted_t hv_fans_override_status_last_state =
     {0};
+primary_lv_feedbacks_converted_t lv_feedbacks_last_state = {0};
 
 secondary_steering_angle_converted_t steering_angle_converted = {0};
 secondary_pedals_output_converted_t pedals_output_last_state = {0};
@@ -200,8 +201,7 @@ void hv_voltage_update(primary_hv_voltage_converted_t *data) {
     hv_voltage_last_state.pack_voltage = data->pack_voltage;
     sprintf(sprintf_buffer, "%.1f", data->pack_voltage);
     STEER_UPDATE_LABEL(steering.lb_pack_voltage, sprintf_buffer);
-    lv_bar_set_value(steering.racing_lv_bar, data->pack_voltage,
-                     LV_ANIM_OFF);
+    lv_bar_set_value(steering.racing_lv_bar, data->pack_voltage, LV_ANIM_OFF);
   }
   if (data->bus_voltage != hv_voltage_last_state.bus_voltage) {
     hv_voltage_last_state.bus_voltage = data->bus_voltage;
@@ -285,6 +285,15 @@ void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *data) {
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_in, 17)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_bms, 18)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_imd, 19)
+}
+
+void lv_feedbacks_update(primary_lv_feedbacks_converted_t *data) {
+  if (memcmp(data, &lv_feedbacks_last_state,
+             sizeof(primary_lv_feedbacks_converted_t)) != 0) {
+    memcpy(&lv_feedbacks_last_state, data,
+           sizeof(primary_lv_feedbacks_converted_t));
+    // do stuff
+  }
 }
 
 void hv_fans_override_status_update(
