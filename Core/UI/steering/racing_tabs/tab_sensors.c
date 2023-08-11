@@ -404,35 +404,33 @@ void tab_sensors_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(y2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 2,
                        1);
 /* 4th row */
-#if 0
+#if 1
   lv_obj_t *cooling_rad_lb =
-      lv_triple_label(right_data_panel,
-                      &steering.lb_radiators_speed[TAB_SENSORS],
-                      "X", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_22,
-                      "RAD", &lv_font_inter_bold_20);
+      lv_triple_label(right_data_panel, &steering.tab_sensors_extra_value0,
+                      "V1", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
+                      "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(cooling_rad_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
-  lv_obj_t *cooling_pump_lb = lv_triple_label(
-      right_data_panel, &steering.lb_pumps_speed[TAB_SENSORS],
-      "X", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_22, "PUMP",
-      &lv_font_inter_bold_20);
+  lv_obj_t *cooling_pump_lb =
+      lv_triple_label(right_data_panel, &steering.tab_sensors_extra_value1,
+                      "V2", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
+                      "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(cooling_pump_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
-  lv_obj_t *y1 = lv_triple_label(
-      right_data_panel, &steering.[TAB_SENSORS],
-      "X", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_22, "X",
-      &lv_font_inter_bold_20);
-  lv_obj_set_grid_cell(y1, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 3,
+  lv_obj_t *y11 =
+      lv_triple_label(right_data_panel, &steering.tab_sensors_extra_value2,
+                      "V3", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
+                      "-", &lv_font_inter_bold_20);
+  lv_obj_set_grid_cell(y11, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 3,
                        1);
 
-  lv_obj_t *y2 =
-      lv_triple_label(right_data_panel,
-                      &steering.lb_tlm_status[TAB_SENSORS],
-                      "TLM", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
-                      "ON", &lv_font_inter_bold_20);
-  lv_obj_set_grid_cell(y2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 3,
+  lv_obj_t *y21 =
+      lv_triple_label(right_data_panel, &steering.tab_sensors_extra_value3,
+                      "V4", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
+                      "-", &lv_font_inter_bold_20);
+  lv_obj_set_grid_cell(y21, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 3,
                        1);
 #endif
 

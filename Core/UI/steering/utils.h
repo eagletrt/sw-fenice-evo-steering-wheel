@@ -31,8 +31,10 @@ typedef enum {
 typedef enum {
   TAB_ENGINEER_MODE,
   TAB_COOLING,
+#if CANSNIFFER_ENABLED == 1
   TAB_SECONDARY_CANSNIFFER,
   TAB_PRIMARY_CANSNIFFER,
+#endif
   // add here new tabs
   NUM_ENGINEER_TABS
 } engineer_tab_t;

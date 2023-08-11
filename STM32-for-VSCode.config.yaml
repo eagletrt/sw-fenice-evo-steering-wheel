@@ -24,6 +24,7 @@ cDefinitions:
   - USE_HAL_DRIVER
   - STM32H723xx
   - LV_LVGL_H_INCLUDE_SIMPLE
+  - CANSNIFFER_ENABLED=1
 
 cxxDefinitions: 
   - USE_HAL_DRIVER

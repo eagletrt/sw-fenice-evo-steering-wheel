@@ -72,7 +72,9 @@ void turn_telemetry_on_off(void);
 void calibration_tool_set_min_max(bool);
 void calibration_request_timeout_check(uint32_t);
 
+#if CANSNIFFER_ENABLED == 1
 void switch_cansniffer(void);
 void change_cansniffer_index(bool);
+#endif
 
 #endif

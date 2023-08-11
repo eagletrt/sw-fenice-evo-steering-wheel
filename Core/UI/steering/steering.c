@@ -161,6 +161,12 @@ void cooling_status_update(primary_cooling_status_converted_t *data) {
   }
 }
 
+void tlm_status_update(primary_tlm_status_converted_t *data) {
+  if (tlm_status_last_state.tlm_status != data->tlm_status) {
+    tlm_status_last_state.tlm_status = data->tlm_status;
+  }
+}
+
 void speed_update(primary_speed_converted_t *data) {
   if (car_status_last_state.car_status != primary_car_status_car_status_DRIVE)
     return;
@@ -199,7 +205,7 @@ void hv_voltage_update(primary_hv_voltage_converted_t *data) {
   }
   if (data->pack_voltage != hv_voltage_last_state.pack_voltage) {
     hv_voltage_last_state.pack_voltage = data->pack_voltage;
-    sprintf(sprintf_buffer, "%.1f", data->pack_voltage);
+    sprintf(sprintf_buffer, "%.0f", data->pack_voltage);
     STEER_UPDATE_LABEL(steering.lb_pack_voltage, sprintf_buffer);
     lv_bar_set_value(steering.racing_lv_bar, data->pack_voltage, LV_ANIM_OFF);
   }
@@ -596,4 +602,25 @@ void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *data) {
         STEER_UPDATE_LABEL(steering.lb_speed, sprintf_buffer);
     }
 #endif
+}
+
+void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
+  switch (extra_value) {
+  case 0: {
+    lv_label_set_text_fmt(steering.tab_sensors_extra_value0, "%s", buf);
+    break;
+  }
+  case 1: {
+    lv_label_set_text_fmt(steering.tab_sensors_extra_value1, "%s", buf);
+    break;
+  }
+  case 2: {
+    lv_label_set_text_fmt(steering.tab_sensors_extra_value2, "%s", buf);
+    break;
+  }
+  case 3: {
+    lv_label_set_text_fmt(steering.tab_sensors_extra_value3, "%s", buf);
+    break;
+  }
+  }
 }

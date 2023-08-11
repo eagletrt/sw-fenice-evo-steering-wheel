@@ -8,8 +8,11 @@ lv_obj_t *tab_debug_ptr;
 lv_obj_t *notif_screen;
 lv_obj_t *tab_engineer_mode_ptr;
 lv_obj_t *tab_cooling_ptr;
+
+#if CANSNIFFER_ENABLED == 1
 lv_obj_t *tab_primary_cansniffer_ptr;
 lv_obj_t *tab_secondary_cansniffer_ptr;
+#endif
 
 lv_timer_t *notification_timer;
 lv_group_t *g;
@@ -33,8 +36,10 @@ void tab_manager(void) {
   notif_screen = lv_obj_create(NULL);
   tab_engineer_mode_ptr = lv_obj_create(NULL);
   tab_cooling_ptr = lv_obj_create(NULL);
+#if CANSNIFFER_ENABLED == 1
   tab_primary_cansniffer_ptr = lv_obj_create(NULL);
   tab_secondary_cansniffer_ptr = lv_obj_create(NULL);
+#endif
 
   lv_group_add_obj(g, tab_racing_ptr);
   lv_group_add_obj(g, tab_sensors_ptr);
@@ -44,8 +49,10 @@ void tab_manager(void) {
   lv_group_add_obj(g, notif_screen);
   lv_group_add_obj(g, tab_engineer_mode_ptr);
   lv_group_add_obj(g, tab_cooling_ptr);
+#if CANSNIFFER_ENABLED == 1
   lv_group_add_obj(g, tab_primary_cansniffer_ptr);
   lv_group_add_obj(g, tab_secondary_cansniffer_ptr);
+#endif
 
   tab_racing_create(tab_racing_ptr);
   tab_sensors_create(tab_sensors_ptr);
@@ -55,8 +62,10 @@ void tab_manager(void) {
   tab_notification_screen_create(notif_screen);
   tab_engineer_screen_create(tab_engineer_mode_ptr);
   tab_cooling_create(tab_cooling_ptr);
+#if CANSNIFFER_ENABLED == 1
   primary_tab_cansniffer_create(tab_primary_cansniffer_ptr);
   secondary_tab_cansniffer_create(tab_secondary_cansniffer_ptr);
+#endif
   lv_scr_load(tab_racing_ptr);
   current_racing_tab = TAB_RACING;
   current_engineer_tab = TAB_ENGINEER_MODE;
@@ -124,12 +133,14 @@ void load_current_engineering_tab() {
   case TAB_COOLING:
     lv_scr_load(tab_cooling_ptr);
     break;
+#if CANSNIFFER_ENABLED == 1
   case TAB_SECONDARY_CANSNIFFER:
     lv_scr_load(tab_secondary_cansniffer_ptr);
     break;
   case TAB_PRIMARY_CANSNIFFER:
     lv_scr_load(tab_primary_cansniffer_ptr);
     break;
+#endif
   default:
     break;
   }

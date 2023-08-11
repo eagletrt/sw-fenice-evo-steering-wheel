@@ -55,9 +55,9 @@ void configure_internal_pull_up_resistors() {
 
 void inputs_init(void) {
   dev1 = (MCP23017_HandleTypeDef){
-      .addr = MCP23017_DEV1_ADDR, .hi2c = &hi2c4, .gpio = {0xFF, 0xFF}};
+      .addr = MCP23017_DEV1_ADDR, .hi2c = &hi2c4, .gpio = {0, 0}};
   dev2 = (MCP23017_HandleTypeDef){
-      .addr = MCP23017_DEV2_ADDR, .hi2c = &hi2c4, .gpio = {0xFF, 0xFF}};
+      .addr = MCP23017_DEV2_ADDR, .hi2c = &hi2c4, .gpio = {0, 0}};
   mcp23017_init(&dev1);
   mcp23017_init(&dev2);
 }
@@ -90,7 +90,9 @@ void buttons_pressed_actions(uint8_t button) {
       shift_box_focus(true);
       change_errors_view(false);
     } else {
+#if CANSNIFFER_ENABLED == 1
       change_cansniffer_index(true);
+#endif
     }
     break;
   }
@@ -99,13 +101,17 @@ void buttons_pressed_actions(uint8_t button) {
       shift_box_focus(false);
       change_errors_view(true);
     } else {
+#if CANSNIFFER_ENABLED == 1
       change_cansniffer_index(false);
+#endif
     }
     break;
   }
   case BUTTON_TOP_RIGHT:
     if (engineer_mode) {
+#if CANSNIFFER_ENABLED == 1
       switch_cansniffer();
+#endif
     } else {
       turn_telemetry_on_off();
     }
@@ -259,27 +265,32 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
                                : value;
     return;
   }
-  // return;
   uint8_t new_manettino_index = from_manettino_value_to_index(value, manettino);
-  // return;
-  // float x = val_torque_map_index[new_manettino_index];
-  // return;
-  if (new_manettino_index == MANETTINO_INVALID_VALUE)
+  if (new_manettino_index == MANETTINO_INVALID_VALUE ||
+      new_manettino_index < 0 || new_manettino_index >= MANETTINO_STEPS_N) {
     return;
+  }
   switch (manettino) {
   case MANETTINO_RIGHT_INDEX: {
-    if (!engineer_mode)
+    if (!engineer_mode) {
       manettino_send_torque_vectoring(
           val_torque_map_index[new_manettino_index]);
-    else
+      // display_notification("Torque vectoring set", 1000);
+    } else {
       manettino_send_set_radiators(
           val_radiators_speed_index[new_manettino_index]);
+      // display_notification("Radiators set", 1000);
+    }
     break;
   }
   case MANETTINO_CENTER_INDEX: {
     int dstep = new_manettino_index - manettini[MANETTINO_CENTER_INDEX];
     if (dstep == -7)
       dstep = 1;
+    if (dstep == -6)
+      dstep = 2;
+    if (dstep == 6)
+      dstep = -2;
     if (dstep == 7)
       dstep = -1;
     if (!engineer_mode) {
@@ -287,6 +298,7 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       power_map_last_state = fmin((float)power_map_last_state, 100.0f);
       power_map_last_state = fmax((float)power_map_last_state, -10.0f);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
+      // display_notification("Power map set", 1000);
     } else {
       // pork cooling
       hv_fans_override_last_state += ((float)dstep * 10.0f);
@@ -295,15 +307,22 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       hv_fans_override_last_state =
           fmax((float)hv_fans_override_last_state, -10.0f);
       send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
+      // display_notification("Pork fans set", 1000);
     }
     break;
   }
   case MANETTINO_LEFT_INDEX: {
-    if (!engineer_mode)
+    if (!engineer_mode) {
       manettino_send_slip_control(val_slip_map_index[new_manettino_index]);
-    else
+      // display_notification("Slip control set", 1000);
+    } else {
       manettino_send_set_pumps_speed(
           val_pumps_speed_index[new_manettino_index]);
+      // display_notification("Pumps set", 1000);
+    }
+    break;
+  }
+  default: {
     break;
   }
   }
@@ -322,6 +341,9 @@ void read_manettino_left(void) {
   }
   if (manettino_input != dev1.gpio[0]) {
     manettini_actions(manettino_input, MANETTINO_LEFT_INDEX);
+    char sprintf_buf[6];
+    sprintf(sprintf_buf, "%d\n", manettino_input);
+    update_sensors_extra_value(sprintf_buf, 0);
     dev1.gpio[0] = manettino_input;
   }
 }
@@ -338,6 +360,9 @@ void read_manettino_center(void) {
   }
   if (manettino_input != dev2.gpio[1]) {
     manettini_actions(manettino_input, MANETTINO_CENTER_INDEX);
+    char sprintf_buf[6];
+    sprintf(sprintf_buf, "%d\n", manettino_input);
+    update_sensors_extra_value(sprintf_buf, 1);
     dev2.gpio[1] = manettino_input;
   }
 }
@@ -354,6 +379,9 @@ void read_manettino_right(void) {
   }
   if (manettino_input != dev2.gpio[0]) {
     manettini_actions(manettino_input, MANETTINO_RIGHT_INDEX);
+    char sprintf_buf[6];
+    sprintf(sprintf_buf, "%d\n", manettino_input);
+    update_sensors_extra_value(sprintf_buf, 2);
     dev2.gpio[0] = manettino_input;
   }
 }

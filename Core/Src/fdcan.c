@@ -29,8 +29,10 @@ device_t secondary_can_device;
 uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
 uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
 
+#if CANSNIFFER_ENABLED == 1
 extern cansniffer_elem_t *primary_cansniffer_buffer;
 extern cansniffer_elem_t *secondary_cansniffer_buffer;
+#endif
 
 void _CAN_error_handler(char *msg);
 void _CAN_Init_primary();
@@ -133,7 +135,7 @@ void MX_FDCAN2_Init(void) {
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN2_Init 2 */
-  _CAN_Init_secondary();
+  // _CAN_Init_secondary();
 
   /* USER CODE END FDCAN2_Init 2 */
 }

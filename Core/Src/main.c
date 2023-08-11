@@ -67,6 +67,7 @@ const size_t secondary_watchdog_monitored_ids_size =
 lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
 lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
+#if CANSNIFFER_ENABLED == 1
 cansniffer_elem_t init_pbuf[CAN_POSSIBLE_IDS];
 cansniffer_elem_t init_sbuf[CAN_POSSIBLE_IDS];
 /***
@@ -77,6 +78,7 @@ cansniffer_elem_t *primary_cansniffer_buffer = (cansniffer_elem_t *)
     init_pbuf; // (cansniffer_elem_t* ) PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS;
 cansniffer_elem_t *secondary_cansniffer_buffer = (cansniffer_elem_t *)
     init_sbuf; // (cansniffer_elem_t*) SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS;
+#endif
 
 /* USER CODE END PV */
 
@@ -171,7 +173,9 @@ int main(void) {
   }
 #endif
 
+#if CANSNIFFER_ENABLED == 1
   cansniffer_buffer_init();
+#endif
 
 #define SCREEN_ENABLED 1
 #if SCREEN_ENABLED == 1

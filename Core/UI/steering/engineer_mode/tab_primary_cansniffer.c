@@ -1,3 +1,5 @@
+#if CANSNIFFER_ENABLED == 1
+
 #include "tab_primary_cansniffer.h"
 
 extern steering_tabs_t steering;
@@ -244,3 +246,5 @@ void primary_tab_cansniffer_create(lv_obj_t *parent) {
                          i + 1, 1);
   }
 }
+
+#endif // CANSNIFFER_ENABLED == 1

@@ -58,9 +58,10 @@ static int tick_thread(void *data);
  *  STATIC VARIABLES
  **********************/
 
+#if CANSNIFFER_ENABLED == 1
 cansniffer_elem_t *primary_cansniffer_buffer;
 cansniffer_elem_t *secondary_cansniffer_buffer;
-extern bool cansniffer_initialized;
+#endif
 
 extern bool engineer_mode;
 
@@ -73,7 +74,9 @@ extern bool engineer_mode;
  **********************/
 
 void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e);
+#if CANSNIFFER_ENABLED == 1
 void save_cansniffer_data(lv_timer_t *timer);
+#endif
 
 /*********************
  *      DEFINES
@@ -131,12 +134,13 @@ int main(int argc, char **argv) {
   (void)argc; /*Unused*/
   (void)argv; /*Unused*/
 
+#if CANSNIFFER_ENABLED == 1
   primary_cansniffer_buffer =
       malloc(sizeof(cansniffer_elem_t) * CAN_POSSIBLE_IDS);
   secondary_cansniffer_buffer =
       malloc(sizeof(cansniffer_elem_t) * CAN_POSSIBLE_IDS);
   cansniffer_buffer_init();
-  cansniffer_initialized = true;
+#endif
 
   /*Initialize LVGL*/
   lv_init();
@@ -220,6 +224,7 @@ int main(int argc, char **argv) {
  *   STATIC FUNCTIONS
  **********************/
 
+#if CANSNIFFER_ENABLED == 1
 void save_cansniffer_data(lv_timer_t *timer) {
   for (int i = 0; i < CAN_POSSIBLE_IDS; i++) {
     if (primary_cansniffer_buffer[i].timestamp != 0) {
@@ -234,6 +239,7 @@ void save_cansniffer_data(lv_timer_t *timer) {
     }
   }
 }
+#endif
 
 /**
  * Initialize the Hardware Abstraction Layer (HAL) for the LVGL graphics
@@ -333,18 +339,24 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
     break;
   case 'g': {
     if (engineer_mode) {
+#if CANSNIFFER_ENABLED == 1
       switch_cansniffer();
+#endif
     } else {
       turn_telemetry_on_off();
     }
     break;
   }
   case 'h': {
+#if CANSNIFFER_ENABLED == 1
     change_cansniffer_index(true);
+#endif
     break;
   }
   case 'j': {
+#if CANSNIFFER_ENABLED == 1
     change_cansniffer_index(false);
+#endif
     break;
   }
 

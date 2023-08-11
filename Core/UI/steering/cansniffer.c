@@ -1,3 +1,5 @@
+#if CANSNIFFER_ENABLED == 1
+
 #include "cansniffer.h"
 
 static_assert(
@@ -24,4 +26,7 @@ void cansniffer_buffer_init(void) {
          CAN_POSSIBLE_IDS * CANSNIFFER_ELEM_T_SIZE);
   memset(secondary_cansniffer_buffer, 0,
          CAN_POSSIBLE_IDS * CANSNIFFER_ELEM_T_SIZE);
+  cansniffer_initialized = true;
 }
+
+#endif

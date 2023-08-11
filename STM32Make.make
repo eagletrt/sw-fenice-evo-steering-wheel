@@ -226,9 +226,10 @@ Core/UI/steering/cansniffer.c \
 Core/UI/steering/controls.c \
 Core/UI/steering/engineer_mode/tab_cooling.c \
 Core/UI/steering/engineer_mode/tab_engineer_mode.c \
+Core/UI/steering/engineer_mode/tab_fatal_error.c \
 Core/UI/steering/engineer_mode/tab_primary_cansniffer.c \
 Core/UI/steering/engineer_mode/tab_secondary_cansniffer.c \
-Core/UI/steering/engineer_mode/tab_shutdown.c \
+Core/UI/steering/engineer_mode/tab_shutdown_circuit.c \
 Core/UI/steering/engineer_mode/tab_terminal.c \
 Core/UI/steering/fonts/lv_font_inter_bold_14.c \
 Core/UI/steering/fonts/lv_font_inter_bold_18.c \
@@ -331,6 +332,7 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
+-DCANSNIFFER_ENABLED=1 \
 -DLV_LVGL_H_INCLUDE_SIMPLE \
 -DSTM32H723xx \
 -DUSE_HAL_DRIVER

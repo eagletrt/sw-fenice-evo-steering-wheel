@@ -6,15 +6,17 @@ bool calibration_max_sent_request[CALBOX_N];
 uint32_t calibration_min_request_timestamp[CALBOX_N];
 uint32_t calibration_max_request_timestamp[CALBOX_N];
 
+#if CANSNIFFER_ENABLED == 1
 int primary_cansniffer_start_index = 0;
 int secondary_cansniffer_start_index = 0;
+#endif
 
 extern racing_tab_t current_racing_tab;
 extern engineer_tab_t current_engineer_tab;
 extern bool engineer_mode;
 extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
-extern char *sprintf_buffer;
+char sprintf_buffer_controls[BUFSIZ];
 
 extern primary_tlm_status_t tlm_status_last_state;
 extern primary_car_status_t car_status_last_state;
@@ -119,21 +121,21 @@ void calibration_tool_set_min_max(bool maxv) {
 void manettino_send_slip_control(float val) {
   steer_status_last_state.map_sc = val;
 
-  uint16_t map_val = (uint16_t)(steer_status_last_state.map_sc * 100.0f);
-  sprintf(sprintf_buffer, "%u", map_val);
-  STEER_UPDATE_LABEL(steering.lb_slip, sprintf_buffer)
-  sprintf(sprintf_buffer, "SLIP CONTROL %u", map_val);
-  display_notification(sprintf_buffer, 750);
+  int map_val = (int)(steer_status_last_state.map_sc * 100.0f);
+  sprintf(sprintf_buffer_controls, "%u", map_val);
+  STEER_UPDATE_LABEL(steering.lb_slip, sprintf_buffer_controls)
+  sprintf(sprintf_buffer_controls, "SLIP CONTROL %u", map_val);
+  display_notification(sprintf_buffer_controls, 750);
 }
 
 void manettino_send_torque_vectoring(float val) {
   steer_status_last_state.map_tv = val;
 
-  uint16_t map_val = (uint16_t)(steer_status_last_state.map_tv * 100.0f);
-  sprintf(sprintf_buffer, "%u", map_val);
-  STEER_UPDATE_LABEL(steering.lb_torque, sprintf_buffer)
-  sprintf(sprintf_buffer, "TORQUE VECTORING %u", map_val);
-  display_notification(sprintf_buffer, 750);
+  int map_val = (int)(steer_status_last_state.map_tv * 100.0f);
+  sprintf(sprintf_buffer_controls, "%u", map_val);
+  STEER_UPDATE_LABEL(steering.lb_torque, sprintf_buffer_controls)
+  sprintf(sprintf_buffer_controls, "TORQUE VECTORING %u", map_val);
+  display_notification(sprintf_buffer_controls, 750);
 }
 
 void manettino_send_power_map(float val) {
@@ -141,16 +143,15 @@ void manettino_send_power_map(float val) {
   int map_val = (int)(steer_status_last_state.map_pw * 100.0f);
 
   if (map_val < 0) {
-    sprintf(sprintf_buffer, "TUPIDO");
-    STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer)
-    sprintf(sprintf_buffer, "POWER MAP TUPIDO");
+    sprintf(sprintf_buffer_controls, "TUPIDO");
+    STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer_controls)
+    sprintf(sprintf_buffer_controls, "POWER MAP ENDRIO");
   } else {
-    sprintf(sprintf_buffer, "%d", map_val);
-    STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer)
-    sprintf(sprintf_buffer, "POWER MAP %d", map_val);
+    sprintf(sprintf_buffer_controls, "%d", map_val);
+    STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer_controls)
+    sprintf(sprintf_buffer_controls, "POWER MAP %d", map_val);
   }
-
-  display_notification(sprintf_buffer, 750);
+  display_notification(sprintf_buffer_controls, 750);
 }
 
 void manettino_send_set_pumps_speed(float val) {
@@ -164,11 +165,11 @@ void manettino_send_set_pumps_speed(float val) {
   int map_val = (int)(steering_cooling_settings.pumps_speed * 100.0f);
 
   if (steering_cooling_settings.pumps_speed < 0.0f) {
-    sprintf(sprintf_buffer, "PUMPS SPEED AUTO");
+    sprintf(sprintf_buffer_controls, "PUMPS SPEED AUTO");
   } else {
-    sprintf(sprintf_buffer, "PUMPS SPEED %d", map_val);
+    sprintf(sprintf_buffer_controls, "PUMPS SPEED %d", map_val);
   }
-  display_notification(sprintf_buffer, 750);
+  display_notification(sprintf_buffer_controls, 750);
 }
 
 void manettino_send_set_radiators(float val) {
@@ -181,11 +182,11 @@ void manettino_send_set_radiators(float val) {
   int map_val = (int)(steering_cooling_settings.radiators_speed * 100.0f);
 
   if (steering_cooling_settings.radiators_speed < 0.0f) {
-    sprintf(sprintf_buffer, "RADIATOR SPEED AUTO");
+    sprintf(sprintf_buffer_controls, "RADIATOR SPEED AUTO");
   } else {
-    sprintf(sprintf_buffer, "RADIATORS SPEED %d", map_val);
+    sprintf(sprintf_buffer_controls, "RADIATORS SPEED %d", map_val);
   }
-  display_notification(sprintf_buffer, 750);
+  display_notification(sprintf_buffer_controls, 750);
 }
 
 void send_pork_fans_status(float val) {
@@ -206,11 +207,11 @@ void send_pork_fans_status(float val) {
   int map_val = (int)(hv_fans_override_settings.fans_speed * 100.0f);
   if (hv_fans_override_settings.fans_override ==
       primary_hv_fans_override_fans_override_OFF) {
-    sprintf(sprintf_buffer, "FANS AUTO");
+    sprintf(sprintf_buffer_controls, "FANS AUTO");
   } else {
-    sprintf(sprintf_buffer, "FANS %d", map_val);
+    sprintf(sprintf_buffer_controls, "FANS %d", map_val);
   }
-  display_notification(sprintf_buffer, 750);
+  display_notification(sprintf_buffer_controls, 750);
 }
 
 void send_set_car_status(primary_set_car_status_car_status_set val) {
@@ -276,6 +277,7 @@ bool send_set_car_status_directly(void) {
   return true;
 }
 
+#if CANSNIFFER_ENABLED == 1
 void switch_cansniffer(void) {
   if (!engineer_mode)
     return;
@@ -310,3 +312,4 @@ void change_cansniffer_index(bool plus) {
     }
   }
 }
+#endif

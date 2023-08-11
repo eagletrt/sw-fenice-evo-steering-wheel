@@ -4,10 +4,11 @@ extern steering_tabs_t steering;
 extern bool steering_initialized;
 extern primary_steer_status_converted_t steer_status_last_state;
 
+#if CANSNIFFER_ENABLED == 1
 extern cansniffer_elem_t *primary_cansniffer_buffer;
 extern cansniffer_elem_t *secondary_cansniffer_buffer;
-
 extern bool cansniffer_initialized;
+#endif
 
 char name_buffer[BUFSIZ];
 
@@ -31,9 +32,11 @@ void send_steer_status(lv_timer_t *main_timer) {
 void handle_primary(can_message_t *msg) {
   if (!steering_initialized)
     return;
+#if CANSNIFFER_ENABLED == 1
   if (cansniffer_initialized) {
     cansniffer_primary_new_message(msg);
   }
+#endif
 #if CAN_LOG_ENABLED
   primary_message_name_from_id(msg->id, name_buffer);
   print("Primary network - message id %s\n", name_buffer);
@@ -106,6 +109,11 @@ void handle_primary(can_message_t *msg) {
     hv_fans_override_status_update(&converted);
     break;
   }
+  case PRIMARY_TLM_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, tlm_status, TLM_STATUS);
+    tlm_status_update(&converted);
+    break;
+  }
   case PRIMARY_DAS_ERRORS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, das_errors, DAS_ERRORS);
     das_errors_update(&converted);
@@ -153,9 +161,11 @@ void handle_primary(can_message_t *msg) {
 void handle_secondary(can_message_t *msg) {
   if (!steering_initialized)
     return;
+#if CANSNIFFER_ENABLED == 1
   if (cansniffer_initialized) {
     cansniffer_secondary_new_message(msg);
   }
+#endif
 #if CAN_LOG_ENABLED
   secondary_message_name_from_id(msg->id, name_buffer);
   print("Secondary network - message id %s\n", name_buffer);

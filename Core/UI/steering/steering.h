@@ -124,6 +124,11 @@ typedef struct {
   lv_obj_t *das_errors[9];
   lv_obj_t *lv_errors[17];
 
+  lv_obj_t *tab_sensors_extra_value0;
+  lv_obj_t *tab_sensors_extra_value1;
+  lv_obj_t *tab_sensors_extra_value2;
+  lv_obj_t *tab_sensors_extra_value3;
+
   lv_obj_t *notification_screen_label;
 
   /* Tab Racing */
@@ -175,6 +180,7 @@ void lv_errors_update(primary_lv_errors_converted_t *);
 void cooling_status_update(primary_cooling_status_converted_t *);
 void hv_fans_override_status_update(
     primary_hv_fans_override_status_converted_t *);
+void tlm_status_update(primary_tlm_status_converted_t *);
 
 void steering_angle_update(secondary_steering_angle_converted_t *);
 void pedals_output_update(secondary_pedals_output_converted_t *);
@@ -191,6 +197,7 @@ void remove_keep_lap_counter(lv_timer_t *timer);
 
 void display_notification(const char *, uint32_t);
 void restore_previous_screen(lv_timer_t *timer);
+void update_sensors_extra_value(const char *buf, uint8_t extra_value);
 
 uint32_t get_current_time_ms(void);
 

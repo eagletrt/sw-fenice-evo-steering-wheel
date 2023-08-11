@@ -1,3 +1,5 @@
+#if CANSNIFFER_ENABLED == 1
+
 #ifndef CANSNIFFER_H
 #define CANSNIFFER_H
 
@@ -31,3 +33,5 @@ void switch_primary_cansniffer();
 void update_primary_cansniffer_ui(lv_timer_t *unused_tim);
 
 #endif // CANSNIFFER_H
+
+#endif // CANSNIFFER_ENABLED == 1
