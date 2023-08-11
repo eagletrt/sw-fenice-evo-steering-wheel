@@ -68,11 +68,8 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
   }
 
   for (size_t i = 0; i < disp->inv_p; i++) {
-    // If the area was not joined (and thus should not be ignored)
-    if (!disp->inv_area_joined[i]) {
-      dma2d_copy_area(disp->inv_areas[i], (uint32_t)dma_xfer_src,
-                      (uint32_t)dma_xfer_dst);
-    }
+    dma2d_copy_area(disp->inv_areas[i], (uint32_t)dma_xfer_src,
+                    (uint32_t)dma_xfer_dst);
   }
   lv_disp_flush_ready(disp_drv);
 }
