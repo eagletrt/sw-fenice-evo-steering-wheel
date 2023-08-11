@@ -70,11 +70,11 @@ void MX_FDCAN1_Init(void) {
   hfdcan1.Init.DataTimeSeg1 = 1;
   hfdcan1.Init.DataTimeSeg2 = 1;
   hfdcan1.Init.MessageRAMOffset = 0;
-  hfdcan1.Init.StdFiltersNbr = 1;
+  hfdcan1.Init.StdFiltersNbr = 0;
   hfdcan1.Init.ExtFiltersNbr = 0;
   hfdcan1.Init.RxFifo0ElmtsNbr = 64;
   hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
-  hfdcan1.Init.RxFifo1ElmtsNbr = 64;
+  hfdcan1.Init.RxFifo1ElmtsNbr = 0;
   hfdcan1.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan1.Init.RxBuffersNbr = 0;
   hfdcan1.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
@@ -120,7 +120,7 @@ void MX_FDCAN2_Init(void) {
   hfdcan2.Init.MessageRAMOffset = 0;
   hfdcan2.Init.StdFiltersNbr = 1;
   hfdcan2.Init.ExtFiltersNbr = 0;
-  hfdcan2.Init.RxFifo0ElmtsNbr = 64;
+  hfdcan2.Init.RxFifo0ElmtsNbr = 0;
   hfdcan2.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.RxFifo1ElmtsNbr = 64;
   hfdcan2.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
@@ -135,7 +135,7 @@ void MX_FDCAN2_Init(void) {
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN2_Init 2 */
-  // _CAN_Init_secondary();
+  _CAN_Init_secondary();
 
   /* USER CODE END FDCAN2_Init 2 */
 }
@@ -180,8 +180,6 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     /* FDCAN1 interrupt Init */
     HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
-    HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
     /* USER CODE BEGIN FDCAN1_MspInit 1 */
 
     /* USER CODE END FDCAN1_MspInit 1 */
@@ -217,8 +215,6 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* FDCAN2 interrupt Init */
-    HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
     HAL_NVIC_SetPriority(FDCAN2_IT1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(FDCAN2_IT1_IRQn);
     /* USER CODE BEGIN FDCAN2_MspInit 1 */
@@ -247,7 +243,6 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
     /* FDCAN1 interrupt Deinit */
     HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
-    HAL_NVIC_DisableIRQ(FDCAN1_IT1_IRQn);
     /* USER CODE BEGIN FDCAN1_MspDeInit 1 */
 
     /* USER CODE END FDCAN1_MspDeInit 1 */
@@ -268,7 +263,6 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12 | GPIO_PIN_13);
 
     /* FDCAN2 interrupt Deinit */
-    HAL_NVIC_DisableIRQ(FDCAN2_IT0_IRQn);
     HAL_NVIC_DisableIRQ(FDCAN2_IT1_IRQn);
     /* USER CODE BEGIN FDCAN2_MspDeInit 1 */
 
@@ -301,7 +295,7 @@ void _CAN_Init_primary() {
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
   f.FilterID1 = 0;
   f.FilterID2 = 0x7FF;
-  f.RxBufferIndex = 0;
+  f.RxBufferIndex = 0; // ignored
   f.IsCalibrationMsg = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK) {
 #ifdef STEERING_LOG_ENABLED
@@ -331,12 +325,12 @@ void _CAN_Init_secondary() {
   FDCAN_FilterTypeDef f;
   HAL_StatusTypeDef s;
   f.IdType = FDCAN_STANDARD_ID;
-  f.FilterIndex = 0;
+  f.FilterIndex = 1;
   f.FilterType = FDCAN_FILTER_MASK;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
   f.FilterID1 = 0;
-  f.FilterID2 = 0;
-  f.RxBufferIndex = 0;
+  f.FilterID2 = 0x7FF;
+  f.RxBufferIndex = 0; // ignored
   f.IsCalibrationMsg = 0;
 
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK) {
@@ -471,17 +465,8 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
   }
 
   if (hfdcan == &hfdcan1) {
-
-#if CAN_LOG_ENABLED
-    print("DEVICE 0\n");
-#endif
-
     handle_primary(&msg);
   } else {
-#if CAN_LOG_ENABLED
-    print("DEVICE 1\n");
-#endif
-
     handle_secondary(&msg);
   }
 }
@@ -525,18 +510,8 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
   }
 
   if (hfdcan == &hfdcan1) {
-
-#if CAN_LOG_ENABLED
-    print("DEVICE 0\n");
-#endif
-
     handle_primary(&msg);
   } else {
-
-#if CAN_LOG_ENABLED
-    print("DEVICE 1\n");
-#endif
-
     handle_secondary(&msg);
   }
 }

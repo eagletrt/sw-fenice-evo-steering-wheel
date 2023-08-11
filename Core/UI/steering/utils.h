@@ -35,6 +35,7 @@ typedef enum {
   TAB_SECONDARY_CANSNIFFER,
   TAB_PRIMARY_CANSNIFFER,
 #endif
+  TAB_TERMINAL,
   // add here new tabs
   NUM_ENGINEER_TABS
 } engineer_tab_t;

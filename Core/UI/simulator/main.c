@@ -359,6 +359,10 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
 #endif
     break;
   }
+  case 'p': {
+    tab_terminal_new_message("Hello, Sailor!");
+    break;
+  }
 
   default:
     break;
@@ -372,3 +376,7 @@ void openblt_reset(void) {}
 uint32_t get_current_time_ms(void) { return SDL_GetTicks(); }
 
 void handle_ptt_message(primary_ptt_status_status val) {}
+
+void all_leds_green(void) {}
+
+void all_leds_red(void) {}

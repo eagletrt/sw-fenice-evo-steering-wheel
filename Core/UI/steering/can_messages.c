@@ -159,6 +159,7 @@ void handle_primary(can_message_t *msg) {
 }
 
 void handle_secondary(can_message_t *msg) {
+#if 1
   if (!steering_initialized)
     return;
 #if CANSNIFFER_ENABLED == 1
@@ -204,4 +205,5 @@ void handle_secondary(can_message_t *msg) {
   default:
     break;
   }
+#endif
 }

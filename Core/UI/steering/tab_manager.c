@@ -14,6 +14,8 @@ lv_obj_t *tab_primary_cansniffer_ptr;
 lv_obj_t *tab_secondary_cansniffer_ptr;
 #endif
 
+lv_obj_t *tab_terminal_ptr;
+
 lv_timer_t *notification_timer;
 lv_group_t *g;
 
@@ -40,6 +42,7 @@ void tab_manager(void) {
   tab_primary_cansniffer_ptr = lv_obj_create(NULL);
   tab_secondary_cansniffer_ptr = lv_obj_create(NULL);
 #endif
+  tab_terminal_ptr = lv_obj_create(NULL);
 
   lv_group_add_obj(g, tab_racing_ptr);
   lv_group_add_obj(g, tab_sensors_ptr);
@@ -53,6 +56,7 @@ void tab_manager(void) {
   lv_group_add_obj(g, tab_primary_cansniffer_ptr);
   lv_group_add_obj(g, tab_secondary_cansniffer_ptr);
 #endif
+  lv_group_add_obj(g, tab_terminal_ptr);
 
   tab_racing_create(tab_racing_ptr);
   tab_sensors_create(tab_sensors_ptr);
@@ -66,6 +70,8 @@ void tab_manager(void) {
   primary_tab_cansniffer_create(tab_primary_cansniffer_ptr);
   secondary_tab_cansniffer_create(tab_secondary_cansniffer_ptr);
 #endif
+  tab_terminal_create(tab_terminal_ptr);
+
   lv_scr_load(tab_racing_ptr);
   current_racing_tab = TAB_RACING;
   current_engineer_tab = TAB_ENGINEER_MODE;
@@ -141,6 +147,9 @@ void load_current_engineering_tab() {
     lv_scr_load(tab_primary_cansniffer_ptr);
     break;
 #endif
+  case TAB_TERMINAL:
+    lv_scr_load(tab_terminal_ptr);
+    break;
   default:
     break;
   }

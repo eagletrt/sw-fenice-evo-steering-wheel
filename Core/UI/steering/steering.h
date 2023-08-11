@@ -197,9 +197,11 @@ void remove_keep_lap_counter(lv_timer_t *timer);
 
 void display_notification(const char *, uint32_t);
 void restore_previous_screen(lv_timer_t *timer);
-void update_sensors_extra_value(const char *buf, uint8_t extra_value);
+void update_sensors_extra_value(const char *, uint8_t);
 void all_leds_green(void);
 void all_leds_red(void);
+void tab_terminal_new_message(const char *message);
+void tab_terminal_clear(void);
 
 uint32_t get_current_time_ms(void);
 
