@@ -196,6 +196,7 @@ void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);
 
 void display_notification(const char *, uint32_t);
+void enter_fatal_error_mode(const char *);
 void restore_previous_screen(lv_timer_t *timer);
 void update_sensors_extra_value(const char *, uint8_t);
 void all_leds_green(void);

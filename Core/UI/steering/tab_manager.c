@@ -8,6 +8,7 @@ lv_obj_t *tab_debug_ptr;
 lv_obj_t *notif_screen;
 lv_obj_t *tab_engineer_mode_ptr;
 lv_obj_t *tab_cooling_ptr;
+lv_obj_t *tab_fatal_error_ptr;
 
 #if CANSNIFFER_ENABLED == 1
 lv_obj_t *tab_primary_cansniffer_ptr;
@@ -43,6 +44,7 @@ void tab_manager(void) {
   tab_secondary_cansniffer_ptr = lv_obj_create(NULL);
 #endif
   tab_terminal_ptr = lv_obj_create(NULL);
+  tab_fatal_error_ptr = lv_obj_create(NULL);
 
   lv_group_add_obj(g, tab_racing_ptr);
   lv_group_add_obj(g, tab_sensors_ptr);
@@ -57,6 +59,7 @@ void tab_manager(void) {
   lv_group_add_obj(g, tab_secondary_cansniffer_ptr);
 #endif
   lv_group_add_obj(g, tab_terminal_ptr);
+  lv_group_add_obj(g, tab_fatal_error_ptr);
 
   tab_racing_create(tab_racing_ptr);
   tab_sensors_create(tab_sensors_ptr);
@@ -71,6 +74,7 @@ void tab_manager(void) {
   secondary_tab_cansniffer_create(tab_secondary_cansniffer_ptr);
 #endif
   tab_terminal_create(tab_terminal_ptr);
+  tab_fatal_error_create(tab_fatal_error_ptr);
 
   lv_scr_load(tab_racing_ptr);
   current_racing_tab = TAB_RACING;
@@ -181,6 +185,15 @@ void steering_change_tab(bool forward) {
   } else {
     change_engineer_tab(forward);
   }
+}
+
+/***
+ * Tab Fatal Error
+ */
+
+void enter_fatal_error_mode(const char *message) {
+  set_tab_fatal_error_text(message);
+  lv_scr_load(tab_fatal_error_ptr);
 }
 
 /***
