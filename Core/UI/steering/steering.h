@@ -77,6 +77,7 @@ typedef struct {
   lv_obj_t *lb_average_temperature[NUM_RACING_TABS];
   lv_obj_t *lb_hv_percent[NUM_RACING_TABS];
   lv_obj_t *lb_pack_voltage[NUM_RACING_TABS];
+  lv_obj_t *lb_hv_delta[NUM_RACING_TABS];
 
   lv_obj_t *lb_right_motor_temp[NUM_RACING_TABS];
   lv_obj_t *lb_right_inverter_temp[NUM_RACING_TABS];
@@ -127,7 +128,6 @@ typedef struct {
   lv_obj_t *tab_sensors_extra_value0;
   lv_obj_t *tab_sensors_extra_value1;
   lv_obj_t *tab_sensors_extra_value2;
-  lv_obj_t *tab_sensors_extra_value3;
 
   lv_obj_t *notification_screen_label;
 
@@ -198,6 +198,8 @@ void remove_keep_lap_counter(lv_timer_t *timer);
 void display_notification(const char *, uint32_t);
 void restore_previous_screen(lv_timer_t *timer);
 void update_sensors_extra_value(const char *buf, uint8_t extra_value);
+void all_leds_green(void);
+void all_leds_red(void);
 
 uint32_t get_current_time_ms(void);
 

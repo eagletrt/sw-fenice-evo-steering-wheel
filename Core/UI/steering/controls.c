@@ -264,17 +264,17 @@ void prepare_set_car_status(void) {
 }
 
 bool send_set_car_status_directly(void) {
+  bool retval = true;
   switch (car_status_last_state.car_status) {
   case primary_car_status_car_status_IDLE:
   case primary_car_status_car_status_WAIT_DRIVER: {
-    return false;
+    retval = false;
+    break;
   }
-  default: {
-    prepare_set_car_status();
-    return true;
+  default:
+    break;
   }
-  }
-  return true;
+  return retval;
 }
 
 #if CANSNIFFER_ENABLED == 1

@@ -427,9 +427,9 @@ void tab_sensors_create(lv_obj_t *parent) {
                        1);
 
   lv_obj_t *y21 =
-      lv_triple_label(right_data_panel, &steering.tab_sensors_extra_value3,
-                      "V4", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
-                      "-", &lv_font_inter_bold_20);
+      lv_triple_label(right_data_panel, &steering.lb_hv_delta[TAB_SENSORS],
+                      "hv delta", &lv_font_inter_bold_30, " V",
+                      &lv_font_inter_bold_22, "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y21, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 3,
                        1);
 #endif

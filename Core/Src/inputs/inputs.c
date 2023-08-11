@@ -53,7 +53,11 @@ void configure_internal_pull_up_resistors() {
   CHECK_ERROR(cdata);
 }
 
+void send_set_car_status_check(lv_timer_t *tim);
+
 void inputs_init(void) {
+  send_set_car_status_long_press_delay =
+      lv_timer_create(send_set_car_status_check, 500, NULL);
   dev1 = (MCP23017_HandleTypeDef){
       .addr = MCP23017_DEV1_ADDR, .hi2c = &hi2c4, .gpio = {0, 0}};
   dev2 = (MCP23017_HandleTypeDef){
@@ -205,41 +209,39 @@ void from_gpio_to_buttons(uint8_t gpio) {
 }
 
 void send_set_car_status_check(lv_timer_t *tim) {
-  if (tson_button_pressed) {
+  GPIO_PinState tson_pin_state =
+      HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
+  if (tson_button_pressed && tson_pin_state == GPIO_PIN_RESET) {
     STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
     prepare_set_car_status();
   }
 }
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  if (GPIO_Pin == ExtraButton_Pin) {
-    GPIO_PinState tson_pin_state =
-        HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
-    if (tson_pin_state == GPIO_PIN_RESET && !tson_button_pressed) {
+GPIO_PinState foo = GPIO_PIN_SET;
+
+void changed_pin_fn(void) {
+  GPIO_PinState tson_pin_state =
+      HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
+  if (foo != tson_pin_state) {
+    foo = tson_pin_state;
+    if (tson_pin_state == GPIO_PIN_SET) {
+      tson_button_pressed = false;
+    } else {
       if (send_set_car_status_directly()) {
-#ifdef STEERING_LOG_ENABLED
-        print("Sending set_car_status directly\n");
-#endif
         prepare_set_car_status();
       } else {
-#ifdef STEERING_LOG_ENABLED
-        print("Setting timer to check button state in 2 seconds\n");
-#endif
         tson_button_pressed = true;
         send_set_car_status_long_press_delay =
             lv_timer_create(send_set_car_status_check, 500, NULL);
         lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
         lv_timer_reset(send_set_car_status_long_press_delay);
-        STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_ORANGE_STATUS_HEX)
       }
-    } else {
-#ifdef STEERING_LOG_ENABLED
-      print("tson button released and possible timer deleted\n");
-#endif
-      tson_button_pressed = false;
-      lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
-      STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
     }
+  }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  if (GPIO_Pin == ExtraButton_Pin) {
   }
 }
 
@@ -275,11 +277,9 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     if (!engineer_mode) {
       manettino_send_torque_vectoring(
           val_torque_map_index[new_manettino_index]);
-      // display_notification("Torque vectoring set", 1000);
     } else {
       manettino_send_set_radiators(
           val_radiators_speed_index[new_manettino_index]);
-      // display_notification("Radiators set", 1000);
     }
     break;
   }
@@ -298,7 +298,6 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       power_map_last_state = fmin((float)power_map_last_state, 100.0f);
       power_map_last_state = fmax((float)power_map_last_state, -10.0f);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
-      // display_notification("Power map set", 1000);
     } else {
       // pork cooling
       hv_fans_override_last_state += ((float)dstep * 10.0f);
@@ -307,18 +306,15 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       hv_fans_override_last_state =
           fmax((float)hv_fans_override_last_state, -10.0f);
       send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
-      // display_notification("Pork fans set", 1000);
     }
     break;
   }
   case MANETTINO_LEFT_INDEX: {
     if (!engineer_mode) {
       manettino_send_slip_control(val_slip_map_index[new_manettino_index]);
-      // display_notification("Slip control set", 1000);
     } else {
       manettino_send_set_pumps_speed(
           val_pumps_speed_index[new_manettino_index]);
-      // display_notification("Pumps set", 1000);
     }
     break;
   }

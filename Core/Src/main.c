@@ -228,6 +228,8 @@ int main(void) {
     lv_tasks();
 #endif
 
+    changed_pin_fn();
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

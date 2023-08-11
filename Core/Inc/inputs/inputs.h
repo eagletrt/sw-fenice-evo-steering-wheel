@@ -36,4 +36,6 @@ void buttons_pressed_actions(uint8_t button);
 void buttons_released_actions(uint8_t button);
 void buttons_long_pressed_actions(uint8_t button);
 
+void changed_pin_fn(void);
+
 #endif

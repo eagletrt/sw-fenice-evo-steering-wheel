@@ -18,7 +18,7 @@ primary_car_status_converted_t car_status_last_state = {0};
 primary_control_output_converted_t control_output_last_state = {0};
 
 primary_ambient_temperature_converted_t ambient_temperature_last_state = {0};
-primary_tlm_status_converted_t tlm_status_last_state = {0};
+primary_tlm_status_converted_t tlm_status_last_state = {.tlm_status = 2};
 primary_speed_converted_t speed_last_state = {0};
 
 primary_hv_voltage_converted_t hv_voltage_last_state = {0};
@@ -26,6 +26,7 @@ primary_hv_current_converted_t hv_current_last_state = {0};
 primary_hv_temp_converted_t hv_temp_last_state = {0};
 primary_hv_errors_converted_t hv_errors_last_state = {0};
 primary_hv_feedbacks_status_converted_t hv_feedbacks_status_last_state = {0};
+float hv_delta_last_state = 0.0f;
 
 primary_das_errors_converted_t das_errors_last_state;
 
@@ -125,7 +126,6 @@ void car_status_update(primary_car_status_converted_t *data) {
     default:
       break;
     }
-    reload_racing_tab(TAB_RACING);
   }
 
   primary_car_status_inverter_l invl = data->inverter_l;
@@ -164,6 +164,15 @@ void cooling_status_update(primary_cooling_status_converted_t *data) {
 void tlm_status_update(primary_tlm_status_converted_t *data) {
   if (tlm_status_last_state.tlm_status != data->tlm_status) {
     tlm_status_last_state.tlm_status = data->tlm_status;
+    if (data->tlm_status == primary_tlm_status_tlm_status_ON) {
+      sprintf(sprintf_buffer, "ON");
+      STEER_UPDATE_LABEL(steering.lb_tlm_status, sprintf_buffer);
+      all_leds_green();
+    } else {
+      sprintf(sprintf_buffer, "OFF");
+      STEER_UPDATE_LABEL(steering.lb_tlm_status, sprintf_buffer);
+      all_leds_red();
+    }
   }
 }
 
@@ -215,6 +224,12 @@ void hv_voltage_update(primary_hv_voltage_converted_t *data) {
     percentage = fmin(fmax(percentage, 0), 100);
     lv_meter_set_indicator_value(steering.custom_meter, steering.indicator_blue,
                                  percentage);
+  }
+  float delta = data->max_cell_voltage - data->min_cell_voltage;
+  if (delta != hv_delta_last_state) {
+    hv_delta_last_state = delta;
+    sprintf(sprintf_buffer, "%.1f", delta);
+    STEER_UPDATE_LABEL(steering.lb_hv_delta, sprintf_buffer);
   }
 }
 
@@ -593,15 +608,6 @@ void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *data) {
     sprintf(sprintf_buffer, "%.0f", new_value);
     STEER_UPDATE_LABEL(steering.lb_right_inverter_temp, sprintf_buffer);
   }
-#if 0
-    // net_signals["INV_L_RCV_ELAB"]["n_actual_filt"].push((net_signals["INV_L_RCV"]["n_actual_filt"][i] * INV_MAX_SPEED) / 32767.f);
-    if (data->n_actual_filt != inv_r_last_state.n_actual_filt && data->rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_A8_N_ACTUAL_FILT_CHOICE) {
-        float new_value = (data->n_actual_filt * INV_MAX_SPEED) / 32767.f;
-        inv_r_last_state.n_actual_filt = new_value;
-        sprintf(sprintf_buffer, "%.0f", new_value);
-        STEER_UPDATE_LABEL(steering.lb_speed, sprintf_buffer);
-    }
-#endif
 }
 
 void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
@@ -618,8 +624,7 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
     lv_label_set_text_fmt(steering.tab_sensors_extra_value2, "%s", buf);
     break;
   }
-  case 3: {
-    lv_label_set_text_fmt(steering.tab_sensors_extra_value3, "%s", buf);
+  default: {
     break;
   }
   }

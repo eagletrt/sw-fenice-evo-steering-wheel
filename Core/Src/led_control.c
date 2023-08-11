@@ -43,3 +43,15 @@ void led_control_set(I2C_HandleTypeDef *hi2c4, uint32_t colors[LED_N]) {
         (uint8_t[2]){BLUE + icolor * 3, (uint8_t)colors[icolor + 3]}, 2, 100);
   }
 }
+
+void all_leds_green() {
+  led_control_init(&hi2c4);
+  led_control_set(&hi2c4, (uint32_t[6]){COLOR_GREEN, COLOR_GREEN, COLOR_GREEN,
+                                        COLOR_GREEN, COLOR_GREEN, COLOR_GREEN});
+}
+
+void all_leds_red() {
+  led_control_init(&hi2c4);
+  led_control_set(&hi2c4, (uint32_t[6]){COLOR_RED, COLOR_RED, COLOR_RED,
+                                        COLOR_RED, COLOR_RED, COLOR_RED});
+}
