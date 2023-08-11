@@ -68,7 +68,8 @@
         "tab_primary_cansniffer.h": "c",
         "maxheap.h": "c",
         "tab_secondary_cansniffer.h": "c",
-        "controls.h": "c"
+        "controls.h": "c",
+        "stb_image_write.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,
