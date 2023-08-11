@@ -228,7 +228,7 @@ void hv_voltage_update(primary_hv_voltage_converted_t *data) {
   float delta = data->max_cell_voltage - data->min_cell_voltage;
   if (delta != hv_delta_last_state) {
     hv_delta_last_state = delta;
-    sprintf(sprintf_buffer, "%.1f", delta);
+    sprintf(sprintf_buffer, "%.3f", delta);
     STEER_UPDATE_LABEL(steering.lb_hv_delta, sprintf_buffer);
   }
 }
