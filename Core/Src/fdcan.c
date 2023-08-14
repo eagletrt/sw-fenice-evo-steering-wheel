@@ -79,7 +79,7 @@ void MX_FDCAN1_Init(void) {
   hfdcan1.Init.ExtFiltersNbr = 0;
   hfdcan1.Init.RxFifo0ElmtsNbr = 64;
   hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
-  hfdcan1.Init.RxFifo1ElmtsNbr = 0;
+  hfdcan1.Init.RxFifo1ElmtsNbr = 64;
   hfdcan1.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan1.Init.RxBuffersNbr = 0;
   hfdcan1.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
@@ -123,7 +123,7 @@ void MX_FDCAN2_Init(void) {
   hfdcan2.Init.MessageRAMOffset = 0;
   hfdcan2.Init.StdFiltersNbr = 1;
   hfdcan2.Init.ExtFiltersNbr = 0;
-  hfdcan2.Init.RxFifo0ElmtsNbr = 0;
+  hfdcan2.Init.RxFifo0ElmtsNbr = 64;
   hfdcan2.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.RxFifo1ElmtsNbr = 64;
   hfdcan2.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
@@ -289,10 +289,10 @@ void _CAN_Init_primary() {
   FDCAN_FilterTypeDef f = {0};
   HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
-  f.FilterIndex = 1;
+  f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_MASK;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-  f.FilterID1 = 0;
+  f.FilterID1 = ((1U << 11) - 1) << 5;
   f.FilterID2 = 0;
   f.IsCalibrationMsg = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK) {
@@ -301,6 +301,11 @@ void _CAN_Init_primary() {
 
   if ((s = HAL_FDCAN_ActivateNotification(
            &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
+    primary_can_fatal_error = true;
+  }
+
+  if ((s = HAL_FDCAN_ConfigInterruptLines(&hfdcan1,
+                                         FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
     primary_can_fatal_error = true;
   }
 
@@ -320,7 +325,7 @@ void _CAN_Init_secondary() {
   f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_MASK;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
-  f.FilterID1 = 0;
+  f.FilterID1 = ((1U << 11) - 1) << 5;
   f.FilterID2 = 0;
   f.IsCalibrationMsg = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK) {
@@ -329,6 +334,11 @@ void _CAN_Init_secondary() {
 
   if ((s = HAL_FDCAN_ActivateNotification(
            &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0)) != HAL_OK) {
+    secondary_can_fatal_error = true;
+  }
+
+  if ((s = HAL_FDCAN_ConfigInterruptLines(&hfdcan2,
+                                         FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 1)) != HAL_OK) {
     secondary_can_fatal_error = true;
   }
 

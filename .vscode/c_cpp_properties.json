@@ -16,6 +16,7 @@
       ],
       "defines": [
         "CANSNIFFER_ENABLED=1",
+        "DEBUG_RX_BUFFERS_ENABLED=1",
         "LV_LVGL_H_INCLUDE_SIMPLE",
         "STM32H723xx",
         "USE_HAL_DRIVER"

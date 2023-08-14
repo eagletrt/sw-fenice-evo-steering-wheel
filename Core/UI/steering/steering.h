@@ -120,6 +120,7 @@ typedef struct {
   lv_obj_t *lb_radiators_speed[NUM_RACING_TABS];
   lv_obj_t *lb_pumps_speed[NUM_RACING_TABS];
 
+  // TODO replace the size with the canlib real value
   lv_obj_t *hv_feedbacks_status[20];
   lv_obj_t *hv_errors[16];
   lv_obj_t *das_errors[9];
