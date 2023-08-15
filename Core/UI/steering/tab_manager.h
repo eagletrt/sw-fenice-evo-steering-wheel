@@ -6,6 +6,7 @@
 #include "engineer_mode/tab_fatal_error.h"
 #include "engineer_mode/tab_primary_cansniffer.h"
 #include "engineer_mode/tab_secondary_cansniffer.h"
+#include "engineer_mode/tab_shutdown_circuit.h"
 #include "engineer_mode/tab_terminal.h"
 #include "lvgl.h"
 #include "racing_tabs/tab_calibration.h"

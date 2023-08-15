@@ -77,6 +77,7 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e);
 #if CANSNIFFER_ENABLED == 1
 void save_cansniffer_data(lv_timer_t *timer);
 #endif
+void shutdown_circuit_turn_on_off(void);
 
 /*********************
  *      DEFINES
@@ -201,7 +202,7 @@ int main(int argc, char **argv) {
     converted.apps = (int) (converted.apps + 3) % 50;
     converted.bse_front += 0.1f;
     if (converted.bse_front > 90.0f) converted.bse_front = 0.0f;
-    
+
     angle_main.angle += 3.1f;
     if (angle_main.angle > 70.0f) angle_main.angle = -70.0f;
 
@@ -363,7 +364,10 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
     tab_terminal_new_message("Hello, Sailor!");
     break;
   }
-
+  case 'r': {
+    shutdown_circuit_turn_on_off();
+    break;
+  }
   default:
     break;
   }

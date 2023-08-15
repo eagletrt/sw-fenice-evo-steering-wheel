@@ -36,6 +36,7 @@ typedef enum {
   TAB_PRIMARY_CANSNIFFER,
 #endif
   TAB_TERMINAL,
+  TAB_SHUTDOWN_CIRCUIT,
   // add here new tabs
   NUM_ENGINEER_TABS
 } engineer_tab_t;

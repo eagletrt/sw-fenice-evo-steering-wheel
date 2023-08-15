@@ -9,6 +9,7 @@ lv_obj_t *notif_screen;
 lv_obj_t *tab_engineer_mode_ptr;
 lv_obj_t *tab_cooling_ptr;
 lv_obj_t *tab_fatal_error_ptr;
+lv_obj_t *tab_shutdown_circuit_ptr;
 
 #if CANSNIFFER_ENABLED == 1
 lv_obj_t *tab_primary_cansniffer_ptr;
@@ -45,6 +46,7 @@ void tab_manager(void) {
 #endif
   tab_terminal_ptr = lv_obj_create(NULL);
   tab_fatal_error_ptr = lv_obj_create(NULL);
+  tab_shutdown_circuit_ptr = lv_obj_create(NULL);
 
   lv_group_add_obj(g, tab_racing_ptr);
   lv_group_add_obj(g, tab_sensors_ptr);
@@ -60,6 +62,7 @@ void tab_manager(void) {
 #endif
   lv_group_add_obj(g, tab_terminal_ptr);
   lv_group_add_obj(g, tab_fatal_error_ptr);
+  lv_group_add_obj(g, tab_shutdown_circuit_ptr);
 
   tab_racing_create(tab_racing_ptr);
   tab_sensors_create(tab_sensors_ptr);
@@ -75,6 +78,7 @@ void tab_manager(void) {
 #endif
   tab_terminal_create(tab_terminal_ptr);
   tab_fatal_error_create(tab_fatal_error_ptr);
+  tab_shutdown_circuit_create(tab_shutdown_circuit_ptr);
 
   lv_scr_load(tab_racing_ptr);
   current_racing_tab = TAB_RACING;
@@ -153,6 +157,9 @@ void load_current_engineering_tab() {
 #endif
   case TAB_TERMINAL:
     lv_scr_load(tab_terminal_ptr);
+    break;
+  case TAB_SHUTDOWN_CIRCUIT:
+    lv_scr_load(tab_shutdown_circuit_ptr);
     break;
   default:
     break;

@@ -306,6 +306,26 @@ void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *data) {
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_in, 17)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_bms, 18)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_imd, 19)
+
+  shutdown_component_state_t comp[SHUTDOWN_COMPONENT_SIZE] = {
+      SC_UNKNOWN,
+      data->feedbacks_status_feedback_sd_in + 1,
+      data->feedbacks_status_feedback_sd_out + 1,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      SC_UNKNOWN,
+      data->feedbacks_status_feedback_sd_end + 1,
+      data->feedbacks_status_feedback_precharge_status + 1,
+      data->feedbacks_status_feedback_airp_gate + 1,
+      data->feedbacks_status_feedback_airn_gate + 1};
+  update_shutdown_circuit(comp);
 }
 
 void lv_feedbacks_update(primary_lv_feedbacks_converted_t *data) {
@@ -313,7 +333,54 @@ void lv_feedbacks_update(primary_lv_feedbacks_converted_t *data) {
              sizeof(primary_lv_feedbacks_converted_t)) != 0) {
     memcpy(&lv_feedbacks_last_state, data,
            sizeof(primary_lv_feedbacks_converted_t));
-    // do stuff
+    shutdown_component_state_t comp[SHUTDOWN_COMPONENT_SIZE] = {
+        data->sd_start + 1,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        data->feedbacks_interlock_fb + 1,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        data->feedbacks_invc_lid_fb + 1,
+        data->feedbacks_hvd_fb + 1,
+        data->feedbacks_bspd_fb + 1,
+        data->feedbacks_invc_interlock_fb + 1,
+        data->sd_end + 1,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN};
+    update_shutdown_circuit(comp);
+  }
+}
+
+primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
+
+void ecu_feedbacks_update(primary_ecu_feedbacks_converted_t *data) {
+  if (memcmp(data, &ecu_feedbacks_last_state,
+             sizeof(primary_ecu_feedbacks_converted_t)) != 0) {
+    memcpy(&lv_feedbacks_last_state, data,
+           sizeof(primary_ecu_feedbacks_converted_t));
+    shutdown_component_state_t comp[SHUTDOWN_COMPONENT_SIZE] = {
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        data->ecu_feedbacks_sd_in,
+        data->ecu_feedbacks_sd_cock_fb,
+        data->ecu_feedbacks_sd_interial_fb,
+        data->ecu_feedbacks_sd_bots_fb,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN,
+        SC_UNKNOWN};
+    update_shutdown_circuit(comp);
   }
 }
 
