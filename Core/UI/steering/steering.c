@@ -271,36 +271,21 @@ void hv_errors_update(primary_hv_errors_converted_t *data) {
 }
 
 void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *data) {
-  STEER_ERROR_UPDATE(hv_feedbacks_status,
-                     feedbacks_status_feedback_implausibility_detected, 0)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_cockpit,
-                     1)
-  STEER_ERROR_UPDATE(hv_feedbacks_status,
-                     feedbacks_status_feedback_tsal_green_fault_latched, 2)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_bms_cockpit,
-                     3)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_ext_latched,
-                     4)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_tsal_green,
-                     5)
-  STEER_ERROR_UPDATE(hv_feedbacks_status,
-                     feedbacks_status_feedback_ts_over_60v_status, 6)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airn_status,
-                     7)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airp_status,
-                     8)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airp_gate,
-                     9)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airn_gate,
-                     10)
-  STEER_ERROR_UPDATE(hv_feedbacks_status,
-                     feedbacks_status_feedback_precharge_status, 11)
-  STEER_ERROR_UPDATE(hv_feedbacks_status,
-                     feedbacks_status_feedback_tsp_over_60v_status, 12)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_fault,
-                     13)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_check_mux,
-                     14)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_implausibility_detected, 0)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_cockpit, 1)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_tsal_green_fault_latched, 2)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_bms_cockpit, 3)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_ext_latched, 4)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_tsal_green, 5)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_ts_over_60v_status, 6)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airn_status, 7)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airp_status, 8)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airp_gate, 9)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airn_gate, 10)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_precharge_status, 11)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_tsp_over_60v_status, 12)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_fault, 13)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_check_mux, 14)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_end, 15)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_out, 16)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_in, 17)
@@ -588,8 +573,8 @@ void lap_count_update(secondary_lap_count_converted_t *data) {
   keep_lap_counter_value(2000);
   timestamp_start_lap = get_current_time_ms();
   float last_time_seconds = data->lap_time;
-  int minutes = (int)(last_time_seconds / 60);
-  int seconds = (int)(last_time_seconds - minutes * 60);
+  int minutes = (int)(last_time_seconds / 60.0f);
+  int seconds = (int)(last_time_seconds - minutes * 60.0f);
   sprintf(sprintf_buffer, "%02d:%02d", minutes, seconds);
   STEER_UPDATE_LABEL(steering.lb_last_time, sprintf_buffer);
   float delta = last_time_seconds - lc_status_last_state.best_time;
