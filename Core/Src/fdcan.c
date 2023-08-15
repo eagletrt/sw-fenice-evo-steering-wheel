@@ -304,8 +304,8 @@ void _CAN_Init_primary() {
     primary_can_fatal_error = true;
   }
 
-  if ((s = HAL_FDCAN_ConfigInterruptLines(&hfdcan1,
-                                         FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
+  if ((s = HAL_FDCAN_ConfigInterruptLines(
+           &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
     primary_can_fatal_error = true;
   }
 
@@ -337,8 +337,8 @@ void _CAN_Init_secondary() {
     secondary_can_fatal_error = true;
   }
 
-  if ((s = HAL_FDCAN_ConfigInterruptLines(&hfdcan2,
-                                         FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 1)) != HAL_OK) {
+  if ((s = HAL_FDCAN_ConfigInterruptLines(
+           &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 1)) != HAL_OK) {
     secondary_can_fatal_error = true;
   }
 
