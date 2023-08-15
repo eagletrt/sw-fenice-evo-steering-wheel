@@ -70,7 +70,10 @@
         "tab_secondary_cansniffer.h": "c",
         "controls.h": "c",
         "stb_image_write.h": "c",
-        "tab_terminal.h": "c"
+        "tab_terminal.h": "c",
+        "tab_shutdown_circuit.h": "c",
+        "dac.h": "c",
+        "shutdown.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

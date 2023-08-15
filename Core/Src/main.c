@@ -86,8 +86,7 @@ extern uint32_t debug_rx_counters[4];
 void update_rx_fn(lv_timer_t *tim) {
   char buffer[128];
   sprintf(buffer,
-          "{ secondary_rx1 = %lu, secondary_rx0 = %lu, primary_rx1 = %lu, "
-          "primary_rx0 = %lu }",
+          "{ sec_rx1 = %lu, sec_rx0 = %lu, prim_rx1 = %lu, prim_rx0 = %lu }",
           debug_rx_counters[0], debug_rx_counters[1], debug_rx_counters[2],
           debug_rx_counters[3]);
   tab_terminal_new_message(buffer);
@@ -103,6 +102,7 @@ extern bool secondary_can_fatal_error;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void watchdog_task_fn(lv_timer_t *);
+void update_shutdown_circuit(lv_timer_t *tim);
 
 /* USER CODE END PFP */
 
@@ -229,6 +229,11 @@ int main(void) {
   lv_timer_t *read_inputs_task = lv_timer_create(read_inputs, 100, NULL);
   lv_timer_set_repeat_count(read_inputs_task, -1);
   lv_timer_reset(read_inputs_task);
+
+  lv_timer_t *shutdown_circuit_task =
+      lv_timer_create(update_shutdown_circuit_ui, 1000, NULL);
+  lv_timer_set_repeat_count(shutdown_circuit_task, -1);
+  lv_timer_reset(shutdown_circuit_task);
 
 #if DEBUG_RX_BUFFERS_ENABLED == 1
   lv_timer_t *update_rx_task = lv_timer_create(update_rx_fn, 2000, NULL);

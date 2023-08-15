@@ -23,6 +23,8 @@ float hv_fans_override_last_state = 0.0f;
 uint32_t inputs_error_counter = 0;
 bool inputs_fatal_error = false;
 
+void shutdown_circuit_turn_on_off(void);
+
 /***
  * Manettini mapping
  *
@@ -125,7 +127,11 @@ void buttons_pressed_actions(uint8_t button) {
     }
     break;
   case BUTTON_TOP_LEFT:
-    activate_ptt();
+    if (engineer_mode) {
+      shutdown_circuit_turn_on_off();
+    } else {
+      activate_ptt();
+    }
     break;
   case BUTTON_BOTTOM_RIGHT:
     calibration_tool_set_min_max(true);
