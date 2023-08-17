@@ -133,12 +133,26 @@ void buttons_pressed_actions(uint8_t button) {
       activate_ptt();
     }
     break;
-  case BUTTON_BOTTOM_RIGHT:
-    calibration_tool_set_min_max(true);
+  case BUTTON_BOTTOM_RIGHT: {
+    if (engineer_mode) {
+      send_bal(true);
+      display_notification("BAL ON", 3000);
+    } else {
+      calibration_tool_set_min_max(true);
+    }
     break;
-  case BUTTON_BOTTOM_LEFT:
-    calibration_tool_set_min_max(false);
+  }
+  case BUTTON_BOTTOM_LEFT: {
+    if (engineer_mode) {
+      send_bal(false);
+      display_notification("BAL OFF", 3000);
+    } else {
+      calibration_tool_set_min_max(false);
+    }
     break;
+  }
+
+  break;
   }
 }
 

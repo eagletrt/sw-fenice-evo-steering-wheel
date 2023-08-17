@@ -29,6 +29,16 @@ void send_steer_status(lv_timer_t *main_timer) {
   can_send(&msg, true);
 }
 
+void send_bal(bool on) {
+  primary_set_cell_balancing_status_converted_t converted = {
+      .set_balancing_status =
+          on ? primary_set_cell_balancing_status_set_balancing_status_ON
+             : primary_set_cell_balancing_status_set_balancing_status_OFF};
+  STEER_CAN_PACK(primary, PRIMARY, set_cell_balancing_status,
+                 SET_CELL_BALANCING_STATUS)
+  can_send(&msg, true);
+}
+
 void handle_primary(can_message_t *msg) {
   if (!steering_initialized)
     return;

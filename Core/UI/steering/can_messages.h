@@ -21,6 +21,7 @@ void send_steer_version(lv_timer_t *);
 void send_steer_status(lv_timer_t *);
 void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data);
 void handle_ptt_message(primary_ptt_status_status val);
+void send_bal(bool on);
 
 void handle_primary(can_message_t *msg);
 void handle_secondary(can_message_t *msg);
