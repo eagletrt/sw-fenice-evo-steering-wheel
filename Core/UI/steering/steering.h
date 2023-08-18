@@ -205,6 +205,8 @@ void all_leds_green(void);
 void all_leds_red(void);
 void tab_terminal_new_message(const char *message);
 void tab_terminal_clear(void);
+void update_shutdown_circuit(shutdown_component_state_t *);
+void set_ptt_button_pressed(bool);
 
 uint32_t get_current_time_ms(void);
 

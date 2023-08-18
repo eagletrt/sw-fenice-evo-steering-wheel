@@ -681,3 +681,52 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
   }
   }
 }
+
+typedef enum {
+    ptt_status_OFF = 0,
+    ptt_status_SET_ON = 1,
+    ptt_status_ON = 2,
+    ptt_status_SET_OFF = 3,
+} ptt_status_t;
+
+bool ecu_ack = false;
+bool ptt_button_pressed = false;
+ptt_status_t ptt_status = ptt_status_OFF;
+
+#include "can_messages.h"
+
+void set_ptt_button_pressed(bool val) {
+  ptt_button_pressed = val;
+}
+ 
+void ptt_tasks_fn(lv_timer_t *timer) {
+  if (!ecu_ack && ptt_button_pressed) {
+    ptt_status = ptt_status_SET_ON;
+    primary_set_ptt_status_converted_t converted = {0};
+    converted.status = primary_set_ptt_status_status_ON;
+    STEER_CAN_PACK(primary, PRIMARY, set_ptt_status, SET_PTT_STATUS);
+    can_send(&msg, true);
+    update_sensors_extra_value("SO", 0);
+  } else if (ecu_ack && !ptt_button_pressed) {
+    ptt_status = ptt_status_SET_OFF;
+    primary_set_ptt_status_converted_t converted = {0};
+    converted.status = primary_set_ptt_status_status_OFF;
+    STEER_CAN_PACK(primary, PRIMARY, set_ptt_status, SET_PTT_STATUS);
+    can_send(&msg, true);
+    update_sensors_extra_value("SOF", 0);
+  } else if(ecu_ack && ptt_button_pressed) {
+    ptt_status = ptt_status_ON;
+    update_sensors_extra_value("ON", 0);
+  } else if(!ecu_ack && !ptt_button_pressed) {
+    ptt_status = ptt_status_OFF;
+    update_sensors_extra_value("OFF", 0);
+  }
+}
+
+void handle_ptt_message(primary_ptt_status_status val) {
+  if (val == primary_ptt_status_status_OFF) {
+    ecu_ack = false;
+  } else if (val == primary_ptt_status_status_ON) {
+    ecu_ack = true;
+  }
+}

@@ -104,7 +104,9 @@ void tab_shutdown_circuit_create(lv_obj_t *parent) {
   }
 }
 
-void shutdown_circuit_turn_on_off() { shutdown_circuit_active = false; }
+void shutdown_circuit_turn_on_off() {
+  shutdown_circuit_active = !shutdown_circuit_active;
+}
 
 void update_shutdown_component(lv_obj_t *lab, const char *text,
                                const shutdown_component_state_t elem) {

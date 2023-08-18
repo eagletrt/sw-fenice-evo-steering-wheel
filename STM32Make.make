@@ -209,7 +209,6 @@ Core/Src/ltdc.c \
 Core/Src/main.c \
 Core/Src/memdriver.c \
 Core/Src/octospi.c \
-Core/Src/ptt.c \
 Core/Src/screen_driver.c \
 Core/Src/stm32h7xx_hal_msp.c \
 Core/Src/stm32h7xx_it.c \

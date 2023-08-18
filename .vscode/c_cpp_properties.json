@@ -1,28 +1,6 @@
 {
   "configurations": [
     {
-      "name": "Linux",
-      "includePath": [
-        "${workspaceFolder}/**",
-        "../Lib/can/lib",
-        "../Lib/lvgl-linux",
-        "../Lib/lvgl-linux/lvgl"
-      ],
-      "defines": [],
-      "intelliSenseMode": "gcc-x64",
-      "browse": {
-        "path": [
-          "${workspaceFolder}/**"
-        ],
-        "limitSymbolsToIncludedHeaders": true,
-        "databaseFilename": ""
-      },
-      "compilerPath": "/usr/bin/gcc",
-      "cStandard": "c11",
-      "cppStandard": "c++17",
-      "configurationProvider": "ms-vscode.makefile-tools"
-    },
-    {
       "name": "STM32",
       "includePath": [
         "Core/Inc",

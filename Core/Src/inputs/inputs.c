@@ -365,9 +365,6 @@ void read_manettino_left(void) {
   inputs_error_counter = 0;
   if (manettino_input != dev1.gpio[0]) {
     manettini_actions(manettino_input, MANETTINO_LEFT_INDEX);
-    char sprintf_buf[6];
-    sprintf(sprintf_buf, "%d\n", manettino_input);
-    update_sensors_extra_value(sprintf_buf, 0);
     dev1.gpio[0] = manettino_input;
   }
 }
@@ -386,9 +383,6 @@ void read_manettino_center(void) {
   inputs_error_counter = 0;
   if (manettino_input != dev2.gpio[1]) {
     manettini_actions(manettino_input, MANETTINO_CENTER_INDEX);
-    char sprintf_buf[6];
-    sprintf(sprintf_buf, "%d\n", manettino_input);
-    update_sensors_extra_value(sprintf_buf, 1);
     dev2.gpio[1] = manettino_input;
   }
 }
@@ -407,9 +401,6 @@ void read_manettino_right(void) {
   inputs_error_counter = 0;
   if (manettino_input != dev2.gpio[0]) {
     manettini_actions(manettino_input, MANETTINO_RIGHT_INDEX);
-    char sprintf_buf[6];
-    sprintf(sprintf_buf, "%d\n", manettino_input);
-    update_sensors_extra_value(sprintf_buf, 2);
     dev2.gpio[0] = manettino_input;
   }
 }

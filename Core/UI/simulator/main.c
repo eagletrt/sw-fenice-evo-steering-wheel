@@ -379,8 +379,6 @@ void openblt_reset(void) {}
 
 uint32_t get_current_time_ms(void) { return SDL_GetTicks(); }
 
-void handle_ptt_message(primary_ptt_status_status val) {}
-
 void all_leds_green(void) {}
 
 void all_leds_red(void) {}

@@ -5,7 +5,6 @@
 #include "controls.h"
 #include "lvgl.h"
 #include "mcp23017.h"
-#include "ptt.h"
 #include "steering.h"
 #include "tab_manager.h"
 #include <math.h>
