@@ -138,7 +138,10 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(true);
       display_notification("BAL ON", 3000);
     } else {
-      calibration_tool_set_min_max(true);
+      power_map_last_state += 2.0f;
+      power_map_last_state = fmin((float)power_map_last_state, 100.0f);
+      power_map_last_state = fmax((float)power_map_last_state, -10.0f);
+      manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
   }
@@ -147,7 +150,10 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(false);
       display_notification("BAL OFF", 3000);
     } else {
-      calibration_tool_set_min_max(false);
+      power_map_last_state -= 2.0f;
+      power_map_last_state = fmin((float)power_map_last_state, 100.0f);
+      power_map_last_state = fmax((float)power_map_last_state, -10.0f);
+      manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
   }

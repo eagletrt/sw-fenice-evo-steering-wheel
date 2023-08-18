@@ -52,8 +52,8 @@ void tab_engineer_screen_create(lv_obj_t *parent) {
       cs_l5, "racing tabs" SPACING "Cambio di tab" SPACING
              "Cambio a modalita' engineer" SPACING "Cambio tab errori" SPACING
              "PTT" SPACING "Accendere/Spegnere Telemetry" SPACING
-             "Calibration set min (non esiste)" SPACING
-             "Calibration set max (non esiste)" SPACING "SEND CAR STATUS");
+             "Aumenta mappa di 2" SPACING
+             "Diminuisce mappa di 2" SPACING "SEND CAR STATUS");
   lv_obj_add_style(cs_l5, &engineer_label_style, 0);
   lv_obj_set_grid_cell(cs_l5, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
