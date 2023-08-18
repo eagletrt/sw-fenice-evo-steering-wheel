@@ -127,7 +127,6 @@ void update_shutdown_component(lv_obj_t *lab, const char *text,
 void update_shutdown_circuit_ui(lv_timer_t *tim) {
   if (!shutdown_circuit_active)
     return;
-  char buf[BUFSIZ] = {0};
   for (uint32_t iindex = 0; iindex < SHUTDOWN_COMPONENT_SIZE; ++iindex) {
     update_shutdown_component(
         tab_shutdown_circuit_labels[iindex % SHUTDOWN_CIRCUIT_ROWS]

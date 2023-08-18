@@ -130,7 +130,7 @@ void buttons_pressed_actions(uint8_t button) {
     if (engineer_mode) {
       shutdown_circuit_turn_on_off();
     } else {
-      activate_ptt();
+      set_ptt_button_pressed(true);
     }
     break;
   case BUTTON_BOTTOM_RIGHT: {
@@ -169,7 +169,7 @@ void buttons_released_actions(uint8_t button) {
   case BUTTON_TOP_RIGHT:
     break;
   case BUTTON_TOP_LEFT:
-    deactivate_ptt();
+    set_ptt_button_pressed(false);
     break;
   case BUTTON_BOTTOM_RIGHT:
     break;
