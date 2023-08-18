@@ -44,6 +44,8 @@ primary_cooling_status_converted_t cooling_status_last_state = {0};
 primary_hv_fans_override_status_converted_t hv_fans_override_status_last_state =
     {0};
 primary_lv_feedbacks_converted_t lv_feedbacks_last_state = {0};
+primary_hv_cell_balancing_status_converted_t
+    hv_cell_balancing_status_last_state = {0};
 
 secondary_steering_angle_converted_t steering_angle_converted = {0};
 secondary_pedals_output_converted_t pedals_output_last_state = {0};
@@ -270,22 +272,65 @@ void hv_errors_update(primary_hv_errors_converted_t *data) {
   STEER_ERROR_UPDATE(hv_errors, errors_eeprom_write, 15)
 }
 
+#define N_PORK_CELLBOARD 6
+bool cellboard_bal[N_PORK_CELLBOARD] = {0};
+
+void set_bal_status_label_text(char *text);
+
+void hv_cell_balancing_status_update(
+    primary_hv_cell_balancing_status_converted_t *data) {
+  uint8_t cellboard_id = (uint8_t)data->cellboard_id;
+  if (cellboard_id < 0 || cellboard_id >= N_PORK_CELLBOARD) {
+    return;
+  }
+  primary_hv_cell_balancing_status_balancing_status status =
+      data->balancing_status;
+  cellboard_bal[cellboard_id] =
+      status == primary_hv_cell_balancing_status_balancing_status_OFF ? false
+                                                                      : true;
+  bool is_bal = false;
+  for (uint8_t i = 0; i < N_PORK_CELLBOARD; i++) {
+    if (cellboard_bal[i]) {
+      is_bal = true;
+      break;
+    }
+  }
+  char buf[BUFSIZ] = {0};
+  sprintf(buf, "BAL STATUS: %s", is_bal ? "ON" : "OFF");
+  set_bal_status_label_text(buf);
+}
+
 void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *data) {
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_implausibility_detected, 0)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_cockpit, 1)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_tsal_green_fault_latched, 2)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_bms_cockpit, 3)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_ext_latched, 4)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_tsal_green, 5)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_ts_over_60v_status, 6)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airn_status, 7)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airp_status, 8)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airp_gate, 9)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airn_gate, 10)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_precharge_status, 11)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_tsp_over_60v_status, 12)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_fault, 13)
-  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_check_mux, 14)
+  STEER_ERROR_UPDATE(hv_feedbacks_status,
+                     feedbacks_status_feedback_implausibility_detected, 0)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_cockpit,
+                     1)
+  STEER_ERROR_UPDATE(hv_feedbacks_status,
+                     feedbacks_status_feedback_tsal_green_fault_latched, 2)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_bms_cockpit,
+                     3)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_ext_latched,
+                     4)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_tsal_green,
+                     5)
+  STEER_ERROR_UPDATE(hv_feedbacks_status,
+                     feedbacks_status_feedback_ts_over_60v_status, 6)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airn_status,
+                     7)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airp_status,
+                     8)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airp_gate,
+                     9)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_airn_gate,
+                     10)
+  STEER_ERROR_UPDATE(hv_feedbacks_status,
+                     feedbacks_status_feedback_precharge_status, 11)
+  STEER_ERROR_UPDATE(hv_feedbacks_status,
+                     feedbacks_status_feedback_tsp_over_60v_status, 12)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_fault,
+                     13)
+  STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_check_mux,
+                     14)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_end, 15)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_out, 16)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_sd_in, 17)
@@ -683,10 +728,10 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
 }
 
 typedef enum {
-    ptt_status_OFF = 0,
-    ptt_status_SET_ON = 1,
-    ptt_status_ON = 2,
-    ptt_status_SET_OFF = 3,
+  ptt_status_OFF = 0,
+  ptt_status_SET_ON = 1,
+  ptt_status_ON = 2,
+  ptt_status_SET_OFF = 3,
 } ptt_status_t;
 
 bool ecu_ack = false;
@@ -695,10 +740,8 @@ ptt_status_t ptt_status = ptt_status_OFF;
 
 #include "can_messages.h"
 
-void set_ptt_button_pressed(bool val) {
-  ptt_button_pressed = val;
-}
- 
+void set_ptt_button_pressed(bool val) { ptt_button_pressed = val; }
+
 void ptt_tasks_fn(lv_timer_t *timer) {
   if (!ecu_ack && ptt_button_pressed) {
     ptt_status = ptt_status_SET_ON;
@@ -714,10 +757,10 @@ void ptt_tasks_fn(lv_timer_t *timer) {
     STEER_CAN_PACK(primary, PRIMARY, set_ptt_status, SET_PTT_STATUS);
     can_send(&msg, true);
     update_sensors_extra_value("SOF", 0);
-  } else if(ecu_ack && ptt_button_pressed) {
+  } else if (ecu_ack && ptt_button_pressed) {
     ptt_status = ptt_status_ON;
     update_sensors_extra_value("ON", 0);
-  } else if(!ecu_ack && !ptt_button_pressed) {
+  } else if (!ecu_ack && !ptt_button_pressed) {
     ptt_status = ptt_status_OFF;
     update_sensors_extra_value("OFF", 0);
   }

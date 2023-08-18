@@ -3,9 +3,9 @@
 extern steering_tabs_t steering;
 lv_style_t bal_status_style;
 
-lv_obj_t* bal_status_label;
+lv_obj_t *bal_status_label;
 
-void set_bal_status_label_text(char* text) {
+void set_bal_status_label_text(char *text) {
   lv_label_set_text(bal_status_label, text);
 }
 
@@ -18,7 +18,7 @@ void init_balancing_status_styles() {
   lv_style_set_align(&bal_status_style, LV_ALIGN_CENTER);
 }
 
-void tab_balancing_status_screen_create(lv_obj_t * parent) {
+void tab_balancing_status_screen_create(lv_obj_t *parent) {
   init_balancing_status_styles();
 
   lv_obj_t *bal_status_tab_background = lv_obj_create(parent);
@@ -28,10 +28,9 @@ void tab_balancing_status_screen_create(lv_obj_t * parent) {
 
   bal_status_label = lv_label_create(bal_status_tab_background);
 
-  lv_obj_add_style(bal_status_label, &bal_status_style,
-                   LV_PART_MAIN);
-  lv_obj_set_style_text_font(bal_status_label,
-                             &lv_font_inter_bold_38, LV_PART_MAIN);
+  lv_obj_add_style(bal_status_label, &bal_status_style, LV_PART_MAIN);
+  lv_obj_set_style_text_font(bal_status_label, &lv_font_inter_bold_38,
+                             LV_PART_MAIN);
   lv_label_set_text(bal_status_label, "BAL STATUS: UNKNOWN");
   lv_obj_align(bal_status_label, LV_ALIGN_CENTER, 0, 0);
 }

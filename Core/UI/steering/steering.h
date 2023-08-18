@@ -170,6 +170,8 @@ void hv_voltage_update(primary_hv_voltage_converted_t *);
 void hv_current_update(primary_hv_current_converted_t *);
 void hv_temp_update(primary_hv_temp_converted_t *);
 void hv_errors_update(primary_hv_errors_converted_t *);
+void hv_cell_balancing_status_update(
+    primary_hv_cell_balancing_status_converted_t *);
 void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *);
 void lv_feedbacks_update(primary_lv_feedbacks_converted_t *);
 void das_errors_update(primary_das_errors_converted_t *);

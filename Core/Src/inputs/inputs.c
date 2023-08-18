@@ -138,9 +138,9 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(true);
       display_notification("BAL ON", 3000);
     } else {
-      power_map_last_state += 2.0f;
+      power_map_last_state += 1.0f;
       power_map_last_state = fmin((float)power_map_last_state, 100.0f);
-      power_map_last_state = fmax((float)power_map_last_state, -10.0f);
+      power_map_last_state = fmax((float)power_map_last_state, 0.0f);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
@@ -150,9 +150,9 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(false);
       display_notification("BAL OFF", 3000);
     } else {
-      power_map_last_state -= 2.0f;
+      power_map_last_state -= 1.0f;
       power_map_last_state = fmin((float)power_map_last_state, 100.0f);
-      power_map_last_state = fmax((float)power_map_last_state, -10.0f);
+      power_map_last_state = fmax((float)power_map_last_state, 0.0f);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
@@ -328,7 +328,7 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     if (!engineer_mode) {
       power_map_last_state += ((float)dstep * 10.0f);
       power_map_last_state = fmin((float)power_map_last_state, 100.0f);
-      power_map_last_state = fmax((float)power_map_last_state, -10.0f);
+      power_map_last_state = fmax((float)power_map_last_state, 0.0f);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
     } else {
       // pork cooling
@@ -336,7 +336,7 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
       hv_fans_override_last_state =
           fmin((float)hv_fans_override_last_state, 100.0f);
       hv_fans_override_last_state =
-          fmax((float)hv_fans_override_last_state, -10.0f);
+          fmax((float)hv_fans_override_last_state, 0.0f);
       send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
     }
     break;

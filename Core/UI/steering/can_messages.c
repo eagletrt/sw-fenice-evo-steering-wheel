@@ -102,6 +102,12 @@ void handle_primary(can_message_t *msg) {
     hv_errors_update(&converted);
     break;
   }
+  case PRIMARY_HV_CELL_BALANCING_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_cell_balancing_status,
+                     HV_CELL_BALANCING_STATUS);
+    hv_cell_balancing_status_update(&converted);
+    break;
+  }
   case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_feedbacks_status,
                      HV_FEEDBACKS_STATUS);

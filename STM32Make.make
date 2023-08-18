@@ -223,6 +223,7 @@ Core/Src/watchdog.c \
 Core/UI/steering/can_messages.c \
 Core/UI/steering/cansniffer.c \
 Core/UI/steering/controls.c \
+Core/UI/steering/engineer_mode/tab_balancing_status.c \
 Core/UI/steering/engineer_mode/tab_cooling.c \
 Core/UI/steering/engineer_mode/tab_engineer_mode.c \
 Core/UI/steering/engineer_mode/tab_fatal_error.c \
