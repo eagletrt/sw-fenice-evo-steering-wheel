@@ -37,6 +37,7 @@ typedef enum {
 #endif
   TAB_TERMINAL,
   TAB_SHUTDOWN_CIRCUIT,
+  TAB_BALANCING_STATUS,
   // add here new tabs
   NUM_ENGINEER_TABS
 } engineer_tab_t;

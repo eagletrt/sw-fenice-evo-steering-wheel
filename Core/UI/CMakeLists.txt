@@ -15,6 +15,7 @@ add_executable(SteeringSimulator
     steering/engineer_mode/tab_fatal_error.c
     steering/engineer_mode/tab_terminal.c
     steering/engineer_mode/tab_shutdown_circuit.c
+    steering/engineer_mode/tab_balancing_status.c
     steering/racing_tabs/tab_calibration.c
     steering/racing_tabs/tab_debug.c
     steering/racing_tabs/tab_notification.c
