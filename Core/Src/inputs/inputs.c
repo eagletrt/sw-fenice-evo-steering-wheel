@@ -5,6 +5,11 @@ MCP23017_HandleTypeDef dev2;
 
 extern bool engineer_mode;
 
+#define PORK_HIGH_FANS_SPEED 100
+#define PORK_LOW_FANS_SPEED -10
+#define POWER_MAP_MAX 100
+#define POWER_MAP_MIN -50
+
 bool buttons[BUTTONS_N] = {true};
 uint32_t buttons_long_press_check[BUTTONS_N] = {0};
 bool buttons_long_press_activated[BUTTONS_N] = {false};
@@ -16,8 +21,8 @@ bool manettini_initialized[MANETTINI_N] = {false};
 extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
-float power_map_last_state = 0.0f;
-float hv_fans_override_last_state = 0.0f;
+int power_map_last_state = 0;
+int hv_fans_override_last_state = 0;
 
 #define ERROR_THRESHOLD 100
 uint32_t inputs_error_counter = 0;
@@ -123,7 +128,6 @@ void buttons_pressed_actions(uint8_t button) {
       switch_cansniffer();
 #endif
     } else {
-      turn_telemetry_on_off();
     }
     break;
   case BUTTON_TOP_LEFT:
@@ -138,10 +142,6 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(true);
       display_notification("BAL ON", 3000);
     } else {
-      power_map_last_state += 1.0f;
-      power_map_last_state = fmin((float)power_map_last_state, 100.0f);
-      power_map_last_state = fmax((float)power_map_last_state, 0.0f);
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
   }
@@ -150,10 +150,6 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(false);
       display_notification("BAL OFF", 3000);
     } else {
-      power_map_last_state -= 1.0f;
-      power_map_last_state = fmin((float)power_map_last_state, 100.0f);
-      power_map_last_state = fmax((float)power_map_last_state, 0.0f);
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
   }
@@ -195,8 +191,13 @@ void buttons_long_pressed_actions(uint8_t button) {
     break;
   case PADDLE_BOTTOM_LEFT:
     break;
-  case BUTTON_TOP_RIGHT:
+  case BUTTON_TOP_RIGHT: {
+    if (engineer_mode) {
+    } else {
+      turn_telemetry_on_off();
+    }
     break;
+  }
   case BUTTON_TOP_LEFT:
     break;
   case BUTTON_BOTTOM_RIGHT:
@@ -275,6 +276,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   }
 }
 
+int imin(int x, int y) { return x > y ? y : x; }
+int imax(int x, int y) { return x > y ? x : y; }
+
 void read_buttons(void) {
   uint8_t button_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1,
@@ -326,17 +330,17 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     if (dstep == 7)
       dstep = -1;
     if (!engineer_mode) {
-      power_map_last_state += ((float)dstep * 10.0f);
-      power_map_last_state = fmin((float)power_map_last_state, 100.0f);
-      power_map_last_state = fmax((float)power_map_last_state, 0.0f);
+      power_map_last_state += (dstep * 10);
+      power_map_last_state = imin(power_map_last_state, POWER_MAP_MAX);
+      power_map_last_state = imax(power_map_last_state, POWER_MAP_MIN);
       manettino_send_power_map((float)power_map_last_state / 100.0f);
     } else {
       // pork cooling
-      hv_fans_override_last_state += ((float)dstep * 10.0f);
+      hv_fans_override_last_state += dstep * 10;
       hv_fans_override_last_state =
-          fmin((float)hv_fans_override_last_state, 100.0f);
+          imin(hv_fans_override_last_state, PORK_HIGH_FANS_SPEED);
       hv_fans_override_last_state =
-          fmax((float)hv_fans_override_last_state, 0.0f);
+          imax(hv_fans_override_last_state, PORK_LOW_FANS_SPEED);
       send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
     }
     break;

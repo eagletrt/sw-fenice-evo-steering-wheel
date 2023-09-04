@@ -140,17 +140,10 @@ void manettino_send_torque_vectoring(float val) {
 
 void manettino_send_power_map(float val) {
   steer_status_last_state.map_pw = val;
-  int map_val = (int)(steer_status_last_state.map_pw * 100.0f);
-
-  if (map_val < 0) {
-    sprintf(sprintf_buffer_controls, "TUPIDO");
-    STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer_controls)
-    sprintf(sprintf_buffer_controls, "POWER MAP ENDRIO");
-  } else {
-    sprintf(sprintf_buffer_controls, "%d", map_val);
-    STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer_controls)
-    sprintf(sprintf_buffer_controls, "POWER MAP %d", map_val);
-  }
+  float map_val = 65.0f + (float)(steer_status_last_state.map_pw * 10.0f);
+  sprintf(sprintf_buffer_controls, "%.0f", map_val);
+  STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer_controls)
+  sprintf(sprintf_buffer_controls, "POWER MAP %.0f", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }
 

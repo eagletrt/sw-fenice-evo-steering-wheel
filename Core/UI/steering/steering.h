@@ -185,6 +185,7 @@ void cooling_status_update(primary_cooling_status_converted_t *);
 void hv_fans_override_status_update(
     primary_hv_fans_override_status_converted_t *);
 void tlm_status_update(primary_tlm_status_converted_t *);
+void handle_lap_counter_message(secondary_lap_count_converted_t *);
 
 void steering_angle_update(secondary_steering_angle_converted_t *);
 void pedals_output_update(secondary_pedals_output_converted_t *);

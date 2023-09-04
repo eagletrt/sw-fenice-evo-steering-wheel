@@ -773,3 +773,18 @@ void handle_ptt_message(primary_ptt_status_status val) {
     ecu_ack = true;
   }
 }
+
+
+
+/***
+ * SPECIAL FSG LAP COUNTER
+*/
+void handle_lap_counter_message(secondary_lap_count_converted_t *data) {
+  float total_seconds = data->lap_time;
+  int minutes = ((int)total_seconds) / 60;
+  int seconds =  ((int)total_seconds % (minutes* 60));
+  int cent_second = (total_seconds - (int)total_seconds) * 100.0f;
+  char buf[BUFSIZ];
+  sprintf(buf, "%d:%d:%d", minutes, seconds, cent_second);
+  display_notification(buf, 5000);
+}
