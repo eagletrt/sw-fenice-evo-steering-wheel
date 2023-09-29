@@ -79,7 +79,7 @@ void MX_FDCAN1_Init(void) {
   hfdcan1.Init.ExtFiltersNbr = 0;
   hfdcan1.Init.RxFifo0ElmtsNbr = 64;
   hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
-  hfdcan1.Init.RxFifo1ElmtsNbr = 64;
+  hfdcan1.Init.RxFifo1ElmtsNbr = 0;
   hfdcan1.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan1.Init.RxBuffersNbr = 0;
   hfdcan1.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
@@ -120,10 +120,10 @@ void MX_FDCAN2_Init(void) {
   hfdcan2.Init.DataSyncJumpWidth = 1;
   hfdcan2.Init.DataTimeSeg1 = 1;
   hfdcan2.Init.DataTimeSeg2 = 1;
-  hfdcan2.Init.MessageRAMOffset = 0;
+  hfdcan2.Init.MessageRAMOffset = 385;
   hfdcan2.Init.StdFiltersNbr = 1;
   hfdcan2.Init.ExtFiltersNbr = 0;
-  hfdcan2.Init.RxFifo0ElmtsNbr = 64;
+  hfdcan2.Init.RxFifo0ElmtsNbr = 0;
   hfdcan2.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.RxFifo1ElmtsNbr = 64;
   hfdcan2.Init.RxFifo1ElmtSize = FDCAN_DATA_BYTES_8;
@@ -138,7 +138,7 @@ void MX_FDCAN2_Init(void) {
     Error_Handler();
   }
   /* USER CODE BEGIN FDCAN2_Init 2 */
-  // _CAN_Init_secondary();
+  _CAN_Init_secondary();
 
   /* USER CODE END FDCAN2_Init 2 */
 }
@@ -183,8 +183,6 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     /* FDCAN1 interrupt Init */
     HAL_NVIC_SetPriority(FDCAN1_IT0_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(FDCAN1_IT0_IRQn);
-    HAL_NVIC_SetPriority(FDCAN1_IT1_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(FDCAN1_IT1_IRQn);
     /* USER CODE BEGIN FDCAN1_MspInit 1 */
 
     /* USER CODE END FDCAN1_MspInit 1 */
@@ -222,8 +220,6 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
     /* FDCAN2 interrupt Init */
     HAL_NVIC_SetPriority(FDCAN2_IT0_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(FDCAN2_IT0_IRQn);
-    HAL_NVIC_SetPriority(FDCAN2_IT1_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(FDCAN2_IT1_IRQn);
     /* USER CODE BEGIN FDCAN2_MspInit 1 */
 
     /* USER CODE END FDCAN2_MspInit 1 */
@@ -250,7 +246,6 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
     /* FDCAN1 interrupt Deinit */
     HAL_NVIC_DisableIRQ(FDCAN1_IT0_IRQn);
-    HAL_NVIC_DisableIRQ(FDCAN1_IT1_IRQn);
     /* USER CODE BEGIN FDCAN1_MspDeInit 1 */
 
     /* USER CODE END FDCAN1_MspDeInit 1 */
@@ -272,7 +267,6 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
     /* FDCAN2 interrupt Deinit */
     HAL_NVIC_DisableIRQ(FDCAN2_IT0_IRQn);
-    HAL_NVIC_DisableIRQ(FDCAN2_IT1_IRQn);
     /* USER CODE BEGIN FDCAN2_MspDeInit 1 */
 
     /* USER CODE END FDCAN2_MspDeInit 1 */
@@ -290,17 +284,13 @@ void _CAN_Init_primary() {
   HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
   f.FilterIndex = 0;
-  f.FilterType = FDCAN_FILTER_MASK;
+  f.FilterType = FDCAN_FILTER_RANGE;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
-  f.FilterID1 = ((1U << 11) - 1) << 5;
-  f.FilterID2 = 0;
+  f.FilterID1 = 0;
+  f.FilterID2 = ((1U << 11) - 1) << 5;
   f.IsCalibrationMsg = 0;
+  f.RxBufferIndex = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK) {
-    primary_can_fatal_error = true;
-  }
-
-  if ((s = HAL_FDCAN_ActivateNotification(
-           &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
     primary_can_fatal_error = true;
   }
 
@@ -314,6 +304,10 @@ void _CAN_Init_primary() {
   if ((s = HAL_FDCAN_Start(&hfdcan1)) != HAL_OK) {
     primary_can_fatal_error = true;
   }
+  if ((s = HAL_FDCAN_ActivateNotification(
+           &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
+    primary_can_fatal_error = true;
+  }
 }
 
 /**
@@ -325,17 +319,13 @@ void _CAN_Init_secondary() {
   HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
   f.FilterIndex = 0;
-  f.FilterType = FDCAN_FILTER_MASK;
+  f.FilterType = FDCAN_FILTER_RANGE;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
-  f.FilterID1 = ((1U << 11) - 1) << 5;
-  f.FilterID2 = 0;
+  f.FilterID1 = 0;
+  f.FilterID2 = ((1U << 11) - 1) << 5;
   f.IsCalibrationMsg = 0;
+  f.RxBufferIndex = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK) {
-    secondary_can_fatal_error = true;
-  }
-
-  if ((s = HAL_FDCAN_ActivateNotification(
-           &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0)) != HAL_OK) {
     secondary_can_fatal_error = true;
   }
 
@@ -347,6 +337,10 @@ void _CAN_Init_secondary() {
 #endif
 
   if ((s = HAL_FDCAN_Start(&hfdcan2)) != HAL_OK) {
+    secondary_can_fatal_error = true;
+  }
+  if ((s = HAL_FDCAN_ActivateNotification(
+           &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0)) != HAL_OK) {
     secondary_can_fatal_error = true;
   }
 }
@@ -429,58 +423,61 @@ void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan) {
  */
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo0ITs) {
-  FDCAN_RxHeaderTypeDef header = {0};
-  can_message_t msg;
-  HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
+  if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != RESET) {
+    FDCAN_RxHeaderTypeDef header = {0};
+    can_message_t msg;
+    HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
+    HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
 
 #if CAN_LOG_ENABLED
-  uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO0);
-  print("RX Fifo0 fill level %" PRIu32 "\n", fill_level);
+    uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO0);
+    print("RX Fifo0 fill level %" PRIu32 "\n", fill_level);
 #endif
 
-  msg.id = header.Identifier;
-  msg.size = 0;
-
-  switch (header.DataLength) {
-  case FDCAN_DLC_BYTES_0:
+    msg.id = header.Identifier;
     msg.size = 0;
-    break;
-  case FDCAN_DLC_BYTES_1:
-    msg.size = 1;
-    break;
-  case FDCAN_DLC_BYTES_2:
-    msg.size = 2;
-    break;
-  case FDCAN_DLC_BYTES_3:
-    msg.size = 3;
-    break;
-  case FDCAN_DLC_BYTES_4:
-    msg.size = 4;
-    break;
-  case FDCAN_DLC_BYTES_5:
-    msg.size = 5;
-    break;
-  case FDCAN_DLC_BYTES_6:
-    msg.size = 6;
-    break;
-  case FDCAN_DLC_BYTES_7:
-    msg.size = 7;
-    break;
-  case FDCAN_DLC_BYTES_8:
-    msg.size = 8;
-    break;
-  }
 
-  if (hfdcan == &hfdcan1) {
+    switch (header.DataLength) {
+    case FDCAN_DLC_BYTES_0:
+      msg.size = 0;
+      break;
+    case FDCAN_DLC_BYTES_1:
+      msg.size = 1;
+      break;
+    case FDCAN_DLC_BYTES_2:
+      msg.size = 2;
+      break;
+    case FDCAN_DLC_BYTES_3:
+      msg.size = 3;
+      break;
+    case FDCAN_DLC_BYTES_4:
+      msg.size = 4;
+      break;
+    case FDCAN_DLC_BYTES_5:
+      msg.size = 5;
+      break;
+    case FDCAN_DLC_BYTES_6:
+      msg.size = 6;
+      break;
+    case FDCAN_DLC_BYTES_7:
+      msg.size = 7;
+      break;
+    case FDCAN_DLC_BYTES_8:
+      msg.size = 8;
+      break;
+    }
+
+    if (hfdcan == &hfdcan1) {
 #if DEBUG_RX_BUFFERS_ENABLED == 1
-    debug_rx_count(true, true);
+      debug_rx_count(true, true);
 #endif
-    handle_primary(&msg);
-  } else if (hfdcan == &hfdcan2) {
+      handle_primary(&msg);
+    } else if (hfdcan == &hfdcan2) {
 #if DEBUG_RX_BUFFERS_ENABLED == 1
-    debug_rx_count(false, true);
+      debug_rx_count(false, true);
 #endif
-    handle_secondary(&msg);
+      handle_secondary(&msg);
+    }
   }
 }
 
@@ -489,58 +486,61 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
  */
 void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
                                uint32_t RxFifo1ITs) {
-  FDCAN_RxHeaderTypeDef header;
-  can_message_t msg;
-  HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, msg.data);
+  if ((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != RESET) {
+    FDCAN_RxHeaderTypeDef header;
+    can_message_t msg;
+    HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, msg.data);
+    HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
 
 #if CAN_LOG_ENABLED
-  uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO1);
-  print("RX Fifo1 fill level %" PRIu32 "\n", fill_level);
+    uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO1);
+    print("RX Fifo1 fill level %" PRIu32 "\n", fill_level);
 #endif
 
-  msg.id = header.Identifier;
-  msg.size = 0;
-
-  switch (header.DataLength) {
-  case FDCAN_DLC_BYTES_0:
+    msg.id = header.Identifier;
     msg.size = 0;
-    break;
-  case FDCAN_DLC_BYTES_1:
-    msg.size = 1;
-    break;
-  case FDCAN_DLC_BYTES_2:
-    msg.size = 2;
-    break;
-  case FDCAN_DLC_BYTES_3:
-    msg.size = 3;
-    break;
-  case FDCAN_DLC_BYTES_4:
-    msg.size = 4;
-    break;
-  case FDCAN_DLC_BYTES_5:
-    msg.size = 5;
-    break;
-  case FDCAN_DLC_BYTES_6:
-    msg.size = 6;
-    break;
-  case FDCAN_DLC_BYTES_7:
-    msg.size = 7;
-    break;
-  case FDCAN_DLC_BYTES_8:
-    msg.size = 8;
-    break;
-  }
 
-  if (hfdcan == &hfdcan1) {
+    switch (header.DataLength) {
+    case FDCAN_DLC_BYTES_0:
+      msg.size = 0;
+      break;
+    case FDCAN_DLC_BYTES_1:
+      msg.size = 1;
+      break;
+    case FDCAN_DLC_BYTES_2:
+      msg.size = 2;
+      break;
+    case FDCAN_DLC_BYTES_3:
+      msg.size = 3;
+      break;
+    case FDCAN_DLC_BYTES_4:
+      msg.size = 4;
+      break;
+    case FDCAN_DLC_BYTES_5:
+      msg.size = 5;
+      break;
+    case FDCAN_DLC_BYTES_6:
+      msg.size = 6;
+      break;
+    case FDCAN_DLC_BYTES_7:
+      msg.size = 7;
+      break;
+    case FDCAN_DLC_BYTES_8:
+      msg.size = 8;
+      break;
+    }
+
+    if (hfdcan == &hfdcan1) {
 #if DEBUG_RX_BUFFERS_ENABLED == 1
-    debug_rx_count(true, false);
+      debug_rx_count(true, false);
 #endif
-    handle_primary(&msg);
-  } else if (hfdcan == &hfdcan2) {
+      handle_primary(&msg);
+    } else if (hfdcan == &hfdcan2) {
 #if DEBUG_RX_BUFFERS_ENABLED == 1
-    debug_rx_count(false, false);
+      debug_rx_count(false, false);
 #endif
-    handle_secondary(&msg);
+      handle_secondary(&msg);
+    }
   }
 }
 

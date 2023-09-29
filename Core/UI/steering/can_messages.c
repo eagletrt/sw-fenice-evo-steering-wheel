@@ -170,10 +170,11 @@ void handle_primary(can_message_t *msg) {
   case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT);
     control_output_update(&converted);
+    break;
   }
   case SPECIAL_FSG_LAP_COUNTER_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, lap_count, LAP_COUNT);
-    handle_lap_counter_message(&converted);
+    // STEER_CAN_UNPACK(secondary, SECONDARY, lap_count, LAP_COUNT);
+    // handle_lap_counter_message(&converted);
   }
   default:
     break;
