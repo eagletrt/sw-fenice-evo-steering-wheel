@@ -287,7 +287,7 @@ void _CAN_Init_primary() {
   f.FilterType = FDCAN_FILTER_RANGE;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO0;
   f.FilterID1 = 0;
-  f.FilterID2 = ((1U << 11) - 1) << 5;
+  f.FilterID2 = ((1U << 11) - 1) << 8;
   f.IsCalibrationMsg = 0;
   f.RxBufferIndex = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK) {
@@ -322,7 +322,7 @@ void _CAN_Init_secondary() {
   f.FilterType = FDCAN_FILTER_RANGE;
   f.FilterConfig = FDCAN_FILTER_TO_RXFIFO1;
   f.FilterID1 = 0;
-  f.FilterID2 = ((1U << 11) - 1) << 5;
+  f.FilterID2 = ((1U << 11) - 1) << 8;
   f.IsCalibrationMsg = 0;
   f.RxBufferIndex = 0;
   if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK) {
