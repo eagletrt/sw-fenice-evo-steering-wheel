@@ -140,7 +140,7 @@ void manettino_send_torque_vectoring(float val) {
 
 void manettino_send_power_map(float val) {
   steer_status_last_state.map_pw = val;
-  float map_val = 65.0f + (float)(steer_status_last_state.map_pw * 10.0f);
+  float map_val = (float)(steer_status_last_state.map_pw * 10.0f);
   sprintf(sprintf_buffer_controls, "%.0f", map_val);
   STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer_controls)
   sprintf(sprintf_buffer_controls, "POWER MAP %.0f", map_val);
