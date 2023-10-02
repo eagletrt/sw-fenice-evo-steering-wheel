@@ -3,6 +3,8 @@ SET(CMAKE_CXX_STANDARD 17)
 
 PROJECT(SteeringSimulator)
 
+ADD_COMPILE_DEFINITIONS(SIMULATOR_CAN)
+
 file(GLOB_RECURSE LVGL_SOURCES ../Lib/lvgl-linux/lvgl/**/*.c)
 file(GLOB_RECURSE LVDRIVERS_SOURCES ../Lib/lvgl-linux/lv-drivers/**/*.c)
 file(GLOB_RECURSE CANLIB_SOURCES ../Lib/can/lib/**/*.c)

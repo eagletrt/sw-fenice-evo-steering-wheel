@@ -1,3 +1,5 @@
+#ifdef SIMULATOR_CAN
+
 #include "queue.h"
 
 int emptyp(const queue_t *q) { return (q->head == q->tail); }
@@ -25,3 +27,5 @@ void dequeue(queue_t *q) {
     q->head = (q->head + 1) % (DIM_queue);
   }
 }
+
+#endif 

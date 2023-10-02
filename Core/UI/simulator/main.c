@@ -21,32 +21,37 @@
 #include "tab_manager.h"
 #include <SDL2/SDL.h>
 
+#define MAX(x, y) x > y ? x : y;
+
+#ifdef SIMULATOR_CAN
+
 /*canlib libraries*/
 #define primary_NETWORK_IMPLEMENTATION
 #define secondary_NETWORK_IMPLEMENTATION
-
-#define MAX(x, y) x > y ? x : y;
 
 #include "can.h"
 #include "queue.h"
 
 #include "../steering/can_messages.h"
 #include "../steering/cansniffer.h"
+#endif
+
 #include "../steering/controls.h"
 
 /*********************
  *      DEFINES
  *********************/
-#define SIMULATOR_CAN 1
 
 /**********************
  *      TYPEDEFS
  **********************/
 
+#ifdef SIMULATOR_CAN
 typedef struct thread_data_t {
   can_t *can;
   int can_id;
 } thread_data_t;
+#endif
 
 /**********************
  *  STATIC PROTOTYPES
@@ -91,6 +96,7 @@ void shutdown_circuit_turn_on_off(void);
  *      VARIABLES
  **********************/
 
+#ifdef SIMULATOR_CAN
 thread_data_t thread_data_1, thread_data_0;
 
 can_t can_primary;
@@ -104,6 +110,7 @@ const int NETWORK_SECONDARY = 1;
 
 SDL_Thread *thread_id_0;
 SDL_Thread *thread_id_1;
+#endif
 
 /**********************
  *  STATIC PROTOTYPES
@@ -185,10 +192,6 @@ int main(int argc, char **argv) {
   secondary_pedals_output_converted_t converted = {
       .apps = 0, .bse_front = 0.0f, .bse_rear = 0.0f};
 
-  // secondary_steering_angle_converted_t angle_main = {
-  // .angle = -70.0f
-  // };
-
   int gggcounter = 0;
 
   primary_set_pumps_speed_converted_t pumps_speed = {.pumps_speed = 0.8f};
@@ -203,28 +206,16 @@ int main(int argc, char **argv) {
 
   while (1) {
 
+#if SIMULATOR_CAN
     SDL_mutexP(mtx);
+#endif
     /* Periodically call the lv_task handler.
      * It could be done in a timer interrupt or an OS task too.*/
     lv_timer_handler();
 
-#if 0
-    converted.apps = (int) (converted.apps + 3) % 50;
-    converted.bse_front += 0.1f;
-    if (converted.bse_front > 90.0f) converted.bse_front = 0.0f;
-
-    angle_main.angle += 3.1f;
-    if (angle_main.angle > 70.0f) angle_main.angle = -70.0f;
-
-    pedals_output_update(&converted);
-    if (gggcounter > 100) {
-      steering_angle_update(&angle_main);
-      gggcounter = 0;
-    }
-    gggcounter++;
-#endif
-
+#if SIMULATOR_CAN
     SDL_mutexV(mtx);
+#endif
     usleep(5 * 1000);
   }
 

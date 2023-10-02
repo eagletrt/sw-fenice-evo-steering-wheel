@@ -1,3 +1,5 @@
+#ifdef SIMULATOR_CAN
+
 #include "can.h"
 
 void can_init(const char *device, struct can_t *can) {
@@ -74,3 +76,5 @@ int can_set_filters(struct can_filter *filter, struct can_t *can) {
   return setsockopt(can->sock, SOL_CAN_RAW, CAN_RAW_FILTER, filter,
                     sizeof(filter));
 }
+
+#endif
