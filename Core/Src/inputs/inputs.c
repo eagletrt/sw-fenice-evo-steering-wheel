@@ -8,7 +8,7 @@ extern bool engineer_mode;
 #define PORK_HIGH_FANS_SPEED 100
 #define PORK_LOW_FANS_SPEED -10
 #define POWER_MAP_MAX 100
-#define POWER_MAP_MIN -50
+#define POWER_MAP_MIN 0
 
 bool buttons[BUTTONS_N] = {true};
 uint32_t buttons_long_press_check[BUTTONS_N] = {0};
@@ -29,6 +29,9 @@ uint32_t inputs_error_counter = 0;
 bool inputs_fatal_error = false;
 
 void shutdown_circuit_turn_on_off(void);
+
+int imin(int x, int y) { return x > y ? y : x; }
+int imax(int x, int y) { return x > y ? x : y; }
 
 /***
  * Manettini mapping
@@ -142,6 +145,9 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(true);
       display_notification("BAL ON", 3000);
     } else {
+      ++power_map_last_state;
+      power_map_last_state = imin(power_map_last_state, POWER_MAP_MAX);
+      manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
   }
@@ -150,6 +156,9 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(false);
       display_notification("BAL OFF", 3000);
     } else {
+      --power_map_last_state;
+      power_map_last_state = imax(power_map_last_state, POWER_MAP_MIN);
+      manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
   }
@@ -275,9 +284,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (GPIO_Pin == ExtraButton_Pin) {
   }
 }
-
-int imin(int x, int y) { return x > y ? y : x; }
-int imax(int x, int y) { return x > y ? x : y; }
 
 void read_buttons(void) {
   uint8_t button_input;
