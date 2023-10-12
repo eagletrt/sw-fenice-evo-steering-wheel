@@ -235,7 +235,7 @@ int main(void) {
   lv_timer_set_repeat_count(shutdown_circuit_task, -1);
   lv_timer_reset(shutdown_circuit_task);
 
-  lv_timer_t *ptt_tasks = lv_timer_create(ptt_tasks_fn, 500, NULL);
+  lv_timer_t *ptt_tasks = lv_timer_create(ptt_tasks_fn, 1000, NULL);
   lv_timer_set_repeat_count(ptt_tasks, -1);
   lv_timer_reset(ptt_tasks);
 
