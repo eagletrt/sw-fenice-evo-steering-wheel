@@ -1,6 +1,6 @@
 {
-    "cortex-debug.armToolchainPath": "/usr/bin",
-    "cortex-debug.openocdPath": "/usr/bin/openocd",
+    "cortex-debug.armToolchainPath": "/bin",
+    "cortex-debug.openocdPath": "/bin/openocd",
     "files.associations": {
         "main.h": "c",
         "boot.h": "c"

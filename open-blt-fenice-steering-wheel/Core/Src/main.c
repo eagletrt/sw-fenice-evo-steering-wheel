@@ -34,6 +34,20 @@
 #include <string.h>
 #define OLIVEC_IMPLEMENTATION
 #include "olive.c"
+
+#include "test_flash.h"
+
+#include <stdarg.h>
+
+void print(const char *fmt, ...) {
+  char buff[256];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buff, sizeof(buff), fmt, args);
+  va_end(args);
+  HAL_UART_Transmit(&hlpuart1, (uint8_t *)buff, strlen(buff), 250);
+}
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -66,6 +80,8 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+
 static void VectorBase_Config(void)
 {
   /* The constant array with vectors of the vector table is declared externally in the
@@ -86,6 +102,7 @@ static void VectorBase_Config(void)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
 
   /* USER CODE END 1 */
 
@@ -146,6 +163,10 @@ int main(void)
       }
     }
   }
+#if EXTERNAL_FLASH_ENABLED == 1
+  Flash_Init();
+  Flash_Test();
+#endif
 
   BootInit();
 

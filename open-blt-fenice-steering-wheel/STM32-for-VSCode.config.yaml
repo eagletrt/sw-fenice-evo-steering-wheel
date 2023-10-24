@@ -20,7 +20,8 @@ floatAbi: -mfloat-abi=hard
 ldscript: STM32H723ZGTx_FLASH.ld # linker script
 
 # Compiler definitions. The -D prefix for the compiler will be automatically added.
-cDefinitions: []
+cDefinitions:
+  - EXTERNAL_FLASH_ENABLED=0
 cxxDefinitions: []
 asDefinitions: []
 

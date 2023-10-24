@@ -11,10 +11,11 @@
         "Drivers/STM32H7xx_HAL_Driver/Inc/Legacy"
       ],
       "defines": [
+        "EXTERNAL_FLASH_ENABLED=0",
         "STM32H723xx",
         "USE_HAL_DRIVER"
       ],
-      "compilerPath": "/usr/bin/arm-none-eabi-gcc"
+      "compilerPath": "/bin/arm-none-eabi-gcc"
     }
   ],
   "version": 4
