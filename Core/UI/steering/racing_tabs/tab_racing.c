@@ -1,30 +1,26 @@
 #include "tab_racing.h"
 
 //refactoring
-lv_obj_t *lb_pack_voltage[NUM_RACING_TABS];
+lv_obj_t *tab_racing_lb_pack_voltage;
 lv_obj_t *racing_lv_bar;
-lv_obj_t *lb_hv_current[NUM_RACING_TABS];
+lv_obj_t *tab_racing_lb_hv_current;
 lv_obj_t *racing_hv_bar;
-lv_obj_t *lb_best_time[NUM_RACING_TABS];
-lv_obj_t *lb_last_time[NUM_RACING_TABS];
-lv_obj_t *lb_delta_time[NUM_RACING_TABS];
-lv_obj_t *lb_torque[NUM_RACING_TABS];
-lv_obj_t *lb_slip[NUM_RACING_TABS];
-lv_obj_t *lb_left_inverter_temp[NUM_RACING_TABS];
-lv_obj_t *lb_left_motor_temp[NUM_RACING_TABS];
-lv_obj_t *lb_battery_temperature[NUM_RACING_TABS];
-lv_obj_t *lb_average_temperature[NUM_RACING_TABS];
-lv_obj_t *lb_power[NUM_RACING_TABS];
-lv_obj_t *lb_speed[NUM_RACING_TABS];
+lv_obj_t *lb_best_time;
+lv_obj_t *lb_last_time;
+lv_obj_t *lb_delta_time;
+lv_obj_t *tab_racing_lb_torque;
+lv_obj_t *lb_slip;
+lv_obj_t *tab_racing_lb_left_inverter_temp;
+lv_obj_t *tab_racing_lb_left_motor_temp;
+lv_obj_t *tab_racing_lb_battery_temperature;
+lv_obj_t *tab_racing_lb_average_temperature;
+lv_obj_t *tab_racing_lb_power;
+lv_obj_t *tab_racing_lb_speed;
 lv_obj_t *bottom_lb_speed;
 lv_obj_t *custom_meter;
 lv_meter_indicator_t *indicator_blue;
 lv_meter_indicator_t *indicator_white;
-lv_obj_t *lb_lap_count[NUM_RACING_TABS];
-
-
-
-
+lv_obj_t *lb_lap_count;
 
 lv_style_t bar_hv_style;
 lv_style_t bar_lv_style;
@@ -70,7 +66,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // lv percentage
   lv_obj_t *lv_perc = lv_horizontal_pair_label(
-      bar_panel_lv, &lb_pack_voltage[TAB_RACING], "0",
+      bar_panel_lv, &tab_racing_lb_pack_voltage[TAB_RACING], "0",
       &lv_font_inter_bold_30, "V", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
@@ -111,7 +107,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // hv percentage
   lv_obj_t *hv_perc = lv_horizontal_pair_label(
-      bar_panel_hv, &lb_hv_current[TAB_RACING], "0",
+      bar_panel_hv, &tab_racing_lb_hv_current[TAB_RACING], "0",
       &lv_font_inter_bold_30, "A", &lv_font_inter_bold_20);
   lv_obj_align(lv_obj_get_child(lv_obj_get_child(hv_perc, 1), 0),
                LV_ALIGN_CENTER, 0, 5); // change "%" position
@@ -256,7 +252,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   /*inserting data into data right panel*/
   lv_obj_t *trq = lv_vertical_pair_label(
-      right_data_panel, &lb_torque[TAB_RACING], "NA",
+      right_data_panel, &tab_racing_lb_torque[TAB_RACING], "NA",
       &lv_font_inter_bold_38, "TRQ", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(trq, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0,
                        1);
@@ -278,28 +274,28 @@ void tab_racing_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_START, 1, 1);
 
   lv_obj_t *inverter_temp = lv_triple_label(
-      right_data_panel, &lb_left_inverter_temp[TAB_RACING], "0",
+      right_data_panel, &tab_racing_lb_left_inverter_temp[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(inverter_temp, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *motor_temp = lv_triple_label(
-      right_data_panel, &lb_left_motor_temp[TAB_RACING], "0",
+      right_data_panel, &tab_racing_lb_left_motor_temp[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_temp, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *lv_temp = lv_triple_label(
-      right_data_panel, &lb_battery_temperature[TAB_RACING], "0",
+      right_data_panel, &tab_racing_lb_battery_temperature[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "LV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_temp, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *hv_temp = lv_triple_label(
-      right_data_panel, &lb_average_temperature[TAB_RACING], "0",
+      right_data_panel, &tab_racing_lb_average_temperature[TAB_RACING], "0",
       &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_temp, LV_GRID_ALIGN_CENTER, 1, 1,
@@ -309,7 +305,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // power
   lv_obj_t *power = lv_horizontal_pair_label(
-      central_panel, &lb_power[TAB_RACING], "0",
+      central_panel, &tab_racing_lb_power[TAB_RACING], "0",
       &lv_font_inter_bold_38, " POWER", &lv_font_inter_bold_22);
 
   lv_obj_set_grid_cell(lv_obj_get_child(power, 1), LV_GRID_ALIGN_CENTER, 1, 1,
@@ -326,7 +322,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // speedometer
   lv_obj_t *speed = lv_vertical_pair_two_labels(
-      data_panel, &lb_speed[TAB_RACING], "IDLE",
+      data_panel, &tab_racing_lb_speed[TAB_RACING], "IDLE",
       &lv_font_inter_bold_38, &bottom_lb_speed, "-",
       &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,

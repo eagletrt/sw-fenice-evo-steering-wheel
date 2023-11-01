@@ -105,8 +105,8 @@ typedef struct {
 //  lv_obj_t *lb_power[NUM_RACING_TABS];
 //  lv_obj_t *lb_torque[NUM_RACING_TABS];
 //  lv_obj_t *lb_slip[NUM_RACING_TABS];
-  lv_obj_t *lb_inverter_speed_x[NUM_RACING_TABS];
-  lv_obj_t *lb_inverter_speed_y[NUM_RACING_TABS];
+//  lv_obj_t *lb_inverter_speed_x[NUM_RACING_TABS];
+//  lv_obj_t *lb_inverter_speed_y[NUM_RACING_TABS];
 
 //  lv_obj_t *lb_fl_temp[NUM_RACING_TABS];
 //  lv_obj_t *lb_fr_temp[NUM_RACING_TABS];

@@ -1,6 +1,6 @@
 #include "tab_notification.h"
 
-//extern steering_tabs_t steering;
+
 lv_style_t notif_label_style;
 
 //refactoring

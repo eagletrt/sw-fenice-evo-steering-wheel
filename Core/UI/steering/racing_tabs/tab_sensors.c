@@ -5,30 +5,30 @@
 #define CELL_WIDTH 180
 
 //refactoring
-lv_obj_t *lb_fl_temp[NUM_RACING_TABS];
-lv_obj_t *lb_fr_temp[NUM_RACING_TABS];
-lv_obj_t *lb_rl_temp[NUM_RACING_TABS];
-lv_obj_t *lb_rr_temp[NUM_RACING_TABS];
-lv_obj_t *lb_fl_press[NUM_RACING_TABS];
-lv_obj_t *lb_fr_press[NUM_RACING_TABS];
-lv_obj_t *lb_rl_press[NUM_RACING_TABS];
-lv_obj_t *lb_rr_press[NUM_RACING_TABS];
-lv_obj_t *lb_right_inverter_temp[NUM_RACING_TABS];
-lv_obj_t *lb_right_motor_temp[NUM_RACING_TABS];
-lv_obj_t *lb_average_temperature[NUM_RACING_TABS];
-lv_obj_t *lb_left_inverter_temp[NUM_RACING_TABS];
-lv_obj_t *lb_left_motor_temp[NUM_RACING_TABS];
-lv_obj_t *lb_pack_voltage[NUM_RACING_TABS];
-lv_obj_t *lb_hv_current[NUM_RACING_TABS];
-lv_obj_t *lb_min_cell_voltage[NUM_RACING_TABS];
-lv_obj_t *lb_battery_temperature[NUM_RACING_TABS];
-lv_obj_t *lb_voltage[NUM_RACING_TABS];
-lv_obj_t *lb_lv_current[NUM_RACING_TABS];
-lv_obj_t *lb_hv_delta[NUM_RACING_TABS];
+lv_obj_t *lb_fl_temp;
+lv_obj_t *lb_fr_temp;
+lv_obj_t *lb_rl_temp;
+lv_obj_t *lb_rr_temp;
+lv_obj_t *lb_fl_press;
+lv_obj_t *lb_fr_press;
+lv_obj_t *lb_rl_press;
+lv_obj_t *lb_rr_press;
+lv_obj_t *lb_right_inverter_temp;
+lv_obj_t *lb_right_motor_temp;
+lv_obj_t *lb_average_temperature;
+lv_obj_t *lb_left_inverter_temp;
+lv_obj_t *lb_left_motor_temp;
+lv_obj_t *lb_pack_voltage;
+lv_obj_t *lb_hv_current;
+lv_obj_t *lb_min_cell_voltage;
+lv_obj_t *lb_battery_temperature;
+lv_obj_t *lb_voltage;
+lv_obj_t *lb_lv_current;
+lv_obj_t *lb_hv_delta;
 lv_obj_t *tab_sensors_extra_value0;
 lv_obj_t *tab_sensors_extra_value1;
 lv_obj_t *tab_sensors_extra_value2;
-lv_obj_t *lb_tlm_status[NUM_RACING_TABS];
+lv_obj_t *lb_tlm_status;
 
 
 lv_style_t bar_brake_style;

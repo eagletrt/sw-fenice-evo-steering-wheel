@@ -1,5 +1,11 @@
 #include "controls.h"
 
+//refactoring
+calibration_box_t controls_curr_focus;
+lv_obj_t *controls_lb_slip;
+lv_obj_t *lb_torque;
+lv_obj_t *lb_power;
+
 bool tson_button_pressed = false;
 bool calibration_min_sent_request[CALBOX_N];
 bool calibration_max_sent_request[CALBOX_N];
@@ -83,7 +89,7 @@ void calibration_request_timeout_check(uint32_t current_time) {
 
 void calibration_tool_set_min_max(bool maxv) {
   if (current_racing_tab == TAB_CALIBRATION) {
-    calibration_box_t curr_focus = steering.curr_focus;
+    calibration_box_t curr_focus = controls_curr_focus;
     if (curr_focus == STEER)
       return;
     switch (curr_focus) {
@@ -123,7 +129,7 @@ void manettino_send_slip_control(float val) {
 
   int map_val = (int)(steer_status_last_state.map_sc * 100.0f);
   sprintf(sprintf_buffer_controls, "%u", map_val);
-  STEER_UPDATE_LABEL(steering.lb_slip, sprintf_buffer_controls)
+  STEER_UPDATE_LABEL(&controls_lb_slip, sprintf_buffer_controls)
   sprintf(sprintf_buffer_controls, "SLIP CONTROL %u", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }
@@ -133,7 +139,7 @@ void manettino_send_torque_vectoring(float val) {
 
   int map_val = (int)(steer_status_last_state.map_tv * 100.0f);
   sprintf(sprintf_buffer_controls, "%u", map_val);
-  STEER_UPDATE_LABEL(steering.lb_torque, sprintf_buffer_controls)
+  STEER_UPDATE_LABEL(&lb_torque, sprintf_buffer_controls)
   sprintf(sprintf_buffer_controls, "TORQUE VECTORING %u", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }
@@ -142,7 +148,7 @@ void manettino_send_power_map(float val) {
   steer_status_last_state.map_pw = val;
   float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
   sprintf(sprintf_buffer_controls, "%.0f", map_val);
-  STEER_UPDATE_LABEL(steering.lb_power, sprintf_buffer_controls)
+  STEER_UPDATE_LABEL(&lb_power, sprintf_buffer_controls)
   sprintf(sprintf_buffer_controls, "POWER MAP %.0f", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }

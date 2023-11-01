@@ -1,6 +1,5 @@
 #include "tab_balancing_status.h"
 
-extern steering_tabs_t steering;
 lv_style_t bal_status_style;
 
 lv_obj_t *bal_status_label;

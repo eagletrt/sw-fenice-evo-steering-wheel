@@ -1,9 +1,9 @@
 #include "tab_calibration.h"
 
 //refactoring
-lv_obj_t *lb_steering_angle[NUM_RACING_TABS];
+lv_obj_t *lb_steering_angle;
 lv_obj_t *slider;
-calibration_box_t curr_focus;
+calibration_box_t tab_calibration_curr_focus;
 
 lv_obj_t *lx_box;
 lv_obj_t *center_box;
@@ -167,7 +167,7 @@ void tab_calibration_create(lv_obj_t *parent) {
            * }
            *
            */
-      center_btn, &lb_steering_angle[TAB_CALIBRATION]/*&steering.lb_steering_angle[TAB_CALIBRATION]*/, "0",
+      center_btn, &lb_steering_angle[TAB_CALIBRATION], "0",
       &lv_font_inter_bold_30, " deg", &lv_font_inter_bold_22);
   lv_obj_set_align(center_lbl, LV_ALIGN_CENTER);
   lv_obj_set_style_text_color(lv_obj_get_child(center_lbl, 0),
@@ -232,13 +232,13 @@ void tab_calibration_create(lv_obj_t *parent) {
     }
   }
 
-  curr_focus = 1;
+  tab_calibration_curr_focus = 1;
 }
 
 void sim_calibration_tool_set_min_max(bool setting_max_value) {
   if (lv_disp_get_scr_act(NULL) == scr_calib) {
     bool esito;
-    switch (curr_focus) {
+    switch (tab_calibration_curr_focus) {
     case BSE:
       if (setting_max_value) {
         // calibrate max BSE
@@ -291,17 +291,17 @@ void shift_box_focus(bool move_right) {
 
   if (current_racing_tab == TAB_CALIBRATION) {
 
-    calibration_box_t previous_focus = curr_focus;
+    calibration_box_t previous_focus = tab_calibration_curr_focus;
 
-    if (move_right == false && curr_focus > 0) {
-      curr_focus--;
-    } else if (move_right == true && curr_focus < 2) {
-      curr_focus++;
+    if (move_right == false && tab_calibration_curr_focus > 0) {
+      tab_calibration_curr_focus--;
+    } else if (move_right == true && tab_calibration_curr_focus < 2) {
+      tab_calibration_curr_focus++;
     }
 
     /* look if the focus is changed or not */
-    if (previous_focus != curr_focus) {
-      switch (curr_focus) {
+    if (previous_focus != tab_calibration_curr_focus) {
+      switch (tab_calibration_curr_focus) {
       case BSE:
         // clean the buttons set min/max
         lv_obj_set_style_bg_color(
