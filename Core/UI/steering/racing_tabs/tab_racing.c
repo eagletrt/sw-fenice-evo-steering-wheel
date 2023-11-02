@@ -19,7 +19,7 @@ lv_obj_t *tab_racing_lb_speed;
 lv_obj_t *tab_racing_bottom_lb_speed;
 lv_obj_t *tab_racing_custom_meter;
 lv_meter_indicator_t *tab_racing_indicator_blue;
-lv_meter_indicator_t *indicator_white;
+lv_meter_indicator_t *tab_racing_indicator_white;
 lv_obj_t *tab_racing_lb_lap_count;
 
 lv_style_t bar_hv_style;
@@ -336,7 +336,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // TODO fix this warning!!!
   lv_custom_meter(&tab_racing_custom_meter, &tab_racing_indicator_blue,
-                  &indicator_white);
+                  &tab_racing_indicator_white);
   lv_obj_align(tab_racing_custom_meter, LV_ALIGN_CENTER, 0, 0);
 
   lv_obj_set_grid_cell(meter_container, LV_GRID_ALIGN_STRETCH, 1, 1,
@@ -402,7 +402,7 @@ void init_racing_style(void) {
 //shadow ? of custom meter and indicator blue and white
 void lv_custom_meter(lv_obj_t **custom_meter,
                      lv_meter_indicator_t **indicator_blue,
-                     lv_meter_indicator_t **indicator_white) {
+                     lv_meter_indicator_t **tab_racing_indicator_white) {
   /*Remove the circle from the middle*/
   lv_obj_remove_style(*custom_meter, NULL, LV_PART_MAIN);
   lv_obj_remove_style(*custom_meter, NULL, LV_PART_INDICATOR);
@@ -429,7 +429,7 @@ void lv_custom_meter(lv_obj_t **custom_meter,
 
   lv_meter_indicator_t *back = lv_meter_add_arc(
       *custom_meter, scale, 22, lv_color_hex(COLOR_SECONDARY_HEX), -5);
-  *indicator_white = lv_meter_add_arc(*custom_meter, scale, 16,
+  *tab_racing_indicator_white = lv_meter_add_arc(*custom_meter, scale, 16,
                                       lv_color_hex(COLOR_TERTIARY_HEX), -8);
   *indicator_blue = lv_meter_add_arc(*custom_meter, scale, 18,
                                      lv_color_hex(COLOR_BLUE_STATUS_HEX), -7);
@@ -437,15 +437,15 @@ void lv_custom_meter(lv_obj_t **custom_meter,
   lv_meter_set_indicator_start_value(*custom_meter, back, 0);
   lv_meter_set_indicator_end_value(*custom_meter, back, 100);
 
-  lv_meter_set_indicator_start_value(*custom_meter, *indicator_white, 0);
-  lv_meter_set_indicator_end_value(*custom_meter, *indicator_white,
+  lv_meter_set_indicator_start_value(*custom_meter, *tab_racing_indicator_white, 0);
+  lv_meter_set_indicator_end_value(*custom_meter, *tab_racing_indicator_white,
                                    100); /*range values 0-100*/
 
   lv_meter_set_indicator_start_value(*custom_meter, *indicator_blue, 0);
   lv_meter_set_indicator_end_value(*custom_meter, *indicator_blue,
                                    100); /*range values 0-100*/
 
-  lv_meter_set_indicator_value(*custom_meter, *indicator_white, 0);
+  lv_meter_set_indicator_value(*custom_meter, *tab_racing_indicator_white, 0);
   lv_meter_set_indicator_value(*custom_meter, *indicator_blue, 0);
 
   // lv_meter_indicator_t * indic3 = lv_meter_add_arc(custom_meter, scale, 10,

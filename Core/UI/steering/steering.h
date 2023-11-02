@@ -28,14 +28,6 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 void remove_trailing(char *buf);
 void reload_racing_tab(racing_tab_t tab);
 
-#define STEER_UPDATE_LABEL(name, value)                                        \
-  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                    \
-    if (name[itab] != NULL) {                                                  \
-      remove_trailing(value);                                                  \
-      lv_label_set_text_fmt(name[itab], "%s", value);                          \
-    }                                                                          \
-  }
-
 #define STEER_UPDATE_COLOR_LABEL(name, color)                                  \
   for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                    \
     if (name[itab] != NULL)                                                    \
@@ -47,17 +39,17 @@ void reload_racing_tab(racing_tab_t tab);
   if (device##_last_state.error_name != data->error_name) {                    \
     device##_last_state.error_name = data->error_name;                         \
     if (data->error_name) {                                                    \
-      lv_obj_set_style_border_color(steering.device[aindex],                   \
+      lv_obj_set_style_border_color(device[aindex],                   \
                                     lv_color_hex(COLOR_RED_STATUS_HEX),        \
                                     LV_PART_MAIN);                             \
-      lv_obj_set_style_bg_color(steering.device[aindex],                       \
+      lv_obj_set_style_bg_color(device[aindex],                       \
                                 lv_color_hex(COLOR_RED_STATUS_HEX),            \
                                 LV_PART_MAIN);                                 \
     } else {                                                                   \
-      lv_obj_set_style_border_color(steering.device[aindex],                   \
+      lv_obj_set_style_border_color(device[aindex],                   \
                                     lv_color_hex(COLOR_GREEN_STATUS_HEX),      \
                                     LV_PART_MAIN);                             \
-      lv_obj_set_style_bg_color(steering.device[aindex],                       \
+      lv_obj_set_style_bg_color(device[aindex],                       \
                                 lv_color_hex(COLOR_GREEN_STATUS_HEX),          \
                                 LV_PART_MAIN);                                 \
     }                                                                          \
@@ -67,94 +59,6 @@ void reload_racing_tab(racing_tab_t tab);
   lv_obj_set_style_bg_color(steering.device[aindex],                           \
                             lv_color_hex(COLOR_YELLOW_STATUS_HEX),             \
                             LV_PART_MAIN);
-
-typedef struct {
-  //lv_obj_t *lb_speed[NUM_RACING_TABS];
-  //lv_obj_t *bottom_lb_speed;
-
-  lv_obj_t *lb_max_cell_voltage[NUM_RACING_TABS];
-//  lv_obj_t *lb_min_cell_voltage[NUM_RACING_TABS];
-//  lv_obj_t *lb_hv_current[NUM_RACING_TABS];
-//  lv_obj_t *lb_average_temperature[NUM_RACING_TABS];
-  lv_obj_t *lb_hv_percent[NUM_RACING_TABS];
-  // lv_obj_t *lb_pack_voltage[NUM_RACING_TABS];
-//  lv_obj_t *lb_hv_delta[NUM_RACING_TABS];
-
-//  lv_obj_t *lb_right_motor_temp[NUM_RACING_TABS];
-//  lv_obj_t *lb_right_inverter_temp[NUM_RACING_TABS];
-//  lv_obj_t *lb_left_motor_temp[NUM_RACING_TABS];
-//  lv_obj_t *lb_left_inverter_temp[NUM_RACING_TABS];
-
-//  lv_obj_t *lb_lv_current[NUM_RACING_TABS];
-//  lv_obj_t *lb_voltage[NUM_RACING_TABS];
-//  lv_obj_t *lb_battery_temperature[NUM_RACING_TABS];
-  lv_obj_t *lb_lv_percent[NUM_RACING_TABS];
-  lv_obj_t *lb_lv_delta[NUM_RACING_TABS];
-
-//  lv_obj_t *lb_best_time[NUM_RACING_TABS];
-//  lv_obj_t *lb_last_time[NUM_RACING_TABS];
-//  lv_obj_t *lb_delta_time[NUM_RACING_TABS];
-//  lv_obj_t *lb_estimated_velocity[NUM_RACING_TABS];
-  // lv_obj_t *lb_steering_angle[NUM_RACING_TABS];
-//  lv_obj_t *lb_apps[NUM_RACING_TABS];
-//  lv_obj_t *lb_bse[NUM_RACING_TABS];
-
-//  lv_obj_t *lb_tlm_status[NUM_RACING_TABS];
-//  lv_obj_t *lb_lap_count[NUM_RACING_TABS];
-
-//  lv_obj_t *lb_power[NUM_RACING_TABS];
-//  lv_obj_t *lb_torque[NUM_RACING_TABS];
-//  lv_obj_t *lb_slip[NUM_RACING_TABS];
-//  lv_obj_t *lb_inverter_speed_x[NUM_RACING_TABS];
-//  lv_obj_t *lb_inverter_speed_y[NUM_RACING_TABS];
-
-//  lv_obj_t *lb_fl_temp[NUM_RACING_TABS];
-//  lv_obj_t *lb_fr_temp[NUM_RACING_TABS];
-//  lv_obj_t *lb_rl_temp[NUM_RACING_TABS];
-//  lv_obj_t *lb_rr_temp[NUM_RACING_TABS];
-
-//  lv_obj_t *lb_fl_press[NUM_RACING_TABS];
-//  lv_obj_t *lb_fr_press[NUM_RACING_TABS];
-//  lv_obj_t *lb_rl_press[NUM_RACING_TABS];
-//  lv_obj_t *lb_rr_press[NUM_RACING_TABS];
-
-  lv_obj_t *lb_radiators_speed[NUM_RACING_TABS];
-  lv_obj_t *lb_pumps_speed[NUM_RACING_TABS];
-
-  // TODO replace the size with the canlib real value
-//  lv_obj_t *hv_feedbacks_status[20];
-//  lv_obj_t *hv_errors[16];
-//  lv_obj_t *das_errors[9];
-//  lv_obj_t *lv_errors[17];
-
-//  lv_obj_t *tab_sensors_extra_value0;
-//  lv_obj_t *tab_sensors_extra_value1;
-//  lv_obj_t *tab_sensors_extra_value2;
-
-//  lv_obj_t *notification_screen_label;
-
-  /* Tab Racing */
-//  lv_obj_t *custom_meter;
-
-  lv_obj_t *hv_bar;
-  lv_obj_t *lv_bar;
-
-//  lv_meter_indicator_t *indicator_blue;
-//  lv_meter_indicator_t *indicator_white;
-//  lv_obj_t *racing_hv_bar;
-// lv_obj_t *racing_lv_bar;
-
-  /* Tab Sensors */
-
-  /* Calibration Tab */
-  // calibration_box_t curr_focus;
-  // lv_obj_t *slider;
-
-  uint32_t timestamp;
-
-} steering_tabs_t;
-
-extern steering_tabs_t steering;
 
 /*
  * UPDATE
@@ -212,5 +116,34 @@ void update_shutdown_circuit(shutdown_component_state_t *);
 void set_ptt_button_pressed(bool);
 
 uint32_t get_current_time_ms(void);
+
+//refactoring
+void set_lb_speed(char* string);
+void set_lb_estimated_velocity(char* string);
+void set_lb_tlm_status(char* string);
+void set_lb_min_cell_voltage(char* string);
+void set_lb_pack_voltage(char* string);
+void set_lb_hv_delta(char* string);
+void set_lb_hv_current(char* string);
+void set_lb_average_temperature(char* string);
+void set_lb_lv_current(char* string);
+void set_lb_battery_temperature(char* string);
+void set_lb_voltage(char* string);
+void set_lb_steering_angle(char* string);
+void set_lb_apps(char* string);
+void set_lb_bse(char* string);
+void set_lb_inverter_speed_x(char* string);
+void set_lb_inverter_speed_y(char* string);
+void set_lb_last_time(char* string);
+void set_lb_delta_time(char* string);
+void set_lb_best_time(char* string);
+void set_lb_lap_count(char* string);
+void set_lb_left_motor_temp(char* string);
+void set_lb_left_inverter_temp(char* string);
+void set_lb_right_motor_temp(char* string);
+void set_lb_right_inverter_temp(char* string);
+
+
+
 
 #endif /* STEERING_H */

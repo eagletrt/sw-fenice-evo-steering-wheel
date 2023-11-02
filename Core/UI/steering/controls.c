@@ -34,6 +34,23 @@ primary_hv_fans_override_converted_t hv_fans_override_settings = {
     .fans_override = primary_hv_fans_override_fans_override_OFF,
     .fans_speed = 0.0f};
 
+//refactoring - functions that replace STEER_UPDATE_LABEL
+void set_controls_lb_slip(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(controls_lb_slip, "%s", string);
+}
+
+void set_lb_torque(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(lb_torque, "%s", string);
+}
+
+void set_lb_power(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(lb_power, "%s", string);
+}
+
+
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};
   if (tlm_status_last_state.tlm_status ==
@@ -129,7 +146,9 @@ void manettino_send_slip_control(float val) {
 
   int map_val = (int)(steer_status_last_state.map_sc * 100.0f);
   sprintf(sprintf_buffer_controls, "%u", map_val);
-  STEER_UPDATE_LABEL(&controls_lb_slip, sprintf_buffer_controls)
+
+  set_controls_lb_slip(sprintf_buffer_controls);
+
   sprintf(sprintf_buffer_controls, "SLIP CONTROL %u", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }
@@ -139,7 +158,9 @@ void manettino_send_torque_vectoring(float val) {
 
   int map_val = (int)(steer_status_last_state.map_tv * 100.0f);
   sprintf(sprintf_buffer_controls, "%u", map_val);
-  STEER_UPDATE_LABEL(&lb_torque, sprintf_buffer_controls)
+
+  set_lb_torque(sprintf_buffer_controls);
+
   sprintf(sprintf_buffer_controls, "TORQUE VECTORING %u", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }
@@ -148,7 +169,9 @@ void manettino_send_power_map(float val) {
   steer_status_last_state.map_pw = val;
   float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
   sprintf(sprintf_buffer_controls, "%.0f", map_val);
-  STEER_UPDATE_LABEL(&lb_power, sprintf_buffer_controls)
+
+  set_lb_power(sprintf_buffer_controls);
+
   sprintf(sprintf_buffer_controls, "POWER MAP %.0f", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }

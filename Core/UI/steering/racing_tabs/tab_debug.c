@@ -1,7 +1,7 @@
 #include "tab_debug.h"
 #include <stdio.h>
 
-//refactoring
+//refactoring ---> farle extern
 lv_obj_t *hv_feedbacks_status[20];
 lv_obj_t *hv_errors[16];
 lv_obj_t *das_errors[9];
