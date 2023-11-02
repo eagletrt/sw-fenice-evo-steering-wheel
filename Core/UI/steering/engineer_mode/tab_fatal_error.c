@@ -1,6 +1,5 @@
 #include "tab_fatal_error.h"
 
-extern steering_tabs_t steering;
 lv_style_t tab_fatal_error_style;
 lv_obj_t *tab_fatal_error_label;
 

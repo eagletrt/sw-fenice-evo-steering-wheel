@@ -94,10 +94,10 @@ typedef struct {
 //  lv_obj_t *lb_best_time[NUM_RACING_TABS];
 //  lv_obj_t *lb_last_time[NUM_RACING_TABS];
 //  lv_obj_t *lb_delta_time[NUM_RACING_TABS];
-  lv_obj_t *lb_estimated_velocity[NUM_RACING_TABS];
+//  lv_obj_t *lb_estimated_velocity[NUM_RACING_TABS];
   // lv_obj_t *lb_steering_angle[NUM_RACING_TABS];
-  lv_obj_t *lb_apps[NUM_RACING_TABS];
-  lv_obj_t *lb_bse[NUM_RACING_TABS];
+//  lv_obj_t *lb_apps[NUM_RACING_TABS];
+//  lv_obj_t *lb_bse[NUM_RACING_TABS];
 
 //  lv_obj_t *lb_tlm_status[NUM_RACING_TABS];
 //  lv_obj_t *lb_lap_count[NUM_RACING_TABS];

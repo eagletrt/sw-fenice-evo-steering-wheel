@@ -2,7 +2,6 @@
 
 #define SPECIAL_FSG_LAP_COUNTER_FRAME_ID (0x103u)
 
-extern steering_tabs_t steering;
 extern bool steering_initialized;
 extern primary_steer_status_converted_t steer_status_last_state;
 

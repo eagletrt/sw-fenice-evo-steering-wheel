@@ -5,10 +5,10 @@
 #define CELL_WIDTH 350
 
 //refactoring
-lv_obj_t *lb_speed;
-lv_obj_t *lb_inverter_speed_x;
-lv_obj_t *lb_steering_angle;
-lv_obj_t *lb_inverter_speed_y;
+lv_obj_t *tab_track_test_lb_speed;
+lv_obj_t *tab_track_test_lb_inverter_speed_x;
+lv_obj_t *tab_track_test_lb_steering_angle;
+lv_obj_t *tab_track_test_lb_inverter_speed_y;
 
 void tab_track_test_create(lv_obj_t *parent) {
 
@@ -81,7 +81,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *speed = lv_vertical_pair_label(
-      up_left_data_panel, &lb_speed[TAB_SENSORS], "0",
+      up_left_data_panel, &tab_track_test_lb_speed[TAB_SENSORS], "0",
       &lv_font_inter_bold_38, "KM/H", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
@@ -104,7 +104,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *x_axis_g = lv_vertical_pair_label(
-      low_left_data_panel, &lb_inverter_speed_x[TAB_SENSORS], "0",
+      low_left_data_panel, &tab_track_test_lb_inverter_speed_x[TAB_SENSORS], "0",
       &lv_font_inter_bold_38, "ENCODER SPEED\nAX/G", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(x_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
@@ -128,7 +128,7 @@ void tab_track_test_create(lv_obj_t *parent) {
 
 #if 1
   lv_obj_t *steer_angle = lv_triple_label(
-      up_right_data_panel, &lb_steering_angle[TAB_SENSORS], "NA",
+      up_right_data_panel, &tab_track_test_lb_steering_angle[TAB_SENSORS], "NA",
       &lv_font_inter_bold_38, "°", &lv_font_inter_bold_22, "STEERING ANGLE",
       &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(steer_angle, LV_GRID_ALIGN_CENTER, 0, 1,
@@ -152,7 +152,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *y_axis_g = lv_vertical_pair_label(
-      low_right_data_panel, &lb_inverter_speed_y[TAB_SENSORS], "0",
+      low_right_data_panel, &tab_track_test_lb_inverter_speed_y[TAB_SENSORS], "0",
       &lv_font_inter_bold_38, "ENCODER SPEED\nAY/G", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(y_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);

@@ -1,6 +1,5 @@
 #include "tab_terminal.h"
 
-extern steering_tabs_t steering_tabs;
 lv_style_t tab_terminal_style;
 uint32_t tab_terminal_message_index = 0;
 

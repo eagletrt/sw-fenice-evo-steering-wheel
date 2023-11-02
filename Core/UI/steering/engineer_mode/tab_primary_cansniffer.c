@@ -2,7 +2,6 @@
 
 #include "tab_primary_cansniffer.h"
 
-extern steering_tabs_t steering;
 lv_style_t primary_cansniffer_label_style;
 
 lv_timer_t *primary_cansniffer_update_task;

@@ -1,8 +1,8 @@
 #include "tab_calibration.h"
 
 //refactoring
-lv_obj_t *lb_steering_angle;
-lv_obj_t *slider;
+lv_obj_t *tab_calibration_lb_steering_angle;
+lv_obj_t *tab_calibration_slider;
 calibration_box_t tab_calibration_curr_focus;
 
 lv_obj_t *lx_box;
@@ -167,7 +167,7 @@ void tab_calibration_create(lv_obj_t *parent) {
            * }
            *
            */
-      center_btn, &lb_steering_angle[TAB_CALIBRATION], "0",
+      center_btn, &tab_calibration_lb_steering_angle[TAB_CALIBRATION], "0",
       &lv_font_inter_bold_30, " deg", &lv_font_inter_bold_22);
   lv_obj_set_align(center_lbl, LV_ALIGN_CENTER);
   lv_obj_set_style_text_color(lv_obj_get_child(center_lbl, 0),
@@ -200,19 +200,19 @@ void tab_calibration_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(background_base, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
-  slider = lv_slider_create(background_base);
-  lv_obj_remove_style_all(slider);
-  lv_obj_set_style_bg_color(slider, lv_color_hex(0x000000),
+  tab_calibration_slider = lv_slider_create(background_base);
+  lv_obj_remove_style_all(tab_calibration_slider);
+  lv_obj_set_style_bg_color(tab_calibration_slider, lv_color_hex(0x000000),
                             LV_PART_INDICATOR);
-  lv_obj_set_style_bg_opa(slider, LV_OPA_70, LV_PART_INDICATOR);
+  lv_obj_set_style_bg_opa(tab_calibration_slider, LV_OPA_70, LV_PART_INDICATOR);
 
-  lv_obj_set_size(slider, 744, 55);
-  lv_obj_center(slider);
-  lv_slider_set_mode(slider, LV_BAR_MODE_SYMMETRICAL);
-  lv_slider_set_range(slider, STEERING_ANGLE_RANGE_LOW,
+  lv_obj_set_size(tab_calibration_slider, 744, 55);
+  lv_obj_center(tab_calibration_slider);
+  lv_slider_set_mode(tab_calibration_slider, LV_BAR_MODE_SYMMETRICAL);
+  lv_slider_set_range(tab_calibration_slider, STEERING_ANGLE_RANGE_LOW,
                       STEERING_ANGLE_RANGE_HIGH);
-  lv_slider_set_value(slider, 15, LV_ANIM_OFF);
-  lv_obj_set_style_radius(slider, 0, LV_PART_INDICATOR);
+  lv_slider_set_value(tab_calibration_slider, 15, LV_ANIM_OFF);
+  lv_obj_set_style_radius(tab_calibration_slider, 0, LV_PART_INDICATOR);
 
   for (int i = 1; i <= 12; i++) {
     lv_obj_t *calib_bar = lv_obj_create(background_base);
@@ -315,8 +315,8 @@ void shift_box_focus(bool move_right) {
         lv_obj_set_style_bg_color(center_box, lv_color_hex(COLOR_SECONDARY_HEX),
                                   LV_PART_MAIN);
 
-        lv_slider_set_mode(slider, LV_BAR_MODE_RANGE);
-        lv_slider_set_range(slider, BRAKE_RANGE_LOW, BRAKE_RANGE_HIGH);
+        lv_slider_set_mode(tab_calibration_slider, LV_BAR_MODE_RANGE);
+        lv_slider_set_range(tab_calibration_slider, BRAKE_RANGE_LOW, BRAKE_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_LEFT_MID, 0, 0);
 
@@ -337,8 +337,8 @@ void shift_box_focus(bool move_right) {
         lv_obj_set_style_bg_color(rx_box, lv_color_hex(COLOR_SECONDARY_HEX),
                                   LV_PART_MAIN);
 
-        lv_slider_set_mode(slider, LV_BAR_MODE_SYMMETRICAL);
-        lv_slider_set_range(slider, STEERING_ANGLE_RANGE_LOW,
+        lv_slider_set_mode(tab_calibration_slider, LV_BAR_MODE_SYMMETRICAL);
+        lv_slider_set_range(tab_calibration_slider, STEERING_ANGLE_RANGE_LOW,
                             STEERING_ANGLE_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_CENTER, 0, 0);
@@ -358,8 +358,8 @@ void shift_box_focus(bool move_right) {
         lv_obj_set_style_bg_color(center_box, lv_color_hex(COLOR_SECONDARY_HEX),
                                   LV_PART_MAIN);
 
-        lv_slider_set_mode(slider, LV_BAR_MODE_RANGE);
-        lv_slider_set_range(slider, APPS_RANGE_LOW, APPS_RANGE_HIGH);
+        lv_slider_set_mode(tab_calibration_slider, LV_BAR_MODE_RANGE);
+        lv_slider_set_range(tab_calibration_slider, APPS_RANGE_LOW, APPS_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_LEFT_MID, 0, 0);
 

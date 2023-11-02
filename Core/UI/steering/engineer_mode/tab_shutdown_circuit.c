@@ -1,6 +1,5 @@
 #include "tab_shutdown_circuit.h"
 
-extern steering_tabs_t steering_tabs;
 lv_style_t tab_shutdown_circuit_style;
 lv_obj_t *tab_shutdown_circuit_labels[SHUTDOWN_CIRCUIT_ROWS][2];
 

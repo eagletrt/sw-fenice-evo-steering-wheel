@@ -1,6 +1,5 @@
 #include "tab_engineer_mode.h"
 
-extern steering_tabs_t steering;
 lv_style_t engineer_label_style;
 
 void init_engineer_tab_styles() {
