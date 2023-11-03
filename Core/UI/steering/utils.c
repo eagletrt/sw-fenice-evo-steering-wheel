@@ -4,7 +4,7 @@ lv_style_t grid_style;
 lv_style_t label_style;
 lv_style_t box_panels_style;
 
-lv_obj_t *lv_vertical_pair_label(lv_obj_t *parent, lv_obj_t **main_l,
+lv_obj_t *lv_vertical_pair_label(lv_obj_t *parent, lv_obj_t *main_l,
                                  const char *up_text,
                                  const lv_font_t *up_text_font,
                                  const char *bottom_text,
@@ -22,11 +22,11 @@ lv_obj_t *lv_vertical_pair_label(lv_obj_t *parent, lv_obj_t **main_l,
   lv_obj_remove_style_all(up_o);
   lv_obj_set_size(up_o, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 
-  *main_l = lv_label_create(up_o);
-  lv_obj_add_style(*main_l, &label_style, LV_PART_MAIN);
-  lv_label_set_text(*main_l, up_text);
-  lv_obj_set_style_text_font(*main_l, up_text_font, LV_STATE_DEFAULT);
-  lv_obj_align(*main_l, LV_ALIGN_CENTER, 0, 0);
+  main_l = lv_label_create(up_o);
+  lv_obj_add_style(main_l, &label_style, LV_PART_MAIN);
+  lv_label_set_text(main_l, up_text);
+  lv_obj_set_style_text_font(main_l, up_text_font, LV_STATE_DEFAULT);
+  lv_obj_align(main_l, LV_ALIGN_CENTER, 0, 0);
   lv_obj_set_grid_cell(up_o, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
 
@@ -45,7 +45,7 @@ lv_obj_t *lv_vertical_pair_label(lv_obj_t *parent, lv_obj_t **main_l,
   return grid;
 }
 
-lv_obj_t *lv_vertical_pair_two_labels(lv_obj_t *parent, lv_obj_t **main_l,
+lv_obj_t *lv_vertical_pair_two_labels(lv_obj_t *parent, lv_obj_t *main_l,
                                       const char *up_text,
                                       const lv_font_t *up_text_font,
                                       lv_obj_t **bottom_label,
@@ -64,11 +64,11 @@ lv_obj_t *lv_vertical_pair_two_labels(lv_obj_t *parent, lv_obj_t **main_l,
   lv_obj_remove_style_all(up_o);
   lv_obj_set_size(up_o, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 
-  *main_l = lv_label_create(up_o);
-  lv_obj_add_style(*main_l, &label_style, LV_PART_MAIN);
-  lv_label_set_text(*main_l, up_text);
-  lv_obj_set_style_text_font(*main_l, up_text_font, LV_STATE_DEFAULT);
-  lv_obj_align(*main_l, LV_ALIGN_CENTER, 0, 0);
+  main_l = lv_label_create(up_o);
+  lv_obj_add_style(main_l, &label_style, LV_PART_MAIN);
+  lv_label_set_text(main_l, up_text);
+  lv_obj_set_style_text_font(main_l, up_text_font, LV_STATE_DEFAULT);
+  lv_obj_align(main_l, LV_ALIGN_CENTER, 0, 0);
   lv_obj_set_grid_cell(up_o, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
 
@@ -87,7 +87,7 @@ lv_obj_t *lv_vertical_pair_two_labels(lv_obj_t *parent, lv_obj_t **main_l,
   return grid;
 }
 
-lv_obj_t *lv_horizontal_pair_label(lv_obj_t *parent, lv_obj_t **main_l,
+lv_obj_t *lv_horizontal_pair_label(lv_obj_t *parent, lv_obj_t *main_l,
                                    const char *left_text,
                                    const lv_font_t *left_text_font,
                                    const char *right_text,
@@ -102,12 +102,12 @@ lv_obj_t *lv_horizontal_pair_label(lv_obj_t *parent, lv_obj_t **main_l,
   lv_obj_set_grid_dsc_array(grid, grid_col_dsc, grid_row_dsc);
 
   // left label
-  *main_l = lv_label_create(grid);
-  lv_label_set_text(*main_l, left_text);
-  lv_obj_add_style(*main_l, &label_style, LV_PART_MAIN);
-  lv_obj_set_style_text_font(*main_l, left_text_font, LV_STATE_DEFAULT);
-  lv_obj_align(*main_l, LV_ALIGN_CENTER, 0, 0);
-  lv_obj_set_grid_cell(*main_l, LV_GRID_ALIGN_CENTER, 0, 1,
+  main_l = lv_label_create(grid);
+  lv_label_set_text(main_l, left_text);
+  lv_obj_add_style(main_l, &label_style, LV_PART_MAIN);
+  lv_obj_set_style_text_font(main_l, left_text_font, LV_STATE_DEFAULT);
+  lv_obj_align(main_l, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_grid_cell(main_l, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   // right label
@@ -127,7 +127,7 @@ lv_obj_t *lv_horizontal_pair_label(lv_obj_t *parent, lv_obj_t **main_l,
 }
 
 lv_obj_t *
-lv_triple_label(lv_obj_t *parent, lv_obj_t **main_l, const char *left_text,
+lv_triple_label(lv_obj_t *parent, lv_obj_t *main_l, const char *left_text,
                 const lv_font_t *left_text_font, const char *right_text,
                 const lv_font_t *right_text_font, const char *bottom_text,
                 const lv_font_t *bottom_text_font) {

@@ -81,7 +81,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *speed = lv_vertical_pair_label(
-      up_left_data_panel, &tab_track_test_lb_speed[TAB_SENSORS], "0",
+      up_left_data_panel, tab_track_test_lb_speed, "0",
       &lv_font_inter_bold_38, "KM/H", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
@@ -104,7 +104,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *x_axis_g = lv_vertical_pair_label(
-      low_left_data_panel, &tab_track_test_lb_inverter_speed_x[TAB_SENSORS], "0",
+      low_left_data_panel, tab_track_test_lb_inverter_speed_x, "0",
       &lv_font_inter_bold_38, "ENCODER SPEED\nAX/G", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(x_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
@@ -152,7 +152,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *y_axis_g = lv_vertical_pair_label(
-      low_right_data_panel, &tab_track_test_lb_inverter_speed_y[TAB_SENSORS], "0",
+      low_right_data_panel, tab_track_test_lb_inverter_speed_y, "0",
       &lv_font_inter_bold_38, "ENCODER SPEED\nAY/G", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(y_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);

@@ -344,28 +344,28 @@ void tab_sensors_create(lv_obj_t *parent) {
   /* 1st row */
 
   lv_obj_t *inv_l_temp_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_lb_left_inverter_temp[TAB_SENSORS], "X",
+      right_data_panel, tab_sensors_lb_left_inverter_temp, "X",
       &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "INV L",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(inv_l_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *inv_r_temp_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_lb_right_inverter_temp[TAB_SENSORS], "X",
+      right_data_panel, tab_sensors_lb_right_inverter_temp, "X",
       &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "INV R",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(inv_r_temp_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *motor_l_temp_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_lb_left_motor_temp[TAB_SENSORS], "X",
+      right_data_panel, tab_sensors_lb_left_motor_temp, "X",
       &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MOTOR L",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_l_temp_lb, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *motor_r_temp_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_lb_right_motor_temp[TAB_SENSORS], "X",
+      right_data_panel, tab_sensors_lb_right_motor_temp, "X",
       &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MOTOR R",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(motor_r_temp_lb, LV_GRID_ALIGN_CENTER, 3, 1,
@@ -374,28 +374,28 @@ void tab_sensors_create(lv_obj_t *parent) {
   /* 2nd row HV */
 
   lv_obj_t *hv_temp_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_lb_average_temperature[TAB_SENSORS], "0",
+      right_data_panel, tab_sensors_lb_average_temperature, "0",
       &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "HV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *hv_volt_lb =
-      lv_triple_label(right_data_panel, &tab_sensors_lb_pack_voltage[TAB_SENSORS],
+      lv_triple_label(right_data_panel, tab_sensors_lb_pack_voltage,
                       "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22,
                       "HV", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_volt_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *hv_curr_lb =
-      lv_triple_label(right_data_panel, &tab_sensors_lb_hv_current[TAB_SENSORS],
+      lv_triple_label(right_data_panel, tab_sensors_lb_hv_current,
                       "0", &lv_font_inter_bold_30, " A", &lv_font_inter_bold_22,
                       "HV", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_curr_lb, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *hv_minCellV_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_lb_min_cell_voltage[TAB_SENSORS], "0",
+      right_data_panel, tab_sensors_lb_min_cell_voltage, "0",
       &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "HV MIN",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_minCellV_lb, LV_GRID_ALIGN_CENTER, 3, 1,
@@ -404,28 +404,28 @@ void tab_sensors_create(lv_obj_t *parent) {
   /* 3rd row LV */
 
   lv_obj_t *lv_temp_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_lb_battery_temperature[TAB_SENSORS], "X",
+      right_data_panel, tab_sensors_lb_battery_temperature, "X",
       &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "LV",
       &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *lv_volt_lb =
-      lv_triple_label(right_data_panel, &tab_sensors_lb_voltage[TAB_SENSORS], "X",
+      lv_triple_label(right_data_panel, tab_sensors_lb_voltage, "X",
                       &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22,
                       "LV", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_volt_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *lv_curr_lb =
-      lv_triple_label(right_data_panel, &tab_sensors_lb_lv_current[TAB_SENSORS],
+      lv_triple_label(right_data_panel, tab_sensors_lb_lv_current,
                       "X", &lv_font_inter_bold_30, " A", &lv_font_inter_bold_22,
                       "LV", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_curr_lb, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 
   lv_obj_t *y2 =
-      lv_triple_label(right_data_panel, &tab_sensors_lb_hv_delta[TAB_SENSORS], "-",
+      lv_triple_label(right_data_panel, tab_sensors_lb_hv_delta, "-",
                       &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22,
                       "HV DELTA", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 2,
@@ -433,28 +433,28 @@ void tab_sensors_create(lv_obj_t *parent) {
 /* 4th row */
 #if 1
   lv_obj_t *cooling_rad_lb =
-      lv_triple_label(right_data_panel, &tab_sensors_extra_value0,
+      lv_triple_label(right_data_panel, tab_sensors_extra_value0,
                       "V1", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
                       "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(cooling_rad_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
   lv_obj_t *cooling_pump_lb =
-      lv_triple_label(right_data_panel, &tab_sensors_extra_value1,
+      lv_triple_label(right_data_panel, tab_sensors_extra_value1,
                       "V2", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
                       "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(cooling_pump_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
   lv_obj_t *y11 =
-      lv_triple_label(right_data_panel, &tab_sensors_extra_value2,
+      lv_triple_label(right_data_panel, tab_sensors_extra_value2,
                       "V3", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_22,
                       "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y11, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 3,
                        1);
 
   lv_obj_t *y21 =
-      lv_triple_label(right_data_panel, &tab_sensor_lb_tlm_status[TAB_SENSORS],
+      lv_triple_label(right_data_panel, tab_sensor_lb_tlm_status,
                       "TLM", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22,
                       "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y21, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 3,
