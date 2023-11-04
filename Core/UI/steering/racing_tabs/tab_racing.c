@@ -28,6 +28,63 @@ lv_style_t bar_back_style;
 
 lv_obj_t *bottom_bar;
 
+//refactoring - functions that replace STEER_UPDATE_LABEL
+void set_tab_racing_lb_pack_voltage(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_pack_voltage, "%s", string);
+}
+
+void set_tab_racing_lb_hv_current(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_hv_current, "%s", string);
+}
+
+void set_tab_racing_lb_best_time(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_best_time, "%s", string);
+}
+
+void set_tab_racing_lb_last_time(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_last_time, "%s", string);
+}
+
+void set_tab_racing_lb_delta_time(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_delta_time, "%s", string);
+}
+
+void set_tab_racing_lb_left_inverter_temp(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_left_inverter_temp, "%s", string);
+}
+
+void set_tab_racing_lb_left_motor_temp(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_left_motor_temp, "%s", string);
+}
+
+void set_tab_racing_lb_battery_temperature(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_battery_temperature, "%s", string);
+}
+
+void set_tab_racing_lb_average_temperature(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_average_temperature, "%s", string);
+}
+
+void set_tab_racing_lb_speed(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_speed, "%s", string);
+}
+
+void set_tab_racing_lb_lap_count(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_racing_lb_lap_count, "%s", string);
+}
+
+
 void tab_racing_create(lv_obj_t *parent) {
   init_racing_style();
 

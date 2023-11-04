@@ -28,12 +28,79 @@ lv_obj_t *tab_sensors_lb_hv_delta;
 lv_obj_t *tab_sensors_extra_value0;
 lv_obj_t *tab_sensors_extra_value1;
 lv_obj_t *tab_sensors_extra_value2;
-lv_obj_t *tab_sensor_lb_tlm_status;
+lv_obj_t *tab_sensors_lb_tlm_status;
 
 
 lv_style_t bar_brake_style;
 lv_style_t bar_accel_style;
 lv_style_t bar_calib_back_style;
+
+//refactoring - functions that replace STEER_UPDATE_LABEL
+void set_tab_sensors_lb_right_inverter_temp(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_right_inverter_temp, "%s", string);
+}
+
+void set_tab_sensors_lb_right_motor_temp(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_right_motor_temp, "%s", string);
+}
+
+void set_tab_sensors_lb_average_temperature(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_average_temperature, "%s", string);
+}
+
+void set_tab_sensors_lb_left_inverter_temp(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_left_inverter_temp, "%s", string);
+}
+
+void set_tab_sensors_lb_left_motor_temp(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_left_motor_temp, "%s", string);
+}
+
+void set_tab_sensors_lb_pack_voltage(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_pack_voltage, "%s", string);
+}
+
+void set_tab_sensors_lb_hv_current(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_hv_current, "%s", string);
+}
+
+void set_tab_sensors_lb_min_cell_voltage(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_min_cell_voltage, "%s", string);
+}
+
+void set_tab_sensors_lb_battery_temperature(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_battery_temperature, "%s", string);
+}
+
+void set_tab_sensors_lb_voltage(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_voltage, "%s", string);
+}
+
+void set_tab_sensors_lb_lv_current(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_lv_current, "%s", string);
+}
+
+void set_tab_sensors_lb_hv_delta(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_hv_delta, "%s", string);
+}
+
+void set_tab_sensors_lb_tlm_status(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_sensors_lb_tlm_status, "%s", string);
+}
+
 
 void init_sensors_styles(void) {
   lv_style_init(&bar_brake_style);
@@ -454,7 +521,7 @@ void tab_sensors_create(lv_obj_t *parent) {
                        1);
 
   lv_obj_t *y21 =
-      lv_triple_label(right_data_panel, tab_sensor_lb_tlm_status,
+      lv_triple_label(right_data_panel, tab_sensors_lb_tlm_status,
                       "TLM", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22,
                       "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y21, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 3,

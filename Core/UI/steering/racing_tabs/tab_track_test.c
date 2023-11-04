@@ -10,6 +10,28 @@ lv_obj_t *tab_track_test_lb_inverter_speed_x;
 lv_obj_t *tab_track_test_lb_steering_angle;
 lv_obj_t *tab_track_test_lb_inverter_speed_y;
 
+//refactoring - functions that replace STEER_UPDATE_LABEL
+void set_tab_track_test_lb_speed(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_track_test_lb_speed, "%s", string);
+}
+
+void set_tab_track_test_lb_inverter_speed_x(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_track_test_lb_inverter_speed_x, "%s", string);
+}
+
+void set_tab_track_test_lb_steering_angle(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_track_test_lb_steering_angle, "%s", string);
+}
+
+void set_tab_track_test_lb_inverter_speed_y(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_track_test_lb_inverter_speed_y, "%s", string);
+}
+
+
 void tab_track_test_create(lv_obj_t *parent) {
 
   /*---creating MAIN GRID ---*/

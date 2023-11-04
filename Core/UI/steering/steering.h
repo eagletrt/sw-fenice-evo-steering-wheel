@@ -118,32 +118,41 @@ void set_ptt_button_pressed(bool);
 uint32_t get_current_time_ms(void);
 
 //refactoring
-void set_lb_speed(char* string);
 void set_lb_estimated_velocity(char* string);
-void set_lb_tlm_status(char* string);
-void set_lb_min_cell_voltage(char* string);
-void set_lb_pack_voltage(char* string);
-void set_lb_hv_delta(char* string);
-void set_lb_hv_current(char* string);
-void set_lb_average_temperature(char* string);
-void set_lb_lv_current(char* string);
-void set_lb_battery_temperature(char* string);
-void set_lb_voltage(char* string);
-void set_lb_steering_angle(char* string);
+void set_tab_calibration_lb_steering_angle(char* string);
 void set_lb_apps(char* string);
 void set_lb_bse(char* string);
-void set_lb_inverter_speed_x(char* string);
-void set_lb_inverter_speed_y(char* string);
-void set_lb_last_time(char* string);
-void set_lb_delta_time(char* string);
-void set_lb_best_time(char* string);
-void set_lb_lap_count(char* string);
-void set_lb_left_motor_temp(char* string);
-void set_lb_left_inverter_temp(char* string);
-void set_lb_right_motor_temp(char* string);
-void set_lb_right_inverter_temp(char* string);
 
+void set_tab_racing_lb_speed(char* string);
+void set_tab_racing_lb_pack_voltage(char* string);
+void set_tab_racing_lb_hv_current(char* string);
+void set_tab_racing_lb_average_temperature(char* string);
+void set_tab_racing_lb_battery_temperature(char* string);
+void set_tab_racing_lb_last_time(char* string);
+void set_tab_racing_lb_delta_time(char* string);
+void set_tab_racing_lb_best_time(char* string);
+void set_tab_racing_lb_lap_count(char* string);
+void set_tab_racing_lb_left_motor_temp(char* string);
+void set_tab_racing_lb_left_inverter_temp(char* string);
 
+void set_tab_sensors_lb_pack_voltage(char* string);
+void set_tab_sensors_lb_hv_delta(char* string);
+void set_tab_sensors_lb_hv_current(char* string);
+void set_tab_sensors_lb_average_temperature(char* string);
+void set_tab_sensors_lb_lv_current(char* string);
+void set_tab_sensors_lb_battery_temperature(char* string);
+void set_tab_sensors_lb_voltage(char* string);
+void set_tab_sensors_lb_tlm_status(char* string);
+void set_tab_sensors_lb_min_cell_voltage(char* string);
+void set_tab_sensors_lb_left_motor_temp(char* string);
+void set_tab_sensors_lb_left_inverter_temp(char* string);
+void set_tab_sensors_lb_right_motor_temp(char* string);
+void set_tab_sensors_lb_right_inverter_temp(char* string);
+
+void set_tab_track_test_lb_inverter_speed_x(char* string);
+void set_tab_track_test_lb_inverter_speed_y(char* string);
+void set_tab_track_test_lb_steering_angle(char* string);
+void set_tab_track_test_lb_speed(char* string);
 
 
 #endif /* STEERING_H */

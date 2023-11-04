@@ -25,6 +25,12 @@ lv_obj_t *scr_calib;
 extern racing_tab_t current_racing_tab;
 extern secondary_pedals_output_converted_t pedals_output_last_state;
 
+//refactoring - functions that replace STEER_UPDATE_LABEL
+void set_tab_calibration_lb_steering_angle(char* string){
+  remove_trailing(string);
+  lv_label_set_text_fmt(tab_calibration_lb_steering_angle, "%s", string);
+}
+
 void init_calibration_tab_styles(void) {
   /* BOX STYLE */
   lv_style_init(&box_style);
@@ -161,13 +167,7 @@ void tab_calibration_create(lv_obj_t *parent) {
   lv_obj_align(center_btn, LV_ALIGN_TOP_MID, 0, 10);
 
   lv_obj_t *center_lbl = lv_horizontal_pair_label(
-          /*
-           *void set_tab_calibration_steering_angle(){
-           *
-           * }
-           *
-           */
-      center_btn, &tab_calibration_lb_steering_angle[TAB_CALIBRATION], "0",
+      center_btn, tab_calibration_lb_steering_angle, "0",
       &lv_font_inter_bold_30, " deg", &lv_font_inter_bold_22);
   lv_obj_set_align(center_lbl, LV_ALIGN_CENTER);
   lv_obj_set_style_text_color(lv_obj_get_child(center_lbl, 0),
