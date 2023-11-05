@@ -11,24 +11,20 @@ lv_obj_t *tab_track_test_lb_steering_angle;
 lv_obj_t *tab_track_test_lb_inverter_speed_y;
 
 //refactoring - functions that replace STEER_UPDATE_LABEL
-void set_tab_track_test_lb_speed(char* string){
-  remove_trailing(string);
-  lv_label_set_text_fmt(tab_track_test_lb_speed, "%s", string);
+void set_tab_track_test_lb_speed(const char* string){
+  lv_label_set_text(tab_track_test_lb_speed, string);
 }
 
-void set_tab_track_test_lb_inverter_speed_x(char* string){
-  remove_trailing(string);
-  lv_label_set_text_fmt(tab_track_test_lb_inverter_speed_x, "%s", string);
+void set_tab_track_test_lb_inverter_speed_x(const char* string){
+  lv_label_set_text(tab_track_test_lb_inverter_speed_x, string);
 }
 
-void set_tab_track_test_lb_steering_angle(char* string){
-  remove_trailing(string);
-  lv_label_set_text_fmt(tab_track_test_lb_steering_angle, "%s", string);
+void set_tab_track_test_lb_steering_angle(const char* string){
+  lv_label_set_text(tab_track_test_lb_steering_angle, string);
 }
 
-void set_tab_track_test_lb_inverter_speed_y(char* string){
-  remove_trailing(string);
-  lv_label_set_text_fmt(tab_track_test_lb_inverter_speed_y, "%s", string);
+void set_tab_track_test_lb_inverter_speed_y(const char* string){
+  lv_label_set_text(tab_track_test_lb_inverter_speed_y, string);
 }
 
 
@@ -103,7 +99,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *speed = lv_vertical_pair_label(
-      up_left_data_panel, tab_track_test_lb_speed, "0",
+      up_left_data_panel, &tab_track_test_lb_speed, "0",
       &lv_font_inter_bold_38, "KM/H", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
@@ -126,7 +122,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *x_axis_g = lv_vertical_pair_label(
-      low_left_data_panel, tab_track_test_lb_inverter_speed_x, "0",
+      low_left_data_panel, &tab_track_test_lb_inverter_speed_x, "0",
       &lv_font_inter_bold_38, "ENCODER SPEED\nAX/G", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(x_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
@@ -150,7 +146,7 @@ void tab_track_test_create(lv_obj_t *parent) {
 
 #if 1
   lv_obj_t *steer_angle = lv_triple_label(
-      up_right_data_panel, &tab_track_test_lb_steering_angle[TAB_SENSORS], "NA",
+      up_right_data_panel, &tab_track_test_lb_steering_angle, "NA",
       &lv_font_inter_bold_38, "°", &lv_font_inter_bold_22, "STEERING ANGLE",
       &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(steer_angle, LV_GRID_ALIGN_CENTER, 0, 1,
@@ -174,7 +170,7 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *y_axis_g = lv_vertical_pair_label(
-      low_right_data_panel, tab_track_test_lb_inverter_speed_y, "0",
+      low_right_data_panel, &tab_track_test_lb_inverter_speed_y, "0",
       &lv_font_inter_bold_38, "ENCODER SPEED\nAY/G", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(y_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);

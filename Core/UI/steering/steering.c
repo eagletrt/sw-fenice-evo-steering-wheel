@@ -1,19 +1,10 @@
 #include "steering.h"
 
-//refactor
-lv_obj_t *bottom_lb_speed;
 lv_obj_t *lb_estimated_velocity;
-lv_obj_t *racing_lv_bar;
-lv_obj_t *custom_meter;
-lv_meter_indicator_t *indicator_blue;
-lv_obj_t *racing_hv_bar;
-calibration_box_t curr_focus;
-lv_obj_t *slider;
 lv_obj_t *lb_apps;
 lv_obj_t *lb_bse;
-lv_obj_t *extra_value0;
-lv_obj_t *extra_value1;
-lv_obj_t *extra_value2;
+
+
 
 extern lv_obj_t *hv_feedbacks_status[20];
 extern lv_obj_t *hv_errors[16];
@@ -81,20 +72,17 @@ inverters_inv_l_rcv_converted_t inv_l_last_state = {0};
 
 //refactoring - functions that replace STEER_UPDATE_LABEL
 
-void set_lb_estimated_velocity(char* string){
-  remove_trailing(string);
-  lv_label_set_text_fmt(lb_estimated_velocity, "%s", string);
+void set_lb_estimated_velocity(const char* string){
+  lv_label_set_text(lb_estimated_velocity, string);
 }
 
 
-void set_lb_apps(char* string){
-  remove_trailing(string);
-  lv_label_set_text_fmt(lb_apps, "%s", string);
+void set_lb_apps(const char* string){
+  lv_label_set_text(lb_apps, string);
 }
 
-void set_lb_bse(char* string){
-  remove_trailing(string);
-  lv_label_set_text_fmt(lb_bse, "%s", string);
+void set_lb_bse(const char* string){
+  lv_label_set_text(lb_bse, string);
 }
 
 
@@ -122,7 +110,7 @@ void car_status_update(primary_car_status_converted_t *data) {
     case primary_car_status_car_status_INIT:
     case primary_car_status_car_status_ENABLE_INV_UPDATES:
     case primary_car_status_car_status_CHECK_INV_SETTINGS: {
-      lv_label_set_text_fmt(bottom_lb_speed, "-");
+      lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
 
       set_tab_racing_lb_speed("INIT");
       set_tab_track_test_lb_speed("INIT");
@@ -130,7 +118,7 @@ void car_status_update(primary_car_status_converted_t *data) {
       break;
     }
     case primary_car_status_car_status_IDLE: {
-      lv_label_set_text_fmt(bottom_lb_speed, "-");
+      lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
 
       set_tab_racing_lb_speed("IDLE");
       set_tab_track_test_lb_speed("IDLE");
@@ -139,7 +127,7 @@ void car_status_update(primary_car_status_converted_t *data) {
     }
     case primary_car_status_car_status_START_TS_PRECHARGE:
     case primary_car_status_car_status_WAIT_TS_PRECHARGE: {
-      lv_label_set_text_fmt(bottom_lb_speed, "-");
+      lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
 
       set_tab_racing_lb_speed("PRCHG");
       set_tab_track_test_lb_speed("PRCHG");
@@ -147,7 +135,7 @@ void car_status_update(primary_car_status_converted_t *data) {
       break;
     }
     case primary_car_status_car_status_WAIT_DRIVER: {
-      lv_label_set_text_fmt(bottom_lb_speed, "-");
+      lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
 
       set_tab_racing_lb_speed("SETUP");
       set_tab_track_test_lb_speed("SETUP");
@@ -155,7 +143,7 @@ void car_status_update(primary_car_status_converted_t *data) {
       break;
     }
     case primary_car_status_car_status_ENABLE_INV_DRIVE: {
-      lv_label_set_text_fmt(bottom_lb_speed, "-");
+      lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
 
       set_tab_racing_lb_speed("ENINV");
       set_tab_track_test_lb_speed("ENINV");
@@ -163,7 +151,7 @@ void car_status_update(primary_car_status_converted_t *data) {
       break;
     }
     case primary_car_status_car_status_DRIVE: {
-      lv_label_set_text_fmt(bottom_lb_speed, "-");
+      lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
 
       set_tab_racing_lb_speed("DRIVE");
       set_tab_track_test_lb_speed("DRIVE");
@@ -173,7 +161,7 @@ void car_status_update(primary_car_status_converted_t *data) {
     case primary_car_status_car_status_DISABLE_INV_DRIVE:
     case primary_car_status_car_status_START_TS_DISCHARGE:
     case primary_car_status_car_status_WAIT_TS_DISCHARGE: {
-      lv_label_set_text_fmt(bottom_lb_speed, "-");
+      lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
 
       set_tab_racing_lb_speed("TSOFF");
       set_tab_track_test_lb_speed("TSOFF");
@@ -181,7 +169,7 @@ void car_status_update(primary_car_status_converted_t *data) {
       break;
     }
     case primary_car_status_car_status_FATAL_ERROR: {
-      lv_label_set_text_fmt(bottom_lb_speed, "-");
+      lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
 
       set_tab_racing_lb_speed("FATAL");
       set_tab_track_test_lb_speed("FATAL");
@@ -210,7 +198,7 @@ void control_output_update(primary_control_output_converted_t *data) {
     control_output_last_state.estimated_velocity = data->estimated_velocity;
     sprintf(sprintf_buffer, "%.1f", data->estimated_velocity);
 
-    set_lb_estimated_velocity(sprintf_buffer);
+    //set_lb_estimated_velocity(sprintf_buffer);
 
   }
 }
@@ -262,7 +250,7 @@ void speed_update(primary_speed_converted_t *data) {
         set_tab_racing_lb_speed(sprintf_buffer);
         set_tab_track_test_lb_speed(sprintf_buffer);
 
-        lv_label_set_text_fmt(bottom_lb_speed, "kmh");
+        lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed, "kmh");
 #endif
   }
   if (data->encoder_l != speed_last_state.encoder_l ||
@@ -275,7 +263,7 @@ void speed_update(primary_speed_converted_t *data) {
         sprintf(sprintf_buffer, "%.1f", velocity);
         set_tab_racing_lb_speed(sprintf_buffer);
         set_tab_track_test_lb_speed(sprintf_buffer);
-        lv_label_set_text_fmt(bottom_lb_speed, "kmh");
+        lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed, "kmh");
 #endif
   }
 }
@@ -295,13 +283,13 @@ void hv_voltage_update(primary_hv_voltage_converted_t *data) {
     set_tab_racing_lb_pack_voltage(sprintf_buffer);
     set_tab_sensors_lb_pack_voltage(sprintf_buffer);
 
-    lv_bar_set_value(racing_lv_bar, data->pack_voltage, LV_ANIM_OFF);
+    lv_bar_set_value(get_tab_racing_racing_lv_bar(), data->pack_voltage, LV_ANIM_OFF);
   }
   if (data->bus_voltage != hv_voltage_last_state.bus_voltage) {
     hv_voltage_last_state.bus_voltage = data->bus_voltage;
     float percentage = (data->bus_voltage) / (data->pack_voltage) * 100;
     percentage = fmin(fmax(percentage, 0), 100);
-    lv_meter_set_indicator_value(custom_meter, indicator_blue,
+    lv_meter_set_indicator_value(get_tab_racing_custom_meter(), get_tab_racing_indicator_blue(),
                                  percentage);
   }
   float delta = data->max_cell_voltage - data->min_cell_voltage;
@@ -322,7 +310,7 @@ void hv_current_update(primary_hv_current_converted_t *data) {
     set_tab_racing_lb_hv_current(sprintf_buffer);
     set_tab_sensors_lb_hv_current(sprintf_buffer);
 
-    lv_bar_set_value(racing_hv_bar, hv_current_last_state.current,
+    lv_bar_set_value(get_tab_racing_racing_hv_bar(), hv_current_last_state.current,
                      LV_ANIM_OFF);
   }
 }
@@ -660,13 +648,15 @@ void steering_angle_update(secondary_steering_angle_converted_t *data) {
     set_tab_calibration_lb_steering_angle(sprintf_buffer);
     set_tab_track_test_lb_steering_angle(sprintf_buffer);
 
-    if (curr_focus == STEER) {
-      lv_slider_set_mode(slider, LV_BAR_MODE_SYMMETRICAL);
+    calibration_box_t* curr_focus = get_tab_calibration_curr_focus();
+
+    if (*curr_focus == STEER) {
+      lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_SYMMETRICAL);
       lv_slider_set_range(
-          slider, STEERING_ANGLE_RANGE_LOW,
+          get_tab_calibration_slider(), STEERING_ANGLE_RANGE_LOW,
           STEERING_ANGLE_RANGE_HIGH); // se range 45 e max value 180 ->
                                       // set_value ( 0.25 * gradi_inclinazione )
-      lv_slider_set_value(slider, steering_angle_converted.angle,
+      lv_slider_set_value(get_tab_calibration_slider(), steering_angle_converted.angle,
                           LV_ANIM_OFF);
     }
   }
@@ -677,12 +667,13 @@ void pedals_output_update(secondary_pedals_output_converted_t *data) {
     pedals_output_last_state.apps = data->apps;
     sprintf(sprintf_buffer, "%d", (int)data->apps);
 
-    set_lb_apps(sprintf_buffer);
+    //set_lb_apps(sprintf_buffer);
+    calibration_box_t* curr_focus = get_tab_calibration_curr_focus();
 
-    if (curr_focus == APPS) {
-      lv_slider_set_mode(slider, LV_BAR_MODE_RANGE);
-      lv_slider_set_range(slider, APPS_RANGE_LOW, APPS_RANGE_HIGH);
-      lv_slider_set_value(slider, pedals_output_last_state.apps,
+    if (*curr_focus == APPS) {
+      lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
+      lv_slider_set_range(get_tab_calibration_slider(), APPS_RANGE_LOW, APPS_RANGE_HIGH);
+      lv_slider_set_value(get_tab_calibration_slider(), pedals_output_last_state.apps,
                           LV_ANIM_OFF);
     }
   }
@@ -691,11 +682,12 @@ void pedals_output_update(secondary_pedals_output_converted_t *data) {
     sprintf(sprintf_buffer, "%.1f", data->bse_front);
 
     //set_lb_bse(sprintf_buffer);
+    calibration_box_t* curr_focus = get_tab_calibration_curr_focus();
 
-    if (curr_focus == BSE) {
-      lv_slider_set_mode(slider, LV_BAR_MODE_RANGE);
-      lv_slider_set_range(slider, BRAKE_RANGE_LOW, BRAKE_RANGE_HIGH);
-      lv_slider_set_value(slider, data->bse_front, LV_ANIM_OFF);
+    if (*curr_focus == BSE) {
+      lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
+      lv_slider_set_range(get_tab_calibration_slider(), BRAKE_RANGE_LOW, BRAKE_RANGE_HIGH);
+      lv_slider_set_value(get_tab_calibration_slider(), data->bse_front, LV_ANIM_OFF);
     }
   }
 }
@@ -836,15 +828,15 @@ void inv_r_rcv_update(inverters_inv_r_rcv_converted_t *data) {
 void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
   switch (extra_value) {
   case 0: {
-    lv_label_set_text_fmt(extra_value0, "%s", buf);
+    lv_label_set_text_fmt(get_tab_sensors_extra_value0(), "%s", buf);
     break;
   }
   case 1: {
-    lv_label_set_text_fmt(extra_value1, "%s", buf);
+    lv_label_set_text_fmt(get_tab_sensors_extra_value1(), "%s", buf);
     break;
   }
   case 2: {
-    lv_label_set_text_fmt(extra_value2, "%s", buf);
+    lv_label_set_text_fmt(get_tab_sensors_extra_value2(), "%s", buf);
     break;
   }
   default: {
