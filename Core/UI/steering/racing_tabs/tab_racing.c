@@ -41,60 +41,60 @@ lv_meter_indicator_t *get_tab_racing_indicator_blue() {
 
 lv_obj_t *get_tab_racing_racing_hv_bar() { return tab_racing_racing_hv_bar; }
 
-void set_tab_racing_lb_pack_voltage(const char *string) {
-  lv_label_set_text(tab_racing_lb_pack_voltage, string);
+void set_tab_racing_lb_pack_voltage(const char *s) {
+  lv_label_set_text(tab_racing_lb_pack_voltage, s);
 }
 
-void set_tab_racing_lb_hv_current(const char *string) {
-  lv_label_set_text(tab_racing_lb_hv_current, string);
+void set_tab_racing_lb_hv_current(const char *s) {
+  lv_label_set_text(tab_racing_lb_hv_current, s);
 }
 
-void set_tab_racing_lb_best_time(const char *string) {
-  lv_label_set_text(tab_racing_lb_best_time, string);
+void set_tab_racing_lb_best_time(const char *s) {
+  lv_label_set_text(tab_racing_lb_best_time, s);
 }
 
-void set_tab_racing_lb_last_time(const char *string) {
-  lv_label_set_text(tab_racing_lb_last_time, string);
+void set_tab_racing_lb_last_time(const char *s) {
+  lv_label_set_text(tab_racing_lb_last_time, s);
 }
 
-void set_tab_racing_lb_delta_time(const char *string) {
-  lv_label_set_text(tab_racing_lb_delta_time, string);
+void set_tab_racing_lb_delta_time(const char *s) {
+  lv_label_set_text(tab_racing_lb_delta_time, s);
 }
 
-void set_tab_racing_lb_left_inverter_temp(const char *string) {
-  lv_label_set_text(tab_racing_lb_left_inverter_temp, string);
+void set_tab_racing_lb_left_inverter_temp(const char *s) {
+  lv_label_set_text(tab_racing_lb_left_inverter_temp, s);
 }
 
-void set_tab_racing_lb_left_motor_temp(const char *string) {
-  lv_label_set_text(tab_racing_lb_left_motor_temp, string);
+void set_tab_racing_lb_left_motor_temp(const char *s) {
+  lv_label_set_text(tab_racing_lb_left_motor_temp, s);
 }
 
-void set_tab_racing_lb_battery_temperature(const char *string) {
-  lv_label_set_text(tab_racing_lb_battery_temperature, string);
+void set_tab_racing_lb_battery_temperature(const char *s) {
+  lv_label_set_text(tab_racing_lb_battery_temperature, s);
 }
 
-void set_tab_racing_lb_average_temperature(const char *string) {
-  lv_label_set_text_fmt(tab_racing_lb_average_temperature, string);
+void set_tab_racing_lb_average_temperature(const char *s) {
+  lv_label_set_text_fmt(tab_racing_lb_average_temperature, s);
 }
 
-void set_tab_racing_lb_speed(const char *string) {
-  lv_label_set_text(tab_racing_lb_speed, string);
+void set_tab_racing_lb_speed(const char *s) {
+  lv_label_set_text(tab_racing_lb_speed, s);
 }
 
-void set_tab_racing_lb_lap_count(const char *string) {
-  lv_label_set_text(tab_racing_lb_lap_count, string);
+void set_tab_racing_lb_lap_count(const char *s) {
+  lv_label_set_text(tab_racing_lb_lap_count, s);
 }
 
-void set_tab_racing_lb_slip(const char *string) {
-  lv_label_set_text(tab_racing_lb_slip, string);
+void set_tab_racing_lb_slip(const char *s) {
+  lv_label_set_text(tab_racing_lb_slip, s);
 }
 
-void set_tab_racing_lb_torque(const char *string) {
-  lv_label_set_text(tab_racing_lb_torque, string);
+void set_tab_racing_lb_torque(const char *s) {
+  lv_label_set_text(tab_racing_lb_torque, s);
 }
 
-void set_tab_racing_lb_power(const char *string) {
-  lv_label_set_text(tab_racing_lb_power, string);
+void set_tab_racing_lb_power(const char *s) {
+  lv_label_set_text(tab_racing_lb_power, s);
 }
 
 void tab_racing_create(lv_obj_t *parent) {

@@ -9,20 +9,20 @@ lv_obj_t *tab_track_test_lb_inverter_speed_x;
 lv_obj_t *tab_track_test_lb_steering_angle;
 lv_obj_t *tab_track_test_lb_inverter_speed_y;
 
-void set_tab_track_test_lb_speed(const char *string) {
-  lv_label_set_text(tab_track_test_lb_speed, string);
+void set_tab_track_test_lb_speed(const char *s) {
+  lv_label_set_text(tab_track_test_lb_speed, s);
 }
 
-void set_tab_track_test_lb_inverter_speed_x(const char *string) {
-  lv_label_set_text(tab_track_test_lb_inverter_speed_x, string);
+void set_tab_track_test_lb_inverter_speed_x(const char *s) {
+  lv_label_set_text(tab_track_test_lb_inverter_speed_x, s);
 }
 
-void set_tab_track_test_lb_steering_angle(const char *string) {
-  lv_label_set_text(tab_track_test_lb_steering_angle, string);
+void set_tab_track_test_lb_steering_angle(const char *s) {
+  lv_label_set_text(tab_track_test_lb_steering_angle, s);
 }
 
-void set_tab_track_test_lb_inverter_speed_y(const char *string) {
-  lv_label_set_text(tab_track_test_lb_inverter_speed_y, string);
+void set_tab_track_test_lb_inverter_speed_y(const char *s) {
+  lv_label_set_text(tab_track_test_lb_inverter_speed_y, s);
 }
 
 void tab_track_test_create(lv_obj_t *parent) {

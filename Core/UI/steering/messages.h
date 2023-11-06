@@ -7,11 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME)                         \
+#define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME, arr)                    \
   ntw##_##msg_name##_t raw;                                                    \
-  ntw##_##msg_name##_converted_t converted;                                    \
+  const ntw##_##msg_name##_converted_t converted;                              \
   ntw##_##msg_name##_unpack(&raw, msg->data, NTW##_##MSG_NAME##_BYTE_SIZE);    \
-  ntw##_##msg_name##_raw_to_conversion_struct(&converted, &raw);
+  ntw##_##msg_name##_raw_to_conversion_struct(&converted, &raw);               \
+  memcpy(&ntw##_##msg_name##_last_state, &converted,                           \
+         sizeof(ntw##_##msg_name##_converted_t));                              \
+  arr[ntw##_index_from_id(NTW##_##MSG_NAME##_FRAME_ID)];
 
 #define STEER_CAN_PACK(ntw, NTW, msg_name, MSG_NAME)                           \
   can_message_t msg = {0};                                                     \

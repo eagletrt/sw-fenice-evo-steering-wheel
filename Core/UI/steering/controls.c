@@ -19,7 +19,7 @@ extern lv_obj_t *set_max_btn;
 char sprintf_buffer_controls[BUFSIZ];
 
 extern primary_tlm_status_t tlm_status_last_state;
-extern primary_car_status_t car_status_last_state;
+extern primary_car_status_t primary_car_status_last_state;
 primary_steer_status_converted_t steer_status_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
 primary_cooling_status_converted_t steering_cooling_settings = {
@@ -211,7 +211,7 @@ void send_set_car_status(primary_set_car_status_car_status_set val) {
 }
 
 void prepare_set_car_status(void) {
-  switch (car_status_last_state.car_status) {
+  switch (primary_car_status_last_state.car_status) {
   case primary_car_status_car_status_INIT:
   case primary_car_status_car_status_ENABLE_INV_UPDATES:
   case primary_car_status_car_status_CHECK_INV_SETTINGS: {
@@ -253,7 +253,7 @@ void prepare_set_car_status(void) {
 
 bool send_set_car_status_directly(void) {
   bool retval = true;
-  switch (car_status_last_state.car_status) {
+  switch (primary_car_status_last_state.car_status) {
   case primary_car_status_car_status_IDLE:
   case primary_car_status_car_status_WAIT_DRIVER: {
     retval = false;

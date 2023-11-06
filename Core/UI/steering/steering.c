@@ -15,154 +15,113 @@ extern bool steering_initialized;
 #define SPRINTF_BUFFER_SIZE 64
 char sprintf_buffer[SPRINTF_BUFFER_SIZE];
 
-/*
- ____    ____   ___ __     ___  ____   ____
- || \\  ||     //   ||    // \\ || \\ ||
- ||  )) ||==  ((    ||    ||=|| ||_// ||==
- ||_//  ||___  \\__ ||__| || || || \\ ||___
+primary_car_status_converted_t primary_car_status_last_state = {0};
+primary_control_output_converted_t primary_control_output_last_state = {0};
 
-*/
+primary_ambient_temperature_converted_t secondary_ambient_temperature_last_state = {0};
+primary_tlm_status_converted_t primary_tlm_status_last_state = {.tlm_status = 2};
+primary_speed_converted_t primary_speed_last_state = {0};
+primary_ptt_status_converted_t primary_ptt_status_last_state= {0};
 
-primary_car_status_converted_t car_status_last_state = {0};
-primary_control_output_converted_t control_output_last_state = {0};
-
-primary_ambient_temperature_converted_t ambient_temperature_last_state = {0};
-primary_tlm_status_converted_t tlm_status_last_state = {.tlm_status = 2};
-primary_speed_converted_t speed_last_state = {0};
-
-primary_hv_voltage_converted_t hv_voltage_last_state = {0};
-primary_hv_current_converted_t hv_current_last_state = {0};
-primary_hv_temp_converted_t hv_temp_last_state = {0};
-primary_hv_errors_converted_t hv_errors_last_state = {0};
-primary_hv_feedbacks_status_converted_t hv_feedbacks_status_last_state = {0};
+primary_hv_voltage_converted_t primary_hv_voltage_last_state = {0};
+primary_hv_current_converted_t primary_hv_current_last_state = {0};
+primary_hv_temp_converted_t primary_hv_temp_last_state = {0};
+primary_hv_errors_converted_t primary_hv_errors_last_state = {0};
+primary_hv_feedbacks_status_converted_t primary_hv_feedbacks_status_last_state = {0};
 float hv_delta_last_state = 0.0f;
 
-primary_das_errors_converted_t das_errors_last_state;
+primary_das_errors_converted_t primary_das_errors_last_state;
 
-primary_lv_currents_converted_t lv_currents_last_state = {0};
-primary_lv_cells_voltage_converted_t lv_cells_voltage_last_state_1 = {0};
-primary_lv_cells_voltage_converted_t lv_cells_voltage_last_state_2 = {0};
-primary_lv_cells_temp_converted_t lv_cells_temp_last_state_1 = {0};
-primary_lv_cells_temp_converted_t lv_cells_temp_last_state_2 = {0};
-primary_lv_cells_temp_converted_t lv_cells_temp_last_state_3 = {0};
-primary_lv_cells_temp_converted_t lv_cells_temp_last_state_4 = {0};
+primary_lv_currents_converted_t primary_lv_currents_last_state = {0};
+primary_lv_cells_voltage_converted_t primary_lv_cells_voltage_last_state_1 = {0};
+primary_lv_cells_voltage_converted_t primary_lv_cells_voltage_last_state_2 = {0};
+primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_1 = {0};
+primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_2 = {0};
+primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_3 = {0};
+primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_4 = {0};
 float lv_cells_temp_mean_last_state = 0;
-primary_lv_total_voltage_converted_t lv_total_voltage_last_state = {0};
-primary_lv_errors_converted_t lv_errors_last_state = {0};
-primary_cooling_status_converted_t cooling_status_last_state = {0};
-primary_hv_fans_override_status_converted_t hv_fans_override_status_last_state =
-    {0};
-primary_lv_feedbacks_converted_t lv_feedbacks_last_state = {0};
-primary_hv_cell_balancing_status_converted_t
-    hv_cell_balancing_status_last_state = {0};
+primary_lv_total_voltage_converted_t primary_lv_total_voltage_last_state = {0};
+primary_lv_errors_converted_t primary_lv_errors_last_state = {0};
+primary_cooling_status_converted_t primary_cooling_status_last_state = {0};
+primary_hv_fans_override_status_converted_t primary_hv_fans_override_status_last_state = {0};
+primary_lv_feedbacks_converted_t primary_lv_feedbacks_last_state = {0};
+primary_hv_cell_balancing_status_converted_t primary_hv_cell_balancing_status_last_state = {0};
+primary_pedal_calibration_ack_converted_t primary_pedal_calibration_ack_last_state = {0};
 
-secondary_steering_angle_converted_t steering_angle_converted = {0};
-secondary_pedals_output_converted_t pedals_output_last_state = {0};
-secondary_imu_acceleration_converted_t imu_acceleration_last_state = {0};
-secondary_lap_count_converted_t lap_count_last_state = {0};
-secondary_lc_status_converted_t lc_status_last_state = {0};
+secondary_steering_angle_converted_t secondary_steering_angle_converted = {0};
+secondary_pedals_output_converted_t secondary_pedals_output_last_state = {0};
+secondary_imu_acceleration_converted_t secondary_imu_acceleration_last_state = {0};
+secondary_lap_count_converted_t secondary_lap_count_last_state = {0};
+secondary_lc_status_converted_t secondary_lc_status_last_state = {0};
 float current_delta_state = 0.0f;
-secondary_timestamp_converted_t timestamp_last_state = {0};
+secondary_timestamp_converted_t secondary_timestamp_last_state = {0};
 uint32_t timestamp_start_lap = 0;
 
-inverters_inv_r_rcv_converted_t inv_r_last_state = {0};
-inverters_inv_l_rcv_converted_t inv_l_last_state = {0};
+inverters_inv_r_rcv_converted_t inverters_inv_r_last_state = {0};
+inverters_inv_l_rcv_converted_t inverters_inv_l_last_state = {0};
 
-void set_lb_estimated_velocity(const char *string) {
-  lv_label_set_text(lb_estimated_velocity, string);
+void set_lb_estimated_velocity(const char *s) {
+  lv_label_set_text(lb_estimated_velocity, s);
 }
 
-void set_lb_apps(const char *string) { lv_label_set_text(lb_apps, string); }
+void set_lb_apps(const char *s) { lv_label_set_text(lb_apps, s); }
 
-void set_lb_bse(const char *string) { lv_label_set_text(lb_bse, string); }
-
-inline void remove_trailing(char *buf) {
-  char init = buf[0];
-  bool is_cifra = init >= '0' && init <= '9';
-  bool is_capital_letter = init >= 'A' && init <= 'Z';
-  bool is_letter = init >= 'a' && init <= 'z';
-  bool is_minus = init == '-';
-  if (!is_cifra && !is_capital_letter && !is_letter && !is_minus)
-    buf[0] = ' ';
-}
-/*
- __ __ ____  ____    ___  ______  ____
- || || || \\ || \\  // \\ | || | ||
- || || ||_// ||  )) ||=||   ||   ||==
- \\_// ||    ||_//  || ||   ||   ||___
-
-*/
+void set_lb_bse(const char *s) { lv_label_set_text(lb_bse, s); }
 
 void car_status_update(primary_car_status_converted_t *data) {
-  car_status_last_state.car_status = data->car_status;
+  primary_car_status_last_state.car_status = data->car_status;
   switch (data->car_status) {
   case primary_car_status_car_status_INIT:
   case primary_car_status_car_status_ENABLE_INV_UPDATES:
   case primary_car_status_car_status_CHECK_INV_SETTINGS: {
     lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
-
     set_tab_racing_lb_speed("INIT");
     set_tab_track_test_lb_speed("INIT");
-
     break;
   }
   case primary_car_status_car_status_IDLE: {
     lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
-
     set_tab_racing_lb_speed("IDLE");
     set_tab_track_test_lb_speed("IDLE");
-
     break;
   }
   case primary_car_status_car_status_START_TS_PRECHARGE:
   case primary_car_status_car_status_WAIT_TS_PRECHARGE: {
     lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
-
     set_tab_racing_lb_speed("PRCHG");
     set_tab_track_test_lb_speed("PRCHG");
-
     break;
   }
   case primary_car_status_car_status_WAIT_DRIVER: {
     lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
-
     set_tab_racing_lb_speed("SETUP");
     set_tab_track_test_lb_speed("SETUP");
-
     break;
   }
   case primary_car_status_car_status_ENABLE_INV_DRIVE: {
     lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
-
     set_tab_racing_lb_speed("ENINV");
     set_tab_track_test_lb_speed("ENINV");
-
     break;
   }
   case primary_car_status_car_status_DRIVE: {
     lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
-
     set_tab_racing_lb_speed("DRIVE");
     set_tab_track_test_lb_speed("DRIVE");
-
     break;
   }
   case primary_car_status_car_status_DISABLE_INV_DRIVE:
   case primary_car_status_car_status_START_TS_DISCHARGE:
   case primary_car_status_car_status_WAIT_TS_DISCHARGE: {
     lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
-
     set_tab_racing_lb_speed("TSOFF");
     set_tab_track_test_lb_speed("TSOFF");
-
     break;
   }
   case primary_car_status_car_status_FATAL_ERROR: {
     lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
-
     set_tab_racing_lb_speed("FATAL");
     set_tab_track_test_lb_speed("FATAL");
-
     break;
   }
   default:
@@ -175,8 +134,6 @@ void control_output_update(primary_control_output_converted_t *data) {
       control_output_last_state.estimated_velocity) {
     control_output_last_state.estimated_velocity = data->estimated_velocity;
     sprintf(sprintf_buffer, "%.1f", data->estimated_velocity);
-
-    // set_lb_estimated_velocity(sprintf_buffer);
   }
 }
 
@@ -213,35 +170,19 @@ void tlm_status_update(primary_tlm_status_converted_t *data) {
 }
 
 void speed_update(primary_speed_converted_t *data) {
-  if (car_status_last_state.car_status != primary_car_status_car_status_DRIVE)
+  if (primary_car_status_last_state.car_status !=
+      primary_car_status_car_status_DRIVE)
     return;
 
   if (data->inverter_l != speed_last_state.inverter_l ||
       data->inverter_r != speed_last_state.inverter_r) {
     speed_last_state.inverter_l = data->inverter_l;
     speed_last_state.inverter_r = data->inverter_r;
-#if 0
-        const float wheel_radius = 0.2368760861f;
-        float velocity = wheel_radius * ((data->inverter_l + data->inverter_r) / 2.0f);
-        sprintf(sprintf_buffer, "%.1f", velocity);
-        set_tab_racing_lb_speed(sprintf_buffer);
-        set_tab_track_test_lb_speed(sprintf_buffer);
-
-        lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed, "kmh");
-#endif
   }
   if (data->encoder_l != speed_last_state.encoder_l ||
       data->encoder_r != speed_last_state.encoder_r) {
     speed_last_state.encoder_l = data->encoder_l;
     speed_last_state.encoder_r = data->encoder_r;
-#if 0 // this is very broken
-        const float wheel_radius = 0.2368760861f;
-        float velocity = wheel_radius * ((data->encoder_l + data->encoder_r) / 2.0f);
-        sprintf(sprintf_buffer, "%.1f", velocity);
-        set_tab_racing_lb_speed(sprintf_buffer);
-        set_tab_track_test_lb_speed(sprintf_buffer);
-        lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed, "kmh");
-#endif
   }
 }
 
@@ -818,6 +759,10 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
   }
 }
 
+/***
+ * PTT
+ */
+
 typedef enum {
   ptt_status_OFF = 0,
   ptt_status_SET_ON = 1,
@@ -867,17 +812,4 @@ void handle_ptt_message(primary_ptt_status_status val) {
   } else if (val == primary_ptt_status_status_ON) {
     ecu_ack = true;
   }
-}
-
-/***
- * SPECIAL FSG LAP COUNTER
- */
-void handle_lap_counter_message(secondary_lap_count_converted_t *data) {
-  float total_seconds = data->lap_time;
-  int minutes = ((int)total_seconds) / 60;
-  int seconds = ((int)total_seconds % (minutes * 60));
-  int cent_second = (total_seconds - (int)total_seconds) * 100.0f;
-  char buf[BUFSIZ];
-  sprintf(buf, "%d:%d:%d", minutes, seconds, cent_second);
-  display_notification(buf, 5000);
 }

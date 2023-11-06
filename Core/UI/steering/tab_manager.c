@@ -115,11 +115,6 @@ void switch_mode(void) {
 /***
  * Tab Manager
  */
-void reload_racing_tab(racing_tab_t tab) {
-  if (tab == current_racing_tab) {
-    load_current_racing_tab();
-  }
-}
 
 void load_current_racing_tab() {
   switch (current_racing_tab) {

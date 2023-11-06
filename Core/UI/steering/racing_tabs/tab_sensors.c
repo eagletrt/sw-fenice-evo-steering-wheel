@@ -39,56 +39,56 @@ lv_obj_t *get_tab_sensors_extra_value1() { return tab_sensors_extra_value1; }
 
 lv_obj_t *get_tab_sensors_extra_value2() { return tab_sensors_extra_value2; }
 
-void set_tab_sensors_lb_right_inverter_temp(const char *string) {
-  lv_label_set_text(tab_sensors_lb_right_inverter_temp, string);
+void set_tab_sensors_lb_right_inverter_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_right_inverter_temp, s);
 }
 
-void set_tab_sensors_lb_right_motor_temp(const char *string) {
-  lv_label_set_text(tab_sensors_lb_right_motor_temp, string);
+void set_tab_sensors_lb_right_motor_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_right_motor_temp, s);
 }
 
-void set_tab_sensors_lb_average_temperature(const char *string) {
-  lv_label_set_text(tab_sensors_lb_average_temperature, string);
+void set_tab_sensors_lb_average_temperature(const char *s) {
+  lv_label_set_text(tab_sensors_lb_average_temperature, s);
 }
 
-void set_tab_sensors_lb_left_inverter_temp(const char *string) {
-  lv_label_set_text(tab_sensors_lb_left_inverter_temp, string);
+void set_tab_sensors_lb_left_inverter_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_left_inverter_temp, s);
 }
 
-void set_tab_sensors_lb_left_motor_temp(const char *string) {
-  lv_label_set_text(tab_sensors_lb_left_motor_temp, string);
+void set_tab_sensors_lb_left_motor_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_left_motor_temp, s);
 }
 
-void set_tab_sensors_lb_pack_voltage(const char *string) {
-  lv_label_set_text(tab_sensors_lb_pack_voltage, string);
+void set_tab_sensors_lb_pack_voltage(const char *s) {
+  lv_label_set_text(tab_sensors_lb_pack_voltage, s);
 }
 
-void set_tab_sensors_lb_hv_current(const char *string) {
-  lv_label_set_text(tab_sensors_lb_hv_current, string);
+void set_tab_sensors_lb_hv_current(const char *s) {
+  lv_label_set_text(tab_sensors_lb_hv_current, s);
 }
 
-void set_tab_sensors_lb_min_cell_voltage(const char *string) {
-  lv_label_set_text(tab_sensors_lb_min_cell_voltage, string);
+void set_tab_sensors_lb_min_cell_voltage(const char *s) {
+  lv_label_set_text(tab_sensors_lb_min_cell_voltage, s);
 }
 
-void set_tab_sensors_lb_battery_temperature(const char *string) {
-  lv_label_set_text(tab_sensors_lb_battery_temperature, string);
+void set_tab_sensors_lb_battery_temperature(const char *s) {
+  lv_label_set_text(tab_sensors_lb_battery_temperature, s);
 }
 
-void set_tab_sensors_lb_voltage(const char *string) {
-  lv_label_set_text(tab_sensors_lb_voltage, string);
+void set_tab_sensors_lb_voltage(const char *s) {
+  lv_label_set_text(tab_sensors_lb_voltage, s);
 }
 
-void set_tab_sensors_lb_lv_current(const char *string) {
-  lv_label_set_text(tab_sensors_lb_lv_current, string);
+void set_tab_sensors_lb_lv_current(const char *s) {
+  lv_label_set_text(tab_sensors_lb_lv_current, s);
 }
 
-void set_tab_sensors_lb_hv_delta(const char *string) {
-  lv_label_set_text(tab_sensors_lb_hv_delta, string);
+void set_tab_sensors_lb_hv_delta(const char *s) {
+  lv_label_set_text(tab_sensors_lb_hv_delta, s);
 }
 
-void set_tab_sensors_lb_tlm_status(const char *string) {
-  lv_label_set_text(tab_sensors_lb_tlm_status, string);
+void set_tab_sensors_lb_tlm_status(const char *s) {
+  lv_label_set_text(tab_sensors_lb_tlm_status, s);
 }
 
 void init_sensors_styles(void) {
