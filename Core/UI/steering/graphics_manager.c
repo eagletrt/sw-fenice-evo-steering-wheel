@@ -27,7 +27,7 @@ void refresh_graphics(void) {
 }
 
 
-void update_graphics(lv_timer_t* t) {
+void update_graphics(lv_timer_t) {
   for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {
     if (is_pmsg_new[iindex]) {
       can_id_t id = primary_id_from_index(iindex);
