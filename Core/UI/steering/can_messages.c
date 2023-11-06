@@ -29,7 +29,7 @@ extern primary_hv_fans_override_status_converted_t primary_hv_fans_override_stat
 extern primary_lv_feedbacks_converted_t primary_lv_feedbacks_last_state;
 extern primary_hv_cell_balancing_status_converted_t primary_hv_cell_balancing_status_last_state;
 extern primary_pedal_calibration_ack_converted_t primary_pedal_calibration_ack_last_state;
-extern secondary_steering_angle_converted_t secondary_steering_angle_converted;
+extern secondary_steering_angle_converted_t secondary_steering_angle_last_state;
 extern secondary_pedals_output_converted_t secondary_pedals_output_last_state;
 extern secondary_imu_acceleration_converted_t secondary_imu_acceleration_last_state;
 extern secondary_lap_count_converted_t secondary_lap_count_last_state;
@@ -99,116 +99,94 @@ void handle_primary(can_message_t *msg) {
     break;
   case PRIMARY_CAR_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, car_status, CAR_STATUS, is_pmsg_new);
-    car_status_update();
     break;
   }
   case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, pedal_calibration_ack, PEDAL_CALIBRATION_ACK, is_pmsg_new);
-    pedal_calibration_ack(&converted);
     break;
   }
   case PRIMARY_COOLING_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, cooling_status, COOLING_STATUS, is_pmsg_new);
-    cooling_status_update();
     break;
   }
   case PRIMARY_PTT_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, ptt_status, PTT_STATUS, is_pmsg_new);
-    handle_ptt_message(converted.status);
     break;
   }
   case PRIMARY_SPEED_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, speed, SPEED, is_pmsg_new);
-    speed_update();
     break;
   }
   case PRIMARY_HV_VOLTAGE_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_voltage, HV_VOLTAGE, is_pmsg_new);
-    hv_voltage_update();
     break;
   }
   case PRIMARY_HV_CURRENT_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_current, HV_CURRENT, is_pmsg_new);
-    hv_current_update();
     break;
   }
   case PRIMARY_HV_TEMP_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_temp, HV_TEMP, is_pmsg_new);
-    hv_temp_update();
     break;
   }
   case PRIMARY_HV_ERRORS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_errors, HV_ERRORS, is_pmsg_new);
-    hv_errors_update();
     break;
   }
   case PRIMARY_HV_CELL_BALANCING_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_cell_balancing_status,
                      HV_CELL_BALANCING_STATUS, is_pmsg_new);
-    hv_cell_balancing_status_update();
     break;
   }
   case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_feedbacks_status,
                      HV_FEEDBACKS_STATUS, is_pmsg_new);
-    hv_feedbacks_status_update();
     break;
   }
   case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, lv_feedbacks, LV_FEEDBACKS, is_pmsg_new);
-    lv_feedbacks_update();
     break;
   }
   case PRIMARY_HV_FANS_OVERRIDE_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_override_status,
                      HV_FANS_OVERRIDE_STATUS, is_pmsg_new);
-    hv_fans_override_status_update();
     break;
   }
   case PRIMARY_TLM_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, tlm_status, TLM_STATUS, is_pmsg_new);
-    tlm_status_update();
     break;
   }
   case PRIMARY_DAS_ERRORS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, das_errors, DAS_ERRORS, is_pmsg_new);
-    das_errors_update();
     break;
   }
   case PRIMARY_LV_CURRENTS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, lv_currents, LV_CURRENTS, is_pmsg_new);
-    lv_currents_update();
     break;
   }
   case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
     // TODO: message index!!!
     // STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp, LV_CELLS_TEMP, is_pmsg_new);
-    lv_cells_temp_update();
     break;
   }
   case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, lv_total_voltage, LV_TOTAL_VOLTAGE, is_pmsg_new);
-    lv_total_voltage_update();
     break;
   }
   case PRIMARY_LV_ERRORS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, lv_errors, LV_ERRORS, is_pmsg_new);
-    lv_errors_update();
     break;
   }
   case INVERTERS_INV_L_RCV_FRAME_ID: {
     //STEER_CAN_UNPACK(inverters, INVERTERS, inv_l_rcv, INV_L_RCV, is_imsg_new);
-    inv_l_rcv_update();
     break;
   }
   case INVERTERS_INV_R_RCV_FRAME_ID: {
     //STEER_CAN_UNPACK(inverters, INVERTERS, inv_r_rcv, INV_R_RCV, is_imsg_new);
-    inv_r_rcv_update();
     break;
   }
   case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT, is_pmsg_new);
-    control_output_update();
     break;
   }
   default:
@@ -232,32 +210,26 @@ void handle_secondary(can_message_t *msg) {
   switch (id) {
   case SECONDARY_STEERING_ANGLE_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, steering_angle, STEERING_ANGLE, is_smsg_new);
-    steering_angle_update(&converted);
     break;
   }
   case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, pedals_output, PEDALS_OUTPUT, is_smsg_new);
-    pedals_output_update(&converted);
     break;
   }
   case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION, is_smsg_new);
-    imu_acceleration_update(&converted);
     break;
   }
   case SECONDARY_LAP_COUNT_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, lap_count, LAP_COUNT, is_smsg_new);
-    lap_count_update(&converted);
     break;
   }
   case SECONDARY_LC_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, lc_status, LC_STATUS, is_smsg_new);
-    lc_status_update(&converted);
     break;
   }
   case SECONDARY_TIMESTAMP_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, timestamp, TIMESTAMP, is_smsg_new);
-    timestamp_update(&converted);
   }
   default:
     break;

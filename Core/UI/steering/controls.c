@@ -6,6 +6,8 @@ bool calibration_max_sent_request[CALBOX_N];
 uint32_t calibration_min_request_timestamp[CALBOX_N];
 uint32_t calibration_max_request_timestamp[CALBOX_N];
 
+
+
 #if CANSNIFFER_ENABLED == 1
 int primary_cansniffer_start_index = 0;
 int secondary_cansniffer_start_index = 0;
@@ -18,7 +20,7 @@ extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
 char sprintf_buffer_controls[BUFSIZ];
 
-extern primary_tlm_status_t tlm_status_last_state;
+extern primary_tlm_status_t primary_tlm_status_last_state;
 extern primary_car_status_t primary_car_status_last_state;
 primary_steer_status_converted_t steer_status_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
@@ -30,7 +32,7 @@ primary_hv_fans_override_converted_t hv_fans_override_settings = {
 
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};
-  if (tlm_status_last_state.tlm_status ==
+  if (primary_tlm_status_last_state.tlm_status ==
       (primary_set_tlm_status_tlm_status)primary_set_tlm_status_tlm_status_ON) {
     display_notification("Sending Telemetry OFF", 800);
     converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;

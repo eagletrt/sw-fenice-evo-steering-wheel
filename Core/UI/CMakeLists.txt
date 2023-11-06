@@ -44,6 +44,7 @@ add_executable(SteeringSimulator
     ${LVGL_SOURCES}
     ${LVDRIVERS_SOURCES}
     ${CANLIB_SOURCES}
+    steering/graphics_manager.c
 )
 
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE)

@@ -20,6 +20,7 @@
 #include "steering.h"
 #include "tab_manager.h"
 #include <SDL2/SDL.h>
+#include "graphics_manager.h"
 
 #define MAX(x, y) x > y ? x : y;
 
@@ -203,6 +204,10 @@ int main(int argc, char **argv) {
   primary_set_pumps_speed_pack(msg.data, &psraw,
                                PRIMARY_SET_PUMPS_SPEED_BYTE_SIZE);
   printf("msg.data = %X\n", msg.data[0]);
+
+  lv_timer_t *ugt = lv_timer_create(update_graphics, 100, NULL);
+  lv_timer_set_repeat_count(ugt, -1);
+  lv_timer_reset(ugt);
 
   while (1) {
 
