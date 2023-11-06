@@ -7,6 +7,7 @@
 #include "primary/primary_network.h"
 #include "secondary/secondary_network.h"
 #include "steering.h"
+#include "steering_config.h"
 #include "tab_manager.h"
 #include <math.h>
 #include <stdint.h>

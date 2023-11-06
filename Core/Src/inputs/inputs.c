@@ -392,10 +392,17 @@ void read_manettino_right(void) {
 void read_inputs(lv_timer_t *tim) {
   UNUSED(tim);
   if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
-    read_buttons();
     manettini_last_change = HAL_GetTick();
+    changed_pin_fn();
+    read_buttons();
     read_manettino_left();
     read_manettino_center();
     read_manettino_right();
   }
+}
+
+void init_input_polling(void) {
+  lv_timer_t *read_inputs_task = lv_timer_create(read_inputs, 100, NULL);
+  lv_timer_set_repeat_count(read_inputs_task, -1);
+  lv_timer_reset(read_inputs_task);
 }

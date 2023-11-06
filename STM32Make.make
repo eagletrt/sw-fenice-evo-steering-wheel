@@ -237,6 +237,7 @@ Core/UI/steering/fonts/lv_font_inter_bold_20.c \
 Core/UI/steering/fonts/lv_font_inter_bold_22.c \
 Core/UI/steering/fonts/lv_font_inter_bold_30.c \
 Core/UI/steering/fonts/lv_font_inter_bold_38.c \
+Core/UI/steering/graphics_manager.c \
 Core/UI/steering/maxheap.c \
 Core/UI/steering/racing_tabs/tab_calibration.c \
 Core/UI/steering/racing_tabs/tab_debug.c \
@@ -333,8 +334,9 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DCANSNIFFER_ENABLED=1 \
--DDEBUG_RX_BUFFERS_ENABLED=0 \
+-DCAN_LOG_ENABLED=0 \
 -DLV_LVGL_H_INCLUDE_SIMPLE \
+-DSCREEN_ENABLED=1 \
 -DSTEER_TAB_DEBUG_ENABLED=0 \
 -DSTM32H723xx \
 -DUSE_HAL_DRIVER

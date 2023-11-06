@@ -31,23 +31,16 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "fdcan.h"
+#include "can_messages.h"
+#include "graphics_manager.h"
 #include "inputs/inputs.h"
 #include "inverters/inverters_network.h"
 #include "led_control.h"
-#include "lvgl.h"
-#include "secondary/secondary_network.h"
-#ifndef DEVICE_IMPLEMENTATION
-#define DEVICE_IMPLEMENTATION
-#define CANLIB_DEVICE_IMPLEMENTATION
-#endif
-#include "primary/primary_network.h"
-#include "primary/primary_watchdog.h"
-#include "screen_driver.h"
-#include "steering.h"
-#include "tab_manager.h"
+#include "messages.h"
+#include "steering_config.h"
 #include "test/i2c_test.h"
 #include "test/sdram_test.h"
+#include "watchdog.h"
 #include <string.h>
 /* USER CODE END Includes */
 
@@ -91,18 +84,6 @@ void Error_Handler(void);
 #define ExtraButton_GPIO_Port GPIOB
 #define ExtraButton_EXTI_IRQn EXTI9_5_IRQn
 /* USER CODE BEGIN Private defines */
-#define SDRAM_BASE_ADDRESS 0xC0000000
-#define FRAMEBUFFER1_ADDR SDRAM_BASE_ADDRESS
-#define FRAMEBUFFER2_ADDR 0xC0200000
-
-#if CANSNIFFER_ENABLED == 1
-#define PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS 0xC0600000
-#define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS                               \
-  ((0xC0600000) + ((CANSNIFFER_ELEM_T_SIZE) * CAN_POSSIBLE_IDS))
-#endif
-
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 480
 
 /* USER CODE END Private defines */
 

@@ -5,6 +5,7 @@
 
 #include "cansniffer.h"
 #include "steering.h"
+#include "steering_config.h"
 #include "utils.h"
 
 void secondary_tab_cansniffer_create(lv_obj_t *parent);

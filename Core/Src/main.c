@@ -53,20 +53,6 @@
 
 /* USER CODE BEGIN PV */
 
-primary_watchdog m_primary_watchdog = {0};
-secondary_watchdog m_secondary_watchdog = {0};
-
-can_id_t primary_watchdog_monitored_ids[] = PRIMARY_MONITORED_MESSAGES;
-const size_t primary_watchdog_monitored_ids_size =
-    sizeof(primary_watchdog_monitored_ids) / sizeof(can_id_t);
-
-can_id_t secondary_watchdog_monitored_ids[] = SECONDARY_MONITORED_MESSAGES;
-const size_t secondary_watchdog_monitored_ids_size =
-    sizeof(secondary_watchdog_monitored_ids) / sizeof(can_id_t);
-
-lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
-lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
-
 #if CANSNIFFER_ENABLED == 1
 cansniffer_elem_t init_pbuf[CAN_POSSIBLE_IDS];
 cansniffer_elem_t init_sbuf[CAN_POSSIBLE_IDS];
@@ -78,19 +64,6 @@ cansniffer_elem_t *primary_cansniffer_buffer = (cansniffer_elem_t *)
     init_pbuf; // (cansniffer_elem_t* ) PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS;
 cansniffer_elem_t *secondary_cansniffer_buffer = (cansniffer_elem_t *)
     init_sbuf; // (cansniffer_elem_t*) SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS;
-#endif
-
-#if DEBUG_RX_BUFFERS_ENABLED == 1
-extern uint32_t debug_rx_counters[4];
-
-void update_rx_fn(lv_timer_t *tim) {
-  char buffer[128];
-  sprintf(buffer,
-          "{ sec_rx1 = %lu, sec_rx0 = %lu, prim_rx1 = %lu, prim_rx0 = %lu }",
-          debug_rx_counters[0], debug_rx_counters[1], debug_rx_counters[2],
-          debug_rx_counters[3]);
-  tab_terminal_new_message(buffer);
-}
 #endif
 
 extern bool primary_can_fatal_error;
@@ -194,69 +167,23 @@ int main(void) {
   cansniffer_buffer_init();
 #endif
 
-#define SCREEN_ENABLED 1
 #if SCREEN_ENABLED == 1
-  lv_init();
-  screen_driver_init();
-  tab_manager();
+  init_graphics_manager();
 #endif
 
-  HAL_TIM_Base_Start_IT(&htim7);
+  init_periodic_can_messages_timers();
 
-  for (uint64_t iindex = 0; iindex < primary_watchdog_monitored_ids_size;
-       ++iindex) {
-    can_id_t id = primary_watchdog_monitored_ids[iindex];
-    CANLIB_BITSET_ARRAY(m_primary_watchdog.activated,
-                        primary_watchdog_index_from_id(id));
-  }
-  for (uint64_t iindex = 0; iindex < secondary_watchdog_monitored_ids_size;
-       ++iindex) {
-    can_id_t id = secondary_watchdog_monitored_ids[iindex];
-    CANLIB_BITSET_ARRAY(m_secondary_watchdog.activated,
-                        secondary_watchdog_index_from_id(id));
-  }
-
-  lv_timer_t *steer_status_task =
-      lv_timer_create(send_steer_status, PRIMARY_INTERVAL_STEER_STATUS, NULL);
-  lv_timer_set_repeat_count(steer_status_task, -1);
-  lv_timer_reset(steer_status_task);
-
-  lv_timer_t *steer_version_task =
-      lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEER_VERSION, NULL);
-  lv_timer_set_repeat_count(steer_version_task, -1);
-  lv_timer_reset(steer_version_task);
-
-  lv_timer_t *read_inputs_task = lv_timer_create(read_inputs, 100, NULL);
-  lv_timer_set_repeat_count(read_inputs_task, -1);
-  lv_timer_reset(read_inputs_task);
-
-  lv_timer_t *shutdown_circuit_task =
-      lv_timer_create(update_shutdown_circuit_ui, 100, NULL);
-  lv_timer_set_repeat_count(shutdown_circuit_task, -1);
-  lv_timer_reset(shutdown_circuit_task);
-
-  lv_timer_t *ptt_tasks = lv_timer_create(ptt_tasks_fn, 1000, NULL);
-  lv_timer_set_repeat_count(ptt_tasks, -1);
-  lv_timer_reset(ptt_tasks);
-
-#if DEBUG_RX_BUFFERS_ENABLED == 1
-  lv_timer_t *update_rx_task = lv_timer_create(update_rx_fn, 2000, NULL);
-  lv_timer_set_repeat_count(update_rx_task, -1);
-  lv_timer_reset(update_rx_task);
-#endif
-
-  if (primary_can_fatal_error) {
+  if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
     enter_fatal_error_mode("Primary CAN fatal error");
     Error_Handler();
   }
-  if (secondary_can_fatal_error) {
+  if (HAL_FDCAN_Start(&hfdcan2) != HAL_OK) {
     enter_fatal_error_mode("Secondary CAN fatal error");
     Error_Handler();
   }
 
-  // lv_timer_t *watchdog_task = lv_timer_create(watchdog_task_fn, 5000, NULL);
-  // lv_timer_set_repeat_count(watchdog_task, -1);
-  // lv_timer_reset(watchdog_task);
+  init_watchdog();
+  init_input_polling();
 
   /* USER CODE END 2 */
 
@@ -266,10 +193,8 @@ int main(void) {
   while (1) {
 
 #if SCREEN_ENABLED == 1
-    lv_tasks();
+    refresh_graphics();
 #endif
-
-    changed_pin_fn();
 
     /* USER CODE END WHILE */
 
@@ -353,38 +278,6 @@ void openblt_reset(void) {
 }
 
 uint32_t get_current_time_ms(void) { return HAL_GetTick(); }
-
-void watchdog_task_fn(lv_timer_t *main_timer) {
-  UNUSED(main_timer);
-
-  primary_watchdog_timeout(&m_primary_watchdog, HAL_GetTick());
-  secondary_watchdog_timeout(&m_secondary_watchdog, HAL_GetTick());
-
-  for (uint64_t iindex = 0; iindex < primary_watchdog_monitored_ids_size;
-       ++iindex) {
-    can_id_t id = primary_watchdog_monitored_ids[iindex];
-    bool timed_out = CANLIB_BITTEST_ARRAY(m_primary_watchdog.timeout,
-                                          primary_watchdog_index_from_id(id));
-    if (timed_out) {
-      char name[128];
-      primary_message_name_from_id(id, name);
-      switch (id) {
-      case PRIMARY_CAR_STATUS_FRAME_ID:
-        break;
-      }
-    }
-  }
-  for (uint64_t iindex = 0; iindex < secondary_watchdog_monitored_ids_size;
-       ++iindex) {
-    can_id_t id = secondary_watchdog_monitored_ids[iindex];
-    bool timed_out = CANLIB_BITTEST_ARRAY(m_secondary_watchdog.timeout,
-                                          secondary_watchdog_index_from_id(id));
-    if (timed_out) {
-      char name[128];
-      secondary_message_name_from_id(id, name);
-    }
-  }
-}
 
 /* USER CODE END 4 */
 

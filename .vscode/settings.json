@@ -73,7 +73,9 @@
         "tab_terminal.h": "c",
         "tab_shutdown_circuit.h": "c",
         "dac.h": "c",
-        "shutdown.h": "c"
+        "shutdown.h": "c",
+        "watchdog.h": "c",
+        "graphics_manager.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

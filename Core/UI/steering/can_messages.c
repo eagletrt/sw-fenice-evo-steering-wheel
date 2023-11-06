@@ -1,9 +1,10 @@
 #include "can_messages.h"
 
-#define SPECIAL_FSG_LAP_COUNTER_FRAME_ID (0x103u)
-
 extern bool steering_initialized;
 extern primary_steer_status_converted_t steer_status_last_state;
+
+lv_timer_t *steer_status_task;
+lv_timer_t *steer_version_task;
 
 #if CANSNIFFER_ENABLED == 1
 extern cansniffer_elem_t *primary_cansniffer_buffer;
@@ -171,10 +172,6 @@ void handle_primary(can_message_t *msg) {
     control_output_update(&converted);
     break;
   }
-  case SPECIAL_FSG_LAP_COUNTER_FRAME_ID: {
-    // STEER_CAN_UNPACK(secondary, SECONDARY, lap_count, LAP_COUNT);
-    // handle_lap_counter_message(&converted);
-  }
   default:
     break;
   }
@@ -228,4 +225,16 @@ void handle_secondary(can_message_t *msg) {
     break;
   }
 #endif
+}
+
+void init_periodic_can_messages_timers(void) {
+  steer_status_task =
+      lv_timer_create(send_steer_status, PRIMARY_INTERVAL_STEER_STATUS, NULL);
+  lv_timer_set_repeat_count(steer_status_task, -1);
+  lv_timer_reset(steer_status_task);
+
+  steer_version_task =
+      lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEER_VERSION, NULL);
+  lv_timer_set_repeat_count(steer_version_task, -1);
+  lv_timer_reset(steer_version_task);
 }

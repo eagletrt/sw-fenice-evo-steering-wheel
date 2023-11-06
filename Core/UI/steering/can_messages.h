@@ -26,4 +26,6 @@ void send_bal(bool on);
 void handle_primary(can_message_t *msg);
 void handle_secondary(can_message_t *msg);
 
+void init_periodic_can_messages_timers(void);
+
 #endif // CAN_MESSAGES_H

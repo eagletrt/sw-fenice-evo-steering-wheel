@@ -34,13 +34,8 @@ extern cansniffer_elem_t *primary_cansniffer_buffer;
 extern cansniffer_elem_t *secondary_cansniffer_buffer;
 #endif
 
-void _CAN_error_handler(char *msg);
 void _CAN_Init_primary();
 void _CAN_Init_secondary();
-
-#if DEBUG_RX_BUFFERS_ENABLED == 1
-void debug_rx_count(bool is_primary, bool is_rx0);
-#endif
 
 bool primary_can_fatal_error = false;
 bool secondary_can_fatal_error = false;
@@ -281,7 +276,6 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
  * */
 void _CAN_Init_primary() {
   FDCAN_FilterTypeDef f = {0};
-  HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
   f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_RANGE;
@@ -290,24 +284,9 @@ void _CAN_Init_primary() {
   f.FilterID2 = ((1U << 11) - 1) << 8;
   f.IsCalibrationMsg = 0;
   f.RxBufferIndex = 0;
-  if ((s = HAL_FDCAN_ConfigFilter(&hfdcan1, &f)) != HAL_OK) {
-    primary_can_fatal_error = true;
-  }
 
-#if 0
-  if ((s = HAL_FDCAN_ConfigInterruptLines(
-           &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
-    primary_can_fatal_error = true;
-  }
-#endif
-
-  if ((s = HAL_FDCAN_Start(&hfdcan1)) != HAL_OK) {
-    primary_can_fatal_error = true;
-  }
-  if ((s = HAL_FDCAN_ActivateNotification(
-           &hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0)) != HAL_OK) {
-    primary_can_fatal_error = true;
-  }
+  HAL_FDCAN_ConfigFilter(&hfdcan1, &f);
+  HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
 }
 
 /**
@@ -316,7 +295,6 @@ void _CAN_Init_primary() {
  * */
 void _CAN_Init_secondary() {
   FDCAN_FilterTypeDef f = {0};
-  HAL_StatusTypeDef s = {0};
   f.IdType = FDCAN_STANDARD_ID;
   f.FilterIndex = 0;
   f.FilterType = FDCAN_FILTER_RANGE;
@@ -325,24 +303,8 @@ void _CAN_Init_secondary() {
   f.FilterID2 = ((1U << 11) - 1) << 8;
   f.IsCalibrationMsg = 0;
   f.RxBufferIndex = 0;
-  if ((s = HAL_FDCAN_ConfigFilter(&hfdcan2, &f)) != HAL_OK) {
-    secondary_can_fatal_error = true;
-  }
-
-#if 0
-  if ((s = HAL_FDCAN_ConfigInterruptLines(
-           &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 1)) != HAL_OK) {
-    secondary_can_fatal_error = true;
-  }
-#endif
-
-  if ((s = HAL_FDCAN_Start(&hfdcan2)) != HAL_OK) {
-    secondary_can_fatal_error = true;
-  }
-  if ((s = HAL_FDCAN_ActivateNotification(
-           &hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0)) != HAL_OK) {
-    secondary_can_fatal_error = true;
-  }
+  HAL_FDCAN_ConfigFilter(&hfdcan2, &f);
+  HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
 }
 
 void _can_wait(FDCAN_HandleTypeDef *nwk) {
@@ -468,14 +430,8 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan,
     }
 
     if (hfdcan == &hfdcan1) {
-#if DEBUG_RX_BUFFERS_ENABLED == 1
-      debug_rx_count(true, true);
-#endif
       handle_primary(&msg);
     } else if (hfdcan == &hfdcan2) {
-#if DEBUG_RX_BUFFERS_ENABLED == 1
-      debug_rx_count(false, true);
-#endif
       handle_secondary(&msg);
     }
   }
@@ -531,25 +487,11 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan,
     }
 
     if (hfdcan == &hfdcan1) {
-#if DEBUG_RX_BUFFERS_ENABLED == 1
-      debug_rx_count(true, false);
-#endif
       handle_primary(&msg);
     } else if (hfdcan == &hfdcan2) {
-#if DEBUG_RX_BUFFERS_ENABLED == 1
-      debug_rx_count(false, false);
-#endif
       handle_secondary(&msg);
     }
   }
 }
-
-#if DEBUG_RX_BUFFERS_ENABLED == 1
-uint32_t debug_rx_counters[4] = {0};
-void debug_rx_count(bool is_primary, bool is_rx0) {
-  // { primary_rx0, primary_rx1, secondary_rx0, secondary_rx1 }
-  debug_rx_counters[is_primary * 2 + is_rx0] += 1;
-}
-#endif
 
 /* USER CODE END 1 */
