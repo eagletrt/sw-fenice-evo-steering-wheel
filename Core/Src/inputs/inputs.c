@@ -252,7 +252,6 @@ void send_set_car_status_check(lv_timer_t *tim) {
   GPIO_PinState tson_pin_state =
       HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
   if (tson_button_pressed && tson_pin_state == GPIO_PIN_RESET) {
-    STEER_UPDATE_COLOR_LABEL(steering.lb_speed, COLOR_TERTIARY_HEX)
     prepare_set_car_status();
   }
 }

@@ -104,8 +104,6 @@ inline void remove_trailing(char *buf) {
 */
 
 void car_status_update(primary_car_status_converted_t *data) {
-  if (data->car_status != car_status_last_state.car_status) {
-    car_status_last_state.car_status = data->car_status;
     switch (data->car_status) {
     case primary_car_status_car_status_INIT:
     case primary_car_status_car_status_ENABLE_INV_UPDATES:
@@ -178,17 +176,6 @@ void car_status_update(primary_car_status_converted_t *data) {
     }
     default:
       break;
-    }
-  }
-
-  primary_car_status_inverter_l invl = data->inverter_l;
-
-  if (invl != car_status_last_state.inverter_l) {
-  }
-
-  primary_car_status_inverter_r invr = data->inverter_r;
-
-  if (invr != car_status_last_state.inverter_r) {
   }
 }
 
@@ -327,6 +314,7 @@ void hv_temp_update(primary_hv_temp_converted_t *data) {
 }
 
 void hv_errors_update(primary_hv_errors_converted_t *data) {
+#if STEER_TAB_DEBUG_ENABLED == 1
   STEER_ERROR_UPDATE(hv_errors, errors_cell_low_voltage, 0)
   STEER_ERROR_UPDATE(hv_errors, errors_cell_under_voltage, 1)
   STEER_ERROR_UPDATE(hv_errors, errors_cell_over_voltage, 2)
@@ -343,6 +331,7 @@ void hv_errors_update(primary_hv_errors_converted_t *data) {
   STEER_ERROR_UPDATE(hv_errors, errors_feedback_circuitry, 13)
   STEER_ERROR_UPDATE(hv_errors, errors_eeprom_comm, 14)
   STEER_ERROR_UPDATE(hv_errors, errors_eeprom_write, 15)
+#endif
 }
 
 #define N_PORK_CELLBOARD 6
@@ -374,6 +363,7 @@ void hv_cell_balancing_status_update(
 }
 
 void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *data) {
+  #if STEER_TAB_DEBUG_ENABLED == 1
   STEER_ERROR_UPDATE(hv_feedbacks_status,
                      feedbacks_status_feedback_implausibility_detected, 0)
   STEER_ERROR_UPDATE(hv_feedbacks_status, feedbacks_status_feedback_imd_cockpit,
@@ -429,6 +419,7 @@ void hv_feedbacks_status_update(primary_hv_feedbacks_status_converted_t *data) {
       data->feedbacks_status_feedback_airp_gate + 1,
       data->feedbacks_status_feedback_airn_gate + 1};
   update_shutdown_circuit(comp);
+  #endif
 }
 
 void lv_feedbacks_update(primary_lv_feedbacks_converted_t *data) {
@@ -497,6 +488,7 @@ void hv_fans_override_status_update(
 }
 
 void das_errors_update(primary_das_errors_converted_t *data) {
+  #if STEER_TAB_DEBUG_ENABLED == 1
   STEER_ERROR_UPDATE(das_errors, das_error_pedal_adc, 0)
   STEER_ERROR_UPDATE(das_errors, das_error_pedal_implausibility, 1)
   STEER_ERROR_UPDATE(das_errors, das_error_imu_tout, 2)
@@ -506,6 +498,7 @@ void das_errors_update(primary_das_errors_converted_t *data) {
   STEER_ERROR_UPDATE(das_errors, das_error_invr_tout, 6)
   STEER_ERROR_UPDATE(das_errors, das_error_steer_tout, 7)
   STEER_ERROR_UPDATE(das_errors, das_error_fsm, 8)
+  #endif
 }
 
 void lv_currents_update(primary_lv_currents_converted_t *data) {
@@ -621,6 +614,7 @@ void lv_total_voltage_update(primary_lv_total_voltage_converted_t *data) {
 }
 
 void lv_errors_update(primary_lv_errors_converted_t *data) {
+  #if STEER_TAB_DEBUG_ENABLED == 1
   STEER_ERROR_UPDATE(lv_errors, errors_cell_undervoltage, 0)
   STEER_ERROR_UPDATE(lv_errors, errors_cell_overvoltage, 1)
   STEER_ERROR_UPDATE(lv_errors, errors_battery_open_wire, 2)
@@ -638,6 +632,7 @@ void lv_errors_update(primary_lv_errors_converted_t *data) {
   STEER_ERROR_UPDATE(lv_errors, errors_pump, 14)
   STEER_ERROR_UPDATE(lv_errors, errors_adc_init, 15)
   STEER_ERROR_UPDATE(lv_errors, errors_mux, 16)
+  #endif
 }
 
 void steering_angle_update(secondary_steering_angle_converted_t *data) {

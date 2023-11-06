@@ -35,6 +35,7 @@ void reload_racing_tab(racing_tab_t tab);
                                   LV_PART_MAIN);                               \
   }
 
+#if STEER_TAB_DEBUG_ENABLED == 1
 #define STEER_ERROR_UPDATE(device, error_name, aindex)                         \
   if (device##_last_state.error_name != data->error_name) {                    \
     device##_last_state.error_name = data->error_name;                         \
@@ -54,6 +55,7 @@ void reload_racing_tab(racing_tab_t tab);
                                 LV_PART_MAIN);                                 \
     }                                                                          \
   }
+#endif
 
 #define STEER_ERROR_INVALIDATE(device, error_name, aindex)                     \
   lv_obj_set_style_bg_color(steering.device[aindex],                           \
