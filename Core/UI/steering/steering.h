@@ -40,19 +40,15 @@ void reload_racing_tab(racing_tab_t tab);
   if (device##_last_state.error_name != data->error_name) {                    \
     device##_last_state.error_name = data->error_name;                         \
     if (data->error_name) {                                                    \
-      lv_obj_set_style_border_color(device[aindex],                   \
-                                    lv_color_hex(COLOR_RED_STATUS_HEX),        \
-                                    LV_PART_MAIN);                             \
-      lv_obj_set_style_bg_color(device[aindex],                       \
-                                lv_color_hex(COLOR_RED_STATUS_HEX),            \
-                                LV_PART_MAIN);                                 \
+      lv_obj_set_style_border_color(                                           \
+          device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
+      lv_obj_set_style_bg_color(                                               \
+          device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
     } else {                                                                   \
-      lv_obj_set_style_border_color(device[aindex],                   \
-                                    lv_color_hex(COLOR_GREEN_STATUS_HEX),      \
-                                    LV_PART_MAIN);                             \
-      lv_obj_set_style_bg_color(device[aindex],                       \
-                                lv_color_hex(COLOR_GREEN_STATUS_HEX),          \
-                                LV_PART_MAIN);                                 \
+      lv_obj_set_style_border_color(                                           \
+          device[aindex], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN); \
+      lv_obj_set_style_bg_color(                                               \
+          device[aindex], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN); \
     }                                                                          \
   }
 #endif
@@ -119,59 +115,57 @@ void set_ptt_button_pressed(bool);
 
 uint32_t get_current_time_ms(void);
 
-//refactoring
-void set_lb_estimated_velocity(const char* string);
-void set_lb_apps(const char* string);
-void set_lb_bse(const char* string);
+void set_lb_estimated_velocity(const char *string);
+void set_lb_apps(const char *string);
+void set_lb_bse(const char *string);
 
-void set_tab_calibration_lb_steering_angle(const char* string);
+void set_tab_calibration_lb_steering_angle(const char *string);
 
-void set_tab_racing_lb_speed(const char* string);
-void set_tab_racing_lb_pack_voltage(const char* string);
-void set_tab_racing_lb_hv_current(const char* string);
-void set_tab_racing_lb_average_temperature(const char* string);
-void set_tab_racing_lb_battery_temperature(const char* string);
-void set_tab_racing_lb_last_time(const char* string);
-void set_tab_racing_lb_delta_time(const char* string);
-void set_tab_racing_lb_best_time(const char* string);
-void set_tab_racing_lb_lap_count(const char* string);
-void set_tab_racing_lb_left_motor_temp(const char* string);
-void set_tab_racing_lb_left_inverter_temp(const char* string);
-void set_tab_racing_lb_slip(const char* string);
-void set_tab_racing_lb_torque(const char* string);
-void set_tab_racing_lb_power(const char* string);
+void set_tab_racing_lb_speed(const char *string);
+void set_tab_racing_lb_pack_voltage(const char *string);
+void set_tab_racing_lb_hv_current(const char *string);
+void set_tab_racing_lb_average_temperature(const char *string);
+void set_tab_racing_lb_battery_temperature(const char *string);
+void set_tab_racing_lb_last_time(const char *string);
+void set_tab_racing_lb_delta_time(const char *string);
+void set_tab_racing_lb_best_time(const char *string);
+void set_tab_racing_lb_lap_count(const char *string);
+void set_tab_racing_lb_left_motor_temp(const char *string);
+void set_tab_racing_lb_left_inverter_temp(const char *string);
+void set_tab_racing_lb_slip(const char *string);
+void set_tab_racing_lb_torque(const char *string);
+void set_tab_racing_lb_power(const char *string);
 
-void set_tab_sensors_lb_pack_voltage(const char* string);
-void set_tab_sensors_lb_hv_delta(const char* string);
-void set_tab_sensors_lb_hv_current(const char* string);
-void set_tab_sensors_lb_average_temperature(const char* string);
-void set_tab_sensors_lb_lv_current(const char* string);
-void set_tab_sensors_lb_battery_temperature(const char* string);
-void set_tab_sensors_lb_voltage(const char* string);
-void set_tab_sensors_lb_tlm_status(const char* string);
-void set_tab_sensors_lb_min_cell_voltage(const char* string);
-void set_tab_sensors_lb_left_motor_temp(const char* string);
-void set_tab_sensors_lb_left_inverter_temp(const char* string);
-void set_tab_sensors_lb_right_motor_temp(const char* string);
-void set_tab_sensors_lb_right_inverter_temp(const char* string);
+void set_tab_sensors_lb_pack_voltage(const char *string);
+void set_tab_sensors_lb_hv_delta(const char *string);
+void set_tab_sensors_lb_hv_current(const char *string);
+void set_tab_sensors_lb_average_temperature(const char *string);
+void set_tab_sensors_lb_lv_current(const char *string);
+void set_tab_sensors_lb_battery_temperature(const char *string);
+void set_tab_sensors_lb_voltage(const char *string);
+void set_tab_sensors_lb_tlm_status(const char *string);
+void set_tab_sensors_lb_min_cell_voltage(const char *string);
+void set_tab_sensors_lb_left_motor_temp(const char *string);
+void set_tab_sensors_lb_left_inverter_temp(const char *string);
+void set_tab_sensors_lb_right_motor_temp(const char *string);
+void set_tab_sensors_lb_right_inverter_temp(const char *string);
 
-void set_tab_track_test_lb_inverter_speed_x(const char* string);
-void set_tab_track_test_lb_inverter_speed_y(const char* string);
-void set_tab_track_test_lb_steering_angle(const char* string);
-void set_tab_track_test_lb_speed(const char* string);
+void set_tab_track_test_lb_inverter_speed_x(const char *string);
+void set_tab_track_test_lb_inverter_speed_y(const char *string);
+void set_tab_track_test_lb_steering_angle(const char *string);
+void set_tab_track_test_lb_speed(const char *string);
 
-lv_obj_t* get_tab_racing_bottom_lb_speed();
-lv_obj_t* get_tab_racing_custom_meter();
-lv_obj_t* get_tab_racing_racing_lv_bar();
-lv_meter_indicator_t* get_tab_racing_indicator_blue();
+lv_obj_t *get_tab_racing_bottom_lb_speed();
+lv_obj_t *get_tab_racing_custom_meter();
+lv_obj_t *get_tab_racing_racing_lv_bar();
+lv_meter_indicator_t *get_tab_racing_indicator_blue();
 lv_obj_t *get_tab_racing_racing_hv_bar();
 
-calibration_box_t* get_tab_calibration_curr_focus();
+calibration_box_t *get_tab_calibration_curr_focus();
 lv_obj_t *get_tab_calibration_slider();
 
 lv_obj_t *get_tab_sensors_extra_value0();
 lv_obj_t *get_tab_sensors_extra_value1();
 lv_obj_t *get_tab_sensors_extra_value2();
-
 
 #endif /* STEERING_H */

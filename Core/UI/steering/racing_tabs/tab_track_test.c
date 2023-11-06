@@ -4,29 +4,26 @@
 #define CELL_HEIGHT 200
 #define CELL_WIDTH 350
 
-//refactoring
 lv_obj_t *tab_track_test_lb_speed;
 lv_obj_t *tab_track_test_lb_inverter_speed_x;
 lv_obj_t *tab_track_test_lb_steering_angle;
 lv_obj_t *tab_track_test_lb_inverter_speed_y;
 
-//refactoring - functions that replace STEER_UPDATE_LABEL
-void set_tab_track_test_lb_speed(const char* string){
+void set_tab_track_test_lb_speed(const char *string) {
   lv_label_set_text(tab_track_test_lb_speed, string);
 }
 
-void set_tab_track_test_lb_inverter_speed_x(const char* string){
+void set_tab_track_test_lb_inverter_speed_x(const char *string) {
   lv_label_set_text(tab_track_test_lb_inverter_speed_x, string);
 }
 
-void set_tab_track_test_lb_steering_angle(const char* string){
+void set_tab_track_test_lb_steering_angle(const char *string) {
   lv_label_set_text(tab_track_test_lb_steering_angle, string);
 }
 
-void set_tab_track_test_lb_inverter_speed_y(const char* string){
+void set_tab_track_test_lb_inverter_speed_y(const char *string) {
   lv_label_set_text(tab_track_test_lb_inverter_speed_y, string);
 }
-
 
 void tab_track_test_create(lv_obj_t *parent) {
 
@@ -99,8 +96,8 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *speed = lv_vertical_pair_label(
-      up_left_data_panel, &tab_track_test_lb_speed, "0",
-      &lv_font_inter_bold_38, "KM/H", &lv_font_inter_bold_22);
+      up_left_data_panel, &tab_track_test_lb_speed, "0", &lv_font_inter_bold_38,
+      "KM/H", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
 
@@ -145,10 +142,10 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
 #if 1
-  lv_obj_t *steer_angle = lv_triple_label(
-      up_right_data_panel, &tab_track_test_lb_steering_angle, "NA",
-      &lv_font_inter_bold_38, "°", &lv_font_inter_bold_22, "STEERING ANGLE",
-      &lv_font_inter_bold_22);
+  lv_obj_t *steer_angle =
+      lv_triple_label(up_right_data_panel, &tab_track_test_lb_steering_angle,
+                      "NA", &lv_font_inter_bold_38, "°", &lv_font_inter_bold_22,
+                      "STEERING ANGLE", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(steer_angle, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 #endif

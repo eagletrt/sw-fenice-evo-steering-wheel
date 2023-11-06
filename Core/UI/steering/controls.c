@@ -28,7 +28,6 @@ primary_hv_fans_override_converted_t hv_fans_override_settings = {
     .fans_override = primary_hv_fans_override_fans_override_OFF,
     .fans_speed = 0.0f};
 
-
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};
   if (tlm_status_last_state.tlm_status ==
@@ -85,7 +84,7 @@ void calibration_request_timeout_check(uint32_t current_time) {
 void calibration_tool_set_min_max(bool maxv) {
   if (current_racing_tab == TAB_CALIBRATION) {
 
-    calibration_box_t* controls_curr_focus = get_tab_calibration_curr_focus();
+    calibration_box_t *controls_curr_focus = get_tab_calibration_curr_focus();
 
     calibration_box_t curr_focus = *controls_curr_focus;
     if (curr_focus == STEER)
@@ -124,24 +123,14 @@ void calibration_tool_set_min_max(bool maxv) {
 
 void manettino_send_slip_control(float val) {
   steer_status_last_state.map_sc = val;
-
   int map_val = (int)(steer_status_last_state.map_sc * 100.0f);
-  sprintf(sprintf_buffer_controls, "%u", map_val);
-
-  set_tab_racing_lb_slip(sprintf_buffer_controls);
-
   sprintf(sprintf_buffer_controls, "SLIP CONTROL %u", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }
 
 void manettino_send_torque_vectoring(float val) {
   steer_status_last_state.map_tv = val;
-
   int map_val = (int)(steer_status_last_state.map_tv * 100.0f);
-  sprintf(sprintf_buffer_controls, "%u", map_val);
-
-  set_tab_racing_lb_torque(sprintf_buffer_controls);
-
   sprintf(sprintf_buffer_controls, "TORQUE VECTORING %u", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }
@@ -149,10 +138,6 @@ void manettino_send_torque_vectoring(float val) {
 void manettino_send_power_map(float val) {
   steer_status_last_state.map_pw = val;
   float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
-  sprintf(sprintf_buffer_controls, "%.0f", map_val);
-
-  set_tab_racing_lb_power(sprintf_buffer_controls);
-
   sprintf(sprintf_buffer_controls, "POWER MAP %.0f", map_val);
   display_notification(sprintf_buffer_controls, 750);
 }

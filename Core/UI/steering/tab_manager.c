@@ -10,7 +10,6 @@ lv_obj_t *tab_engineer_mode_ptr;
 lv_obj_t *tab_cooling_ptr;
 lv_obj_t *tab_fatal_error_ptr;
 lv_obj_t *tab_shutdown_circuit_ptr;
-lv_obj_t *tab_manager_notification_screen_label;
 
 #if CANSNIFFER_ENABLED == 1
 lv_obj_t *tab_primary_cansniffer_ptr;
@@ -225,7 +224,7 @@ void display_notification(const char *label_content, uint32_t timeout_ms) {
   notification_timer =
       lv_timer_create(restore_previous_screen, timeout_ms, NULL);
   lv_timer_set_repeat_count(notification_timer, 1);
-  lv_label_set_text(tab_manager_notification_screen_label, label_content);
+  set_notification_screen_label(label_content);
   lv_scr_load(notif_screen);
   lv_timer_reset(notification_timer);
 }

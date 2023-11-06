@@ -1,6 +1,5 @@
 #include "tab_calibration.h"
 
-//refactoring
 lv_obj_t *tab_calibration_lb_steering_angle;
 lv_obj_t *tab_calibration_slider;
 calibration_box_t tab_calibration_curr_focus;
@@ -25,18 +24,13 @@ lv_obj_t *scr_calib;
 extern racing_tab_t current_racing_tab;
 extern secondary_pedals_output_converted_t pedals_output_last_state;
 
-//refactoring - getters
-
-calibration_box_t* get_tab_calibration_curr_focus(){
+calibration_box_t *get_tab_calibration_curr_focus() {
   return &tab_calibration_curr_focus;
 }
 
-lv_obj_t *get_tab_calibration_slider() {
-  return tab_calibration_slider;
-}
+lv_obj_t *get_tab_calibration_slider() { return tab_calibration_slider; }
 
-//refactoring - functions that replace STEER_UPDATE_LABEL
-void set_tab_calibration_lb_steering_angle(const char* string){
+void set_tab_calibration_lb_steering_angle(const char *string) {
   lv_label_set_text_fmt(tab_calibration_lb_steering_angle, string);
 }
 
@@ -325,7 +319,8 @@ void shift_box_focus(bool move_right) {
                                   LV_PART_MAIN);
 
         lv_slider_set_mode(tab_calibration_slider, LV_BAR_MODE_RANGE);
-        lv_slider_set_range(tab_calibration_slider, BRAKE_RANGE_LOW, BRAKE_RANGE_HIGH);
+        lv_slider_set_range(tab_calibration_slider, BRAKE_RANGE_LOW,
+                            BRAKE_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_LEFT_MID, 0, 0);
 
@@ -368,7 +363,8 @@ void shift_box_focus(bool move_right) {
                                   LV_PART_MAIN);
 
         lv_slider_set_mode(tab_calibration_slider, LV_BAR_MODE_RANGE);
-        lv_slider_set_range(tab_calibration_slider, APPS_RANGE_LOW, APPS_RANGE_HIGH);
+        lv_slider_set_range(tab_calibration_slider, APPS_RANGE_LOW,
+                            APPS_RANGE_HIGH);
 
         lv_obj_align(bar_start, LV_ALIGN_LEFT_MID, 0, 0);
 

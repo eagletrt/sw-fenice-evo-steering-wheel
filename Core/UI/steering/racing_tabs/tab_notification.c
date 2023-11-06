@@ -1,10 +1,12 @@
 #include "tab_notification.h"
 
-
 lv_style_t notif_label_style;
 
-//refactoring
 lv_obj_t *notification_screen_label;
+
+void set_notification_screen_label(const char *s) {
+  lv_label_set_text(notification_screen_label, s);
+}
 
 void init_notification_tab_styles() {
   lv_style_init(&notif_label_style);
@@ -25,10 +27,9 @@ void tab_notification_screen_create(lv_obj_t *notification_screen) {
 
   notification_screen_label = lv_label_create(notification_background);
 
-  lv_obj_add_style(notification_screen_label, &notif_label_style,
-                   LV_PART_MAIN);
-  lv_obj_set_style_text_font(notification_screen_label,
-                             &lv_font_inter_bold_38, LV_PART_MAIN);
+  lv_obj_add_style(notification_screen_label, &notif_label_style, LV_PART_MAIN);
+  lv_obj_set_style_text_font(notification_screen_label, &lv_font_inter_bold_38,
+                             LV_PART_MAIN);
   lv_label_set_text(notification_screen_label, "PLACEHOLDER TEXT");
   lv_obj_align(notification_screen_label, LV_ALIGN_CENTER, 0, 0);
 }
