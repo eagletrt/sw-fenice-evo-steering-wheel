@@ -133,9 +133,41 @@ void handle_primary(can_message_t *msg) {
     break;
   }
   case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
-    // TODO: message index!!!
-    // STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp, LV_CELLS_TEMP,
-    // is_pmsg_new);
+    STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp, LV_CELLS_TEMP,
+                     is_pmsg_new);
+    switch (primary_lv_cells_voltage_last_state.start_index) {
+    case 0:
+      memcpy(&primary_lv_cells_temp_last_state_1,
+             &primary_lv_cells_temp_last_state,
+             sizeof(primary_lv_cells_temp_converted_t));
+      break;
+    case 3:
+      memcpy(&primary_lv_cells_temp_last_state_2,
+             &primary_lv_cells_temp_last_state,
+             sizeof(primary_lv_cells_temp_converted_t));
+      break;
+    default:
+      break;
+    }
+    break;
+  }
+  case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_voltage, LV_CELLS_VOLTAGE,
+                     is_pmsg_new);
+    switch (primary_lv_cells_voltage_last_state.start_index) {
+    case 0:
+      memcpy(&primary_lv_cells_voltage_last_state_1,
+             &primary_lv_cells_voltage_last_state,
+             sizeof(primary_lv_cells_voltage_converted_t));
+      break;
+    case 3:
+      memcpy(&primary_lv_cells_voltage_last_state_2,
+             &primary_lv_cells_voltage_last_state,
+             sizeof(primary_lv_cells_voltage_converted_t));
+      break;
+    default:
+      break;
+    }
     break;
   }
   case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {

@@ -99,13 +99,3 @@ void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
                   area_width, area_height); // Start transfer
   HAL_DMA2D_PollForTransfer(&hdma2d, 10);   // Wait for transfer to be over
 }
-
-void lv_tasks() {
-#if LV_TICK_CUSTOM == 1
-  lv_timer_handler();
-#else
-  uint32_t ctick = HAL_GetTick();
-  lv_tick_inc(ctick - *ptick);
-  *ptick = ctick;
-#endif
-}

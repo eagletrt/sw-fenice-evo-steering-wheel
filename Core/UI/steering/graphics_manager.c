@@ -16,7 +16,13 @@ void init_graphics_manager(void) {
 
 void refresh_graphics(void) {
 #ifdef STM32H723xx
-  lv_tasks();
+#if LV_TICK_CUSTOM == 1
+  lv_timer_handler();
+#else
+  uint32_t ctick = HAL_GetTick();
+  lv_tick_inc(ctick - *ptick);
+  *ptick = ctick;
+#endif
 #endif
 }
 
@@ -37,7 +43,6 @@ void update_graphics(lv_timer_t *t) {
         speed_update();
         break;
       }
-#if 1
       case PRIMARY_HV_VOLTAGE_FRAME_ID: {
         hv_voltage_update();
         break;
@@ -83,8 +88,11 @@ void update_graphics(lv_timer_t *t) {
         break;
       }
       case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
-        // TODO: message index!!!
-        // lv_cells_temp_update();
+        lv_cells_temp_update();
+        break;
+      }
+      case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
+        lv_cells_voltage_update();
         break;
       }
       case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
@@ -101,7 +109,6 @@ void update_graphics(lv_timer_t *t) {
       }
       default:
         break;
-#endif
       }
     }
   }

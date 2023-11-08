@@ -7,6 +7,5 @@
 
 void screen_driver_init();
 void steering_log(const char *buf);
-void lv_tasks();
 
 #endif
