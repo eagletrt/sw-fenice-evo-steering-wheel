@@ -173,6 +173,10 @@ int main(void) {
 
   init_periodic_can_messages_timers();
 
+  lv_timer_t *gtimer = lv_timer_create(update_graphics, 100, NULL);
+  lv_timer_set_repeat_count(gtimer, -1);
+  lv_timer_reset(gtimer);
+
   if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
     enter_fatal_error_mode("Primary CAN fatal error");
     Error_Handler();

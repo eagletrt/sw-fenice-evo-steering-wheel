@@ -134,8 +134,6 @@ void car_status_update() {
   }
 }
 
-void control_output_update() {}
-
 void cooling_status_update() {
   set_pumps_speed_bar(primary_cooling_status_last_state.pumps_speed * 100);
   set_pumps_speed_value_label(primary_cooling_status_last_state.pumps_speed);
@@ -284,7 +282,7 @@ void hv_fans_override_status_update() {
 
 void das_errors_update() {}
 
-void lv_currents_update(primary_lv_currents_converted_t *data) {
+void lv_currents_update() {
   sprintf(sprintf_buffer, "%.1f",
           primary_lv_currents_last_state.current_lv_battery);
 

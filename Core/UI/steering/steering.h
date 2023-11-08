@@ -60,9 +60,7 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
  */
 
 void car_status_update();
-void control_output_update();
 void tlm_status_update();
-void ambient_temperature_update();
 void speed_update();
 
 void hv_voltage_update();
@@ -74,24 +72,20 @@ void hv_feedbacks_status_update();
 void lv_feedbacks_update();
 void das_errors_update();
 
+void lv_cells_temp_update();
 void lv_currents_update();
 void lv_cells_voltage_update();
-void lv_cells_temp_update();
+void cooling_status_update();
 void lv_total_voltage_update();
 void lv_errors_update();
-void cooling_status_update();
 void hv_fans_override_status_update();
 void tlm_status_update();
-void handle_lap_counter_message();
 
 void steering_angle_update();
 void pedals_output_update();
 void imu_acceleration_update();
 void lap_count_update();
 void lc_status_update();
-
-void inv_l_rcv_update();
-void inv_r_rcv_update();
 
 void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);

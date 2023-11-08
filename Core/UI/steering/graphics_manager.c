@@ -103,10 +103,6 @@ void update_graphics(lv_timer_t *t) {
         lv_errors_update();
         break;
       }
-      case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
-        control_output_update();
-        break;
-      }
       default:
         break;
       }
