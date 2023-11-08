@@ -6,8 +6,6 @@ bool calibration_max_sent_request[CALBOX_N];
 uint32_t calibration_min_request_timestamp[CALBOX_N];
 uint32_t calibration_max_request_timestamp[CALBOX_N];
 
-
-
 #if CANSNIFFER_ENABLED == 1
 int primary_cansniffer_start_index = 0;
 int secondary_cansniffer_start_index = 0;
@@ -20,8 +18,8 @@ extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
 char sprintf_buffer_controls[BUFSIZ];
 
-extern primary_tlm_status_t primary_tlm_status_last_state;
-extern primary_car_status_t primary_car_status_last_state;
+extern primary_tlm_status_converted_t primary_tlm_status_last_state;
+extern primary_car_status_converted_t primary_car_status_last_state;
 primary_steer_status_converted_t steer_status_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
 primary_cooling_status_converted_t steering_cooling_settings = {
@@ -44,8 +42,9 @@ void turn_telemetry_on_off(void) {
   can_send(&msg, true);
 }
 
-void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data) {
-  primary_pedal_calibration_ack_bound bound = data->bound;
+void pedal_calibration_ack() {
+  primary_pedal_calibration_ack_bound bound =
+      primary_pedal_calibration_ack_last_state.bound;
 
   lv_obj_set_style_bg_color(bound == primary_pedal_calibration_ack_bound_SET_MAX
                                 ? set_max_btn

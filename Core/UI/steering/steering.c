@@ -18,23 +18,28 @@ char sprintf_buffer[SPRINTF_BUFFER_SIZE];
 primary_car_status_converted_t primary_car_status_last_state = {0};
 primary_control_output_converted_t primary_control_output_last_state = {0};
 
-primary_ambient_temperature_converted_t secondary_ambient_temperature_last_state = {0};
-primary_tlm_status_converted_t primary_tlm_status_last_state = {.tlm_status = 2};
+primary_ambient_temperature_converted_t
+    secondary_ambient_temperature_last_state = {0};
+primary_tlm_status_converted_t primary_tlm_status_last_state = {.tlm_status =
+                                                                    2};
 primary_speed_converted_t primary_speed_last_state = {0};
-primary_ptt_status_converted_t primary_ptt_status_last_state= {0};
+primary_ptt_status_converted_t primary_ptt_status_last_state = {0};
 
 primary_hv_voltage_converted_t primary_hv_voltage_last_state = {0};
 primary_hv_current_converted_t primary_hv_current_last_state = {0};
 primary_hv_temp_converted_t primary_hv_temp_last_state = {0};
 primary_hv_errors_converted_t primary_hv_errors_last_state = {0};
-primary_hv_feedbacks_status_converted_t primary_hv_feedbacks_status_last_state = {0};
+primary_hv_feedbacks_status_converted_t primary_hv_feedbacks_status_last_state =
+    {0};
 float hv_delta_last_state = 0.0f;
 
 primary_das_errors_converted_t primary_das_errors_last_state;
 
 primary_lv_currents_converted_t primary_lv_currents_last_state = {0};
-primary_lv_cells_voltage_converted_t primary_lv_cells_voltage_last_state_1 = {0};
-primary_lv_cells_voltage_converted_t primary_lv_cells_voltage_last_state_2 = {0};
+primary_lv_cells_voltage_converted_t primary_lv_cells_voltage_last_state_1 = {
+    0};
+primary_lv_cells_voltage_converted_t primary_lv_cells_voltage_last_state_2 = {
+    0};
 primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_1 = {0};
 primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_2 = {0};
 primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_3 = {0};
@@ -43,23 +48,24 @@ float lv_cells_temp_mean_last_state = 0;
 primary_lv_total_voltage_converted_t primary_lv_total_voltage_last_state = {0};
 primary_lv_errors_converted_t primary_lv_errors_last_state = {0};
 primary_cooling_status_converted_t primary_cooling_status_last_state = {0};
-primary_hv_fans_override_status_converted_t primary_hv_fans_override_status_last_state = {0};
+primary_hv_fans_override_status_converted_t
+    primary_hv_fans_override_status_last_state = {0};
 primary_lv_feedbacks_converted_t primary_lv_feedbacks_last_state = {0};
-primary_hv_cell_balancing_status_converted_t primary_hv_cell_balancing_status_last_state = {0};
-primary_pedal_calibration_ack_converted_t primary_pedal_calibration_ack_last_state = {0};
+primary_hv_cell_balancing_status_converted_t
+    primary_hv_cell_balancing_status_last_state = {0};
+primary_pedal_calibration_ack_converted_t
+    primary_pedal_calibration_ack_last_state = {0};
 
 secondary_steering_angle_converted_t secondary_steering_angle_last_state = {0};
 
 secondary_pedals_output_converted_t secondary_pedals_output_last_state = {0};
-secondary_imu_acceleration_converted_t secondary_imu_acceleration_last_state = {0};
+secondary_imu_acceleration_converted_t secondary_imu_acceleration_last_state = {
+    0};
 secondary_lap_count_converted_t secondary_lap_count_last_state = {0};
 secondary_lc_status_converted_t secondary_lc_status_last_state = {0};
 float current_delta_state = 0.0f;
 secondary_timestamp_converted_t secondary_timestamp_last_state = {0};
 uint32_t timestamp_start_lap = 0;
-
-inverters_inv_r_rcv_converted_t inverters_inv_r_last_state = {0};
-inverters_inv_l_rcv_converted_t inverters_inv_l_last_state = {0};
 
 void set_lb_estimated_velocity(const char *s) {
   lv_label_set_text(lb_estimated_velocity, s);
@@ -129,102 +135,92 @@ void car_status_update() {
   }
 }
 
-void control_output_update(primary_control_output_converted_t *data) {
-  if (data->estimated_velocity !=
-      primary_control_output_last_state.estimated_velocity) {
-    primary_control_output_last_state.estimated_velocity = data->estimated_velocity;
-    sprintf(sprintf_buffer, "%.1f", data->estimated_velocity);
-  }
-}
+void control_output_update() {}
 
-void cooling_status_update(primary_cooling_status_converted_t *data) {
-  if (data->pumps_speed != primary_cooling_status_last_state.pumps_speed) {
-    primary_cooling_status_last_state.pumps_speed = data->pumps_speed;
-    set_pumps_speed_bar(data->pumps_speed * 100);
-    set_pumps_speed_value_label(data->pumps_speed);
-  }
-  if (data->radiators_speed != primary_cooling_status_last_state.radiators_speed) {
-    primary_cooling_status_last_state.radiators_speed = data->radiators_speed;
-    set_radiators_speed_bar(data->radiators_speed * 100);
-    set_radiators_speed_value_label(data->radiators_speed);
-  }
+void cooling_status_update() {
+  set_pumps_speed_bar(primary_cooling_status_last_state.pumps_speed * 100);
+  set_pumps_speed_value_label(primary_cooling_status_last_state.pumps_speed);
+  set_radiators_speed_bar(primary_cooling_status_last_state.radiators_speed *
+                          100);
+  set_radiators_speed_value_label(
+      primary_cooling_status_last_state.radiators_speed);
 }
 
 void tlm_status_update() {
 
-    if (primary_tlm_status_last_state.tlm_status == primary_tlm_status_tlm_status_ON) {
-      sprintf(sprintf_buffer, "ON");
+  if (primary_tlm_status_last_state.tlm_status ==
+      primary_tlm_status_tlm_status_ON) {
+    sprintf(sprintf_buffer, "ON");
 
-      set_tab_sensors_lb_tlm_status(sprintf_buffer);
+    set_tab_sensors_lb_tlm_status(sprintf_buffer);
 
-      all_leds_green();
-    } else {
-      sprintf(sprintf_buffer, "OFF");
+    all_leds_green();
+  } else {
+    sprintf(sprintf_buffer, "OFF");
 
-      set_tab_sensors_lb_tlm_status(sprintf_buffer);
+    set_tab_sensors_lb_tlm_status(sprintf_buffer);
 
-      all_leds_red();
-    }
+    all_leds_red();
+  }
 }
 
-
-void speed_update() {
+void speed_update(void) {
   if (primary_car_status_last_state.car_status !=
-      primary_car_status_car_status_DRIVE)
+      primary_car_status_car_status_DRIVE) {
     return;
-
-    primary_speed_last_state.inverter_l = primary_speed_last_state.inverter_l;
-    primary_speed_last_state.inverter_r = primary_speed_last_state.inverter_r;
-    primary_speed_last_state.encoder_l = primary_speed_last_state.encoder_l;
-    primary_speed_last_state.encoder_r = primary_speed_last_state.encoder_r;
+  }
+  lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "KM/H");
+  snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%.0f",
+           (primary_speed_last_state.encoder_l +
+            primary_speed_last_state.encoder_r) /
+               2.0f);
+  set_tab_racing_lb_speed(sprintf_buffer);
+  set_tab_track_test_lb_speed(sprintf_buffer);
 }
 
-void hv_voltage_update() {
+void hv_voltage_update(void) {
 
-    sprintf(sprintf_buffer, "%.1f",  primary_hv_voltage_last_state.min_cell_voltage);
+  sprintf(sprintf_buffer, "%.1f",
+          primary_hv_voltage_last_state.min_cell_voltage);
+  set_tab_sensors_lb_min_cell_voltage(sprintf_buffer);
 
-    set_tab_sensors_lb_min_cell_voltage(sprintf_buffer);
+  primary_hv_voltage_last_state.pack_voltage =
+      primary_hv_voltage_last_state.pack_voltage;
+  sprintf(sprintf_buffer, "%.0f", primary_hv_voltage_last_state.pack_voltage);
 
+  set_tab_racing_lb_pack_voltage(sprintf_buffer);
+  set_tab_sensors_lb_pack_voltage(sprintf_buffer);
 
-    primary_hv_voltage_last_state.pack_voltage = primary_hv_voltage_last_state.pack_voltage;
-    sprintf(sprintf_buffer, "%.0f", primary_hv_voltage_last_state.pack_voltage);
+  lv_bar_set_value(get_tab_racing_racing_lv_bar(),
+                   primary_hv_voltage_last_state.pack_voltage, LV_ANIM_OFF);
 
-    set_tab_racing_lb_pack_voltage(sprintf_buffer);
-    set_tab_sensors_lb_pack_voltage(sprintf_buffer);
+  float percentage = (primary_hv_voltage_last_state.bus_voltage) /
+                     (primary_hv_voltage_last_state.pack_voltage) * 100;
+  percentage = fmin(fmax(percentage, 0), 100);
+  lv_meter_set_indicator_value(get_tab_racing_custom_meter(),
+                               get_tab_racing_indicator_blue(), percentage);
 
-    lv_bar_set_value(get_tab_racing_racing_lv_bar(), primary_hv_voltage_last_state.pack_voltage,
-                     LV_ANIM_OFF);
-
-
-    float percentage = (primary_hv_voltage_last_state.bus_voltage) / (primary_hv_voltage_last_state.pack_voltage) * 100;
-    percentage = fmin(fmax(percentage, 0), 100);
-    lv_meter_set_indicator_value(get_tab_racing_custom_meter(),
-                                 get_tab_racing_indicator_blue(), percentage);
-
-  float delta = primary_hv_voltage_last_state.max_cell_voltage - primary_hv_voltage_last_state.min_cell_voltage;
+  float delta = primary_hv_voltage_last_state.max_cell_voltage -
+                primary_hv_voltage_last_state.min_cell_voltage;
   if (delta != hv_delta_last_state) {
     hv_delta_last_state = delta;
-    sprintf(sprintf_buffer, "%.3f", delta);
-
+    sprintf(sprintf_buffer, "%d", (int)(delta * 1000.0f));
     set_tab_sensors_lb_hv_delta(sprintf_buffer);
   }
 }
 
 void hv_current_update() {
-    sprintf(sprintf_buffer, "%.1f", primary_hv_current_last_state.current);
-
-    set_tab_racing_lb_hv_current(sprintf_buffer);
-    set_tab_sensors_lb_hv_current(sprintf_buffer);
-
-    lv_bar_set_value(get_tab_racing_racing_hv_bar(),
-                     primary_hv_current_last_state.current, LV_ANIM_OFF);
+  sprintf(sprintf_buffer, "%.1f", primary_hv_current_last_state.current);
+  set_tab_racing_lb_hv_current(sprintf_buffer);
+  set_tab_sensors_lb_hv_current(sprintf_buffer);
+  lv_bar_set_value(get_tab_racing_racing_hv_bar(),
+                   primary_hv_current_last_state.current, LV_ANIM_OFF);
 }
 
 void hv_temp_update() {
-    sprintf(sprintf_buffer, "%0.f", primary_hv_temp_last_state.average_temp);
-
-    set_tab_racing_lb_average_temperature(sprintf_buffer);
-    set_tab_sensors_lb_average_temperature(sprintf_buffer);
+  sprintf(sprintf_buffer, "%0.f", primary_hv_temp_last_state.average_temp);
+  set_tab_racing_lb_average_temperature(sprintf_buffer);
+  set_tab_sensors_lb_average_temperature(sprintf_buffer);
 }
 
 void hv_errors_update() {
@@ -255,12 +251,13 @@ void set_bal_status_label_text(char *text);
 
 void hv_cell_balancing_status_update() {
 
-  uint8_t cellboard_id = (uint8_t)primary_hv_cell_balancing_status_last_state.cellboard_id;
+  uint8_t cellboard_id =
+      (uint8_t)primary_hv_cell_balancing_status_last_state.cellboard_id;
   if (cellboard_id < 0 || cellboard_id >= N_PORK_CELLBOARD) {
     return;
   }
   primary_hv_cell_balancing_status_balancing_status status =
-          primary_hv_cell_balancing_status_last_state.balancing_status;
+      primary_hv_cell_balancing_status_last_state.balancing_status;
   cellboard_bal[cellboard_id] =
       status == primary_hv_cell_balancing_status_balancing_status_OFF ? false
                                                                       : true;
@@ -397,8 +394,10 @@ void ecu_feedbacks_update() {
 }
 
 void hv_fans_override_status_update() {
-    set_pork_speed_bar(primary_hv_fans_override_status_last_state.fans_speed * 100);
-    set_pork_speed_value_label(primary_hv_fans_override_status_last_state.fans_speed);
+  set_pork_speed_bar(primary_hv_fans_override_status_last_state.fans_speed *
+                     100);
+  set_pork_speed_value_label(
+      primary_hv_fans_override_status_last_state.fans_speed);
 }
 
 void das_errors_update() {
@@ -416,13 +415,14 @@ void das_errors_update() {
 }
 
 void lv_currents_update(primary_lv_currents_converted_t *data) {
-    sprintf(sprintf_buffer, "%.1f", primary_lv_currents_last_state.current_lv_battery);
+  sprintf(sprintf_buffer, "%.1f",
+          primary_lv_currents_last_state.current_lv_battery);
 
-    set_tab_sensors_lb_lv_current(sprintf_buffer);
+  set_tab_sensors_lb_lv_current(sprintf_buffer);
 }
 
 void lv_cells_temp_update() {
-  //TODO
+  // TODO
 #if 0
   uint8_t start_index = data->start_index;
   uint8_t offset = 20;
@@ -514,11 +514,11 @@ void lv_cells_temp_update() {
 }
 
 void lv_total_voltage_update() {
-    sprintf(sprintf_buffer, "%.1f", primary_lv_total_voltage_last_state.total_voltage);
+  sprintf(sprintf_buffer, "%.1f",
+          primary_lv_total_voltage_last_state.total_voltage);
 
-    set_tab_sensors_lb_voltage(sprintf_buffer);
+  set_tab_sensors_lb_voltage(sprintf_buffer);
 }
-
 
 void lv_errors_update() {
 #if STEER_TAB_DEBUG_ENABLED == 1
@@ -543,61 +543,64 @@ void lv_errors_update() {
 }
 
 void steering_angle_update() {
-    sprintf(sprintf_buffer, "%.1f", secondary_steering_angle_last_state.angle);
+  sprintf(sprintf_buffer, "%.1f", secondary_steering_angle_last_state.angle);
 
-    set_tab_calibration_lb_steering_angle(sprintf_buffer);
-    set_tab_track_test_lb_steering_angle(sprintf_buffer);
+  set_tab_calibration_lb_steering_angle(sprintf_buffer);
+  set_tab_track_test_lb_steering_angle(sprintf_buffer);
 
-    calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
+  calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
 
-    if (*curr_focus == STEER) {
-      lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_SYMMETRICAL);
-      lv_slider_set_range(
-          get_tab_calibration_slider(), STEERING_ANGLE_RANGE_LOW,
-          STEERING_ANGLE_RANGE_HIGH); // se range 45 e max value 180 ->
-                                      // set_value ( 0.25 * gradi_inclinazione )
-      lv_slider_set_value(get_tab_calibration_slider(),
-                          secondary_steering_angle_last_state.angle, LV_ANIM_OFF);
-
+  if (*curr_focus == STEER) {
+    lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_SYMMETRICAL);
+    lv_slider_set_range(
+        get_tab_calibration_slider(), STEERING_ANGLE_RANGE_LOW,
+        STEERING_ANGLE_RANGE_HIGH); // se range 45 e max value 180 ->
+                                    // set_value ( 0.25 * gradi_inclinazione )
+    lv_slider_set_value(get_tab_calibration_slider(),
+                        secondary_steering_angle_last_state.angle, LV_ANIM_OFF);
   }
 }
 
 void pedals_output_update() {
-    sprintf(sprintf_buffer, "%d", (int)secondary_pedals_output_last_state.apps);
+  sprintf(sprintf_buffer, "%d", (int)secondary_pedals_output_last_state.apps);
 
-    // set_lb_apps(sprintf_buffer);
-    calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
+  // set_lb_apps(sprintf_buffer);
+  calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
 
-    if (*curr_focus == APPS) {
-      lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
-      lv_slider_set_range(get_tab_calibration_slider(), APPS_RANGE_LOW,
-                          APPS_RANGE_HIGH);
-      lv_slider_set_value(get_tab_calibration_slider(),
-                          secondary_pedals_output_last_state.apps, LV_ANIM_OFF);
-    }
+  if (*curr_focus == APPS) {
+    lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
+    lv_slider_set_range(get_tab_calibration_slider(), APPS_RANGE_LOW,
+                        APPS_RANGE_HIGH);
+    lv_slider_set_value(get_tab_calibration_slider(),
+                        secondary_pedals_output_last_state.apps, LV_ANIM_OFF);
+  }
 
-    sprintf(sprintf_buffer, "%.1f", secondary_pedals_output_last_state.bse_front);
+  sprintf(sprintf_buffer, "%.1f", secondary_pedals_output_last_state.bse_front);
 
-    // set_lb_bse(sprintf_buffer);
+  // set_lb_bse(sprintf_buffer);
 
-
-    if (*curr_focus == BSE) {
-      lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
-      lv_slider_set_range(get_tab_calibration_slider(), BRAKE_RANGE_LOW,
-                          BRAKE_RANGE_HIGH);
-      lv_slider_set_value(get_tab_calibration_slider(), secondary_pedals_output_last_state.bse_front,
-                          LV_ANIM_OFF);
-    }
+  if (*curr_focus == BSE) {
+    lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
+    lv_slider_set_range(get_tab_calibration_slider(), BRAKE_RANGE_LOW,
+                        BRAKE_RANGE_HIGH);
+    lv_slider_set_value(get_tab_calibration_slider(),
+                        secondary_pedals_output_last_state.bse_front,
+                        LV_ANIM_OFF);
+  }
 }
 
 void imu_acceleration_update() {
-    sprintf(sprintf_buffer, "%.1f", secondary_imu_acceleration_last_state.accel_x);
+  sprintf(sprintf_buffer, "%.1f",
+          secondary_imu_acceleration_last_state.accel_x);
 
-    set_tab_track_test_lb_inverter_speed_x(sprintf_buffer);
+  set_tab_track_test_lb_inverter_speed_x(sprintf_buffer);
 
-  if (secondary_imu_acceleration_last_state.accel_y != secondary_imu_acceleration_last_state.accel_y) {
-    secondary_imu_acceleration_last_state.accel_y = secondary_imu_acceleration_last_state.accel_y;
-    sprintf(sprintf_buffer, "%.1f", secondary_imu_acceleration_last_state.accel_y);
+  if (secondary_imu_acceleration_last_state.accel_y !=
+      secondary_imu_acceleration_last_state.accel_y) {
+    secondary_imu_acceleration_last_state.accel_y =
+        secondary_imu_acceleration_last_state.accel_y;
+    sprintf(sprintf_buffer, "%.1f",
+            secondary_imu_acceleration_last_state.accel_y);
 
     set_tab_track_test_lb_inverter_speed_y(sprintf_buffer);
   }
@@ -622,20 +625,24 @@ void lap_count_update() {
 extern bool on_lap_keep;
 
 void lc_status_update(secondary_lc_status_converted_t *data) {
-    int minutes = (int)(secondary_lc_status_last_state.best_time / 60.0f);
-    int seconds = (int)(secondary_lc_status_last_state.best_time - minutes * 60.0f);
-    sprintf(sprintf_buffer, "%02d:%02d", minutes, seconds);
+  int minutes = (int)(secondary_lc_status_last_state.best_time / 60.0f);
+  int seconds =
+      (int)(secondary_lc_status_last_state.best_time - minutes * 60.0f);
+  sprintf(sprintf_buffer, "%02d:%02d", minutes, seconds);
 
-    set_tab_racing_lb_best_time(sprintf_buffer);
+  set_tab_racing_lb_best_time(sprintf_buffer);
 
-    float delta = secondary_lc_status_last_state.last_time - secondary_lc_status_last_state.best_time;
-    if (delta != current_delta_state) {
-      sprintf(sprintf_buffer, "%+.2f", delta);
+  float delta = secondary_lc_status_last_state.last_time -
+                secondary_lc_status_last_state.best_time;
+  if (delta != current_delta_state) {
+    sprintf(sprintf_buffer, "%+.2f", delta);
 
-      set_tab_racing_lb_delta_time(sprintf_buffer);
-    }
+    set_tab_racing_lb_delta_time(sprintf_buffer);
+  }
 
-  if (secondary_lc_status_last_state.last_time != secondary_lc_status_last_state.last_time && !on_lap_keep) {
+  if (secondary_lc_status_last_state.last_time !=
+          secondary_lc_status_last_state.last_time &&
+      !on_lap_keep) {
     float last_time_seconds = secondary_lc_status_last_state.last_time;
     secondary_lc_status_last_state.last_time = last_time_seconds;
     int minutes = (int)(last_time_seconds / 60);
@@ -644,12 +651,10 @@ void lc_status_update(secondary_lc_status_converted_t *data) {
 
     set_tab_racing_lb_last_time(sprintf_buffer);
   }
-    sprintf(sprintf_buffer, "%d", (int)secondary_lc_status_last_state.lap_number);
+  sprintf(sprintf_buffer, "%d", (int)secondary_lc_status_last_state.lap_number);
 
-    set_tab_racing_lb_lap_count(sprintf_buffer);
-
+  set_tab_racing_lb_lap_count(sprintf_buffer);
 }
-
 
 void inv_l_rcv_update() {
 #if 0
@@ -771,7 +776,8 @@ void ptt_tasks_fn(lv_timer_t *timer) {
   }
 }
 
-void handle_ptt_message(primary_ptt_status_status val) {
+void handle_ptt_message(void) {
+  primary_ptt_status_status val = primary_ptt_status_last_state.status;
   if (val == primary_ptt_status_status_OFF) {
     ecu_ack = false;
   } else if (val == primary_ptt_status_status_ON) {

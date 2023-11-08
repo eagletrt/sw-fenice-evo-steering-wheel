@@ -1,8 +1,6 @@
 #ifndef WATCHDOG_H
 #define WATCHDOG_H
 
-#include "inverters/inverters_network.h"
-#include "inverters/inverters_watchdog.h"
 #include "lvgl.h"
 #include "messages.h"
 #include "primary/primary_network.h"

@@ -34,7 +34,6 @@ extern "C" {
 #include "can_messages.h"
 #include "graphics_manager.h"
 #include "inputs/inputs.h"
-#include "inverters/inverters_network.h"
 #include "led_control.h"
 #include "messages.h"
 #include "steering_config.h"

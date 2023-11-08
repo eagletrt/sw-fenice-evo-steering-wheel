@@ -9,7 +9,7 @@
 
 #define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME, arr)                    \
   ntw##_##msg_name##_t raw;                                                    \
-  ntw##_##msg_name##_converted_t converted;                              \
+  ntw##_##msg_name##_converted_t converted;                                    \
   ntw##_##msg_name##_unpack(&raw, msg->data, NTW##_##MSG_NAME##_BYTE_SIZE);    \
   ntw##_##msg_name##_raw_to_conversion_struct(&converted, &raw);               \
   memcpy(&ntw##_##msg_name##_last_state, &converted,                           \

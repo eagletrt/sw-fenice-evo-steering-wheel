@@ -31,7 +31,7 @@ calibration_box_t *get_tab_calibration_curr_focus() {
 lv_obj_t *get_tab_calibration_slider() { return tab_calibration_slider; }
 
 void set_tab_calibration_lb_steering_angle(const char *s) {
-  lv_label_set_text_fmt(tab_calibration_lb_steering_angle, s);
+  lv_label_set_text(tab_calibration_lb_steering_angle, s);
 }
 
 void init_calibration_tab_styles(void) {

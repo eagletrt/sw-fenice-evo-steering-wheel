@@ -2,8 +2,6 @@
 #define CAN_MESSAGES_H
 
 #include "cansniffer.h"
-#include "inverters/inverters_network.h"
-#include "inverters/inverters_watchdog.h"
 #include "lvgl.h"
 #include "messages.h"
 #include "primary/primary_network.h"
@@ -14,13 +12,53 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+extern primary_car_status_converted_t primary_car_status_last_state;
+extern primary_control_output_converted_t primary_control_output_last_state;
+extern primary_ambient_temperature_converted_t
+    secondary_ambient_temperature_last_state;
+extern primary_tlm_status_converted_t primary_tlm_status_last_state;
+extern primary_speed_converted_t primary_speed_last_state;
+extern primary_ptt_status_converted_t primary_ptt_status_last_state;
+extern primary_hv_voltage_converted_t primary_hv_voltage_last_state;
+extern primary_hv_current_converted_t primary_hv_current_last_state;
+extern primary_hv_temp_converted_t primary_hv_temp_last_state;
+extern primary_hv_errors_converted_t primary_hv_errors_last_state;
+extern primary_hv_feedbacks_status_converted_t
+    primary_hv_feedbacks_status_last_state;
+extern primary_das_errors_converted_t primary_das_errors_last_state;
+extern primary_lv_currents_converted_t primary_lv_currents_last_state;
+extern primary_lv_cells_voltage_converted_t
+    primary_lv_cells_voltage_last_state_1;
+extern primary_lv_cells_voltage_converted_t
+    primary_lv_cells_voltage_last_state_2;
+extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_1;
+extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_2;
+extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_3;
+extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_4;
+extern primary_lv_total_voltage_converted_t primary_lv_total_voltage_last_state;
+extern primary_lv_errors_converted_t primary_lv_errors_last_state;
+extern primary_cooling_status_converted_t primary_cooling_status_last_state;
+extern primary_hv_fans_override_status_converted_t
+    primary_hv_fans_override_status_last_state;
+extern primary_lv_feedbacks_converted_t primary_lv_feedbacks_last_state;
+extern primary_hv_cell_balancing_status_converted_t
+    primary_hv_cell_balancing_status_last_state;
+extern primary_pedal_calibration_ack_converted_t
+    primary_pedal_calibration_ack_last_state;
+extern secondary_steering_angle_converted_t secondary_steering_angle_last_state;
+extern secondary_pedals_output_converted_t secondary_pedals_output_last_state;
+extern secondary_imu_acceleration_converted_t
+    secondary_imu_acceleration_last_state;
+extern secondary_lap_count_converted_t secondary_lap_count_last_state;
+extern secondary_lc_status_converted_t secondary_lc_status_last_state;
+extern secondary_timestamp_converted_t secondary_timestamp_last_state;
+
 bool can_send(can_message_t *msg, bool to_primary_network);
-void openblt_reset(void);
 
 void send_steer_version(lv_timer_t *);
 void send_steer_status(lv_timer_t *);
-void pedal_calibration_ack(primary_pedal_calibration_ack_converted_t *data);
-void handle_ptt_message(primary_ptt_status_status val);
+void pedal_calibration_ack();
+void handle_ptt_message();
 void send_bal(bool on);
 
 void handle_primary(can_message_t *msg);

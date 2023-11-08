@@ -2,7 +2,6 @@
 #define CONTROLS_H
 
 #include "can_messages.h"
-#include "inverters/inverters_network.h"
 #include "lvgl.h"
 #include "primary/primary_network.h"
 #include "secondary/secondary_network.h"

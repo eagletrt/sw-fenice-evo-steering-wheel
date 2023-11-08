@@ -74,7 +74,7 @@ void set_tab_racing_lb_battery_temperature(const char *s) {
 }
 
 void set_tab_racing_lb_average_temperature(const char *s) {
-  lv_label_set_text_fmt(tab_racing_lb_average_temperature, s);
+  lv_label_set_text(tab_racing_lb_average_temperature, s);
 }
 
 void set_tab_racing_lb_speed(const char *s) {

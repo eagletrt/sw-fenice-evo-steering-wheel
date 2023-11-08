@@ -2,7 +2,6 @@
 #define STEERING_H
 
 #include "engineer_mode/tab_cooling.h"
-#include "inverters/inverters_network.h"
 #include "lvgl.h"
 #include "primary/primary_network.h"
 #include "secondary/secondary_network.h"
@@ -90,7 +89,6 @@ void pedals_output_update();
 void imu_acceleration_update();
 void lap_count_update();
 void lc_status_update();
-void timestamp_update();
 
 void inv_l_rcv_update();
 void inv_r_rcv_update();

@@ -12,6 +12,7 @@
 #include <unistd.h>
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain"       \
                             issue*/
+#include "graphics_manager.h"
 #include "lv-drivers/display/monitor.h"
 #include "lv-drivers/indev/keyboard.h"
 #include "lv-drivers/indev/mouse.h"
@@ -20,7 +21,6 @@
 #include "steering.h"
 #include "tab_manager.h"
 #include <SDL2/SDL.h>
-#include "graphics_manager.h"
 
 #define MAX(x, y) x > y ? x : y;
 

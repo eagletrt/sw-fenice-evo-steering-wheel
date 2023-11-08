@@ -15,5 +15,6 @@
 #define SCREEN_HEIGHT 480
 
 uint32_t get_current_time_ms(void);
+void openblt_reset(void);
 
 #endif // STEERING_CONFIG_H

@@ -479,7 +479,7 @@ void tab_sensors_create(lv_obj_t *parent) {
 
   lv_obj_t *y2 = lv_triple_label(
       right_data_panel, &tab_sensors_lb_hv_delta, "-", &lv_font_inter_bold_30,
-      " V", &lv_font_inter_bold_22, "HV DELTA", &lv_font_inter_bold_20);
+      " mV", &lv_font_inter_bold_22, "HV DELTA", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 2,
                        1);
 /* 4th row */
