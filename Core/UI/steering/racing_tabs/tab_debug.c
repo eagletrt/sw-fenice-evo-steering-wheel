@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEER_TAB_DEBUG_ENABLED == 1
+
 #include "tab_debug.h"
 #include <stdio.h>
 
@@ -493,3 +497,5 @@ void change_errors_view(bool dir_left) {
     }
   }
 }
+
+#endif

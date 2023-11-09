@@ -1,3 +1,5 @@
+#include "steering_config.h"
+
 #if CANSNIFFER_ENABLED == 1
 
 #include "tab_secondary_cansniffer.h"

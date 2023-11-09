@@ -79,7 +79,9 @@
         "string": "c",
         "buffer": "c",
         "internet": "c",
-        "socket": "c"
+        "socket": "c",
+        "tab_calibration.h": "c",
+        "steering_config.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

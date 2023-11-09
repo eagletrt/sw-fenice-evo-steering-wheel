@@ -101,8 +101,12 @@ void buttons_pressed_actions(uint8_t button) {
   }
   case PADDLE_BOTTOM_RIGHT: {
     if (!engineer_mode) {
+#if STEER_TAB_CALIBRATION_ENABLED == 1
       shift_box_focus(true);
+#endif
+#if STEER_TAB_DEBUG_ENABLED == 1
       change_errors_view(false);
+#endif
     } else {
 #if CANSNIFFER_ENABLED == 1
       change_cansniffer_index(true);
@@ -112,8 +116,12 @@ void buttons_pressed_actions(uint8_t button) {
   }
   case PADDLE_BOTTOM_LEFT: {
     if (!engineer_mode) {
+#if STEER_TAB_CALIBRATION_ENABLED == 1
       shift_box_focus(false);
+#endif
+#if STEER_TAB_DEBUG_ENABLED == 1
       change_errors_view(true);
+#endif
     } else {
 #if CANSNIFFER_ENABLED == 1
       change_cansniffer_index(false);

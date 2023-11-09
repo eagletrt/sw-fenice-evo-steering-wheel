@@ -1,7 +1,9 @@
-#if CANSNIFFER_ENABLED == 1
-
 #ifndef CANSNIFFER_H
 #define CANSNIFFER_H
+
+#include "steering_config.h"
+
+#if CANSNIFFER_ENABLED == 1
 
 #include "lvgl.h"
 #include "maxheap.h"

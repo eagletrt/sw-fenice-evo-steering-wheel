@@ -1,5 +1,7 @@
 #include "tab_calibration.h"
 
+#if STEER_TAB_CALIBRATION_ENABLED == 1
+
 lv_obj_t *tab_calibration_lb_steering_angle;
 lv_obj_t *tab_calibration_slider;
 calibration_box_t tab_calibration_curr_focus;
@@ -377,3 +379,5 @@ void shift_box_focus(bool move_right) {
     }
   }
 }
+
+#endif

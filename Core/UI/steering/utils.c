@@ -165,8 +165,11 @@ lv_triple_label(lv_obj_t *parent, lv_obj_t **main_l, const char *left_text,
 lv_style_t bubble_small_style;
 lv_style_t bubble_large_style;
 
-char *notch_labels[NUM_RACING_TABS] = {"RACE", "CALIBRATE", "DEBUG", "TEST",
-                                       "SENSORS"};
+char *notch_labels[NUM_RACING_TABS] = {"RACE",
+#if STEER_TAB_CALIBRATION_ENABLED == 1
+                                       "CALIBRATE",
+#endif
+                                       "DEBUG", "TEST", "SENSORS"};
 lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
 
   lv_obj_t *notch = lv_obj_create(parent);

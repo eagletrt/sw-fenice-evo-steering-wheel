@@ -6,6 +6,7 @@
 #include "lvgl.h"
 #include "mcp23017.h"
 #include "steering.h"
+#include "steering_config.h"
 #include "tab_manager.h"
 #include <math.h>
 

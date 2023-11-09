@@ -1,6 +1,10 @@
 #ifndef TAB_CALIBRATION_H
 #define TAB_CALIBRATION_H
 
+#include "steering_config.h"
+
+#if STEER_TAB_CALIBRATION_ENABLED == 1
+
 #include "lvgl.h"
 #include "steering.h"
 #include "utils.h"
@@ -30,5 +34,7 @@ void update_slider_val(int device, int value);
 
 void init_calibration_tab_styles(void);
 void sim_calibration_tool_set_min_max(bool);
+
+#endif
 
 #endif

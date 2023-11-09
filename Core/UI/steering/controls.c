@@ -14,8 +14,10 @@ int secondary_cansniffer_start_index = 0;
 extern racing_tab_t current_racing_tab;
 extern engineer_tab_t current_engineer_tab;
 extern bool engineer_mode;
+#if STEER_TAB_CALIBRATION_ENABLED == 1
 extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
+#endif
 char sprintf_buffer_controls[BUFSIZ];
 
 extern primary_tlm_status_converted_t primary_tlm_status_last_state;
@@ -43,6 +45,7 @@ void turn_telemetry_on_off(void) {
 }
 
 void pedal_calibration_ack() {
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   primary_pedal_calibration_ack_bound bound =
       primary_pedal_calibration_ack_last_state.bound;
 
@@ -50,9 +53,11 @@ void pedal_calibration_ack() {
                                 ? set_max_btn
                                 : set_min_btn,
                             lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+#endif
 }
 
 void send_calibration(bool accel, bool max) {
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   primary_set_pedal_calibration_converted_t converted = {0};
   converted.pedal = accel ? primary_set_pedal_calibration_pedal_ACCELERATOR
                           : primary_set_pedal_calibration_pedal_BRAKE;
@@ -61,9 +66,11 @@ void send_calibration(bool accel, bool max) {
   STEER_CAN_PACK(primary, PRIMARY, set_pedal_calibration,
                  SET_PEDAL_CALIBRATION);
   can_send(&msg, true);
+#endif
 }
 
 void calibration_request_timeout_check(uint32_t current_time) {
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   for (uint8_t iel = 0; iel < CALBOX_N; ++iel) {
     if (calibration_min_sent_request[iel] &&
         calibration_min_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
@@ -80,9 +87,11 @@ void calibration_request_timeout_check(uint32_t current_time) {
                                 LV_PART_MAIN);
     }
   }
+#endif
 }
 
 void calibration_tool_set_min_max(bool maxv) {
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   if (current_racing_tab == TAB_CALIBRATION) {
 
     calibration_box_t *controls_curr_focus = get_tab_calibration_curr_focus();
@@ -120,6 +129,7 @@ void calibration_tool_set_min_max(bool maxv) {
                               lv_color_hex(COLOR_ORANGE_STATUS_HEX),
                               LV_PART_MAIN);
   }
+#endif
 }
 
 void manettino_send_slip_control(float val) {

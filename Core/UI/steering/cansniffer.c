@@ -1,3 +1,5 @@
+#include "steering_config.h"
+
 #if CANSNIFFER_ENABLED == 1
 
 #include "cansniffer.h"
@@ -6,10 +8,6 @@ static_assert(
     sizeof(cansniffer_elem_t) == CANSNIFFER_ELEM_T_SIZE,
     "Please set CANSNIFFER_ELEM_T_SIZE accordingly to cansniffer_elem_t size");
 
-/*
-primary_cansniffer_buffer -> 32768 Bytes
-secondary_cansniffer_buffer -> 32768 Bytes
-*/
 extern cansniffer_elem_t *primary_cansniffer_buffer;
 extern cansniffer_elem_t *secondary_cansniffer_buffer;
 

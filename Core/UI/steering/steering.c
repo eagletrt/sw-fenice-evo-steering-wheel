@@ -9,7 +9,6 @@ extern lv_obj_t *hv_errors[16];
 extern lv_obj_t *das_errors[9];
 extern lv_obj_t *lv_errors[17];
 
-// steering_tabs_t steering = {0};
 extern bool steering_initialized;
 
 #define SPRINTF_BUFFER_SIZE 64
@@ -215,26 +214,7 @@ void hv_temp_update() {
   set_tab_sensors_lb_average_temperature(sprintf_buffer);
 }
 
-void hv_errors_update() {
-#if STEER_TAB_DEBUG_ENABLED == 1
-  STEER_ERROR_UPDATE(hv_errors, errors_cell_low_voltage, 0)
-  STEER_ERROR_UPDATE(hv_errors, errors_cell_under_voltage, 1)
-  STEER_ERROR_UPDATE(hv_errors, errors_cell_over_voltage, 2)
-  STEER_ERROR_UPDATE(hv_errors, errors_cell_high_temperature, 3)
-  STEER_ERROR_UPDATE(hv_errors, errors_cell_over_temperature, 4)
-  STEER_ERROR_UPDATE(hv_errors, errors_over_current, 5)
-  STEER_ERROR_UPDATE(hv_errors, errors_can, 6)
-  STEER_ERROR_UPDATE(hv_errors, errors_int_voltage_mismatch, 7)
-  STEER_ERROR_UPDATE(hv_errors, errors_cellboard_comm, 8)
-  STEER_ERROR_UPDATE(hv_errors, errors_cellboard_internal, 9)
-  STEER_ERROR_UPDATE(hv_errors, errors_connector_disconnected, 10)
-  STEER_ERROR_UPDATE(hv_errors, errors_fans_disconnected, 11)
-  STEER_ERROR_UPDATE(hv_errors, errors_feedback, 12)
-  STEER_ERROR_UPDATE(hv_errors, errors_feedback_circuitry, 13)
-  STEER_ERROR_UPDATE(hv_errors, errors_eeprom_comm, 14)
-  STEER_ERROR_UPDATE(hv_errors, errors_eeprom_write, 15)
-#endif
-}
+void hv_errors_update() {}
 
 #define N_PORK_CELLBOARD 6
 bool cellboard_bal[N_PORK_CELLBOARD] = {0};
@@ -338,8 +318,9 @@ void lv_errors_update() {}
 
 void steering_angle_update() {
   sprintf(sprintf_buffer, "%.1f", secondary_steering_angle_last_state.angle);
-  set_tab_calibration_lb_steering_angle(sprintf_buffer);
   set_tab_track_test_lb_steering_angle(sprintf_buffer);
+#if STEER_TAB_CALIBRATION_ENABLED == 1
+  set_tab_calibration_lb_steering_angle(sprintf_buffer);
   calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
   if (*curr_focus == STEER) {
     lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_SYMMETRICAL);
@@ -350,9 +331,11 @@ void steering_angle_update() {
     lv_slider_set_value(get_tab_calibration_slider(),
                         secondary_steering_angle_last_state.angle, LV_ANIM_OFF);
   }
+#endif
 }
 
 void pedals_output_update() {
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   sprintf(sprintf_buffer, "%d", (int)secondary_pedals_output_last_state.apps);
   calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
 
@@ -372,6 +355,7 @@ void pedals_output_update() {
                         secondary_pedals_output_last_state.bse_front,
                         LV_ANIM_OFF);
   }
+#endif
 }
 
 void imu_acceleration_update() {

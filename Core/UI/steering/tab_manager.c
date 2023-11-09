@@ -1,10 +1,19 @@
 #include "tab_manager.h"
+#include "steering_config.h"
 
 lv_obj_t *tab_racing_ptr;
 lv_obj_t *tab_sensors_ptr;
+
+#if STEER_TAB_CALIBRATION_ENABLED == 1
 lv_obj_t *tab_calibration_ptr;
+#endif
+
 lv_obj_t *tab_track_test_ptr;
+
+#if STEER_TAB_DEBUG_ENABLED == 1
 lv_obj_t *tab_debug_ptr;
+#endif
+
 lv_obj_t *notif_screen;
 lv_obj_t *tab_engineer_mode_ptr;
 lv_obj_t *tab_cooling_ptr;
@@ -35,9 +44,13 @@ void tab_manager(void) {
 
   tab_racing_ptr = lv_obj_create(NULL);
   tab_sensors_ptr = lv_obj_create(NULL);
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   tab_calibration_ptr = lv_obj_create(NULL);
+#endif
   tab_track_test_ptr = lv_obj_create(NULL);
+#if STEER_TAB_DEBUG_ENABLED == 1
   tab_debug_ptr = lv_obj_create(NULL);
+#endif
   notif_screen = lv_obj_create(NULL);
   tab_engineer_mode_ptr = lv_obj_create(NULL);
   tab_cooling_ptr = lv_obj_create(NULL);
@@ -52,8 +65,14 @@ void tab_manager(void) {
 
   lv_group_add_obj(g, tab_racing_ptr);
   lv_group_add_obj(g, tab_sensors_ptr);
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   lv_group_add_obj(g, tab_calibration_ptr);
+#endif
+
+#if STEER_TAB_DEBUG_ENABLED == 1
   lv_group_add_obj(g, tab_debug_ptr);
+#endif
+
   lv_group_add_obj(g, tab_track_test_ptr);
   lv_group_add_obj(g, notif_screen);
   lv_group_add_obj(g, tab_engineer_mode_ptr);
@@ -69,8 +88,14 @@ void tab_manager(void) {
 
   tab_racing_create(tab_racing_ptr);
   tab_sensors_create(tab_sensors_ptr);
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   tab_calibration_create(tab_calibration_ptr);
+#endif
+
+#if STEER_TAB_DEBUG_ENABLED == 1
   tab_debug_create(tab_debug_ptr);
+#endif
+
   tab_track_test_create(tab_track_test_ptr);
   tab_notification_screen_create(notif_screen);
   tab_engineer_screen_create(tab_engineer_mode_ptr);
@@ -121,12 +146,16 @@ void load_current_racing_tab() {
   case TAB_RACING:
     lv_scr_load(tab_racing_ptr);
     break;
+#if STEER_TAB_CALIBRATION_ENABLED == 1
   case TAB_CALIBRATION:
     lv_scr_load(tab_calibration_ptr);
     break;
+#endif
+#if STEER_TAB_DEBUG_ENABLED == 1
   case TAB_DEBUG:
     lv_scr_load(tab_debug_ptr);
     break;
+#endif
   case TAB_TRACK_TEST:
     lv_scr_load(tab_track_test_ptr);
     break;

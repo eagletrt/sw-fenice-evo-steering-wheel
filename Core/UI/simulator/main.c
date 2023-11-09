@@ -19,6 +19,7 @@
 #include "lv-drivers/indev/mousewheel.h"
 #include "lvgl.h"
 #include "steering.h"
+#include "steering_config.h"
 #include "tab_manager.h"
 #include <SDL2/SDL.h>
 
@@ -331,12 +332,20 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
     break;
   }
   case 'a':
+#if STEER_TAB_CALIBRATION_ENABLED == 1
     shift_box_focus(true);
+#endif
+#if STEER_TAB_DEBUG_ENABLED == 1
     change_errors_view(false);
+#endif
     break;
   case 's':
+#if STEER_TAB_CALIBRATION_ENABLED == 1
     shift_box_focus(false);
+#endif
+#if STEER_TAB_DEBUG_ENABLED == 1
     change_errors_view(true);
+#endif
     break;
   case 'd':
     calibration_tool_set_min_max(true);

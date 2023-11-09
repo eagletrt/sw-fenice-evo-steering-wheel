@@ -1,6 +1,10 @@
 #ifndef TAB_DEBUG_H
 #define TAB_DEBUG_H
 
+#include "steering_config.h"
+
+#if STEER_TAB_DEBUG_ENABLED == 1
+
 #include "lvgl.h"
 #include "steering.h"
 #include "utils.h"
@@ -35,4 +39,6 @@ lv_obj_t *cell_create(lv_obj_t *parent, const char *text, uint8_t pos_row,
 
 void change_errors_view(bool dir_left);
 
-#endif // TAB_DEBUG_HVFEEDBACKS_H
+#endif // STEER_TAB_DEBUG_ENABLED
+
+#endif // TAB_DEBUG_H
