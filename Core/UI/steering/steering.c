@@ -162,9 +162,9 @@ void speed_update(void) {
   }
   lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "KM/H");
   snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%.0f",
-           (primary_speed_last_state.encoder_l +
-            primary_speed_last_state.encoder_r) /
-               2.0f);
+           fabs((primary_speed_last_state.encoder_l +
+                 primary_speed_last_state.encoder_r) /
+                2.0f));
   set_tab_racing_lb_speed(sprintf_buffer);
   set_tab_track_test_lb_speed(sprintf_buffer);
 }
@@ -318,7 +318,8 @@ void lv_errors_update() {}
 
 void steering_angle_update() {
   sprintf(sprintf_buffer, "%.1f", secondary_steering_angle_last_state.angle);
-  set_tab_track_test_lb_steering_angle(sprintf_buffer);
+  set_tab_track_test_steering_angle_bar(
+      secondary_steering_angle_last_state.angle);
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   set_tab_calibration_lb_steering_angle(sprintf_buffer);
   calibration_box_t *curr_focus = get_tab_calibration_curr_focus();

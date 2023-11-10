@@ -23,7 +23,9 @@ typedef enum {
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   TAB_CALIBRATION,
 #endif
+#if STEER_TAB_DEBUG_ENABLED == 1
   TAB_DEBUG,
+#endif
   TAB_TRACK_TEST,
   TAB_SENSORS,
   // add here new tabs
@@ -59,6 +61,7 @@ LV_FONT_DECLARE(lv_font_inter_bold_20);
 LV_FONT_DECLARE(lv_font_inter_bold_22);
 LV_FONT_DECLARE(lv_font_inter_bold_30);
 LV_FONT_DECLARE(lv_font_inter_bold_38);
+LV_FONT_DECLARE(lv_font_inter_bold_70);
 
 extern lv_style_t grid_style;
 extern lv_style_t label_style;

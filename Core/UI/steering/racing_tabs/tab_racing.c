@@ -391,7 +391,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // speedometer
   lv_obj_t *speed = lv_vertical_pair_two_labels(
-      data_panel, &tab_racing_lb_speed, "IDLE", &lv_font_inter_bold_38,
+      data_panel, &tab_racing_lb_speed, "IDLE", &lv_font_inter_bold_70,
       &tab_racing_bottom_lb_speed, "-", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);

@@ -138,7 +138,7 @@ void set_tab_sensors_lb_right_inverter_temp(const char *s);
 
 void set_tab_track_test_lb_inverter_speed_x(const char *s);
 void set_tab_track_test_lb_inverter_speed_y(const char *s);
-void set_tab_track_test_lb_steering_angle(const char *s);
+void set_tab_track_test_steering_angle_bar(float v);
 void set_tab_track_test_lb_speed(const char *s);
 
 lv_obj_t *get_tab_racing_bottom_lb_speed();

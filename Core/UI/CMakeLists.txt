@@ -37,6 +37,7 @@ add_executable(SteeringSimulator
     steering/fonts/lv_font_inter_bold_22.c
     steering/fonts/lv_font_inter_bold_30.c
     steering/fonts/lv_font_inter_bold_38.c
+    steering/fonts/lv_font_inter_bold_70.c
     simulator/can.c
     simulator/main.c
     simulator/mouse_cursor_icon.c

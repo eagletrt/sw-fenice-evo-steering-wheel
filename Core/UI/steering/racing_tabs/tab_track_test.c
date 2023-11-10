@@ -2,27 +2,28 @@
 #include <stdio.h>
 
 #define CELL_HEIGHT 200
-#define CELL_WIDTH 350
+#define CELL_WIDTH 700
 
 lv_obj_t *tab_track_test_lb_speed;
 lv_obj_t *tab_track_test_lb_inverter_speed_x;
 lv_obj_t *tab_track_test_lb_steering_angle;
 lv_obj_t *tab_track_test_lb_inverter_speed_y;
+lv_obj_t *tab_track_test_steering_angle_bar;
 
 void set_tab_track_test_lb_speed(const char *s) {
   lv_label_set_text(tab_track_test_lb_speed, s);
 }
 
 void set_tab_track_test_lb_inverter_speed_x(const char *s) {
-  lv_label_set_text(tab_track_test_lb_inverter_speed_x, s);
+  // lv_label_set_text(tab_track_test_lb_inverter_speed_x, s);
 }
 
-void set_tab_track_test_lb_steering_angle(const char *s) {
-  lv_label_set_text(tab_track_test_lb_steering_angle, s);
+void set_tab_track_test_steering_angle_bar(float v) {
+  lv_bar_set_value(tab_track_test_steering_angle_bar, v, LV_ANIM_OFF);
 }
 
 void set_tab_track_test_lb_inverter_speed_y(const char *s) {
-  lv_label_set_text(tab_track_test_lb_inverter_speed_y, s);
+  // lv_label_set_text(tab_track_test_lb_inverter_speed_y, s);
 }
 
 void tab_track_test_create(lv_obj_t *parent) {
@@ -76,8 +77,6 @@ void tab_track_test_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(data_panel, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
-  /*--- DATA PANEL: cell 0,0 ---*/
-
   static lv_coord_t lxd_panel_cols[] = {CELL_WIDTH, LV_GRID_TEMPLATE_LAST};
   static lv_coord_t lxd_panel_rows[] = {CELL_HEIGHT, LV_GRID_TEMPLATE_LAST};
 
@@ -95,13 +94,13 @@ void tab_track_test_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(up_left_data_panel, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
-  lv_obj_t *speed = lv_vertical_pair_label(
-      up_left_data_panel, &tab_track_test_lb_speed, "0", &lv_font_inter_bold_38,
-      "KM/H", &lv_font_inter_bold_22);
-  lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER,
-                       0, 1);
-
-  /*--- cell 1,0 ---*/
+  tab_track_test_steering_angle_bar = lv_bar_create(up_left_data_panel);
+  lv_obj_set_size(tab_track_test_steering_angle_bar, 200, 20);
+  lv_obj_align(tab_track_test_steering_angle_bar, LV_ALIGN_CENTER, 0, 0);
+  lv_bar_set_range(tab_track_test_steering_angle_bar, -360.0f, 360.0f);
+  lv_bar_set_value(tab_track_test_steering_angle_bar, 0.0f, LV_ANIM_ON);
+  lv_obj_set_grid_cell(tab_track_test_steering_angle_bar, LV_GRID_ALIGN_CENTER,
+                       0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *low_left_data_panel = lv_obj_create(data_panel);
   lv_obj_set_layout(low_left_data_panel, LV_LAYOUT_GRID);
@@ -119,56 +118,8 @@ void tab_track_test_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
   lv_obj_t *x_axis_g = lv_vertical_pair_label(
-      low_left_data_panel, &tab_track_test_lb_inverter_speed_x, "0",
-      &lv_font_inter_bold_38, "ACCELERATION\nAX/G", &lv_font_inter_bold_22);
+      low_left_data_panel, &tab_track_test_lb_speed, "0",
+      &lv_font_inter_bold_70, "SPEED\nKM/H", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(x_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
-                       LV_GRID_ALIGN_CENTER, 0, 1);
-
-  /*--- cell 0,1 ---*/
-
-  lv_obj_t *up_right_data_panel = lv_obj_create(data_panel);
-  lv_obj_set_layout(up_right_data_panel, LV_LAYOUT_GRID);
-  lv_obj_remove_style_all(up_right_data_panel);
-  lv_obj_clear_flag(up_right_data_panel, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_set_size(up_right_data_panel, CELL_WIDTH, CELL_HEIGHT);
-
-  lv_obj_add_style(up_right_data_panel, &box_panels_style, 0);
-  lv_obj_center(up_right_data_panel);
-  lv_obj_set_style_base_dir(up_right_data_panel, LV_BASE_DIR_LTR, 0);
-  lv_obj_set_grid_dsc_array(up_right_data_panel, lxd_panel_cols,
-                            lxd_panel_rows);
-
-  lv_obj_set_grid_cell(up_right_data_panel, LV_GRID_ALIGN_CENTER, 1, 1,
-                       LV_GRID_ALIGN_CENTER, 0, 1);
-
-#if 1
-  lv_obj_t *steer_angle =
-      lv_triple_label(up_right_data_panel, &tab_track_test_lb_steering_angle,
-                      "NA", &lv_font_inter_bold_38, "°", &lv_font_inter_bold_22,
-                      "STEERING ANGLE", &lv_font_inter_bold_22);
-  lv_obj_set_grid_cell(steer_angle, LV_GRID_ALIGN_CENTER, 0, 1,
-                       LV_GRID_ALIGN_CENTER, 0, 1);
-#endif
-  /*--- cell 1,1 ----*/
-
-  lv_obj_t *low_right_data_panel = lv_obj_create(data_panel);
-  lv_obj_set_layout(low_right_data_panel, LV_LAYOUT_GRID);
-  lv_obj_remove_style_all(low_right_data_panel);
-  lv_obj_clear_flag(low_right_data_panel, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_set_size(low_right_data_panel, CELL_WIDTH, CELL_HEIGHT);
-
-  lv_obj_add_style(low_right_data_panel, &box_panels_style, 0);
-  lv_obj_center(low_right_data_panel);
-  lv_obj_set_style_base_dir(low_right_data_panel, LV_BASE_DIR_LTR, 0);
-  lv_obj_set_grid_dsc_array(low_right_data_panel, lxd_panel_cols,
-                            lxd_panel_rows);
-
-  lv_obj_set_grid_cell(low_right_data_panel, LV_GRID_ALIGN_STRETCH, 1, 1,
-                       LV_GRID_ALIGN_CENTER, 1, 1);
-
-  lv_obj_t *y_axis_g = lv_vertical_pair_label(
-      low_right_data_panel, &tab_track_test_lb_inverter_speed_y, "0",
-      &lv_font_inter_bold_38, "ACCELERATION\nAY/G", &lv_font_inter_bold_22);
-  lv_obj_set_grid_cell(y_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 }
