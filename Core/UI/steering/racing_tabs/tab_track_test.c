@@ -4,10 +4,9 @@
 #define CELL_HEIGHT 200
 #define CELL_WIDTH 700
 
-lv_obj_t *tab_track_test_lb_speed;
-lv_obj_t *tab_track_test_lb_inverter_speed_x;
+lv_obj_t *tab_track_test_lb_target;
 lv_obj_t *tab_track_test_lb_steering_angle;
-lv_obj_t *tab_track_test_lb_inverter_speed_y;
+lv_obj_t *tab_track_test_lb_speed;
 lv_obj_t *tab_track_test_steering_angle_bar;
 
 float dmt_steering_angle_target = 0.0f;
@@ -24,10 +23,9 @@ void set_tab_track_test_lb_inverter_speed_x(const char *s) {
 
 void set_tab_track_test_steering_angle_bar(float v) {
   char b[100];
-  snprintf(b, 100, "%.1f", dmt_steering_angle_target);
-  update_sensors_extra_value(b, 1);
   snprintf(b, 100, "%.1f", v);
   update_sensors_extra_value(b, 2);
+  lv_label_set_text(tab_track_test_lb_steering_angle, b);
   v = fmax(v, dmt_steering_angle_target - STEERING_ANGLE_TARGET_LIMITS);
   v = fmin(v, dmt_steering_angle_target + STEERING_ANGLE_TARGET_LIMITS);
   if ((dmt_steering_angle_target + STEERING_ANGLE_TARGET_DELTA) > v &&
@@ -49,6 +47,9 @@ void set_tab_track_test_dmt_steering_angle_target(float v) {
                    v - STEERING_ANGLE_TARGET_LIMITS - 10.0f,
                    v + STEERING_ANGLE_TARGET_LIMITS + 10.0f);
   char b[100];
+  snprintf(b, 100, "%.1f", dmt_steering_angle_target);
+  update_sensors_extra_value(b, 1);
+  lv_label_set_text(tab_track_test_lb_target, b);
   snprintf(b, 100, "new target at: %.2f", v);
   display_notification(b, 1000);
 }
@@ -152,24 +153,46 @@ void tab_track_test_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(tab_track_test_steering_angle_bar, LV_GRID_ALIGN_CENTER,
                        0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-  lv_obj_t *low_left_data_panel = lv_obj_create(data_panel);
-  lv_obj_set_layout(low_left_data_panel, LV_LAYOUT_GRID);
-  lv_obj_remove_style_all(low_left_data_panel);
-  lv_obj_clear_flag(low_left_data_panel, LV_OBJ_FLAG_SCROLLABLE);
-  lv_obj_set_size(low_left_data_panel, CELL_WIDTH, CELL_HEIGHT);
+  #define tab_terminal_col_ration_base (SCREEN_WIDTH - 100) / 3
+  static lv_coord_t tab_terminal_cols_ratios[] = {
+      tab_terminal_col_ration_base, tab_terminal_col_ration_base, tab_terminal_col_ration_base,
+      LV_GRID_TEMPLATE_LAST};
+  static lv_coord_t tab_terminal_rows_ratios[] = {
+      (TAB_TRACK_DATA_PANEL_HEIGHT / 2 ), LV_GRID_TEMPLATE_LAST};
 
-  lv_obj_add_style(low_left_data_panel, &box_panels_style, 0);
-  lv_obj_center(low_left_data_panel);
-  lv_obj_set_style_base_dir(low_left_data_panel, LV_BASE_DIR_LTR, 0);
-  lv_obj_set_grid_dsc_array(low_left_data_panel, lxd_panel_cols,
+  lv_obj_t *label_panel = lv_obj_create(data_panel);
+  lv_obj_set_layout(label_panel, LV_LAYOUT_GRID);
+  lv_obj_remove_style_all(label_panel);
+  lv_obj_clear_flag(label_panel, LV_OBJ_FLAG_SCROLLABLE);
+  lv_obj_set_size(label_panel, CELL_WIDTH, CELL_HEIGHT);
+
+  lv_obj_add_style(label_panel, &box_panels_style, 0);
+  lv_obj_center(label_panel);
+  lv_obj_set_style_base_dir(label_panel, LV_BASE_DIR_LTR, 0);
+  lv_obj_set_grid_dsc_array(label_panel, lxd_panel_cols,
                             lxd_panel_rows);
 
-  lv_obj_set_grid_cell(low_left_data_panel, LV_GRID_ALIGN_CENTER, 0, 1,
+  lv_obj_set_grid_dsc_array(label_panel, tab_terminal_cols_ratios,
+                            tab_terminal_rows_ratios);
+  lv_obj_set_grid_cell(label_panel, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 1, 1);
 
+  lv_obj_t *x_axis_h = lv_vertical_pair_label(
+      label_panel, &tab_track_test_lb_target, "0",
+      &lv_font_inter_bold_30, "TARGET\ndegrees", &lv_font_inter_bold_22);
+  lv_obj_set_grid_cell(x_axis_h, LV_GRID_ALIGN_CENTER, 0, 1,
+                       LV_GRID_ALIGN_CENTER, 0, 1);
+
   lv_obj_t *x_axis_g = lv_vertical_pair_label(
-      low_left_data_panel, &tab_track_test_lb_speed, "0",
+      label_panel, &tab_track_test_lb_speed, "0",
       &lv_font_inter_bold_70, "SPEED\nKM/H", &lv_font_inter_bold_22);
-  lv_obj_set_grid_cell(x_axis_g, LV_GRID_ALIGN_CENTER, 0, 1,
+  lv_obj_set_grid_cell(x_axis_g, LV_GRID_ALIGN_CENTER, 1, 1,
+                       LV_GRID_ALIGN_CENTER, 0, 1);
+
+  lv_obj_t *x_axis_j = lv_vertical_pair_label(
+      label_panel, &tab_track_test_lb_steering_angle, "0",
+      &lv_font_inter_bold_30, "STEERING ANGLE\ndegrees",
+      &lv_font_inter_bold_22);
+  lv_obj_set_grid_cell(x_axis_j, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 }
