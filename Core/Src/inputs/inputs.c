@@ -24,6 +24,10 @@ lv_timer_t *send_set_car_status_long_press_delay = NULL;
 int power_map_last_state = 0;
 int hv_fans_override_last_state = 0;
 
+#define ERROR_THRESHOLD 100
+uint32_t inputs_error_counter = 0;
+bool inputs_fatal_error = false;
+
 void shutdown_circuit_turn_on_off(void);
 
 int imin(int x, int y) { return x > y ? y : x; }
@@ -292,8 +296,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 void read_buttons(void) {
   uint8_t button_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1,
-                       &button_input, 1, 100) != HAL_OK)
+                       &button_input, 1, 100) != HAL_OK) {
+    if (inputs_error_counter > ERROR_THRESHOLD) {
+      enter_fatal_error_mode("INPUT ERROR: BUTTONS");
+    }
+    inputs_error_counter++;
     return;
+  }
+  inputs_error_counter = 0;
   from_gpio_to_buttons(button_input);
   dev1.gpio[1] = button_input;
 }
@@ -368,8 +378,15 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
 void read_manettino_left(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOA, 1,
-                       &manettino_input, 1, 100) != HAL_OK)
+                       &manettino_input, 1, 100) != HAL_OK) {
+    if (inputs_error_counter > ERROR_THRESHOLD) {
+      inputs_fatal_error = true;
+      enter_fatal_error_mode("INPUT ERROR: MANETTINO LEFT");
+    }
+    inputs_error_counter++;
     return;
+  }
+  inputs_error_counter = 0;
   if (manettino_input != dev1.gpio[0]) {
     manettini_actions(manettino_input, MANETTINO_LEFT_INDEX);
     dev1.gpio[0] = manettino_input;
@@ -379,8 +396,15 @@ void read_manettino_left(void) {
 void read_manettino_center(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOB, 1,
-                       &manettino_input, 1, 100) != HAL_OK)
+                       &manettino_input, 1, 100) != HAL_OK) {
+    if (inputs_error_counter > ERROR_THRESHOLD) {
+      inputs_fatal_error = true;
+      enter_fatal_error_mode("INPUT ERROR: MANETTINO CENTER");
+    }
+    inputs_error_counter++;
     return;
+  }
+  inputs_error_counter = 0;
   if (manettino_input != dev2.gpio[1]) {
     manettini_actions(manettino_input, MANETTINO_CENTER_INDEX);
     dev2.gpio[1] = manettino_input;
@@ -390,8 +414,15 @@ void read_manettino_center(void) {
 void read_manettino_right(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOA, 1,
-                       &manettino_input, 1, 100) != HAL_OK)
+                       &manettino_input, 1, 100) != HAL_OK) {
+    if (inputs_error_counter > ERROR_THRESHOLD) {
+      inputs_fatal_error = true;
+      enter_fatal_error_mode("INPUT ERROR: MANETTINO RIGHT");
+    }
+    inputs_error_counter++;
     return;
+  }
+  inputs_error_counter = 0;
   if (manettino_input != dev2.gpio[0]) {
     manettini_actions(manettino_input, MANETTINO_RIGHT_INDEX);
     dev2.gpio[0] = manettino_input;
