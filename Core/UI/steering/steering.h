@@ -140,6 +140,7 @@ void set_tab_track_test_lb_inverter_speed_x(const char *s);
 void set_tab_track_test_lb_inverter_speed_y(const char *s);
 void set_tab_track_test_steering_angle_bar(float v);
 void set_tab_track_test_lb_speed(const char *s);
+void set_tab_track_test_dmt_steering_angle_target(float f);
 
 lv_obj_t *get_tab_racing_bottom_lb_speed();
 lv_obj_t *get_tab_racing_custom_meter();

@@ -135,6 +135,7 @@ void buttons_pressed_actions(uint8_t button) {
       switch_cansniffer();
 #endif
     } else {
+      set_dmt_steering_angle_target();
     }
     break;
   case BUTTON_TOP_LEFT:

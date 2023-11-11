@@ -485,20 +485,20 @@ void tab_sensors_create(lv_obj_t *parent) {
 /* 4th row */
 #if 1
   lv_obj_t *cooling_rad_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_extra_value0, "V1", &lv_font_inter_bold_30,
+      right_data_panel, &tab_sensors_extra_value0, "NA", &lv_font_inter_bold_30,
       "-", &lv_font_inter_bold_22, "-", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(cooling_rad_lb, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
   lv_obj_t *cooling_pump_lb = lv_triple_label(
-      right_data_panel, &tab_sensors_extra_value1, "V2", &lv_font_inter_bold_30,
-      "-", &lv_font_inter_bold_22, "-", &lv_font_inter_bold_20);
+      right_data_panel, &tab_sensors_extra_value1, "NA", &lv_font_inter_bold_30,
+      "deg", &lv_font_inter_bold_22, "GOAL", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(cooling_pump_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 3, 1);
 
   lv_obj_t *y11 = lv_triple_label(
-      right_data_panel, &tab_sensors_extra_value2, "V3", &lv_font_inter_bold_30,
-      "-", &lv_font_inter_bold_22, "-", &lv_font_inter_bold_20);
+      right_data_panel, &tab_sensors_extra_value2, "NA", &lv_font_inter_bold_30,
+      "deg", &lv_font_inter_bold_22, "ANGLE", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(y11, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 3,
                        1);
 

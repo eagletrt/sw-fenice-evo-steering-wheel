@@ -160,11 +160,12 @@ void speed_update(void) {
       primary_car_status_car_status_DRIVE) {
     return;
   }
+  float speed = fabs((primary_speed_last_state.encoder_l +
+                      primary_speed_last_state.encoder_r) /
+                     2.0f) *
+                3.6 * 0.203;
   lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "KM/H");
-  snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%.0f",
-           fabs((primary_speed_last_state.encoder_l +
-                 primary_speed_last_state.encoder_r) /
-                2.0f));
+  snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%.0f", speed);
   set_tab_racing_lb_speed(sprintf_buffer);
   set_tab_track_test_lb_speed(sprintf_buffer);
 }

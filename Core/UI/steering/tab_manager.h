@@ -1,3 +1,5 @@
+#include "steering_config.h"
+
 #ifndef TAB_MANAGER_H
 #define TAB_MANAGER_H
 
@@ -17,7 +19,6 @@
 #include "racing_tabs/tab_sensors.h"
 #include "racing_tabs/tab_track_test.h"
 #include "steering.h"
-#include "steering_config.h"
 #include "utils.h"
 #ifndef STM32H723xx
 #include "lv-drivers/indev/keyboard.h"

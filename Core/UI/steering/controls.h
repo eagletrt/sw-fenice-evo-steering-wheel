@@ -61,6 +61,7 @@ typedef enum {
 void prepare_set_car_status(void);
 bool send_set_car_status_directly(void);
 
+void set_dmt_steering_angle_target(void);
 void manettino_send_slip_control(float);
 void manettino_send_torque_vectoring(float);
 void manettino_send_power_map(float);

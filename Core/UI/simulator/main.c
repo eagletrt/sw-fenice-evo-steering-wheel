@@ -376,7 +376,7 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
     break;
   }
   case 'p': {
-    tab_terminal_new_message("Hello, Sailor!");
+    set_dmt_steering_angle_target();
     break;
   }
   case 'r': {

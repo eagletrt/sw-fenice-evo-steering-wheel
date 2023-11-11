@@ -20,6 +20,7 @@ extern lv_obj_t *set_max_btn;
 #endif
 char sprintf_buffer_controls[BUFSIZ];
 
+extern secondary_steering_angle_converted_t secondary_steering_angle_last_state;
 extern primary_tlm_status_converted_t primary_tlm_status_last_state;
 extern primary_car_status_converted_t primary_car_status_last_state;
 primary_steer_status_converted_t steer_status_last_state = {
@@ -29,6 +30,11 @@ primary_cooling_status_converted_t steering_cooling_settings = {
 primary_hv_fans_override_converted_t hv_fans_override_settings = {
     .fans_override = primary_hv_fans_override_fans_override_OFF,
     .fans_speed = 0.0f};
+
+void set_dmt_steering_angle_target(void) {
+  set_tab_track_test_dmt_steering_angle_target(
+      secondary_steering_angle_last_state.angle);
+}
 
 void turn_telemetry_on_off(void) {
   primary_set_tlm_status_converted_t converted = {0};

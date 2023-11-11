@@ -237,6 +237,7 @@ Core/UI/steering/fonts/lv_font_inter_bold_20.c \
 Core/UI/steering/fonts/lv_font_inter_bold_22.c \
 Core/UI/steering/fonts/lv_font_inter_bold_30.c \
 Core/UI/steering/fonts/lv_font_inter_bold_38.c \
+Core/UI/steering/fonts/lv_font_inter_bold_70.c \
 Core/UI/steering/graphics_manager.c \
 Core/UI/steering/maxheap.c \
 Core/UI/steering/racing_tabs/tab_calibration.c \
@@ -387,7 +388,7 @@ CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32H723ZGTx_FLASH_shifted.ld
+LDSCRIPT = STM32H723ZGTx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 

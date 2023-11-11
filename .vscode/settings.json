@@ -81,7 +81,8 @@
         "internet": "c",
         "socket": "c",
         "tab_calibration.h": "c",
-        "steering_config.h": "c"
+        "steering_config.h": "c",
+        "tab_track_test.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

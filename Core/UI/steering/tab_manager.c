@@ -1,5 +1,4 @@
 #include "tab_manager.h"
-#include "steering_config.h"
 
 lv_obj_t *tab_racing_ptr;
 lv_obj_t *tab_sensors_ptr;

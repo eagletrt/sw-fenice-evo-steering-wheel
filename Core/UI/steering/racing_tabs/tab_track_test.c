@@ -10,6 +10,10 @@ lv_obj_t *tab_track_test_lb_steering_angle;
 lv_obj_t *tab_track_test_lb_inverter_speed_y;
 lv_obj_t *tab_track_test_steering_angle_bar;
 
+float dmt_steering_angle_target = 0.0f;
+#define STEERING_ANGLE_TARGET_DELTA 5.0f
+#define STEERING_ANGLE_TARGET_LIMITS 30.0f
+
 void set_tab_track_test_lb_speed(const char *s) {
   lv_label_set_text(tab_track_test_lb_speed, s);
 }
@@ -19,7 +23,34 @@ void set_tab_track_test_lb_inverter_speed_x(const char *s) {
 }
 
 void set_tab_track_test_steering_angle_bar(float v) {
+  char b[100];
+  snprintf(b, 100, "%.1f", dmt_steering_angle_target);
+  update_sensors_extra_value(b, 1);
+  snprintf(b, 100, "%.1f", v);
+  update_sensors_extra_value(b, 2);
+  v = fmax(v, dmt_steering_angle_target - STEERING_ANGLE_TARGET_LIMITS);
+  v = fmin(v, dmt_steering_angle_target + STEERING_ANGLE_TARGET_LIMITS);
+  if ((dmt_steering_angle_target + STEERING_ANGLE_TARGET_DELTA) > v &&
+      (dmt_steering_angle_target - STEERING_ANGLE_TARGET_DELTA) < v) {
+    lv_obj_set_style_bg_color(tab_track_test_steering_angle_bar,
+                              lv_color_hex(COLOR_GREEN_STATUS_HEX),
+                              LV_PART_INDICATOR);
+  } else {
+    lv_obj_set_style_bg_color(tab_track_test_steering_angle_bar,
+                              lv_color_hex(COLOR_RED_STATUS_HEX),
+                              LV_PART_INDICATOR);
+  }
   lv_bar_set_value(tab_track_test_steering_angle_bar, v, LV_ANIM_OFF);
+}
+
+void set_tab_track_test_dmt_steering_angle_target(float v) {
+  dmt_steering_angle_target = v;
+  lv_bar_set_range(tab_track_test_steering_angle_bar,
+                   v - STEERING_ANGLE_TARGET_LIMITS - 10.0f,
+                   v + STEERING_ANGLE_TARGET_LIMITS + 10.0f);
+  char b[100];
+  snprintf(b, 100, "new target at: %.2f", v);
+  display_notification(b, 1000);
 }
 
 void set_tab_track_test_lb_inverter_speed_y(const char *s) {
@@ -94,11 +125,30 @@ void tab_track_test_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(up_left_data_panel, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
+  static lv_style_t gs;
+  lv_style_init(&gs);
+  lv_style_set_bg_opa(&gs, LV_OPA_COVER);
+  lv_style_set_bg_color(&gs, lv_color_hex(COLOR_GREEN_STATUS_HEX));
+
+  static lv_style_t ggs;
+  lv_style_init(&ggs);
+  lv_style_set_bg_opa(&ggs, LV_OPA_COVER);
+  lv_style_set_bg_color(&ggs, lv_color_hex(COLOR_SECONDARY_HEX));
+
   tab_track_test_steering_angle_bar = lv_bar_create(up_left_data_panel);
-  lv_obj_set_size(tab_track_test_steering_angle_bar, 200, 20);
+  lv_obj_remove_style_all(tab_track_test_steering_angle_bar);
+  lv_obj_add_style(tab_track_test_steering_angle_bar, &gs, LV_PART_INDICATOR);
+  lv_obj_add_style(tab_track_test_steering_angle_bar, &ggs, LV_PART_MAIN);
+
+  lv_obj_set_size(tab_track_test_steering_angle_bar, 650, 80);
   lv_obj_align(tab_track_test_steering_angle_bar, LV_ALIGN_CENTER, 0, 0);
-  lv_bar_set_range(tab_track_test_steering_angle_bar, -360.0f, 360.0f);
-  lv_bar_set_value(tab_track_test_steering_angle_bar, 0.0f, LV_ANIM_ON);
+  lv_obj_set_style_bg_color(tab_track_test_steering_angle_bar,
+                            lv_color_hex(COLOR_GREEN_STATUS_HEX),
+                            LV_PART_INDICATOR);
+  lv_bar_set_range(tab_track_test_steering_angle_bar,
+                   -(STEERING_ANGLE_TARGET_LIMITS + 10.0f),
+                   (STEERING_ANGLE_TARGET_LIMITS + 10.0f));
+  lv_bar_set_value(tab_track_test_steering_angle_bar, 0.0f, LV_ANIM_OFF);
   lv_obj_set_grid_cell(tab_track_test_steering_angle_bar, LV_GRID_ALIGN_CENTER,
                        0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
