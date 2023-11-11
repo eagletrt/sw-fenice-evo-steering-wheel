@@ -141,22 +141,22 @@ void calibration_tool_set_min_max(bool maxv) {
 void manettino_send_slip_control(float val) {
   steer_status_last_state.map_sc = val;
   int map_val = (int)(steer_status_last_state.map_sc * 100.0f);
-  sprintf(sprintf_buffer_controls, "SLIP CONTROL %u", map_val);
-  display_notification(sprintf_buffer_controls, 750);
+  sprintf(sprintf_buffer_controls, "%u", map_val);
+  set_tab_racing_lb_slip(sprintf_buffer_controls);
 }
 
 void manettino_send_torque_vectoring(float val) {
   steer_status_last_state.map_tv = val;
   int map_val = (int)(steer_status_last_state.map_tv * 100.0f);
-  sprintf(sprintf_buffer_controls, "TORQUE VECTORING %u", map_val);
-  display_notification(sprintf_buffer_controls, 750);
+  sprintf(sprintf_buffer_controls, "%u", map_val);
+  set_tab_racing_lb_torque(sprintf_buffer_controls);
 }
 
 void manettino_send_power_map(float val) {
   steer_status_last_state.map_pw = val;
   float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
-  sprintf(sprintf_buffer_controls, "POWER MAP %.0f", map_val);
-  display_notification(sprintf_buffer_controls, 750);
+  sprintf(sprintf_buffer_controls, "%.0f", map_val);
+  set_tab_racing_lb_power(sprintf_buffer_controls);
 }
 
 void manettino_send_set_pumps_speed(float val) {
@@ -167,6 +167,7 @@ void manettino_send_set_pumps_speed(float val) {
   STEER_CAN_PACK(primary, PRIMARY, set_pumps_speed, SET_PUMPS_SPEED);
   can_send(&msg, true);
 
+#if 0
   int map_val = (int)(steering_cooling_settings.pumps_speed * 100.0f);
 
   if (steering_cooling_settings.pumps_speed < 0.0f) {
@@ -175,6 +176,7 @@ void manettino_send_set_pumps_speed(float val) {
     sprintf(sprintf_buffer_controls, "PUMPS SPEED %d", map_val);
   }
   display_notification(sprintf_buffer_controls, 750);
+#endif
 }
 
 void manettino_send_set_radiators(float val) {
@@ -184,6 +186,7 @@ void manettino_send_set_radiators(float val) {
   STEER_CAN_PACK(primary, PRIMARY, set_radiator_speed, SET_RADIATOR_SPEED);
   can_send(&msg, true);
 
+#if 0
   int map_val = (int)(steering_cooling_settings.radiators_speed * 100.0f);
 
   if (steering_cooling_settings.radiators_speed < 0.0f) {
@@ -191,7 +194,8 @@ void manettino_send_set_radiators(float val) {
   } else {
     sprintf(sprintf_buffer_controls, "RADIATORS SPEED %d", map_val);
   }
-  display_notification(sprintf_buffer_controls, 750);
+  // display_notification(sprintf_buffer_controls, 750);
+#endif
 }
 
 void send_pork_fans_status(float val) {
@@ -209,6 +213,7 @@ void send_pork_fans_status(float val) {
   STEER_CAN_PACK(primary, PRIMARY, hv_fans_override, HV_FANS_OVERRIDE);
   can_send(&msg, true);
 
+#if 0
   int map_val = (int)(hv_fans_override_settings.fans_speed * 100.0f);
   if (hv_fans_override_settings.fans_override ==
       primary_hv_fans_override_fans_override_OFF) {
@@ -217,6 +222,7 @@ void send_pork_fans_status(float val) {
     sprintf(sprintf_buffer_controls, "FANS %d", map_val);
   }
   display_notification(sprintf_buffer_controls, 750);
+#endif
 }
 
 void send_set_car_status(primary_set_car_status_car_status_set val) {

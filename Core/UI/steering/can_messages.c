@@ -5,6 +5,7 @@ extern primary_steer_status_converted_t steer_status_last_state;
 
 extern bool is_pmsg_new[primary_MESSAGE_COUNT];
 extern bool is_smsg_new[secondary_MESSAGE_COUNT];
+extern bool is_imsg_new[inverters_MESSAGE_COUNT];
 
 lv_timer_t *steer_status_task;
 lv_timer_t *steer_version_task;
@@ -19,7 +20,7 @@ char name_buffer[BUFSIZ];
 
 void send_steer_version(lv_timer_t *main_timer) {
   primary_steer_version_converted_t converted = {
-      .canlib_build_time = CANLIB_BUILD_TIME, .component_version = 1};
+      .canlib_build_time = CANLIB_BUILD_TIME, .component_build_time = 1};
   STEER_CAN_PACK(primary, PRIMARY, steer_version, STEER_VERSION)
   can_send(&msg, true);
 }
@@ -106,11 +107,6 @@ void handle_primary(can_message_t *msg) {
                      HV_CELL_BALANCING_STATUS, is_pmsg_new);
     break;
   }
-  case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, hv_feedbacks_status, HV_FEEDBACKS_STATUS,
-                     is_pmsg_new);
-    break;
-  }
   case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, lv_feedbacks, LV_FEEDBACKS, is_pmsg_new);
     break;
@@ -182,6 +178,14 @@ void handle_primary(can_message_t *msg) {
   case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT,
                      is_pmsg_new);
+    break;
+  }
+  case INVERTERS_INV_L_RCV_FRAME_ID: {
+    STEER_CAN_UNPACK(inverters, INVERTERS, inv_l_rcv, INV_L_RCV, is_imsg_new);
+    break;
+  }
+  case INVERTERS_INV_R_RCV_FRAME_ID: {
+    STEER_CAN_UNPACK(inverters, INVERTERS, inv_r_rcv, INV_R_RCV, is_imsg_new);
     break;
   }
   default:

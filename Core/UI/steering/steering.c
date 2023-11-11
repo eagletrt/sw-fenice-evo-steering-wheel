@@ -28,8 +28,6 @@ primary_hv_voltage_converted_t primary_hv_voltage_last_state = {0};
 primary_hv_current_converted_t primary_hv_current_last_state = {0};
 primary_hv_temp_converted_t primary_hv_temp_last_state = {0};
 primary_hv_errors_converted_t primary_hv_errors_last_state = {0};
-primary_hv_feedbacks_status_converted_t primary_hv_feedbacks_status_last_state =
-    {0};
 float hv_delta_last_state = 0.0f;
 
 primary_das_errors_converted_t primary_das_errors_last_state;
@@ -63,6 +61,8 @@ secondary_lap_count_converted_t secondary_lap_count_last_state = {0};
 secondary_lc_status_converted_t secondary_lc_status_last_state = {0};
 float current_delta_state = 0.0f;
 secondary_timestamp_converted_t secondary_timestamp_last_state = {0};
+inverters_inv_l_rcv_converted_t inverters_inv_l_rcv_last_state = {0};
+inverters_inv_r_rcv_converted_t inverters_inv_r_rcv_last_state = {0};
 uint32_t timestamp_start_lap = 0;
 
 void set_lb_estimated_velocity(const char *s) {
@@ -418,6 +418,59 @@ void lc_status_update(secondary_lc_status_converted_t *data) {
   sprintf(sprintf_buffer, "%d", (int)secondary_lc_status_last_state.lap_number);
 
   set_tab_racing_lb_lap_count(sprintf_buffer);
+}
+
+#define INVERTER_MESSAGE_UNINITIALIZED -100.0f
+#define INVERTER_TEMP_CONVERSION(raw_temp)                                     \
+  -43.23745 + 0.01073427 * raw_temp - 5.523417e-7 * pow(raw_temp, 2) +         \
+      1.330787e-11 * pow(raw_temp, 3);
+float l_motor_temp = INVERTER_MESSAGE_UNINITIALIZED;
+float l_igbt_temp = INVERTER_MESSAGE_UNINITIALIZED;
+float r_motor_temp = INVERTER_MESSAGE_UNINITIALIZED;
+float r_igbt_temp = INVERTER_MESSAGE_UNINITIALIZED;
+
+void inv_l_rcv_update(void) {
+  if (inverters_inv_l_rcv_last_state.rcv_mux ==
+      INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
+    l_motor_temp = (inverters_inv_l_rcv_last_state.t_motor - 9393.9f) / 55.1f;
+    sprintf(sprintf_buffer, "%.0f", l_motor_temp);
+    set_tab_racing_lb_motor_temp(sprintf_buffer);
+
+    if (r_motor_temp != INVERTER_MESSAGE_UNINITIALIZED) {
+      sprintf(sprintf_buffer, "%.0f", (l_motor_temp + r_motor_temp) / 2.0f);
+      set_tab_sensors_lb_left_motor_temp(sprintf_buffer);
+    }
+  }
+
+  if (inverters_inv_l_rcv_last_state.rcv_mux ==
+      INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
+    l_igbt_temp =
+        INVERTER_TEMP_CONVERSION(inverters_inv_l_rcv_last_state.t_igbt);
+    sprintf(sprintf_buffer, "%.0f", l_igbt_temp);
+    set_tab_sensors_lb_left_inverter_temp(sprintf_buffer);
+
+    if (r_igbt_temp != INVERTER_MESSAGE_UNINITIALIZED) {
+      sprintf(sprintf_buffer, "%.0f", (l_igbt_temp + r_igbt_temp) / 2.0f);
+      set_tab_racing_lb_inverter_temp(sprintf_buffer);
+    }
+  }
+}
+
+void inv_r_rcv_update() {
+  if (inverters_inv_r_rcv_last_state.rcv_mux ==
+      INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
+    r_motor_temp = (inverters_inv_r_rcv_last_state.t_motor - 9393.9f) / 55.1f;
+    sprintf(sprintf_buffer, "%.0f", r_motor_temp);
+    set_tab_sensors_lb_right_motor_temp(sprintf_buffer);
+  }
+
+  if (inverters_inv_r_rcv_last_state.rcv_mux ==
+      INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
+    r_igbt_temp =
+        INVERTER_TEMP_CONVERSION(inverters_inv_r_rcv_last_state.t_igbt);
+    sprintf(sprintf_buffer, "%.0f", r_igbt_temp);
+    set_tab_sensors_lb_right_inverter_temp(sprintf_buffer);
+  }
 }
 
 void update_sensors_extra_value(const char *buf, uint8_t extra_value) {

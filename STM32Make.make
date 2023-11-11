@@ -44,6 +44,8 @@ Core/Lib/can/lib/primary/primary_network.c \
 Core/Lib/can/lib/primary/primary_watchdog.c \
 Core/Lib/can/lib/secondary/secondary_network.c \
 Core/Lib/can/lib/secondary/secondary_watchdog.c \
+Core/Lib/can/lib/simulator/simulator_network.c \
+Core/Lib/can/lib/simulator/simulator_watchdog.c \
 Core/Lib/lvgl-stm32/lvgl/src/core/lv_disp.c \
 Core/Lib/lvgl-stm32/lvgl/src/core/lv_event.c \
 Core/Lib/lvgl-stm32/lvgl/src/core/lv_group.c \

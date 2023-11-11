@@ -2,6 +2,8 @@
 #define CAN_MESSAGES_H
 
 #include "cansniffer.h"
+#include "inverters/inverters_network.h"
+#include "inverters/inverters_watchdog.h"
 #include "lvgl.h"
 #include "messages.h"
 #include "primary/primary_network.h"
@@ -23,8 +25,6 @@ extern primary_hv_voltage_converted_t primary_hv_voltage_last_state;
 extern primary_hv_current_converted_t primary_hv_current_last_state;
 extern primary_hv_temp_converted_t primary_hv_temp_last_state;
 extern primary_hv_errors_converted_t primary_hv_errors_last_state;
-extern primary_hv_feedbacks_status_converted_t
-    primary_hv_feedbacks_status_last_state;
 extern primary_das_errors_converted_t primary_das_errors_last_state;
 extern primary_lv_currents_converted_t primary_lv_currents_last_state;
 extern primary_lv_cells_voltage_converted_t primary_lv_cells_voltage_last_state;
@@ -54,6 +54,8 @@ extern secondary_imu_acceleration_converted_t
 extern secondary_lap_count_converted_t secondary_lap_count_last_state;
 extern secondary_lc_status_converted_t secondary_lc_status_last_state;
 extern secondary_timestamp_converted_t secondary_timestamp_last_state;
+extern inverters_inv_l_rcv_converted_t inverters_inv_l_rcv_last_state;
+extern inverters_inv_r_rcv_converted_t inverters_inv_r_rcv_last_state;
 
 bool can_send(can_message_t *msg, bool to_primary_network);
 

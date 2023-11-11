@@ -2,6 +2,7 @@
 #define STEERING_H
 
 #include "engineer_mode/tab_cooling.h"
+#include "inverters/inverters_network.h"
 #include "lvgl.h"
 #include "primary/primary_network.h"
 #include "secondary/secondary_network.h"
@@ -86,6 +87,8 @@ void pedals_output_update();
 void imu_acceleration_update();
 void lap_count_update();
 void lc_status_update();
+void inv_l_rcv_update(void);
+void inv_r_rcv_update(void);
 
 void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);
@@ -116,8 +119,8 @@ void set_tab_racing_lb_last_time(const char *s);
 void set_tab_racing_lb_delta_time(const char *s);
 void set_tab_racing_lb_best_time(const char *s);
 void set_tab_racing_lb_lap_count(const char *s);
-void set_tab_racing_lb_left_motor_temp(const char *s);
-void set_tab_racing_lb_left_inverter_temp(const char *s);
+void set_tab_racing_lb_motor_temp(const char *s);
+void set_tab_racing_lb_inverter_temp(const char *s);
 void set_tab_racing_lb_slip(const char *s);
 void set_tab_racing_lb_torque(const char *s);
 void set_tab_racing_lb_power(const char *s);

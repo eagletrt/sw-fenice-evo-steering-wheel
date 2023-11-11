@@ -5,6 +5,7 @@ lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
 bool is_pmsg_new[primary_MESSAGE_COUNT];
 bool is_smsg_new[secondary_MESSAGE_COUNT];
+bool is_imsg_new[inverters_MESSAGE_COUNT];
 
 void init_graphics_manager(void) {
   lv_init();
@@ -63,10 +64,6 @@ void update_graphics(lv_timer_t *t) {
         hv_cell_balancing_status_update();
         break;
       }
-      case PRIMARY_HV_FEEDBACKS_STATUS_FRAME_ID: {
-        hv_feedbacks_status_update();
-        break;
-      }
       case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
         lv_feedbacks_update();
         break;
@@ -103,6 +100,22 @@ void update_graphics(lv_timer_t *t) {
         lv_errors_update();
         break;
       }
+      default:
+        break;
+      }
+    }
+  }
+
+  for (uint16_t iindex = 0; iindex < inverters_MESSAGE_COUNT; iindex++) {
+    if (is_imsg_new[iindex]) {
+      can_id_t id = inverters_id_from_index(iindex);
+      switch (id) {
+      case INVERTERS_INV_L_RCV_FRAME_ID:
+        inv_l_rcv_update();
+        break;
+      case INVERTERS_INV_R_RCV_FRAME_ID:
+        inv_r_rcv_update();
+        break;
       default:
         break;
       }
