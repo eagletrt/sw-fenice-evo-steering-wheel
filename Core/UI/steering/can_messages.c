@@ -1,4 +1,6 @@
 #include "can_messages.h"
+#define _XOPEN_SOURCE
+#include <time.h>
 
 extern bool steering_initialized;
 extern primary_steer_status_converted_t steer_status_last_state;
@@ -19,8 +21,11 @@ extern bool cansniffer_initialized;
 char name_buffer[BUFSIZ];
 
 void send_steer_version(lv_timer_t *main_timer) {
+  struct tm timeinfo;
+  strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
   primary_steer_version_converted_t converted = {
-      .canlib_build_time = CANLIB_BUILD_TIME, .component_build_time = 1};
+      .canlib_build_time = CANLIB_BUILD_TIME,
+      .component_build_time = mktime(&timeinfo)};
   STEER_CAN_PACK(primary, PRIMARY, steer_version, STEER_VERSION)
   can_send(&msg, true);
 }
