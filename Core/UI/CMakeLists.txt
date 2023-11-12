@@ -42,6 +42,7 @@ add_executable(SteeringSimulator
     simulator/main.c
     simulator/mouse_cursor_icon.c
     simulator/queue.c
+    steering/watchdog.c
     ${LVGL_SOURCES}
     ${LVDRIVERS_SOURCES}
     ${CANLIB_SOURCES}

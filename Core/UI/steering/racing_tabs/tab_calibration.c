@@ -36,6 +36,10 @@ void set_tab_calibration_lb_steering_angle(const char *s) {
   lv_label_set_text(tab_calibration_lb_steering_angle, s);
 }
 
+void tab_calibration_lb_steering_angle_invalidate() {
+  lv_label_set_text(tab_calibration_lb_steering_angle, "NA");
+}
+
 void init_calibration_tab_styles(void) {
   /* BOX STYLE */
   lv_style_init(&box_style);

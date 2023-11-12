@@ -5,6 +5,10 @@
 extern bool steering_initialized;
 extern primary_steer_status_converted_t steer_status_last_state;
 
+extern primary_watchdog m_primary_watchdog;
+extern secondary_watchdog m_secondary_watchdog;
+extern inverters_watchdog m_inverters_watchdog;
+
 extern bool is_pmsg_new[primary_MESSAGE_COUNT];
 extern bool is_smsg_new[secondary_MESSAGE_COUNT];
 extern bool is_imsg_new[inverters_MESSAGE_COUNT];
@@ -237,6 +241,7 @@ void handle_secondary(can_message_t *msg) {
   }
   case SECONDARY_TIMESTAMP_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, timestamp, TIMESTAMP, is_smsg_new);
+    break;
   }
   default:
     break;
@@ -253,4 +258,166 @@ void init_periodic_can_messages_timers(void) {
       lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEER_VERSION, NULL);
   lv_timer_set_repeat_count(steer_version_task, -1);
   lv_timer_reset(steer_version_task);
+}
+
+void primary_message_invalidate(uint16_t msgid) {
+  switch (msgid) {
+  case PRIMARY_CAR_STATUS_FRAME_ID: {
+    memset(&primary_car_status_last_state, 0,
+           sizeof(primary_car_status_last_state));
+    break;
+  }
+  case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
+    memset(&primary_pedal_calibration_ack_last_state, 0,
+           sizeof(primary_pedal_calibration_ack_last_state));
+    break;
+  }
+  case PRIMARY_COOLING_STATUS_FRAME_ID: {
+    memset(&primary_cooling_status_last_state, 0,
+           sizeof(primary_cooling_status_last_state));
+    break;
+  }
+  case PRIMARY_PTT_STATUS_FRAME_ID: {
+    memset(&primary_ptt_status_last_state, 0,
+           sizeof(primary_ptt_status_last_state));
+    break;
+  }
+  case PRIMARY_SPEED_FRAME_ID: {
+    memset(&primary_speed_last_state, 0, sizeof(primary_speed_last_state));
+    break;
+  }
+  case PRIMARY_HV_VOLTAGE_FRAME_ID: {
+    memset(&primary_hv_voltage_last_state, 0,
+           sizeof(primary_hv_voltage_last_state));
+    break;
+  }
+  case PRIMARY_HV_CURRENT_FRAME_ID: {
+    memset(&primary_hv_current_last_state, 0,
+           sizeof(primary_hv_current_last_state));
+    break;
+  }
+  case PRIMARY_HV_TEMP_FRAME_ID: {
+    memset(&primary_hv_temp_last_state, 0, sizeof(primary_hv_temp_last_state));
+    break;
+  }
+  case PRIMARY_HV_ERRORS_FRAME_ID: {
+    memset(&primary_hv_errors_last_state, 0,
+           sizeof(primary_hv_errors_last_state));
+    break;
+  }
+  case PRIMARY_HV_CELL_BALANCING_STATUS_FRAME_ID: {
+    memset(&primary_hv_cell_balancing_status_last_state, 0,
+           sizeof(primary_hv_cell_balancing_status_last_state));
+    break;
+  }
+  case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
+    memset(&primary_lv_feedbacks_last_state, 0,
+           sizeof(primary_lv_feedbacks_last_state));
+    break;
+  }
+  case PRIMARY_HV_FANS_OVERRIDE_STATUS_FRAME_ID: {
+    memset(&primary_hv_fans_override_status_last_state, 0,
+           sizeof(primary_hv_fans_override_status_last_state));
+    break;
+  }
+  case PRIMARY_TLM_STATUS_FRAME_ID: {
+    memset(&primary_tlm_status_last_state, 0,
+           sizeof(primary_tlm_status_last_state));
+    break;
+  }
+  case PRIMARY_DAS_ERRORS_FRAME_ID: {
+    memset(&primary_das_errors_last_state, 0,
+           sizeof(primary_das_errors_last_state));
+    break;
+  }
+  case PRIMARY_LV_CURRENTS_FRAME_ID: {
+    memset(&primary_lv_currents_last_state, 0,
+           sizeof(primary_lv_currents_last_state));
+    break;
+  }
+  case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
+    memset(&primary_lv_cells_temp_last_state_1, 0,
+           sizeof(primary_lv_cells_temp_converted_t));
+    memset(&primary_lv_cells_temp_last_state_2, 0,
+           sizeof(primary_lv_cells_temp_converted_t));
+    break;
+  }
+  case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
+    memset(&primary_lv_cells_voltage_last_state_1, 0,
+           sizeof(primary_lv_cells_voltage_converted_t));
+    memset(&primary_lv_cells_voltage_last_state_2, 0,
+           sizeof(primary_lv_cells_voltage_converted_t));
+    break;
+  }
+  case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
+    memset(&primary_lv_total_voltage_last_state, 0,
+           sizeof(primary_lv_total_voltage_last_state));
+    break;
+  }
+  case PRIMARY_LV_ERRORS_FRAME_ID: {
+    memset(&primary_lv_errors_last_state, 0,
+           sizeof(primary_lv_errors_last_state));
+    break;
+  }
+  case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
+    memset(&primary_control_output_last_state, 0,
+           sizeof(primary_control_output_last_state));
+    break;
+  }
+  default:
+    break;
+  }
+}
+
+void secondary_message_invalidate(uint16_t msgid) {
+  switch (msgid) {
+  case SECONDARY_STEERING_ANGLE_FRAME_ID: {
+    memset(&secondary_steering_angle_last_state, 0,
+           sizeof(secondary_steering_angle_last_state));
+    break;
+  }
+  case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
+    memset(&secondary_pedals_output_last_state, 0,
+           sizeof(secondary_pedals_output_last_state));
+    break;
+  }
+  case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
+    memset(&secondary_imu_acceleration_last_state, 0,
+           sizeof(secondary_imu_acceleration_last_state));
+    break;
+  }
+  case SECONDARY_LAP_COUNT_FRAME_ID: {
+    memset(&secondary_lap_count_last_state, 0,
+           sizeof(secondary_lap_count_last_state));
+    break;
+  }
+  case SECONDARY_LC_STATUS_FRAME_ID: {
+    memset(&secondary_lc_status_last_state, 0,
+           sizeof(secondary_lc_status_last_state));
+    break;
+  }
+  case SECONDARY_TIMESTAMP_FRAME_ID: {
+    memset(&secondary_timestamp_last_state, 0,
+           sizeof(secondary_timestamp_last_state));
+    break;
+  }
+  }
+}
+
+void inverters_message_invalidate(uint16_t msgid) {
+  fprintf(stderr, "Invalidating inverter message %d\n", (int)msgid);
+  switch (msgid) {
+  case INVERTERS_INV_L_RCV_FRAME_ID: {
+    memset(&inverters_inv_l_rcv_last_state, 0,
+           sizeof(inverters_inv_l_rcv_last_state));
+    break;
+  }
+  case INVERTERS_INV_R_RCV_FRAME_ID: {
+    memset(&inverters_inv_r_rcv_last_state, 0,
+           sizeof(inverters_inv_r_rcv_last_state));
+    break;
+  }
+  default:
+    break;
+  }
 }

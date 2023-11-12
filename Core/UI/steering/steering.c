@@ -78,38 +78,38 @@ void car_status_update() {
   case primary_car_status_car_status_INIT:
   case primary_car_status_car_status_ENABLE_INV_UPDATES:
   case primary_car_status_car_status_CHECK_INV_SETTINGS: {
-    lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
+    set_tab_racing_bottom_lb_speed("-");
     set_tab_racing_lb_speed("INIT");
     set_tab_track_test_lb_speed("INIT");
     break;
   }
   case primary_car_status_car_status_IDLE: {
-    lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
+    set_tab_racing_bottom_lb_speed("-");
     set_tab_racing_lb_speed("IDLE");
     set_tab_track_test_lb_speed("IDLE");
     break;
   }
   case primary_car_status_car_status_START_TS_PRECHARGE:
   case primary_car_status_car_status_WAIT_TS_PRECHARGE: {
-    lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
+    set_tab_racing_bottom_lb_speed("-");
     set_tab_racing_lb_speed("PRCHG");
     set_tab_track_test_lb_speed("PRCHG");
     break;
   }
   case primary_car_status_car_status_WAIT_DRIVER: {
-    lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
+    set_tab_racing_bottom_lb_speed("-");
     set_tab_racing_lb_speed("SETUP");
     set_tab_track_test_lb_speed("SETUP");
     break;
   }
   case primary_car_status_car_status_ENABLE_INV_DRIVE: {
-    lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
+    set_tab_racing_bottom_lb_speed("-");
     set_tab_racing_lb_speed("ENINV");
     set_tab_track_test_lb_speed("ENINV");
     break;
   }
   case primary_car_status_car_status_DRIVE: {
-    lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
+    set_tab_racing_bottom_lb_speed("-");
     set_tab_racing_lb_speed("DRIVE");
     set_tab_track_test_lb_speed("DRIVE");
     break;
@@ -117,13 +117,13 @@ void car_status_update() {
   case primary_car_status_car_status_DISABLE_INV_DRIVE:
   case primary_car_status_car_status_START_TS_DISCHARGE:
   case primary_car_status_car_status_WAIT_TS_DISCHARGE: {
-    lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
+    set_tab_racing_bottom_lb_speed("-");
     set_tab_racing_lb_speed("TSOFF");
     set_tab_track_test_lb_speed("TSOFF");
     break;
   }
   case primary_car_status_car_status_FATAL_ERROR: {
-    lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "-");
+    set_tab_racing_bottom_lb_speed("-");
     set_tab_racing_lb_speed("FATAL");
     set_tab_track_test_lb_speed("FATAL");
     break;
@@ -164,7 +164,7 @@ void speed_update(void) {
                       primary_speed_last_state.encoder_r) /
                      2.0f) *
                 3.6 * 0.203;
-  lv_label_set_text_fmt(get_tab_racing_bottom_lb_speed(), "KM/H");
+  set_tab_racing_bottom_lb_speed("KM/H");
   snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%.0f", speed);
   set_tab_racing_lb_speed(sprintf_buffer);
   set_tab_track_test_lb_speed(sprintf_buffer);
@@ -476,15 +476,15 @@ void inv_r_rcv_update() {
 void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
   switch (extra_value) {
   case 0: {
-    lv_label_set_text_fmt(get_tab_sensors_extra_value0(), "%s", buf);
+    set_tab_sensors_extra_value0(buf);
     break;
   }
   case 1: {
-    lv_label_set_text_fmt(get_tab_sensors_extra_value1(), "%s", buf);
+    set_tab_sensors_extra_value1(buf);
     break;
   }
   case 2: {
-    lv_label_set_text_fmt(get_tab_sensors_extra_value2(), "%s", buf);
+    set_tab_sensors_extra_value2(buf);
     break;
   }
   default: {

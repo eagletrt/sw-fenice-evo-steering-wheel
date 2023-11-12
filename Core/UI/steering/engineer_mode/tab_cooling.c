@@ -19,12 +19,30 @@ void set_pumps_speed_bar(int32_t val) {
   lv_bar_set_value(pumps_speed_bar, val, LV_ANIM_OFF);
 }
 
+void pumps_speed_bar_invalidate() {
+  lv_bar_set_value(pumps_speed_bar, 0, LV_ANIM_OFF);
+  lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_RED));
+  lv_obj_add_style(pumps_speed_bar, &style_indic, LV_PART_INDICATOR);
+}
+
 void set_radiators_speed_bar(int32_t val) {
   lv_bar_set_value(radiators_speed_bar, val, LV_ANIM_OFF);
 }
 
+void radiators_speed_bar_invalidate() {
+  lv_bar_set_value(radiators_speed_bar, 0, LV_ANIM_OFF);
+  lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_RED));
+  lv_obj_add_style(radiators_speed_bar, &style_indic, LV_PART_INDICATOR);
+}
+
 void set_pork_speed_bar(int32_t val) {
   lv_bar_set_value(pork_speed_bar, val, LV_ANIM_OFF);
+}
+
+void pork_speed_bar_invalidate() {
+  lv_bar_set_value(pork_speed_bar, 0, LV_ANIM_OFF);
+  lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_RED));
+  lv_obj_add_style(pork_speed_bar, &style_indic, LV_PART_INDICATOR);
 }
 
 void set_pumps_speed_value_label(float val) {
@@ -32,14 +50,26 @@ void set_pumps_speed_value_label(float val) {
   lv_label_set_text(pumps_speed_value_label, new_label_buffer);
 }
 
+void pumps_speed_value_label_invalidate() {
+  lv_label_set_text(pumps_speed_value_label, "NA");
+}
+
 void set_radiators_speed_value_label(float val) {
   sprintf(new_label_buffer, "%.2f", val);
   lv_label_set_text(radiators_speed_value_label, new_label_buffer);
 }
 
+void radiators_speed_value_label_invalidate() {
+  lv_label_set_text(pumps_speed_value_label, "NA");
+}
+
 void set_pork_speed_value_label(float val) {
   sprintf(new_label_buffer, "%.2f", val);
   lv_label_set_text(pork_speed_value_label, new_label_buffer);
+}
+
+void pork_speed_value_label_invalidate() {
+  lv_label_set_text(pork_speed_value_label, "NA");
 }
 
 void init_cooling_tab_styles() {

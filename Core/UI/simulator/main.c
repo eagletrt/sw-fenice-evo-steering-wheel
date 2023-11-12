@@ -21,6 +21,7 @@
 #include "steering.h"
 #include "steering_config.h"
 #include "tab_manager.h"
+#include "watchdog.h"
 #include <SDL2/SDL.h>
 
 #define MAX(x, y) x > y ? x : y;
@@ -209,6 +210,8 @@ int main(int argc, char **argv) {
   lv_timer_t *ugt = lv_timer_create(update_graphics, 100, NULL);
   lv_timer_set_repeat_count(ugt, -1);
   lv_timer_reset(ugt);
+
+  init_watchdog();
 
   while (1) {
 

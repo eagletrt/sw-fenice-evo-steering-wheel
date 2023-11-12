@@ -70,4 +70,8 @@ void handle_secondary(can_message_t *msg);
 
 void init_periodic_can_messages_timers(void);
 
+void primary_message_invalidate(uint16_t msgid);
+void secondary_message_invalidate(uint16_t msgid);
+void inverters_message_invalidate(uint16_t msgid);
+
 #endif // CAN_MESSAGES_H

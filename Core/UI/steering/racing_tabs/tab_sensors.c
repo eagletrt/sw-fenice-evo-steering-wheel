@@ -33,11 +33,17 @@ lv_style_t bar_brake_style;
 lv_style_t bar_accel_style;
 lv_style_t bar_calib_back_style;
 
-lv_obj_t *get_tab_sensors_extra_value0() { return tab_sensors_extra_value0; }
+void set_tab_sensors_extra_value0(const char *string) {
+  lv_label_set_text(tab_sensors_extra_value0, string);
+}
 
-lv_obj_t *get_tab_sensors_extra_value1() { return tab_sensors_extra_value1; }
+void set_tab_sensors_extra_value1(const char *string) {
+  lv_label_set_text(tab_sensors_extra_value1, string);
+}
 
-lv_obj_t *get_tab_sensors_extra_value2() { return tab_sensors_extra_value2; }
+void set_tab_sensors_extra_value2(const char *string) {
+  lv_label_set_text(tab_sensors_extra_value2, string);
+}
 
 void set_tab_sensors_lb_right_inverter_temp(const char *s) {
   lv_label_set_text(tab_sensors_lb_right_inverter_temp, s);
@@ -89,6 +95,60 @@ void set_tab_sensors_lb_hv_delta(const char *s) {
 
 void set_tab_sensors_lb_tlm_status(const char *s) {
   lv_label_set_text(tab_sensors_lb_tlm_status, s);
+}
+
+// invalidate functions
+
+void tab_sensors_lb_pack_voltage_invalidate() {
+  lv_label_set_text(tab_sensors_lb_pack_voltage, "NA");
+}
+
+void tab_sensors_lb_hv_delta_invalidate() {
+  lv_label_set_text(tab_sensors_lb_hv_delta, "NA");
+}
+
+void tab_sensors_lb_hv_current_invalidate() {
+  lv_label_set_text(tab_sensors_lb_hv_current, "NA");
+}
+
+void tab_sensors_lb_average_temperature_invalidate() {
+  lv_label_set_text(tab_sensors_lb_average_temperature, "NA");
+}
+
+void tab_sensors_lb_lv_current_invalidate() {
+  lv_label_set_text(tab_sensors_lb_lv_current, "NA");
+}
+
+void tab_sensors_lb_battery_temperature_invalidate() {
+  lv_label_set_text(tab_sensors_lb_battery_temperature, "NA");
+}
+
+void tab_sensors_lb_voltage_invalidate() {
+  lv_label_set_text(tab_sensors_lb_voltage, "NA");
+}
+
+void tab_sensors_lb_tlm_status_invalidate() {
+  lv_label_set_text(tab_sensors_lb_tlm_status, "NA");
+}
+
+void tab_sensors_lb_min_cell_voltage_invalidate() {
+  lv_label_set_text(tab_sensors_lb_min_cell_voltage, "NA");
+}
+
+void tab_sensors_lb_left_motor_temp_invalidate() {
+  lv_label_set_text(tab_sensors_lb_left_motor_temp, "NA");
+}
+
+void tab_sensors_lb_left_inverter_temp_invalidate() {
+  lv_label_set_text(tab_sensors_lb_left_inverter_temp, "NA");
+}
+
+void tab_sensors_lb_right_motor_temp_invalidate() {
+  lv_label_set_text(tab_sensors_lb_right_motor_temp, "NA");
+}
+
+void tab_sensors_lb_right_inverter_temp_invalidate() {
+  lv_label_set_text(tab_sensors_lb_right_inverter_temp, "NA");
 }
 
 void init_sensors_styles(void) {

@@ -27,13 +27,25 @@ lv_style_t bar_back_style;
 
 lv_obj_t *bottom_bar;
 
-lv_obj_t *get_tab_racing_bottom_lb_speed() {
-  return tab_racing_bottom_lb_speed;
+void set_tab_racing_bottom_lb_speed(const char *s) {
+  lv_label_set_text(tab_racing_bottom_lb_speed, s);
 }
 
 lv_obj_t *get_tab_racing_custom_meter() { return tab_racing_custom_meter; }
 
+// void set_tab_racing_custom_meter(lv_obj_t *meter, lv_meter_indicator_t
+// *indicator_blue, float perc){
+//   lv_meter_set_indicator_value(meter, indicator_blue, perc);
+// }
+
 lv_obj_t *get_tab_racing_racing_lv_bar() { return tab_racing_racing_lv_bar; }
+
+// void set_tab_racing_racing_lv_bar(lv_obj_t *racing_lv_bar,
+//                                   primary_hv_voltage_converted_t
+//                                   hv_voltage_converted_t, lv_anim_enable_t
+//                                   t){
+//   lv_bar_set_value(racing_lv_bar, hv_voltage_converted_t, t);
+// }
 
 lv_meter_indicator_t *get_tab_racing_indicator_blue() {
   return tab_racing_indicator_blue;
@@ -95,6 +107,68 @@ void set_tab_racing_lb_torque(const char *s) {
 
 void set_tab_racing_lb_power(const char *s) {
   lv_label_set_text(tab_racing_lb_power, s);
+}
+
+// invalidate functions
+
+void tab_racing_lb_speed_invalidate() {
+  lv_label_set_text(tab_racing_lb_speed, "NA");
+}
+
+void tab_racing_lb_pack_voltage_invalidate() {
+  lv_label_set_text(tab_racing_lb_pack_voltage, "NA");
+}
+
+void tab_racing_lb_hv_current_invalidate() {
+  lv_label_set_text(tab_racing_lb_hv_current, "NA");
+}
+
+void tab_racing_lb_average_temperature_invalidate() {
+  lv_label_set_text(tab_racing_lb_average_temperature, "NA");
+}
+
+void tab_racing_lb_battery_temperature_invalidate() {
+  lv_label_set_text(tab_racing_lb_battery_temperature, "NA");
+}
+
+void tab_racing_lb_last_time_invalidate() {
+  lv_label_set_text(tab_racing_lb_last_time, "NA");
+}
+
+void tab_racing_lb_delta_time_invalidate() {
+  lv_label_set_text(tab_racing_lb_delta_time, "NA");
+}
+
+void tab_racing_lb_best_time_invalidate() {
+  lv_label_set_text(tab_racing_lb_best_time, "NA");
+}
+
+void tab_racing_lb_lap_count_invalidate() {
+  lv_label_set_text(tab_racing_lb_lap_count, "NA");
+}
+
+void tab_racing_lb_left_motor_temp_invalidate() {
+  lv_label_set_text(tab_racing_lb_left_motor_temp, "NA");
+}
+
+void tab_racing_lb_left_inverter_temp_invalidate() {
+  lv_label_set_text(tab_racing_lb_left_inverter_temp, "NA");
+}
+
+void tab_racing_lb_slip_invalidate() {
+  lv_label_set_text(tab_racing_lb_slip, "NA");
+}
+
+void tab_racing_lb_torque_invalidate() {
+  lv_label_set_text(tab_racing_lb_torque, "NA");
+}
+
+void tab_racing_lb_power_invalidate() {
+  lv_label_set_text(tab_racing_lb_power, "NA");
+}
+
+void tab_racing_bottom_lb_speed_invalidate() {
+  lv_label_set_text(tab_racing_bottom_lb_speed, "NA");
 }
 
 void tab_racing_create(lv_obj_t *parent) {

@@ -58,6 +58,24 @@ void set_tab_track_test_lb_inverter_speed_y(const char *s) {
   // lv_label_set_text(tab_track_test_lb_inverter_speed_y, s);
 }
 
+// invalidate functions
+
+void tab_track_test_lb_inverter_speed_x_invalidate() {
+  // lv_label_set_text(tab_track_test_lb_inverter_speed_x, "NA");
+}
+
+void tab_track_test_lb_inverter_speed_y_invalidate() {
+  // lv_label_set_text(tab_track_test_lb_inverter_speed_y, "NA");
+}
+
+void tab_track_test_lb_steering_angle_invalidate() {
+  lv_label_set_text(tab_track_test_lb_steering_angle, "NA");
+}
+
+void tab_track_test_lb_speed_invalidate() {
+  lv_label_set_text(tab_track_test_lb_speed, "NA");
+}
+
 void tab_track_test_create(lv_obj_t *parent) {
 
   /*---creating MAIN GRID ---*/
