@@ -4,11 +4,6 @@ lv_obj_t *lb_estimated_velocity;
 lv_obj_t *lb_apps;
 lv_obj_t *lb_bse;
 
-extern lv_obj_t *hv_feedbacks_status[20];
-extern lv_obj_t *hv_errors[16];
-extern lv_obj_t *das_errors[9];
-extern lv_obj_t *lv_errors[17];
-
 extern bool steering_initialized;
 
 #define SPRINTF_BUFFER_SIZE 64
@@ -51,6 +46,7 @@ primary_hv_cell_balancing_status_converted_t
     primary_hv_cell_balancing_status_last_state = {0};
 primary_pedal_calibration_ack_converted_t
     primary_pedal_calibration_ack_last_state = {0};
+primary_hv_feedback_status_converted_t primary_hv_feedback_status_last_state = {0};
 
 secondary_steering_angle_converted_t secondary_steering_angle_last_state = {0};
 
@@ -82,6 +78,7 @@ secondary_irts_rr_2_converted_t secondary_irts_rr_2_last_state = {0};
 secondary_irts_rr_3_converted_t secondary_irts_rr_3_last_state = {0};
 
 uint32_t timestamp_start_lap = 0;
+
 
 void set_lb_estimated_velocity(const char *s) {
   lv_label_set_text(lb_estimated_velocity, s);
@@ -233,7 +230,6 @@ void hv_temp_update() {
   set_tab_sensors_lb_average_temperature(sprintf_buffer);
 }
 
-void hv_errors_update() {}
 
 #define N_PORK_CELLBOARD 6
 bool cellboard_bal[N_PORK_CELLBOARD] = {0};
@@ -264,7 +260,7 @@ void hv_cell_balancing_status_update() {
   set_bal_status_label_text(buf);
 }
 
-void hv_feedbacks_status_update() {}
+
 
 void lv_feedbacks_update() {}
 
@@ -279,7 +275,6 @@ void hv_fans_override_status_update() {
       primary_hv_fans_override_status_last_state.fans_speed);
 }
 
-void das_errors_update() {}
 
 void lv_currents_update() {
   sprintf(sprintf_buffer, "%.1f",
@@ -333,7 +328,6 @@ void lv_total_voltage_update() {
   set_tab_sensors_lb_voltage(sprintf_buffer);
 }
 
-void lv_errors_update() {}
 
 void steering_angle_update() {
   sprintf(sprintf_buffer, "%.1f", secondary_steering_angle_last_state.angle);

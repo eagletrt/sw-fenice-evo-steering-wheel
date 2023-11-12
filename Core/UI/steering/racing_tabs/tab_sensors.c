@@ -33,6 +33,20 @@ lv_style_t bar_brake_style;
 lv_style_t bar_accel_style;
 lv_style_t bar_calib_back_style;
 
+
+void set_tab_sensor_lb_fl_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_fl_temp, s);
+}
+void set_tab_sensor_lb_fr_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_fr_temp, s);
+}
+void set_tab_sensor_lb_rl_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_rl_temp, s);
+}
+void set_tab_sensor_lb_rr_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_rr_temp, s);
+}
+
 void set_tab_sensors_extra_value0(const char *string) {
   lv_label_set_text(tab_sensors_extra_value0, string);
 }
@@ -97,8 +111,6 @@ void set_tab_sensors_lb_tlm_status(const char *s) {
   lv_label_set_text(tab_sensors_lb_tlm_status, s);
 }
 
-// invalidate functions
-
 void tab_sensors_lb_pack_voltage_invalidate() {
   lv_label_set_text(tab_sensors_lb_pack_voltage, "NA");
 }
@@ -149,22 +161,6 @@ void tab_sensors_lb_right_motor_temp_invalidate() {
 
 void tab_sensors_lb_right_inverter_temp_invalidate() {
   lv_label_set_text(tab_sensors_lb_right_inverter_temp, "NA");
-}
-
-void set_tab_sensor_lb_fl_temp(const char *s) {
-  lv_label_set_text(tab_sensors_lb_fl_temp, s);
-}
-
-void set_tab_sensor_lb_fr_temp(const char *s) {
-  lv_label_set_text(tab_sensors_lb_fr_temp, s);
-}
-
-void set_tab_sensor_lb_rl_temp(const char *s) {
-  lv_label_set_text(tab_sensors_lb_rl_temp, s);
-}
-
-void set_tab_sensor_lb_rr_temp(const char *s) {
-  lv_label_set_text(tab_sensors_lb_rr_temp, s);
 }
 
 void init_sensors_styles(void) {

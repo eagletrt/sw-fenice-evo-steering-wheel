@@ -216,4 +216,8 @@ void set_tab_sensors_extra_value0(const char *string);
 void set_tab_sensors_extra_value1(const char *string);
 void set_tab_sensors_extra_value2(const char *string);
 
+void set_label_color_lv_errors(bool label, int i);
+void set_label_color_hv_errors(int label, int i);
+void set_label_color_das_errors(bool label, int i);
+void set_label_color_hv_feedbacks(int label, int i);
 #endif /* STEERING_H */

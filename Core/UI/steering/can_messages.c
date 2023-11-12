@@ -184,6 +184,11 @@ void handle_primary(can_message_t *msg) {
     STEER_CAN_UNPACK(primary, PRIMARY, lv_errors, LV_ERRORS, is_pmsg_new);
     break;
   }
+  case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_status, HV_FEEDBACK_STATUS,
+                     is_pmsg_new);
+    break;
+  }
   case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT,
                      is_pmsg_new);
@@ -424,6 +429,11 @@ void primary_message_invalidate(uint16_t msgid) {
            sizeof(primary_lv_errors_last_state));
     break;
   }
+  case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
+    memset(&hv_feedback_status_last_state, 0,
+           sizeof(hv_feedback_status_last_state));
+    break;
+  }
   case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
     memset(&primary_control_output_last_state, 0,
            sizeof(primary_control_output_last_state));
@@ -470,7 +480,6 @@ void secondary_message_invalidate(uint16_t msgid) {
 }
 
 void inverters_message_invalidate(uint16_t msgid) {
-  fprintf(stderr, "Invalidating inverter message %d\n", (int)msgid);
   switch (msgid) {
   case INVERTERS_INV_L_RCV_FRAME_ID: {
     memset(&inverters_inv_l_rcv_last_state, 0,

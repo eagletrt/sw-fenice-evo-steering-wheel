@@ -22,6 +22,12 @@ lv_obj_t *das_errors_panel;
 
 extern racing_tab_t current_racing_tab;
 
+primary_hv_errors_converted_t hv_errors_last_state = {0};
+primary_hv_feedback_status_converted_t hv_feedback_status_last_state = {0};
+primary_das_errors_converted_t das_errors_last_state = {0};
+primary_lv_errors_converted_t lv_errors_last_state = {0};
+
+
 lv_obj_t *cell_create(lv_obj_t *parent, const char *text, uint8_t pos_col,
                       uint8_t pos_row, lv_style_t *style) {
   lv_obj_t *cell = lv_obj_create(parent);
@@ -151,53 +157,47 @@ void tab_debug_create(lv_obj_t *parent) {
   lv_obj_align(hv_feedbacks_title, LV_ALIGN_CENTER, 0, 0);
   lv_label_set_text(hv_feedbacks_title, "HV FEEDBACKS");
 
-  hv_feedbacks_status[1] = cell_create(hv_feedbacks_panel, "IMD COCKPIT", 0, 1,
-                                       &box_debug_style_yellow);
-  hv_feedbacks_status[5] = cell_create(hv_feedbacks_panel, "TSAL GREEN", 1, 1,
-                                       &box_debug_style_yellow);
-  hv_feedbacks_status[10] = cell_create(hv_feedbacks_panel, "AIRN GATE", 2, 1,
-                                        &box_debug_style_yellow);
-  hv_feedbacks_status[16] =
-      cell_create(hv_feedbacks_panel, "SD OUT", 3, 1, &box_debug_style_yellow);
-
   hv_feedbacks_status[0] = cell_create(hv_feedbacks_panel, "IMPLAUS. DETECTED",
                                        0, 2, &box_debug_style_yellow);
-  hv_feedbacks_status[6] = cell_create(hv_feedbacks_panel, "TS OVER 60V STATUS",
-                                       1, 2, &box_debug_style_yellow);
-  hv_feedbacks_status[11] = cell_create(hv_feedbacks_panel, "PRECHARGE STATUS",
-                                        2, 2, &box_debug_style_yellow);
-  hv_feedbacks_status[4] = cell_create(hv_feedbacks_panel, "EXT LATCHED", 3, 2,
+  hv_feedbacks_status[1] = cell_create(hv_feedbacks_panel, "IMD COCKPIT", 0, 1,
                                        &box_debug_style_yellow);
-
   hv_feedbacks_status[2] =
       cell_create(hv_feedbacks_panel, "TSAL GREEN F LATCHED", 0, 3,
                   &box_debug_style_yellow);
+  hv_feedbacks_status[3] = cell_create(hv_feedbacks_panel, "BMS COCKPIT", 0, 4,
+                                       &box_debug_style_yellow);
+  hv_feedbacks_status[4] = cell_create(hv_feedbacks_panel, "EXT LATCHED", 3, 2,
+                                       &box_debug_style_yellow);
+  hv_feedbacks_status[5] = cell_create(hv_feedbacks_panel, "TSAL GREEN", 1, 1,
+                                       &box_debug_style_yellow);
+  hv_feedbacks_status[6] = cell_create(hv_feedbacks_panel, "TS OVER 60V STATUS",
+                                       1, 2, &box_debug_style_yellow);
   hv_feedbacks_status[7] = cell_create(hv_feedbacks_panel, "AIRN STATUS", 1, 3,
                                        &box_debug_style_yellow);
+  hv_feedbacks_status[8] = cell_create(hv_feedbacks_panel, "AIRP STATUS", 1, 4,
+                                       &box_debug_style_yellow);
+  hv_feedbacks_status[9] = cell_create(hv_feedbacks_panel, "AIRP GATE", 1, 5,
+                                       &box_debug_style_yellow);
+  hv_feedbacks_status[10] = cell_create(hv_feedbacks_panel, "AIRN GATE", 2, 1,
+                                        &box_debug_style_yellow);
+  hv_feedbacks_status[11] = cell_create(hv_feedbacks_panel, "PRECHARGE STATUS",
+                                        2, 2, &box_debug_style_yellow);
   hv_feedbacks_status[12] = cell_create(
       hv_feedbacks_panel, "TSP OVER 60V STATUS", 2, 3, &box_debug_style_yellow);
   hv_feedbacks_status[13] = cell_create(hv_feedbacks_panel, "IMD FAULT", 3, 3,
                                         &box_debug_style_yellow);
-
-  hv_feedbacks_status[3] = cell_create(hv_feedbacks_panel, "BMS COCKPIT", 0, 4,
-                                       &box_debug_style_yellow);
-  hv_feedbacks_status[8] = cell_create(hv_feedbacks_panel, "AIRP STATUS", 1, 4,
-                                       &box_debug_style_yellow);
   hv_feedbacks_status[14] = cell_create(hv_feedbacks_panel, "CHECK MUX", 2, 4,
                                         &box_debug_style_yellow);
   hv_feedbacks_status[15] =
       cell_create(hv_feedbacks_panel, "SD END", 3, 4, &box_debug_style_yellow);
-
-  hv_feedbacks_status[19] =
-      cell_create(hv_feedbacks_panel, "SD IMD", 0, 5, &box_debug_style_yellow);
-
-  hv_feedbacks_status[9] = cell_create(hv_feedbacks_panel, "AIRP GATE", 1, 5,
-                                       &box_debug_style_yellow);
+  hv_feedbacks_status[16] =
+      cell_create(hv_feedbacks_panel, "SD OUT", 3, 1, &box_debug_style_yellow);
   hv_feedbacks_status[17] =
       cell_create(hv_feedbacks_panel, "SD IN", 2, 5, &box_debug_style_yellow);
-
   hv_feedbacks_status[18] =
       cell_create(hv_feedbacks_panel, "SD BMS", 3, 5, &box_debug_style_yellow);
+  hv_feedbacks_status[19] =
+      cell_create(hv_feedbacks_panel, "SD IMD", 0, 5, &box_debug_style_yellow);
 
   /*--- creating HV ERRORS PANEL ---*/
 
@@ -251,40 +251,35 @@ void tab_debug_create(lv_obj_t *parent) {
 
   hv_errors[0] = cell_create(hv_errors_panel, "CELL LOW VOLTAGE", 0, 1,
                              &box_debug_style_yellow);
-  hv_errors[5] = cell_create(hv_errors_panel, "OVER CURRENT", 1, 1,
-                             &box_debug_style_yellow);
-  hv_errors[12] =
-      cell_create(hv_errors_panel, "FEEDBACK", 2, 1, &box_debug_style_yellow);
-
   hv_errors[1] = cell_create(hv_errors_panel, "CELL UNDER VOLT", 0, 2,
+                             &box_debug_style_yellow);
+  hv_errors[2] = cell_create(hv_errors_panel, "CELL OVER VOLT", 0, 3,
+                             &box_debug_style_yellow);
+  hv_errors[3] = cell_create(hv_errors_panel, "CELL HIGH TEMP", 0, 4,
+                             &box_debug_style_yellow);
+  hv_errors[4] = cell_create(hv_errors_panel, "CELL OVER TEMP", 3, 1,
+                             &box_debug_style_yellow);
+  hv_errors[5] = cell_create(hv_errors_panel, "OVER CURRENT", 1, 1,
                              &box_debug_style_yellow);
   hv_errors[6] =
       cell_create(hv_errors_panel, "CAN", 1, 2, &box_debug_style_yellow);
-  hv_errors[13] = cell_create(hv_errors_panel, "FEEDBACK CIRCUITRY", 2, 2,
-                              &box_debug_style_yellow);
-
-  hv_errors[2] = cell_create(hv_errors_panel, "CELL OVER VOLT", 0, 3,
-                             &box_debug_style_yellow);
   hv_errors[7] = cell_create(hv_errors_panel, "INT VOLTAGE MISMATCH", 1, 3,
-                             &box_debug_style_yellow);
-  hv_errors[14] = cell_create(hv_errors_panel, "EEPROM COMM", 2, 3,
-                              &box_debug_style_yellow);
-
-  hv_errors[3] = cell_create(hv_errors_panel, "CELL HIGH TEMP", 0, 4,
                              &box_debug_style_yellow);
   hv_errors[8] = cell_create(hv_errors_panel, "CELLBOARD COMM", 1, 4,
                              &box_debug_style_yellow);
-  hv_errors[15] = cell_create(hv_errors_panel, "EEPROM WHITE", 2, 4,
-                              &box_debug_style_yellow);
-
-  hv_errors[4] = cell_create(hv_errors_panel, "CELL OVER TEMP", 3, 1,
-                             &box_debug_style_yellow);
   hv_errors[9] = cell_create(hv_errors_panel, "CELLBOARD INTERNAL", 3, 2,
                              &box_debug_style_yellow);
-
   hv_errors[10] = cell_create(hv_errors_panel, "CONNECTOR DISCONN.", 3, 3,
                               &box_debug_style_yellow);
   hv_errors[11] = cell_create(hv_errors_panel, "FANS DISCONN.", 3, 4,
+                              &box_debug_style_yellow);
+  hv_errors[12] =
+      cell_create(hv_errors_panel, "FEEDBACK", 2, 1, &box_debug_style_yellow);
+  hv_errors[13] = cell_create(hv_errors_panel, "FEEDBACK CIRCUITRY", 2, 2,
+                              &box_debug_style_yellow);
+  hv_errors[14] = cell_create(hv_errors_panel, "EEPROM COMM", 2, 3,
+                              &box_debug_style_yellow);
+  hv_errors[15] = cell_create(hv_errors_panel, "EEPROM WRITE", 2, 4,
                               &box_debug_style_yellow);
 
   /*--- creating DAS ERRORS PANEL ---*/
@@ -337,26 +332,22 @@ void tab_debug_create(lv_obj_t *parent) {
 
   das_errors[0] =
       cell_create(das_errors_panel, "PEDAL ADC", 0, 1, &box_debug_style_yellow);
-  das_errors[5] =
-      cell_create(das_errors_panel, "INVL TOUT", 1, 1, &box_debug_style_yellow);
-
   das_errors[1] = cell_create(das_errors_panel, "PEDAL IMPLAUS", 0, 2,
                               &box_debug_style_yellow);
-  das_errors[6] =
-      cell_create(das_errors_panel, "INVR TOUT", 1, 2, &box_debug_style_yellow);
-
   das_errors[2] =
       cell_create(das_errors_panel, "IMU TOUT", 0, 3, &box_debug_style_yellow);
-  das_errors[7] = cell_create(das_errors_panel, "STEER TOUT", 1, 3,
-                              &box_debug_style_yellow);
-
   das_errors[3] =
       cell_create(das_errors_panel, "IRTS TOUT", 0, 4, &box_debug_style_yellow);
-  das_errors[8] =
-      cell_create(das_errors_panel, "FSM", 1, 4, &box_debug_style_yellow);
-
   das_errors[4] =
       cell_create(das_errors_panel, "TS TOUT", 0, 5, &box_debug_style_yellow);
+  das_errors[5] =
+      cell_create(das_errors_panel, "INVL TOUT", 1, 1, &box_debug_style_yellow);
+  das_errors[6] =
+      cell_create(das_errors_panel, "INVR TOUT", 1, 2, &box_debug_style_yellow);
+  das_errors[7] = cell_create(das_errors_panel, "STEER TOUT", 1, 3,
+                              &box_debug_style_yellow);
+  das_errors[8] =
+      cell_create(das_errors_panel, "FSM", 1, 4, &box_debug_style_yellow);
 
   /*--- creating LV ERRORS PANEL ---*/
 
@@ -409,42 +400,51 @@ void tab_debug_create(lv_obj_t *parent) {
 
   lv_errors[0] = cell_create(lv_errors_panel, "CELL UNDERVOLT", 0, 1,
                              &box_debug_style_yellow);
-  lv_errors[6] = cell_create(lv_errors_panel, "CELL UNDER TEMP", 1, 1,
-                             &box_debug_style_yellow);
-  lv_errors[11] =
-      cell_create(lv_errors_panel, "MCP23017", 3, 1, &box_debug_style_yellow);
 
   lv_errors[1] = cell_create(lv_errors_panel, "CELL OVERVOLT", 0, 2,
                              &box_debug_style_yellow);
-  lv_errors[7] = cell_create(lv_errors_panel, "CELL OVER TEMP", 1, 2,
-                             &box_debug_style_yellow);
-  lv_errors[12] =
-      cell_create(lv_errors_panel, "RADIATOR", 3, 2, &box_debug_style_yellow);
 
   lv_errors[2] =
       cell_create(lv_errors_panel, "OPEN WIRE", 0, 3, &box_debug_style_yellow);
-  lv_errors[8] =
-      cell_create(lv_errors_panel, "RELAY", 1, 3, &box_debug_style_yellow);
-  lv_errors[13] =
-      cell_create(lv_errors_panel, "FAN", 3, 3, &box_debug_style_yellow);
 
   lv_errors[3] =
       cell_create(lv_errors_panel, "CAN", 0, 4, &box_debug_style_yellow);
-  lv_errors[9] = cell_create(lv_errors_panel, "BMS MONITOR", 2, 4,
-                             &box_debug_style_yellow);
-  lv_errors[14] =
-      cell_create(lv_errors_panel, "PUMP", 3, 4, &box_debug_style_yellow);
 
   lv_errors[4] =
       cell_create(lv_errors_panel, "SPI", 2, 1, &box_debug_style_yellow);
 
-  lv_errors[15] =
-      cell_create(lv_errors_panel, "ADC INIT", 2, 2, &box_debug_style_yellow);
-
   lv_errors[5] = cell_create(lv_errors_panel, "OVER CURRENT", 2, 3,
                              &box_debug_style_yellow);
+
+  lv_errors[6] = cell_create(lv_errors_panel, "CELL UNDER TEMP", 1, 1,
+                             &box_debug_style_yellow);
+
+  lv_errors[7] = cell_create(lv_errors_panel, "CELL OVER TEMP", 1, 2,
+                             &box_debug_style_yellow);
+
+  lv_errors[8] =
+      cell_create(lv_errors_panel, "RELAY", 1, 3, &box_debug_style_yellow);
+
+  lv_errors[9] = cell_create(lv_errors_panel, "BMS MONITOR", 2, 4,
+                             &box_debug_style_yellow);
+
   lv_errors[10] = cell_create(lv_errors_panel, "VOLTS NOT READY", 1, 4,
                               &box_debug_style_yellow);
+
+  lv_errors[11] =
+      cell_create(lv_errors_panel, "MCP23017", 3, 1, &box_debug_style_yellow);
+
+  lv_errors[12] =
+      cell_create(lv_errors_panel, "RADIATOR", 3, 2, &box_debug_style_yellow);
+
+  lv_errors[13] =
+      cell_create(lv_errors_panel, "FAN", 3, 3, &box_debug_style_yellow);
+
+  lv_errors[14] =
+      cell_create(lv_errors_panel, "PUMP", 3, 4, &box_debug_style_yellow);
+
+  lv_errors[15] =
+      cell_create(lv_errors_panel, "ADC INIT", 2, 2, &box_debug_style_yellow);
 
   lv_errors[16] =
       cell_create(lv_errors_panel, "MUX", 0, 5, &box_debug_style_yellow);
@@ -499,3 +499,126 @@ void change_errors_view(bool dir_left) {
 }
 
 #endif
+
+void set_label_color_hv_feedbacks(int label, int i) {
+  // PRIMARY_HV_FEEDBACK_STATUS_FEEDBACK_BMS_COCKPIT_FEEDBACK_STATE_LOW_CHOICE
+  //it's better to use the enum canlib, but we use 0 or 1 or 2 for demplicity sake. If canlib specs will change, then we need to change also this code
+  if (label == 0 || label == 2){
+    lv_obj_set_style_border_color(hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+  } else {
+    if (label == 1) {
+      lv_obj_set_style_border_color(hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+      lv_obj_set_style_bg_color(hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    } else {
+      lv_obj_set_style_border_color(hv_errors[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
+      lv_obj_set_style_bg_color(hv_errors[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
+    }
+  }
+}
+
+void hv_feedbacks_status_update() {
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_implausibility_detected, 0);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_imd_cockpit, 1);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_tsal_green_fault_latched, 2);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_bms_cockpit,3);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_ext_latched, 4);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_tsal_green, 5);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_ts_over_60v_status, 6);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_airn_status, 7);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_airp_status, 8);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_airp_gate, 9);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_airn_gate, 10);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_precharge_status, 11);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_tsp_over_60v_status, 12);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_imd_fault, 13);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_check_mux, 14);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_end, 15);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_out, 16);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_in, 17);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_bms, 18);
+  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_imd, 19);
+}
+
+void set_label_color_hv_errors(int label, int i){
+  if (label) {
+    lv_obj_set_style_border_color(hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+  } else {
+    lv_obj_set_style_border_color(hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+  }
+}
+
+void hv_errors_update() {
+  //could be used enum_to_string but same outcome with still same number of lines
+  set_label_color_hv_errors(hv_errors_last_state.errors_cell_low_voltage, 0);
+  set_label_color_hv_errors(hv_errors_last_state.errors_cell_under_voltage, 1);
+  set_label_color_hv_errors(hv_errors_last_state.errors_cell_over_voltage, 2);
+  set_label_color_hv_errors(hv_errors_last_state.errors_cell_high_temperature, 3);
+  set_label_color_hv_errors(hv_errors_last_state.errors_cell_over_temperature, 4);
+  set_label_color_hv_errors(hv_errors_last_state.errors_over_current, 5);
+  set_label_color_hv_errors(hv_errors_last_state.errors_can, 6);
+  set_label_color_hv_errors(hv_errors_last_state.errors_int_voltage_mismatch, 7);
+  set_label_color_hv_errors(hv_errors_last_state.errors_cellboard_comm, 8);
+  set_label_color_hv_errors(hv_errors_last_state.errors_cellboard_internal, 9);
+  set_label_color_hv_errors(hv_errors_last_state.errors_connector_disconnected, 10);
+  set_label_color_hv_errors(hv_errors_last_state.errors_fans_disconnected, 11);
+  set_label_color_hv_errors(hv_errors_last_state.errors_feedback, 12);
+  set_label_color_hv_errors(hv_errors_last_state.errors_feedback_circuitry, 13);
+  set_label_color_hv_errors(hv_errors_last_state.errors_eeprom_comm, 14);
+  set_label_color_hv_errors(hv_errors_last_state.errors_eeprom_write, 15);
+}
+
+void set_label_color_das_errors(bool label, int i){
+  if (label) {
+    lv_obj_set_style_border_color(das_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(das_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+  } else {
+    lv_obj_set_style_border_color(das_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(das_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+  }
+}
+
+void das_errors_update() {
+  set_label_color_das_errors(das_errors_last_state.das_error_pedal_adc, 0);
+  set_label_color_das_errors(das_errors_last_state.das_error_pedal_implausibility, 1);
+  set_label_color_das_errors(das_errors_last_state.das_error_imu_tout, 2);
+  set_label_color_das_errors(das_errors_last_state.das_error_irts_tout, 3);
+  set_label_color_das_errors(das_errors_last_state.das_error_ts_tout, 4);
+  set_label_color_das_errors(das_errors_last_state.das_error_invl_tout, 5);
+  set_label_color_das_errors(das_errors_last_state.das_error_invr_tout, 6);
+  set_label_color_das_errors(das_errors_last_state.das_error_steer_tout, 7);
+  set_label_color_das_errors(das_errors_last_state.das_error_fsm, 8);
+}
+
+void set_label_color_lv_errors(bool label, int i){
+  if (label) {
+    lv_obj_set_style_border_color(lv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(lv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+  } else {
+    lv_obj_set_style_border_color(lv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(lv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+  }
+}
+
+void lv_errors_update() {
+  set_label_color_lv_errors(lv_errors_last_state.errors_cell_undervoltage, 0);
+  set_label_color_lv_errors(lv_errors_last_state.errors_cell_overvoltage, 1);
+  set_label_color_lv_errors(lv_errors_last_state.errors_battery_open_wire, 2);
+  set_label_color_lv_errors(lv_errors_last_state.errors_can, 3);
+  set_label_color_lv_errors(lv_errors_last_state.errors_spi, 4);
+  set_label_color_lv_errors(lv_errors_last_state.errors_over_current, 5);
+  set_label_color_lv_errors(lv_errors_last_state.errors_cell_under_temperature, 6);
+  set_label_color_lv_errors(lv_errors_last_state.errors_cell_over_temperature, 7);
+  set_label_color_lv_errors(lv_errors_last_state.errors_relay, 8);
+  set_label_color_lv_errors(lv_errors_last_state.errors_bms_monitor, 9);
+  set_label_color_lv_errors(lv_errors_last_state.errors_voltages_not_ready, 10);
+  set_label_color_lv_errors(lv_errors_last_state.errors_mcp23017, 11);
+  set_label_color_lv_errors(lv_errors_last_state.errors_radiator, 12);
+  set_label_color_lv_errors(lv_errors_last_state.errors_fan, 13);
+  set_label_color_lv_errors(lv_errors_last_state.errors_pump, 14);
+  set_label_color_lv_errors(lv_errors_last_state.errors_adc_init, 15);
+  set_label_color_lv_errors(lv_errors_last_state.errors_mux, 16);
+}
+

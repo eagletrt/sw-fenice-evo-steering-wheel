@@ -20,7 +20,7 @@ void init_watchdog(void) {
   for (uint16_t iindex = 0; iindex < inverters_MESSAGE_COUNT; ++iindex) {
     CANLIB_BITSET_ARRAY(m_inverters_watchdog.activated, iindex);
   }
-  watchdog_task = lv_timer_create(watchdog_task_fn, 1000, NULL);
+  watchdog_task = lv_timer_create(watchdog_task_fn, 500, NULL);
   lv_timer_set_repeat_count(watchdog_task, -1);
   lv_timer_reset(watchdog_task);
 }

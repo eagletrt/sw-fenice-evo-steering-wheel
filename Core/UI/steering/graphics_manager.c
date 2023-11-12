@@ -100,6 +100,10 @@ void update_graphics(lv_timer_t *t) {
         lv_errors_update();
         break;
       }
+      case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
+        hv_feedbacks_status_update();
+        break;
+      }
       default:
         break;
       }

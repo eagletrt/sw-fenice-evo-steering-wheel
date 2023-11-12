@@ -4,3 +4,4 @@ todo.md
 *.srec
 *.bin
 image-compression.out
+.idea/**

@@ -1,6 +1,6 @@
 {
     "cortex-debug.armToolchainPath": "/bin",
-    "cortex-debug.openocdPath": "/bin/openocd",
+    "cortex-debug.openocdPath": "/usr/local/bin/openocd",
     "files.associations": {
         "gpio.h": "c",
         "main.h": "c",
