@@ -19,7 +19,7 @@
         "STM32H723xx",
         "USE_HAL_DRIVER"
       ],
-      "compilerPath": "/usr/bin/arm-none-eabi-gcc"
+      "compilerPath": "/bin/arm-none-eabi-gcc"
     }
   ],
   "version": 4
