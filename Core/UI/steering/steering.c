@@ -63,6 +63,24 @@ float current_delta_state = 0.0f;
 secondary_timestamp_converted_t secondary_timestamp_last_state = {0};
 inverters_inv_l_rcv_converted_t inverters_inv_l_rcv_last_state = {0};
 inverters_inv_r_rcv_converted_t inverters_inv_r_rcv_last_state = {0};
+
+secondary_irts_fl_0_converted_t secondary_irts_fl_0_last_state = {0};
+secondary_irts_fl_1_converted_t secondary_irts_fl_1_last_state = {0};
+secondary_irts_fl_2_converted_t secondary_irts_fl_2_last_state = {0};
+secondary_irts_fl_3_converted_t secondary_irts_fl_3_last_state = {0};
+secondary_irts_fr_0_converted_t secondary_irts_fr_0_last_state = {0};
+secondary_irts_fr_1_converted_t secondary_irts_fr_1_last_state = {0};
+secondary_irts_fr_2_converted_t secondary_irts_fr_2_last_state = {0};
+secondary_irts_fr_3_converted_t secondary_irts_fr_3_last_state = {0};
+secondary_irts_rl_0_converted_t secondary_irts_rl_0_last_state = {0};
+secondary_irts_rl_1_converted_t secondary_irts_rl_1_last_state = {0};
+secondary_irts_rl_2_converted_t secondary_irts_rl_2_last_state = {0};
+secondary_irts_rl_3_converted_t secondary_irts_rl_3_last_state = {0};
+secondary_irts_rr_0_converted_t secondary_irts_rr_0_last_state = {0};
+secondary_irts_rr_1_converted_t secondary_irts_rr_1_last_state = {0};
+secondary_irts_rr_2_converted_t secondary_irts_rr_2_last_state = {0};
+secondary_irts_rr_3_converted_t secondary_irts_rr_3_last_state = {0};
+
 uint32_t timestamp_start_lap = 0;
 
 void set_lb_estimated_velocity(const char *s) {
@@ -471,6 +489,90 @@ void inv_r_rcv_update() {
     sprintf(sprintf_buffer, "%.0f", r_igbt_temp);
     set_tab_sensors_lb_right_inverter_temp(sprintf_buffer);
   }
+}
+
+void irts_fl_update(){
+  float avg_temp = (secondary_irts_fl_0_last_state.channel2 +
+                    secondary_irts_fl_0_last_state.channel3 +
+                    secondary_irts_fl_0_last_state.channel4 +
+                    secondary_irts_fl_1_last_state.channel5 +
+                    secondary_irts_fl_1_last_state.channel6 +
+                    secondary_irts_fl_1_last_state.channel7 +
+                    secondary_irts_fl_1_last_state.channel8 +
+                    secondary_irts_fl_2_last_state.channel9 +
+                    secondary_irts_fl_2_last_state.channel10 +
+                    secondary_irts_fl_2_last_state.channel11 +
+                    secondary_irts_fl_2_last_state.channel12 +
+                    secondary_irts_fl_3_last_state.channel13 +
+                    secondary_irts_fl_3_last_state.channel14 +
+                    secondary_irts_fl_3_last_state.channel15
+                    ) / 14.0f;
+
+  sprintf(sprintf_buffer, "%.0f", avg_temp);
+  set_tab_sensor_lb_fl_temp(sprintf_buffer);
+}
+
+void irts_fr_update(){
+  float avg_temp = (secondary_irts_fr_0_last_state.channel2 +
+                    secondary_irts_fr_0_last_state.channel3 +
+                    secondary_irts_fr_0_last_state.channel4 +
+                    secondary_irts_fr_1_last_state.channel5 +
+                    secondary_irts_fr_1_last_state.channel6 +
+                    secondary_irts_fr_1_last_state.channel7 +
+                    secondary_irts_fr_1_last_state.channel8 +
+                    secondary_irts_fr_2_last_state.channel9 +
+                    secondary_irts_fr_2_last_state.channel10 +
+                    secondary_irts_fr_2_last_state.channel11 +
+                    secondary_irts_fr_2_last_state.channel12 +
+                    secondary_irts_fr_3_last_state.channel13 +
+                    secondary_irts_fr_3_last_state.channel14 +
+                    secondary_irts_fr_3_last_state.channel15
+                    ) / 14.0f;
+
+  sprintf(sprintf_buffer, "%.0f", avg_temp);
+  set_tab_sensor_lb_fr_temp(sprintf_buffer);
+}
+
+void irts_rl_update(){
+  float avg_temp = (secondary_irts_rl_0_last_state.channel2 +
+                    secondary_irts_rl_0_last_state.channel3 +
+                    secondary_irts_rl_0_last_state.channel4 +
+                    secondary_irts_rl_1_last_state.channel5 +
+                    secondary_irts_rl_1_last_state.channel6 +
+                    secondary_irts_rl_1_last_state.channel7 +
+                    secondary_irts_rl_1_last_state.channel8 +
+                    secondary_irts_rl_2_last_state.channel9 +
+                    secondary_irts_rl_2_last_state.channel10 +
+                    secondary_irts_rl_2_last_state.channel11 +
+                    secondary_irts_rl_2_last_state.channel12 +
+                    secondary_irts_rl_3_last_state.channel13 +
+                    secondary_irts_rl_3_last_state.channel14 +
+                    secondary_irts_rl_3_last_state.channel15
+                    ) / 14.0f;
+
+  sprintf(sprintf_buffer, "%.0f", avg_temp);
+  set_tab_sensor_lb_rl_temp(sprintf_buffer);
+}
+
+void irts_rr_update(){
+  float avg_temp = (secondary_irts_rr_0_last_state.channel2 +
+                    secondary_irts_rr_0_last_state.channel3 +
+                    secondary_irts_rr_0_last_state.channel4 +
+                    secondary_irts_rr_1_last_state.channel5 +
+                    secondary_irts_rr_1_last_state.channel6 +
+                    secondary_irts_rr_1_last_state.channel7 +
+                    secondary_irts_rr_1_last_state.channel8 +
+                    secondary_irts_rr_2_last_state.channel9 +
+                    secondary_irts_rr_2_last_state.channel10 +
+                    secondary_irts_rr_2_last_state.channel11 +
+                    secondary_irts_rr_2_last_state.channel12 +
+                    secondary_irts_rr_3_last_state.channel13 +
+                    secondary_irts_rr_3_last_state.channel14 +
+                    secondary_irts_rr_3_last_state.channel15
+                    ) / 14.0f;
+
+  sprintf(sprintf_buffer, "%.0f", avg_temp);
+  set_tab_sensor_lb_rr_temp(sprintf_buffer);
 }
 
 void update_sensors_extra_value(const char *buf, uint8_t extra_value) {

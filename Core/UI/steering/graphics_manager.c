@@ -146,6 +146,35 @@ void update_graphics(lv_timer_t *t) {
         lc_status_update();
         break;
       }
+      case SECONDARY_IRTS_FL_0_FRAME_ID:
+      case SECONDARY_IRTS_FL_1_FRAME_ID:
+      case SECONDARY_IRTS_FL_2_FRAME_ID:
+      case SECONDARY_IRTS_FL_3_FRAME_ID: {
+        irts_fl_update();
+        break;
+      }
+      case SECONDARY_IRTS_FR_0_FRAME_ID:
+      case SECONDARY_IRTS_FR_1_FRAME_ID:
+      case SECONDARY_IRTS_FR_2_FRAME_ID:
+      case SECONDARY_IRTS_FR_3_FRAME_ID: {
+        irts_fr_update();
+        break;
+      }
+      case SECONDARY_IRTS_RL_0_FRAME_ID:
+      case SECONDARY_IRTS_RL_1_FRAME_ID:
+      case SECONDARY_IRTS_RL_2_FRAME_ID:
+      case SECONDARY_IRTS_RL_3_FRAME_ID: {
+        irts_rl_update();
+        break;
+      }
+      case SECONDARY_IRTS_RR_0_FRAME_ID:
+      case SECONDARY_IRTS_RR_1_FRAME_ID:
+      case SECONDARY_IRTS_RR_2_FRAME_ID:
+      case SECONDARY_IRTS_RR_3_FRAME_ID: {
+        irts_rr_update();
+        break;
+      }
+
       default:
         break;
       }

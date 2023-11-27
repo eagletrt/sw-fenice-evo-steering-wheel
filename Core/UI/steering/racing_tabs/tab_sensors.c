@@ -4,10 +4,10 @@
 #define CELL_HEIGHT 200
 #define CELL_WIDTH 180
 
-lv_obj_t *lb_fl_temp;
-lv_obj_t *lb_fr_temp;
-lv_obj_t *lb_rl_temp;
-lv_obj_t *lb_rr_temp;
+lv_obj_t *tab_sensors_lb_fl_temp;
+lv_obj_t *tab_sensors_lb_fr_temp;
+lv_obj_t *tab_sensors_lb_rl_temp;
+lv_obj_t *tab_sensors_lb_rr_temp;
 lv_obj_t *lb_fl_press;
 lv_obj_t *lb_fr_press;
 lv_obj_t *lb_rl_press;
@@ -151,6 +151,22 @@ void tab_sensors_lb_right_inverter_temp_invalidate() {
   lv_label_set_text(tab_sensors_lb_right_inverter_temp, "NA");
 }
 
+void set_tab_sensor_lb_fl_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_fl_temp, s);
+}
+
+void set_tab_sensor_lb_fr_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_fr_temp, s);
+}
+
+void set_tab_sensor_lb_rl_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_rl_temp, s);
+}
+
+void set_tab_sensor_lb_rr_temp(const char *s) {
+  lv_label_set_text(tab_sensors_lb_rr_temp, s);
+}
+
 void init_sensors_styles(void) {
   lv_style_init(&bar_brake_style);
   lv_style_set_bg_opa(&bar_brake_style, LV_OPA_COVER);
@@ -247,22 +263,22 @@ void tab_sensors_create(lv_obj_t *parent) {
                        LV_GRID_ALIGN_STRETCH, 0, 1);
 
   lv_obj_t *front_lx_temp = lv_horizontal_pair_label(
-      frame_1, &lb_fl_temp, "X", &lv_font_inter_bold_30, "°C",
+      frame_1, &tab_sensors_lb_fl_temp, "X", &lv_font_inter_bold_30, "°C",
       &lv_font_inter_bold_22);
   lv_obj_align(front_lx_temp, LV_ALIGN_CENTER, -60, -70);
 
   lv_obj_t *front_rx_temp = lv_horizontal_pair_label(
-      frame_1, &lb_fr_temp, "X", &lv_font_inter_bold_30, "°C",
+      frame_1, &tab_sensors_lb_fr_temp, "X", &lv_font_inter_bold_30, "°C",
       &lv_font_inter_bold_22);
   lv_obj_align(front_rx_temp, LV_ALIGN_CENTER, 60, -70);
 
   lv_obj_t *rear_lx_temp = lv_horizontal_pair_label(
-      frame_1, &lb_rl_temp, "X", &lv_font_inter_bold_30, "°C",
+      frame_1, &tab_sensors_lb_rl_temp, "X", &lv_font_inter_bold_30, "°C",
       &lv_font_inter_bold_22);
   lv_obj_align(rear_lx_temp, LV_ALIGN_CENTER, -60, 70);
 
   lv_obj_t *rear_rx_temp = lv_horizontal_pair_label(
-      frame_1, &lb_rr_temp, "X", &lv_font_inter_bold_30, "°C",
+      frame_1, &tab_sensors_lb_rr_temp, "X", &lv_font_inter_bold_30, "°C",
       &lv_font_inter_bold_22);
   lv_obj_align(rear_rx_temp, LV_ALIGN_CENTER, 60, 70);
 

@@ -243,6 +243,71 @@ void handle_secondary(can_message_t *msg) {
     STEER_CAN_UNPACK(secondary, SECONDARY, timestamp, TIMESTAMP, is_smsg_new);
     break;
   }
+  case SECONDARY_IRTS_FL_0_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_0, IRTS_FL_0, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_FL_1_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_1, IRTS_FL_1, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_FL_2_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_2, IRTS_FL_2, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_FL_3_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_3, IRTS_FL_3, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_FR_0_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_0, IRTS_FR_0, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_FR_1_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_1, IRTS_FR_1, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_FR_2_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_2, IRTS_FR_2, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_FR_3_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_3, IRTS_FR_3, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_RL_0_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_0, IRTS_RL_0, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_RL_1_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_1, IRTS_RL_1, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_RL_2_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_2, IRTS_RL_2, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_RL_3_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_3, IRTS_RL_3, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_RR_0_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_0, IRTS_RR_0, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_RR_1_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_1, IRTS_RR_1, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_RR_2_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_2, IRTS_RR_2, is_smsg_new);
+    break;
+  }
+  case SECONDARY_IRTS_RR_3_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_3, IRTS_RR_3, is_smsg_new);
+    break;
+  }
+  
   default:
     break;
   }

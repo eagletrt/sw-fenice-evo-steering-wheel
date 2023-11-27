@@ -90,6 +90,11 @@ void lc_status_update();
 void inv_l_rcv_update(void);
 void inv_r_rcv_update(void);
 
+void irts_fl_update(void);
+void irts_fr_update(void);
+void irts_rl_update(void);
+void irts_rr_update(void);
+
 void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);
 
@@ -173,6 +178,10 @@ void set_tab_sensors_lb_right_motor_temp(const char *s);
 void tab_sensors_lb_right_motor_temp_invalidate();
 void set_tab_sensors_lb_right_inverter_temp(const char *s);
 void tab_sensors_lb_right_inverter_temp_invalidate();
+void set_tab_sensor_lb_fl_temp(const char *s);
+void set_tab_sensor_lb_fr_temp(const char *s);
+void set_tab_sensor_lb_rl_temp(const char *s);
+void set_tab_sensor_lb_rr_temp(const char *s);
 
 void set_tab_track_test_lb_inverter_speed_x(const char *s);
 void tab_track_test_lb_inverter_speed_x_invalidate();
