@@ -14,70 +14,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-extern primary_car_status_converted_t primary_car_status_last_state;
-extern primary_control_output_converted_t primary_control_output_last_state;
-extern primary_ambient_temperature_converted_t
-    secondary_ambient_temperature_last_state;
-extern primary_tlm_status_converted_t primary_tlm_status_last_state;
-extern primary_speed_converted_t primary_speed_last_state;
-extern primary_ptt_status_converted_t primary_ptt_status_last_state;
-extern primary_hv_voltage_converted_t primary_hv_voltage_last_state;
-extern primary_hv_current_converted_t primary_hv_current_last_state;
-extern primary_hv_temp_converted_t primary_hv_temp_last_state;
-extern primary_hv_errors_converted_t primary_hv_errors_last_state;
-extern primary_das_errors_converted_t primary_das_errors_last_state;
-extern primary_lv_currents_converted_t primary_lv_currents_last_state;
-extern primary_lv_cells_voltage_converted_t primary_lv_cells_voltage_last_state;
-extern primary_lv_cells_voltage_converted_t
-    primary_lv_cells_voltage_last_state_1;
-extern primary_lv_cells_voltage_converted_t
-    primary_lv_cells_voltage_last_state_2;
-extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state;
-extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_1;
-extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_2;
-extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_3;
-extern primary_lv_cells_temp_converted_t primary_lv_cells_temp_last_state_4;
-extern primary_lv_total_voltage_converted_t primary_lv_total_voltage_last_state;
-extern primary_lv_errors_converted_t primary_lv_errors_last_state;
-extern primary_cooling_status_converted_t primary_cooling_status_last_state;
-extern primary_hv_fans_override_status_converted_t
-    primary_hv_fans_override_status_last_state;
-extern primary_lv_feedbacks_converted_t primary_lv_feedbacks_last_state;
-extern primary_hv_cell_balancing_status_converted_t
-    primary_hv_cell_balancing_status_last_state;
-extern primary_pedal_calibration_ack_converted_t
-    primary_pedal_calibration_ack_last_state;
-extern secondary_steering_angle_converted_t secondary_steering_angle_last_state;
-extern secondary_pedals_output_converted_t secondary_pedals_output_last_state;
-extern secondary_imu_acceleration_converted_t
-    secondary_imu_acceleration_last_state;
-extern secondary_lap_count_converted_t secondary_lap_count_last_state;
-extern secondary_lc_status_converted_t secondary_lc_status_last_state;
-extern secondary_timestamp_converted_t secondary_timestamp_last_state;
-extern inverters_inv_l_rcv_converted_t inverters_inv_l_rcv_last_state;
-extern inverters_inv_r_rcv_converted_t inverters_inv_r_rcv_last_state;
-extern primary_hv_errors_converted_t hv_errors_last_state;
-extern primary_hv_feedback_status_converted_t primary_hv_feedback_status_last_state;
-extern primary_hv_feedback_status_converted_t hv_feedback_status_last_state;
-extern primary_das_errors_converted_t das_errors_last_state;
-extern primary_lv_errors_converted_t lv_errors_last_state;
+extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT]
+                                          [primary_MAX_STRUCT_SIZE_CONVERSION];
+extern uint8_t
+    secondary_messages_last_state[secondary_MESSAGE_COUNT]
+                                 [secondary_MAX_STRUCT_SIZE_CONVERSION];
+extern uint8_t
+    inverters_messages_last_state[inverters_MESSAGE_COUNT]
+                                 [inverters_MAX_STRUCT_SIZE_CONVERSION];
 
-extern secondary_irts_fl_0_converted_t secondary_irts_fl_0_last_state;
-extern secondary_irts_fl_1_converted_t secondary_irts_fl_1_last_state;
-extern secondary_irts_fl_2_converted_t secondary_irts_fl_2_last_state;
-extern secondary_irts_fl_3_converted_t secondary_irts_fl_3_last_state;
-extern secondary_irts_fr_0_converted_t secondary_irts_fr_0_last_state;
-extern secondary_irts_fr_1_converted_t secondary_irts_fr_1_last_state;
-extern secondary_irts_fr_2_converted_t secondary_irts_fr_2_last_state;
-extern secondary_irts_fr_3_converted_t secondary_irts_fr_3_last_state;
-extern secondary_irts_rl_0_converted_t secondary_irts_rl_0_last_state;
-extern secondary_irts_rl_1_converted_t secondary_irts_rl_1_last_state;
-extern secondary_irts_rl_2_converted_t secondary_irts_rl_2_last_state;
-extern secondary_irts_rl_3_converted_t secondary_irts_rl_3_last_state;
-extern secondary_irts_rr_0_converted_t secondary_irts_rr_0_last_state;
-extern secondary_irts_rr_1_converted_t secondary_irts_rr_1_last_state;
-extern secondary_irts_rr_2_converted_t secondary_irts_rr_2_last_state;
-extern secondary_irts_rr_3_converted_t secondary_irts_rr_3_last_state;
+extern primary_lv_cells_voltage_converted_t lv_voltages_stock_1;
+extern primary_lv_cells_voltage_converted_t lv_voltages_stock_2;
+extern primary_lv_cells_temp_converted_t lv_temps_stock_1;
+extern primary_lv_cells_temp_converted_t lv_temps_stock_2;
 
 bool can_send(can_message_t *msg, bool to_primary_network);
 
@@ -91,9 +40,5 @@ void handle_primary(can_message_t *msg);
 void handle_secondary(can_message_t *msg);
 
 void init_periodic_can_messages_timers(void);
-
-void primary_message_invalidate(uint16_t msgid);
-void secondary_message_invalidate(uint16_t msgid);
-void inverters_message_invalidate(uint16_t msgid);
 
 #endif // CAN_MESSAGES_H

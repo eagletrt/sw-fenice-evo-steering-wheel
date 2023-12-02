@@ -3,6 +3,7 @@
 #ifndef TAB_MANAGER_H
 #define TAB_MANAGER_H
 
+#include "can_messages.h"
 #include "engineer_mode/tab_balancing_status.h"
 #include "engineer_mode/tab_cooling.h"
 #include "engineer_mode/tab_engineer_mode.h"

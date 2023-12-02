@@ -33,7 +33,7 @@
         },
         {
             "type": "cppbuild",
-            "label": "C/C++: gcc build active file",
+            "label": "Simulatore Volante",
             "command": "/usr/bin/gcc",
             "args": [
                 "-fdiagnostics-color=always",

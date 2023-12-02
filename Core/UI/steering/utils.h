@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include "lvgl.h"
+#include "steering_config.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,35 +17,6 @@
 #define NOTCH_BAR_HEIGHT_S 6
 #define NOTCH_BAR_WIDTH_L 90 // large item
 #define NOTCH_BAR_HEIGHT_L 10
-
-typedef enum {
-  NOT_SCREEN = -1,
-  TAB_RACING,
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-  TAB_CALIBRATION,
-#endif
-#if STEER_TAB_DEBUG_ENABLED == 1
-  TAB_DEBUG,
-#endif
-  TAB_TRACK_TEST,
-  TAB_SENSORS,
-  // add here new tabs
-  NUM_RACING_TABS
-} racing_tab_t;
-
-typedef enum {
-  TAB_ENGINEER_MODE,
-  TAB_COOLING,
-#if CANSNIFFER_ENABLED == 1
-  TAB_SECONDARY_CANSNIFFER,
-  TAB_PRIMARY_CANSNIFFER,
-#endif
-  TAB_TERMINAL,
-  TAB_SHUTDOWN_CIRCUIT,
-  TAB_BALANCING_STATUS,
-  // add here new tabs
-  NUM_ENGINEER_TABS
-} engineer_tab_t;
 
 #define COLOR_PRIMARY_HEX 0x000000 // black background
 #define COLOR_SECONDARY_HEX 0xF2F3F5

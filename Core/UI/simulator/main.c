@@ -71,8 +71,6 @@ cansniffer_elem_t *primary_cansniffer_buffer;
 cansniffer_elem_t *secondary_cansniffer_buffer;
 #endif
 
-extern bool engineer_mode;
-
 /**********************
  *      MACROS
  **********************/

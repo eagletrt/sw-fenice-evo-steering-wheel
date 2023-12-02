@@ -20,7 +20,9 @@
         "can_data.h": "c",
         "tab_debug_hvfeedbacks.h": "c",
         "tab_debug.h": "c",
-        "if.h": "c"
+        "if.h": "c",
+        "mouse.h": "c",
+        "can_messages.h": "c"
     },
-    "cmake.sourceDirectory": "/home/fed/Eagle/sw-fenice-evo-steering-wheel-simulator/lv_drivers"
+    "cmake.sourceDirectory": "/home/tzarjakob/STM32CubeIDE/workspace_1.11.2/fenice-evo-steering-wheel/Core/UI"
 }

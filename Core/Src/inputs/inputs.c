@@ -3,8 +3,6 @@
 MCP23017_HandleTypeDef dev1;
 MCP23017_HandleTypeDef dev2;
 
-extern bool engineer_mode;
-
 #define PORK_HIGH_FANS_SPEED 100
 #define PORK_LOW_FANS_SPEED -10
 #define POWER_MAP_MAX 100

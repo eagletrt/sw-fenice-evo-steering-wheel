@@ -8,7 +8,6 @@ lv_style_t secondary_cansniffer_label_style;
 
 lv_timer_t *secondary_cansniffer_update_task;
 bool listening_to_secondary_cansniffer = false;
-extern bool engineer_mode;
 
 extern int secondary_cansniffer_ids[CAN_POSSIBLE_IDS];
 extern size_t secondary_cansniffer_ids_size;

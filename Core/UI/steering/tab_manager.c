@@ -118,7 +118,20 @@ void tab_manager(void) {
 /***
  * Engineer Mode
  */
+
+void reload_all(void) {
+#if STRICT_RELOAD_ALL_ENABLED == 1
+  memset((void *)primary_messages_last_state, 0,
+         primary_MESSAGE_COUNT * primary_MAX_STRUCT_SIZE_CONVERSION);
+  memset((void *)secondary_messages_last_state, 0,
+         secondary_MESSAGE_COUNT * secondary_MAX_STRUCT_SIZE_CONVERSION);
+  memset((void *)inverters_messages_last_state, 0,
+         inverters_MESSAGE_COUNT * inverters_MAX_STRUCT_SIZE_CONVERSION);
+#endif
+}
+
 bool engineer_mode = false;
+bool racing_mode = true;
 
 void load_engineer_mode_screen(void) { load_current_engineering_tab(); }
 
@@ -127,13 +140,16 @@ void remove_engineer_mode_screen(void) { load_current_racing_tab(); }
 void switch_mode(void) {
   if (engineer_mode) {
     // exit EM
+    racing_mode = true;
     engineer_mode = false;
     remove_engineer_mode_screen();
   } else {
     // enter EM
+    racing_mode = false;
     engineer_mode = true;
     load_engineer_mode_screen();
   }
+  reload_all();
 }
 
 /***
@@ -204,6 +220,7 @@ void change_racing_tab(bool forward) {
         (current_racing_tab + NUM_RACING_TABS - 1) % NUM_RACING_TABS;
 
   load_current_racing_tab();
+  reload_all();
 }
 
 void change_engineer_tab(bool forward) {
@@ -214,6 +231,7 @@ void change_engineer_tab(bool forward) {
         (current_engineer_tab + NUM_ENGINEER_TABS - 1) % NUM_ENGINEER_TABS;
 
   load_current_engineering_tab();
+  reload_all();
 }
 
 void steering_change_tab(bool forward) {

@@ -11,18 +11,12 @@ int primary_cansniffer_start_index = 0;
 int secondary_cansniffer_start_index = 0;
 #endif
 
-extern racing_tab_t current_racing_tab;
-extern engineer_tab_t current_engineer_tab;
-extern bool engineer_mode;
 #if STEER_TAB_CALIBRATION_ENABLED == 1
 extern lv_obj_t *set_min_btn;
 extern lv_obj_t *set_max_btn;
 #endif
 char sprintf_buffer_controls[BUFSIZ];
 
-extern secondary_steering_angle_converted_t secondary_steering_angle_last_state;
-extern primary_tlm_status_converted_t primary_tlm_status_last_state;
-extern primary_car_status_converted_t primary_car_status_last_state;
 primary_steer_status_converted_t steer_status_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
 primary_cooling_status_converted_t steering_cooling_settings = {
@@ -32,13 +26,15 @@ primary_hv_fans_override_converted_t hv_fans_override_settings = {
     .fans_speed = 0.0f};
 
 void set_dmt_steering_angle_target(void) {
+  GET_LAST_STATE(secondary, steering_angle, SECONDARY, STEERING_ANGLE);
   set_tab_track_test_dmt_steering_angle_target(
-      secondary_steering_angle_last_state.angle);
+      secondary_steering_angle_last_state->angle);
 }
 
 void turn_telemetry_on_off(void) {
+  GET_LAST_STATE(primary, tlm_status, PRIMARY, TLM_STATUS);
   primary_set_tlm_status_converted_t converted = {0};
-  if (primary_tlm_status_last_state.tlm_status ==
+  if (primary_tlm_status_last_state->tlm_status ==
       (primary_set_tlm_status_tlm_status)primary_set_tlm_status_tlm_status_ON) {
     display_notification("Sending Telemetry OFF", 800);
     converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;
@@ -142,21 +138,21 @@ void manettino_send_slip_control(float val) {
   steer_status_last_state.map_sc = val;
   int map_val = (int)(steer_status_last_state.map_sc * 100.0f);
   sprintf(sprintf_buffer_controls, "%u", map_val);
-  set_tab_racing_lb_slip(sprintf_buffer_controls);
+  set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_slip_idx);
 }
 
 void manettino_send_torque_vectoring(float val) {
   steer_status_last_state.map_tv = val;
   int map_val = (int)(steer_status_last_state.map_tv * 100.0f);
   sprintf(sprintf_buffer_controls, "%u", map_val);
-  set_tab_racing_lb_torque(sprintf_buffer_controls);
+  set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_torque_idx);
 }
 
 void manettino_send_power_map(float val) {
   steer_status_last_state.map_pw = val;
   float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
   sprintf(sprintf_buffer_controls, "%.0f", map_val);
-  set_tab_racing_lb_power(sprintf_buffer_controls);
+  set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);
 }
 
 void manettino_send_set_pumps_speed(float val) {
@@ -234,7 +230,8 @@ void send_set_car_status(primary_set_car_status_car_status_set val) {
 }
 
 void prepare_set_car_status(void) {
-  switch (primary_car_status_last_state.car_status) {
+  GET_LAST_STATE(primary, car_status, PRIMARY, CAR_STATUS);
+  switch (primary_car_status_last_state->car_status) {
   case primary_car_status_car_status_INIT:
   case primary_car_status_car_status_ENABLE_INV_UPDATES:
   case primary_car_status_car_status_CHECK_INV_SETTINGS: {
@@ -275,8 +272,9 @@ void prepare_set_car_status(void) {
 }
 
 bool send_set_car_status_directly(void) {
+  GET_LAST_STATE(primary, car_status, PRIMARY, CAR_STATUS);
   bool retval = true;
-  switch (primary_car_status_last_state.car_status) {
+  switch (primary_car_status_last_state->car_status) {
   case primary_car_status_car_status_IDLE:
   case primary_car_status_car_status_WAIT_DRIVER: {
     retval = false;
