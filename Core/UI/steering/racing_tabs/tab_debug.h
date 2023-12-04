@@ -31,6 +31,11 @@ typedef enum {
   TAB_LV_ERRORS
 } ErrorTabID;
 
+extern lv_obj_t *hv_feedbacks_status[20];
+extern lv_obj_t *hv_errors[16];
+extern lv_obj_t *das_errors[9];
+extern lv_obj_t *lv_errors[17];
+
 void tab_debug_create(lv_obj_t *parent);
 void init_debug_styles(void);
 

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include "racing_tabs/tab_debug.h"
 
 #define INV_MAX_SPEED 6500.f // MOT_RPM_LIMIT_REAL
 
