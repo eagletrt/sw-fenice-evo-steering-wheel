@@ -1,5 +1,7 @@
 #include "steering_config.h"
 
+#if ENGINEERING_TAB_ENABLED == 1
+
 #if CANSNIFFER_ENABLED == 1
 
 #include "tab_secondary_cansniffer.h"
@@ -251,3 +253,5 @@ void secondary_tab_cansniffer_create(lv_obj_t *parent) {
 }
 
 #endif // CANSNIFFER_ENABLED == 1
+
+#endif // ENGINEERING_TAB_ENABLED ==1

@@ -83,7 +83,9 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e);
 #if CANSNIFFER_ENABLED == 1
 void save_cansniffer_data(lv_timer_t *timer);
 #endif
+#if ENGINEERING_TAB_ENABLED == 1
 void shutdown_circuit_turn_on_off(void);
+#endif
 
 /*********************
  *      DEFINES
@@ -381,7 +383,9 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
     break;
   }
   case 'r': {
+#if ENGINEERING_TAB_ENABLED == 1
     shutdown_circuit_turn_on_off();
+#endif
     break;
   }
   default:

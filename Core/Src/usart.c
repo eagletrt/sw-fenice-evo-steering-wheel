@@ -22,6 +22,8 @@
 
 /* USER CODE BEGIN 0 */
 
+bool serial_received = false;
+
 /* USER CODE END 0 */
 
 UART_HandleTypeDef hlpuart1;
@@ -99,6 +101,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle) {
     GPIO_InitStruct.Alternate = GPIO_AF8_LPUART;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+    /* LPUART1 interrupt Init */
+    HAL_NVIC_SetPriority(LPUART1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(LPUART1_IRQn);
     /* USER CODE BEGIN LPUART1_MspInit 1 */
 
     /* USER CODE END LPUART1_MspInit 1 */
@@ -120,6 +125,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
     */
     HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6 | GPIO_PIN_7);
 
+    /* LPUART1 interrupt Deinit */
+    HAL_NVIC_DisableIRQ(LPUART1_IRQn);
     /* USER CODE BEGIN LPUART1_MspDeInit 1 */
 
     /* USER CODE END LPUART1_MspDeInit 1 */
@@ -127,6 +134,16 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+void activate_usart_it(uint8_t *dataptr, uint32_t data_size) {
+  HAL_UART_Receive_IT(&hlpuart1, dataptr, data_size);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *uart_handle) {
+  if (uart_handle == &hlpuart1) {
+    serial_received = true;
+  }
+}
 
 #ifdef STEERING_LOG_ENABLED
 /* UART Trasmit */

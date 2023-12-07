@@ -288,6 +288,7 @@ bool send_set_car_status_directly(void) {
 
 #if CANSNIFFER_ENABLED == 1
 void switch_cansniffer(void) {
+#if ENGINEERING_TAB_ENABLED
   if (!engineer_mode)
     return;
   if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
@@ -295,11 +296,11 @@ void switch_cansniffer(void) {
   } else if (current_engineer_tab == TAB_SECONDARY_CANSNIFFER) {
     switch_secondary_cansniffer();
   }
+#endif // ENGINEERING_TAB_ENABLED
 }
 
 void change_cansniffer_index(bool plus) {
-  if (!engineer_mode)
-    return;
+#if ENGINEERING_TAB_ENABLED == 1
   if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
     if (plus) {
       primary_cansniffer_start_index++;
@@ -320,5 +321,6 @@ void change_cansniffer_index(bool plus) {
       update_secondary_cansniffer_ui(NULL);
     }
   }
+#endif // ENGINEERING_TAB_ENABLED
 }
-#endif
+#endif // CANSNIFFER_ENABLED

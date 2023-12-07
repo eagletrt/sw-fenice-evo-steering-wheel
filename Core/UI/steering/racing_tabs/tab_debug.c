@@ -500,6 +500,7 @@ void change_errors_view(bool dir_left) {
 #endif
 
 void set_label_color_hv_feedbacks(int label, int i) {
+#if STEER_TAB_DEBUG_ENABLED == 1
   // PRIMARY_HV_FEEDBACK_STATUS_FEEDBACK_BMS_COCKPIT_FEEDBACK_STATE_LOW_CHOICE
   // it's better to use the enum canlib, but we use 0 or 1 or 2 for demplicity
   // sake. If canlib specs will change, then we need to change also this code
@@ -521,9 +522,11 @@ void set_label_color_hv_feedbacks(int label, int i) {
           hv_errors[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
     }
   }
+#endif
 }
 
 void hv_feedbacks_status_update() {
+#if STEER_TAB_DEBUG_ENABLED == 1
   set_label_color_hv_feedbacks(
       hv_feedback_status_last_state.feedback_implausibility_detected, 0);
   set_label_color_hv_feedbacks(
@@ -564,9 +567,11 @@ void hv_feedbacks_status_update() {
                                18);
   set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_imd,
                                19);
+#endif
 }
 
 void set_label_color_hv_errors(int label, int i) {
+#if STEER_TAB_DEBUG_ENABLED == 1
   if (label) {
     lv_obj_set_style_border_color(
         hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
@@ -578,9 +583,11 @@ void set_label_color_hv_errors(int label, int i) {
     lv_obj_set_style_bg_color(
         hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
   }
+#endif
 }
 
 void hv_errors_update() {
+#if STEER_TAB_DEBUG_ENABLED == 1
   // could be used enum_to_string but same outcome with still same number of
   // lines
   set_label_color_hv_errors(hv_errors_last_state.errors_cell_low_voltage, 0);
@@ -603,9 +610,11 @@ void hv_errors_update() {
   set_label_color_hv_errors(hv_errors_last_state.errors_feedback_circuitry, 13);
   set_label_color_hv_errors(hv_errors_last_state.errors_eeprom_comm, 14);
   set_label_color_hv_errors(hv_errors_last_state.errors_eeprom_write, 15);
+#endif
 }
 
 void set_label_color_das_errors(bool label, int i) {
+#if STEER_TAB_DEBUG_ENABLED == 1
   if (label) {
     lv_obj_set_style_border_color(
         das_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
@@ -617,9 +626,11 @@ void set_label_color_das_errors(bool label, int i) {
     lv_obj_set_style_bg_color(
         das_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
   }
+#endif
 }
 
 void das_errors_update() {
+#if STEER_TAB_DEBUG_ENABLED
   set_label_color_das_errors(das_errors_last_state.das_error_pedal_adc, 0);
   set_label_color_das_errors(
       das_errors_last_state.das_error_pedal_implausibility, 1);
@@ -630,9 +641,11 @@ void das_errors_update() {
   set_label_color_das_errors(das_errors_last_state.das_error_invr_tout, 6);
   set_label_color_das_errors(das_errors_last_state.das_error_steer_tout, 7);
   set_label_color_das_errors(das_errors_last_state.das_error_fsm, 8);
+#endif
 }
 
 void set_label_color_lv_errors(bool label, int i) {
+#if STEER_TAB_DEBUG_ENABLED
   if (label) {
     lv_obj_set_style_border_color(
         lv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
@@ -644,9 +657,11 @@ void set_label_color_lv_errors(bool label, int i) {
     lv_obj_set_style_bg_color(
         lv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
   }
+#endif
 }
 
 void lv_errors_update() {
+#if STEER_TAB_DEBUG_ENABLED
   set_label_color_lv_errors(lv_errors_last_state.errors_cell_undervoltage, 0);
   set_label_color_lv_errors(lv_errors_last_state.errors_cell_overvoltage, 1);
   set_label_color_lv_errors(lv_errors_last_state.errors_battery_open_wire, 2);
@@ -666,4 +681,5 @@ void lv_errors_update() {
   set_label_color_lv_errors(lv_errors_last_state.errors_pump, 14);
   set_label_color_lv_errors(lv_errors_last_state.errors_adc_init, 15);
   set_label_color_lv_errors(lv_errors_last_state.errors_mux, 16);
+#endif
 }

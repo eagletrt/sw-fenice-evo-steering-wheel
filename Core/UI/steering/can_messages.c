@@ -57,11 +57,13 @@ void send_bal(bool on) {
 void handle_primary(can_message_t *msg) {
   if (!steering_initialized)
     return;
+#if ENGINEERING_TAB_ENABLED == 1
 #if CANSNIFFER_ENABLED == 1
   if (cansniffer_initialized) {
     cansniffer_primary_new_message(msg);
   }
-#endif
+#endif // CANSNIFFER_ENABLED
+#endif // ENGINEERING_TAB_ENABLED
 #if CAN_LOG_ENABLED
   primary_message_name_from_id(msg->id, name_buffer);
   print("Primary network - message id %s\n", name_buffer);
@@ -206,11 +208,13 @@ void handle_primary(can_message_t *msg) {
 void handle_secondary(can_message_t *msg) {
   if (!steering_initialized)
     return;
+#if ENGINEERING_TAB_ENABLED == 1
 #if CANSNIFFER_ENABLED == 1
   if (cansniffer_initialized) {
     cansniffer_secondary_new_message(msg);
   }
-#endif
+#endif // CANSNIFFER_ENABLED
+#endif // ENGINEERING_TAB_ENABLED
 #if CAN_LOG_ENABLED
   secondary_message_name_from_id(msg->id, name_buffer);
   print("Secondary network - message id %s\n", name_buffer);
@@ -311,6 +315,31 @@ void handle_secondary(can_message_t *msg) {
 
   default:
     break;
+  }
+}
+
+#define SERIAL_TO_CAN_INTERFACE_PRIMARY 0
+#define SERIAL_TO_CAN_INTERFACE_SECONDARY 1
+
+void message_parser(uint8_t *msg, size_t msg_siz) {
+  msg[msg_siz] = 0;
+  uint32_t msgi = 0, msgl = 0;
+  uint8_t msg_data[8] = {0};
+  msgi = strtol((char *) msg, NULL, 16);
+  msgl = strtol((char *) msg + 2, NULL, 16);
+  for (size_t i = 0; i < 8; ++i) {
+    char m[3] = {msg[6 + i * 2], msg[6 + i * 2 + 1], 0};
+    msg_data[i] = strtol(m, NULL, 16);
+  }
+  can_message_t parsed_msg = {
+    .id = msgl,
+    .size = 0, // unused
+  };
+  memcpy(&parsed_msg.data, msg_data, 8);
+  if (msgi == 0) {
+    handle_primary(&parsed_msg);
+  } else if (msgi == 1) {
+    handle_secondary(&parsed_msg);
   }
 }
 

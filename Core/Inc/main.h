@@ -41,6 +41,7 @@ extern "C" {
 #include "test/sdram_test.h"
 #include "watchdog.h"
 #include <string.h>
+#include "can_over_serial.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -82,6 +83,7 @@ void Error_Handler(void);
 #define ExtraButton_Pin GPIO_PIN_9
 #define ExtraButton_GPIO_Port GPIOB
 #define ExtraButton_EXTI_IRQn EXTI9_5_IRQn
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

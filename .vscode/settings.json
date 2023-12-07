@@ -83,7 +83,8 @@
         "tab_calibration.h": "c",
         "steering_config.h": "c",
         "tab_track_test.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "serial_to_can.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

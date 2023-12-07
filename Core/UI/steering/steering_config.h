@@ -1,18 +1,34 @@
+/**
+ * @file steering_config.h
+ * @author Giacomo Mazzucchi (giacomo.mazzucchi@protonmail.com)
+ * @brief General configuration file for steering wheel
+ * @version 0.1
+ * @date 2023-12-12
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #ifndef STEERING_CONFIG_H
 #define STEERING_CONFIG_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
+/****
+ * If this is enabled, when changing tabs clears memory of past messages.
+ * Should not be a problem with watchdog enabled
+*/
 #define STRICT_RELOAD_ALL_ENABLED 0
-#define CANSNIFFER_ENABLED 1
-#define SCREEN_ENABLED 1
+#define CANSNIFFER_ENABLED 0
 #define CAN_LOG_ENABLED 0
+#define WATCHDOG_ENABLED 0
+#define ENGINEERING_TAB_ENABLED 0
+#define CAN_OVER_SERIAL_ENABLED 1
 
 #define STEER_TAB_CALIBRATION_ENABLED 0
 #define STEER_TAB_SENSORS_ENABLED 1
 #define STEER_TAB_TRACK_TEST_ENABLED 1
-#define STEER_TAB_DEBUG_ENABLED 1
+#define STEER_TAB_DEBUG_ENABLED 0
 
 #define SDRAM_BASE_ADDRESS 0xC0000000
 #define FRAMEBUFFER1_ADDR SDRAM_BASE_ADDRESS
@@ -57,7 +73,9 @@ typedef enum {
 } engineer_tab_t;
 
 extern racing_tab_t current_racing_tab;
+#if ENGINEERING_TAB_ENABLED == 1
 extern engineer_tab_t current_engineer_tab;
+#endif
 extern bool engineer_mode;
 extern bool racing_mode;
 

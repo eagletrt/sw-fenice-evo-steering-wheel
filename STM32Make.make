@@ -198,6 +198,7 @@ Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_slider.c \
 Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_switch.c \
 Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_table.c \
 Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_textarea.c \
+Core/Src/can_over_serial.c \
 Core/Src/dac.c \
 Core/Src/dma2d.c \
 Core/Src/fdcan.c \
@@ -213,6 +214,7 @@ Core/Src/memdriver.c \
 Core/Src/octospi.c \
 Core/Src/screen_driver.c \
 Core/Src/stm32h7xx_hal_msp.c \
+Core/Src/stm32h7xx_hal_timebase_tim.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
 Core/Src/sysmem.c \
@@ -390,7 +392,7 @@ CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32H723ZGTx_FLASH_shifted.ld
+LDSCRIPT = STM32H723ZGTx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 

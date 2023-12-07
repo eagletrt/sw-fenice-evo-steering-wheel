@@ -1,5 +1,7 @@
 #include "tab_cooling.h"
 
+#if ENGINEERING_TAB_ENABLED == 1
+
 lv_style_t cooling_label_style;
 lv_style_t style_indic;
 
@@ -185,3 +187,4 @@ void tab_cooling_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(radiators_speed_value_label, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 }
+#endif

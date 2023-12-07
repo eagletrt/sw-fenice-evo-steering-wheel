@@ -1,5 +1,6 @@
 #include "tab_engineer_mode.h"
 
+#if ENGINEERING_TAB_ENABLED == 1
 lv_style_t engineer_label_style;
 
 void init_engineer_tab_styles() {
@@ -68,3 +69,5 @@ void tab_engineer_screen_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(cs_l6, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
 }
+
+#endif

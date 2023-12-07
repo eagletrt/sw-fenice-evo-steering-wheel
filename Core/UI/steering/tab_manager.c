@@ -31,12 +31,16 @@ lv_timer_t *notification_timer;
 lv_group_t *g;
 
 racing_tab_t current_racing_tab;
+#if ENGINEERING_TAB_ENABLED == 1
 engineer_tab_t current_engineer_tab;
+#endif
 
 bool steering_initialized = false;
 
 void load_current_racing_tab();
+#if ENGINEERING_TAB_ENABLED == 1
 void load_current_engineering_tab();
+#endif
 
 void tab_manager(void) {
   init_custom_styles();
@@ -51,6 +55,8 @@ void tab_manager(void) {
   tab_debug_ptr = lv_obj_create(NULL);
 #endif
   notif_screen = lv_obj_create(NULL);
+
+#if ENGINEERING_TAB_ENABLED == 1
   tab_engineer_mode_ptr = lv_obj_create(NULL);
   tab_cooling_ptr = lv_obj_create(NULL);
 #if CANSNIFFER_ENABLED == 1
@@ -61,6 +67,7 @@ void tab_manager(void) {
   tab_fatal_error_ptr = lv_obj_create(NULL);
   tab_shutdown_circuit_ptr = lv_obj_create(NULL);
   tab_balancing_status_ptr = lv_obj_create(NULL);
+#endif
 
   lv_group_add_obj(g, tab_racing_ptr);
   lv_group_add_obj(g, tab_sensors_ptr);
@@ -74,6 +81,8 @@ void tab_manager(void) {
 
   lv_group_add_obj(g, tab_track_test_ptr);
   lv_group_add_obj(g, notif_screen);
+
+#if ENGINEERING_TAB_ENABLED == 1
   lv_group_add_obj(g, tab_engineer_mode_ptr);
   lv_group_add_obj(g, tab_cooling_ptr);
 #if CANSNIFFER_ENABLED == 1
@@ -84,6 +93,7 @@ void tab_manager(void) {
   lv_group_add_obj(g, tab_fatal_error_ptr);
   lv_group_add_obj(g, tab_shutdown_circuit_ptr);
   lv_group_add_obj(g, tab_balancing_status_ptr);
+#endif
 
   tab_racing_create(tab_racing_ptr);
   tab_sensors_create(tab_sensors_ptr);
@@ -97,6 +107,8 @@ void tab_manager(void) {
 
   tab_track_test_create(tab_track_test_ptr);
   tab_notification_screen_create(notif_screen);
+
+#if ENGINEERING_TAB_ENABLED == 1
   tab_engineer_screen_create(tab_engineer_mode_ptr);
   tab_cooling_create(tab_cooling_ptr);
 #if CANSNIFFER_ENABLED == 1
@@ -107,10 +119,14 @@ void tab_manager(void) {
   tab_fatal_error_create(tab_fatal_error_ptr);
   tab_shutdown_circuit_create(tab_shutdown_circuit_ptr);
   tab_balancing_status_screen_create(tab_balancing_status_ptr);
+#endif
 
   lv_scr_load(tab_racing_ptr);
   current_racing_tab = TAB_RACING;
+
+#if ENGINEERING_TAB_ENABLED == 1
   current_engineer_tab = TAB_ENGINEER_MODE;
+#endif
 
   steering_initialized = true;
 }
@@ -133,7 +149,9 @@ void reload_all(void) {
 bool engineer_mode = false;
 bool racing_mode = true;
 
+#if ENGINEERING_TAB_ENABLED == 1
 void load_engineer_mode_screen(void) { load_current_engineering_tab(); }
+#endif
 
 void remove_engineer_mode_screen(void) { load_current_racing_tab(); }
 
@@ -144,10 +162,12 @@ void switch_mode(void) {
     engineer_mode = false;
     remove_engineer_mode_screen();
   } else {
+#if ENGINEERING_TAB_ENABLED == 1
     // enter EM
     racing_mode = false;
     engineer_mode = true;
     load_engineer_mode_screen();
+#endif
   }
   reload_all();
 }
@@ -182,6 +202,7 @@ void load_current_racing_tab() {
   }
 }
 
+#if ENGINEERING_TAB_ENABLED == 1
 void load_current_engineering_tab() {
   switch (current_engineer_tab) {
   case TAB_ENGINEER_MODE:
@@ -211,6 +232,7 @@ void load_current_engineering_tab() {
     break;
   }
 }
+#endif
 
 void change_racing_tab(bool forward) {
   if (forward)
@@ -223,6 +245,7 @@ void change_racing_tab(bool forward) {
   reload_all();
 }
 
+#if ENGINEERING_TAB_ENABLED == 1
 void change_engineer_tab(bool forward) {
   if (forward)
     current_engineer_tab = (current_engineer_tab + 1) % NUM_ENGINEER_TABS;
@@ -233,12 +256,15 @@ void change_engineer_tab(bool forward) {
   load_current_engineering_tab();
   reload_all();
 }
+#endif
 
 void steering_change_tab(bool forward) {
   if (!engineer_mode) {
     change_racing_tab(forward);
   } else {
+#if ENGINEERING_TAB_ENABLED == 1
     change_engineer_tab(forward);
+#endif
   }
 }
 
@@ -272,7 +298,9 @@ void display_notification(const char *label_content, uint32_t timeout_ms) {
 
 void restore_previous_screen(lv_timer_t *timer) {
   if (engineer_mode) {
+#if ENGINEERING_TAB_ENABLED == 1
     load_current_engineering_tab();
+#endif
   } else {
     load_current_racing_tab();
   }

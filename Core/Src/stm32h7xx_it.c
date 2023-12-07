@@ -57,7 +57,10 @@
 /* External variables --------------------------------------------------------*/
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
+extern UART_HandleTypeDef hlpuart1;
 extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim4;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -83,7 +86,7 @@ void NMI_Handler(void) {
  */
 void HardFault_Handler(void) {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-  HAL_NVIC_SystemReset();
+  // HAL_NVIC_SystemReset();
   /* USER CODE END HardFault_IRQn 0 */
   while (1) {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
@@ -178,6 +181,7 @@ void SysTick_Handler(void) {
   */
   HAL_IncTick();
   /* USER CODE END SysTick_IRQn 0 */
+
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -231,6 +235,19 @@ void EXTI9_5_IRQHandler(void) {
 }
 
 /**
+ * @brief This function handles TIM4 global interrupt.
+ */
+void TIM4_IRQHandler(void) {
+  /* USER CODE BEGIN TIM4_IRQn 0 */
+
+  /* USER CODE END TIM4_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim4);
+  /* USER CODE BEGIN TIM4_IRQn 1 */
+
+  /* USER CODE END TIM4_IRQn 1 */
+}
+
+/**
  * @brief This function handles TIM7 global interrupt.
  */
 void TIM7_IRQHandler(void) {
@@ -241,6 +258,19 @@ void TIM7_IRQHandler(void) {
   /* USER CODE BEGIN TIM7_IRQn 1 */
 
   /* USER CODE END TIM7_IRQn 1 */
+}
+
+/**
+ * @brief This function handles LPUART1 global interrupt.
+ */
+void LPUART1_IRQHandler(void) {
+  /* USER CODE BEGIN LPUART1_IRQn 0 */
+
+  /* USER CODE END LPUART1_IRQn 0 */
+  HAL_UART_IRQHandler(&hlpuart1);
+  /* USER CODE BEGIN LPUART1_IRQn 1 */
+
+  /* USER CODE END LPUART1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

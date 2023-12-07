@@ -93,12 +93,6 @@ int main(void) {
 
   /* USER CODE END 1 */
 
-  /* Enable I-Cache---------------------------------------------------------*/
-  SCB_EnableICache();
-
-  /* Enable D-Cache---------------------------------------------------------*/
-  SCB_EnableDCache();
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick.
@@ -166,11 +160,7 @@ int main(void) {
 #if CANSNIFFER_ENABLED == 1
   cansniffer_buffer_init();
 #endif
-
-#if SCREEN_ENABLED == 1
   init_graphics_manager();
-#endif
-
   init_periodic_can_messages_timers();
 
   lv_timer_t *gtimer = lv_timer_create(update_graphics, 100, NULL);
@@ -185,9 +175,13 @@ int main(void) {
     enter_fatal_error_mode("Secondary CAN fatal error");
     Error_Handler();
   }
-
+#if WATCHDOG_ENABLED == 1
   init_watchdog();
+#endif
   init_input_polling();
+#if CAN_OVER_SERIAL_ENABLED == 1
+  can_over_serial_init();
+#endif
 
   /* USER CODE END 2 */
 
@@ -195,11 +189,10 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
 
   while (1) {
-
-#if SCREEN_ENABLED == 1
-    refresh_graphics();
+#if CAN_OVER_SERIAL_ENABLED == 1
+    can_over_serial_routine();
 #endif
-
+    refresh_graphics();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -226,10 +219,6 @@ void SystemClock_Config(void) {
   while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
   }
 
-  /** Macro to configure the PLL clock source
-   */
-  __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
-
   /** Initializes the RCC Oscillators according to the specified parameters
    * in the RCC_OscInitTypeDef structure.
    */
@@ -237,7 +226,7 @@ void SystemClock_Config(void) {
       RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.HSICalibrationValue = 64;
   RCC_OscInitStruct.CSIState = RCC_CSI_ON;
   RCC_OscInitStruct.CSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -284,6 +273,26 @@ void openblt_reset(void) {
 uint32_t get_current_time_ms(void) { return HAL_GetTick(); }
 
 /* USER CODE END 4 */
+
+/**
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM4 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM4) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
  * @brief  This function is executed in case of error occurrence.

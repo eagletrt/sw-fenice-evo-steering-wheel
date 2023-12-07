@@ -93,6 +93,7 @@ void car_status_update() {
 }
 
 void cooling_status_update() {
+#if ENGINEERING_TAB_ENABLED == 1
   GET_LAST_STATE(primary, cooling_status, PRIMARY, COOLING_STATUS);
   set_pumps_speed_bar(primary_cooling_status_last_state->pumps_speed * 100);
   set_pumps_speed_value_label(primary_cooling_status_last_state->pumps_speed);
@@ -100,6 +101,7 @@ void cooling_status_update() {
                           100);
   set_radiators_speed_value_label(
       primary_cooling_status_last_state->radiators_speed);
+#endif
 }
 
 void tlm_status_update() {
@@ -182,6 +184,7 @@ bool cellboard_bal[N_PORK_CELLBOARD] = {0};
 void set_bal_status_label_text(char *text);
 
 void hv_cell_balancing_status_update() {
+#if ENGINEERING_TAB_ENABLED == 1
   GET_LAST_STATE(primary, hv_cell_balancing_status, PRIMARY,
                  HV_CELL_BALANCING_STATUS);
   uint8_t cellboard_id =
@@ -204,6 +207,7 @@ void hv_cell_balancing_status_update() {
   char buf[BUFSIZ] = {0};
   sprintf(buf, "BAL STATUS: %s", is_bal ? "ON" : "OFF");
   set_bal_status_label_text(buf);
+#endif
 }
 
 void lv_feedbacks_update() {}
@@ -213,12 +217,14 @@ primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
 void ecu_feedbacks_update() {}
 
 void hv_fans_override_status_update() {
+#if ENGINEERING_TAB_ENABLED == 1
   GET_LAST_STATE(primary, hv_fans_override_status, PRIMARY,
                  HV_FANS_OVERRIDE_STATUS);
   set_pork_speed_bar(primary_hv_fans_override_status_last_state->fans_speed *
                      100);
   set_pork_speed_value_label(
       primary_hv_fans_override_status_last_state->fans_speed);
+#endif
 }
 
 void lv_currents_update() {

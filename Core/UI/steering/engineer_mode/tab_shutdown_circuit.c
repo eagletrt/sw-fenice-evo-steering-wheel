@@ -1,5 +1,7 @@
 #include "tab_shutdown_circuit.h"
 
+#if ENGINEERING_TAB_ENABLED == 1
+
 lv_style_t tab_shutdown_circuit_style;
 lv_obj_t *tab_shutdown_circuit_labels[SHUTDOWN_CIRCUIT_ROWS][2];
 
@@ -143,3 +145,5 @@ void update_shutdown_circuit(shutdown_component_state_t *comps) {
     }
   }
 }
+
+#endif
