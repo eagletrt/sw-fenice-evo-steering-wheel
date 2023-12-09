@@ -492,6 +492,155 @@ void change_errors_view(bool dir_left) {
   }
 }
 
+void set_label_color_hv_feedbacks(int label, int i) {
+  // PRIMARY_HV_FEEDBACK_STATUS_FEEDBACK_BMS_COCKPIT_FEEDBACK_STATE_LOW_CHOICE
+  // it's better to use the enum canlib, but we use 0 or 1 or 2 for simplicity’s
+  // sake. If canlib specs will change, then we need to change also this code
+  if (label == 0 || label == 2) {
+    lv_obj_set_style_border_color(
+            hv_feedbacks_status[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(
+            hv_feedbacks_status[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+  } else {
+    if (label == 1) {
+      lv_obj_set_style_border_color(
+              hv_feedbacks_status[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+      lv_obj_set_style_bg_color(
+              hv_feedbacks_status[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    } else {
+      lv_obj_set_style_border_color(
+              hv_feedbacks_status[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
+      lv_obj_set_style_bg_color(
+              hv_feedbacks_status[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
+    }
+  }
+}
+
+void hv_feedbacks_status_update() {
+  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
+  GET_LAST_STATE(primary, hv_feedback_status, PRIMARY, HV_FEEDBACK_STATUS);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_implausibility_detected, 0);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_imd_cockpit, 1);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_tsal_green_fault_latched, 2);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_bms_cockpit, 3);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_ext_latched, 4);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_tsal_green, 5);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_ts_over_60v_status, 6);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_airn_status, 7);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_airp_status, 8);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_airp_gate,
+                               9);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_airn_gate,
+                               10);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_precharge_status, 11);
+  set_label_color_hv_feedbacks(
+          primary_hv_feedback_status_last_state->feedback_tsp_over_60v_status, 12);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_imd_fault,
+                               13);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_check_mux,
+                               14);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_end,
+                               15);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_out,
+                               16);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_in,
+                               17);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_bms,
+                               18);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_imd,
+                               19);
+}
+
+void hv_errors_update() {
+  // could be used enum_to_string but same outcome with still same number of
+  // lines
+  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
+  GET_LAST_STATE(primary, hv_errors, PRIMARY, HV_ERRORS);
+  set_label_color(primary_hv_errors_last_state->errors_cell_low_voltage, hv_errors, 0);
+  set_label_color(primary_hv_errors_last_state->errors_cell_under_voltage, hv_errors, 1);
+  set_label_color(primary_hv_errors_last_state->errors_cell_over_voltage, hv_errors, 2);
+  set_label_color(primary_hv_errors_last_state->errors_cell_high_temperature,
+                            hv_errors, 3);
+  set_label_color(primary_hv_errors_last_state->errors_cell_over_temperature,
+                            hv_errors, 4);
+  set_label_color(primary_hv_errors_last_state->errors_over_current, hv_errors, 5);
+  set_label_color(primary_hv_errors_last_state->errors_can, hv_errors, 6);
+  set_label_color(primary_hv_errors_last_state->errors_int_voltage_mismatch,
+                            hv_errors, 7);
+  set_label_color(primary_hv_errors_last_state->errors_cellboard_comm, hv_errors, 8);
+  set_label_color(primary_hv_errors_last_state->errors_cellboard_internal, hv_errors, 9);
+  set_label_color(primary_hv_errors_last_state->errors_connector_disconnected,
+                            hv_errors, 10);
+  set_label_color(primary_hv_errors_last_state->errors_fans_disconnected, hv_errors, 11);
+  set_label_color(primary_hv_errors_last_state->errors_feedback, hv_errors, 12);
+  set_label_color(primary_hv_errors_last_state->errors_feedback_circuitry, hv_errors, 13);
+  set_label_color(primary_hv_errors_last_state->errors_eeprom_comm, hv_errors, 14);
+  set_label_color(primary_hv_errors_last_state->errors_eeprom_write, hv_errors, 15);
+}
+
+void das_errors_update() {
+  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
+  GET_LAST_STATE(primary, das_errors, PRIMARY, DAS_ERRORS);
+  set_label_color(primary_das_errors_last_state->das_error_pedal_adc, das_errors, 0);
+  set_label_color(
+          primary_das_errors_last_state->das_error_pedal_implausibility, das_errors, 1);
+  set_label_color(primary_das_errors_last_state->das_error_imu_tout, das_errors, 2);
+  set_label_color(primary_das_errors_last_state->das_error_irts_tout, das_errors, 3);
+  set_label_color(primary_das_errors_last_state->das_error_ts_tout, das_errors, 4);
+  set_label_color(primary_das_errors_last_state->das_error_invl_tout, das_errors, 5);
+  set_label_color(primary_das_errors_last_state->das_error_invr_tout, das_errors, 6);
+  set_label_color(primary_das_errors_last_state->das_error_steer_tout, das_errors, 7);
+  set_label_color(primary_das_errors_last_state->das_error_fsm, das_errors, 8);
+}
+
+void lv_errors_update() {
+  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
+  GET_LAST_STATE(primary, lv_errors, PRIMARY, LV_ERRORS);
+  set_label_color(primary_lv_errors_last_state->errors_cell_undervoltage, lv_errors, 0);
+  set_label_color(primary_lv_errors_last_state->errors_cell_overvoltage, lv_errors, 1);
+  set_label_color(primary_lv_errors_last_state->errors_battery_open_wire, lv_errors, 2);
+  set_label_color(primary_lv_errors_last_state->errors_can, lv_errors, 3);
+  set_label_color(primary_lv_errors_last_state->errors_spi, lv_errors, 4);
+  set_label_color(primary_lv_errors_last_state->errors_over_current, lv_errors, 5);
+  set_label_color(primary_lv_errors_last_state->errors_cell_under_temperature,
+                            lv_errors, 6);
+  set_label_color(primary_lv_errors_last_state->errors_cell_over_temperature,
+                            lv_errors, 7);
+  set_label_color(primary_lv_errors_last_state->errors_relay, lv_errors, 8);
+  set_label_color(primary_lv_errors_last_state->errors_bms_monitor, lv_errors, 9);
+  set_label_color(primary_lv_errors_last_state->errors_voltages_not_ready, lv_errors, 10);
+  set_label_color(primary_lv_errors_last_state->errors_mcp23017, lv_errors, 11);
+  set_label_color(primary_lv_errors_last_state->errors_radiator, lv_errors, 12);
+  set_label_color(primary_lv_errors_last_state->errors_fan, lv_errors, 13);
+  set_label_color(primary_lv_errors_last_state->errors_pump, lv_errors, 14);
+  set_label_color(primary_lv_errors_last_state->errors_adc_init, lv_errors, 15);
+  set_label_color(primary_lv_errors_last_state->errors_mux, lv_errors, 16);
+}
+
+void set_label_color(bool label, lv_obj_t *errors[], int i) {
+  if (label) {
+    lv_obj_set_style_border_color(
+            errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(errors[i], lv_color_hex(COLOR_RED_STATUS_HEX),
+                              LV_PART_MAIN);
+  } else {
+    lv_obj_set_style_border_color(
+            errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(
+            errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+  }
+}
+
 #endif
 
 

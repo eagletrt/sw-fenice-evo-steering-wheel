@@ -8,6 +8,7 @@
 #include "lvgl.h"
 #include "steering.h"
 #include "utils.h"
+#include "../can_messages.h"
 
 #define TAB_DEBUG_TOP_BAR_HEIGHT 55
 #define TAB_DEBUG_DATA_PANEL_HEIGHT 425
@@ -31,11 +32,6 @@ typedef enum {
   TAB_LV_ERRORS
 } ErrorTabID;
 
-extern lv_obj_t *hv_feedbacks_status[20];
-extern lv_obj_t *hv_errors[16];
-extern lv_obj_t *das_errors[9];
-extern lv_obj_t *lv_errors[17];
-
 void tab_debug_create(lv_obj_t *parent);
 void init_debug_styles(void);
 
@@ -44,6 +40,9 @@ lv_obj_t *cell_create(lv_obj_t *parent, const char *text, uint8_t pos_row,
 
 void change_errors_view(bool dir_left);
 
+void set_label_color_hv_feedbacks(int label, int i);
+
+void set_label_color(bool label, lv_obj_t *errors[], int i);
 #endif // STEER_TAB_DEBUG_ENABLED
 
 #endif // TAB_DEBUG_H

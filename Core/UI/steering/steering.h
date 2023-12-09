@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-#include "racing_tabs/tab_debug.h"
 
 #define INV_MAX_SPEED 6500.f // MOT_RPM_LIMIT_REAL
 
@@ -162,8 +161,5 @@ void pork_speed_value_label_invalidate();
 calibration_box_t *get_tab_calibration_curr_focus();
 lv_obj_t *get_tab_calibration_slider();
 
-void set_label_color_lv_errors(bool label, int i);
-void set_label_color_hv_errors(int label, int i);
-void set_label_color_das_errors(bool label, int i);
-void set_label_color_hv_feedbacks(int label, int i);
+
 #endif /* STEERING_H */
