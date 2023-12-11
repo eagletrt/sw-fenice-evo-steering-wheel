@@ -2,15 +2,14 @@
 build/
 
 # Ignore all dot folders, with below exceptions
-.*/
 
 *.log
 
 # VSCode
-!.vscode/
-!.vscode/*
     
 logs/**
 
 #CLion
 .idea/
+
+.vscode/settings.json

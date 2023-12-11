@@ -22,11 +22,6 @@ lv_obj_t *das_errors_panel;
 
 extern racing_tab_t current_racing_tab;
 
-primary_hv_errors_converted_t hv_errors_last_state = {0};
-primary_hv_feedback_status_converted_t hv_feedback_status_last_state = {0};
-primary_das_errors_converted_t das_errors_last_state = {0};
-primary_lv_errors_converted_t lv_errors_last_state = {0};
-
 lv_obj_t *cell_create(lv_obj_t *parent, const char *text, uint8_t pos_col,
                       uint8_t pos_row, lv_style_t *style) {
   lv_obj_t *cell = lv_obj_create(parent);
@@ -497,173 +492,150 @@ void change_errors_view(bool dir_left) {
   }
 }
 
-#endif
-
 void set_label_color_hv_feedbacks(int label, int i) {
   // PRIMARY_HV_FEEDBACK_STATUS_FEEDBACK_BMS_COCKPIT_FEEDBACK_STATE_LOW_CHOICE
-  // it's better to use the enum canlib, but we use 0 or 1 or 2 for demplicity
+  // it's better to use the enum canlib, but we use 0 or 1 or 2 for simplicity’s
   // sake. If canlib specs will change, then we need to change also this code
   if (label == 0 || label == 2) {
+    //low or high status
     lv_obj_set_style_border_color(
-        hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+            hv_feedbacks_status[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
     lv_obj_set_style_bg_color(
-        hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+            hv_feedbacks_status[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
   } else {
     if (label == 1) {
+      //error status
       lv_obj_set_style_border_color(
-          hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+              hv_feedbacks_status[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
       lv_obj_set_style_bg_color(
-          hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+              hv_feedbacks_status[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
     } else {
+      //unknown status
       lv_obj_set_style_border_color(
-          hv_errors[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
+              hv_feedbacks_status[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
       lv_obj_set_style_bg_color(
-          hv_errors[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
+              hv_feedbacks_status[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
     }
   }
 }
 
-void hv_feedbacks_status_update() {
+void update_tab_debug_hv_feedbacks_labels(primary_hv_feedback_status_converted_t *primary_hv_feedback_status_last_state) {
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_implausibility_detected, 0);
+          primary_hv_feedback_status_last_state->feedback_implausibility_detected, 0);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_imd_cockpit, 1);
+          primary_hv_feedback_status_last_state->feedback_imd_cockpit, 1);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_tsal_green_fault_latched, 2);
+          primary_hv_feedback_status_last_state->feedback_tsal_green_fault_latched, 2);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_bms_cockpit, 3);
+          primary_hv_feedback_status_last_state->feedback_bms_cockpit, 3);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_ext_latched, 4);
+          primary_hv_feedback_status_last_state->feedback_ext_latched, 4);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_tsal_green, 5);
+          primary_hv_feedback_status_last_state->feedback_tsal_green, 5);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_ts_over_60v_status, 6);
+          primary_hv_feedback_status_last_state->feedback_ts_over_60v_status, 6);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_airn_status, 7);
+          primary_hv_feedback_status_last_state->feedback_airn_status, 7);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_airp_status, 8);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_airp_gate,
+          primary_hv_feedback_status_last_state->feedback_airp_status, 8);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_airp_gate,
                                9);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_airn_gate,
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_airn_gate,
                                10);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_precharge_status, 11);
+          primary_hv_feedback_status_last_state->feedback_precharge_status, 11);
   set_label_color_hv_feedbacks(
-      hv_feedback_status_last_state.feedback_tsp_over_60v_status, 12);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_imd_fault,
+          primary_hv_feedback_status_last_state->feedback_tsp_over_60v_status, 12);
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_imd_fault,
                                13);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_check_mux,
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_check_mux,
                                14);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_end,
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_end,
                                15);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_out,
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_out,
                                16);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_in,
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_in,
                                17);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_bms,
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_bms,
                                18);
-  set_label_color_hv_feedbacks(hv_feedback_status_last_state.feedback_sd_imd,
+  set_label_color_hv_feedbacks(primary_hv_feedback_status_last_state->feedback_sd_imd,
                                19);
 }
 
-void set_label_color_hv_errors(int label, int i) {
-  if (label) {
-    lv_obj_set_style_border_color(
-        hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
-    lv_obj_set_style_bg_color(hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX),
-                              LV_PART_MAIN);
-  } else {
-    lv_obj_set_style_border_color(
-        hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
-    lv_obj_set_style_bg_color(
-        hv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
-  }
-}
-
-void hv_errors_update() {
+void update_tab_debug_hv_errors_labels(primary_hv_errors_converted_t *primary_hv_errors_last_state) {
   // could be used enum_to_string but same outcome with still same number of
   // lines
-  set_label_color_hv_errors(hv_errors_last_state.errors_cell_low_voltage, 0);
-  set_label_color_hv_errors(hv_errors_last_state.errors_cell_under_voltage, 1);
-  set_label_color_hv_errors(hv_errors_last_state.errors_cell_over_voltage, 2);
-  set_label_color_hv_errors(hv_errors_last_state.errors_cell_high_temperature,
-                            3);
-  set_label_color_hv_errors(hv_errors_last_state.errors_cell_over_temperature,
-                            4);
-  set_label_color_hv_errors(hv_errors_last_state.errors_over_current, 5);
-  set_label_color_hv_errors(hv_errors_last_state.errors_can, 6);
-  set_label_color_hv_errors(hv_errors_last_state.errors_int_voltage_mismatch,
-                            7);
-  set_label_color_hv_errors(hv_errors_last_state.errors_cellboard_comm, 8);
-  set_label_color_hv_errors(hv_errors_last_state.errors_cellboard_internal, 9);
-  set_label_color_hv_errors(hv_errors_last_state.errors_connector_disconnected,
-                            10);
-  set_label_color_hv_errors(hv_errors_last_state.errors_fans_disconnected, 11);
-  set_label_color_hv_errors(hv_errors_last_state.errors_feedback, 12);
-  set_label_color_hv_errors(hv_errors_last_state.errors_feedback_circuitry, 13);
-  set_label_color_hv_errors(hv_errors_last_state.errors_eeprom_comm, 14);
-  set_label_color_hv_errors(hv_errors_last_state.errors_eeprom_write, 15);
+  set_label_color(primary_hv_errors_last_state->errors_cell_low_voltage, hv_errors, 0);
+  set_label_color(primary_hv_errors_last_state->errors_cell_under_voltage, hv_errors, 1);
+  set_label_color(primary_hv_errors_last_state->errors_cell_over_voltage, hv_errors, 2);
+  set_label_color(primary_hv_errors_last_state->errors_cell_high_temperature,
+                            hv_errors, 3);
+  set_label_color(primary_hv_errors_last_state->errors_cell_over_temperature,
+                            hv_errors, 4);
+  set_label_color(primary_hv_errors_last_state->errors_over_current, hv_errors, 5);
+  set_label_color(primary_hv_errors_last_state->errors_can, hv_errors, 6);
+  set_label_color(primary_hv_errors_last_state->errors_int_voltage_mismatch,
+                            hv_errors, 7);
+  set_label_color(primary_hv_errors_last_state->errors_cellboard_comm, hv_errors, 8);
+  set_label_color(primary_hv_errors_last_state->errors_cellboard_internal, hv_errors, 9);
+  set_label_color(primary_hv_errors_last_state->errors_connector_disconnected,
+                            hv_errors, 10);
+  set_label_color(primary_hv_errors_last_state->errors_fans_disconnected, hv_errors, 11);
+  set_label_color(primary_hv_errors_last_state->errors_feedback, hv_errors, 12);
+  set_label_color(primary_hv_errors_last_state->errors_feedback_circuitry, hv_errors, 13);
+  set_label_color(primary_hv_errors_last_state->errors_eeprom_comm, hv_errors, 14);
+  set_label_color(primary_hv_errors_last_state->errors_eeprom_write, hv_errors, 15);
 }
 
-void set_label_color_das_errors(bool label, int i) {
+void update_tab_debug_das_errors_labels(primary_das_errors_converted_t *primary_das_errors_last_state) {
+  set_label_color(primary_das_errors_last_state->das_error_pedal_adc, das_errors, 0);
+  set_label_color(
+          primary_das_errors_last_state->das_error_pedal_implausibility, das_errors, 1);
+  set_label_color(primary_das_errors_last_state->das_error_imu_tout, das_errors, 2);
+  set_label_color(primary_das_errors_last_state->das_error_irts_tout, das_errors, 3);
+  set_label_color(primary_das_errors_last_state->das_error_ts_tout, das_errors, 4);
+  set_label_color(primary_das_errors_last_state->das_error_invl_tout, das_errors, 5);
+  set_label_color(primary_das_errors_last_state->das_error_invr_tout, das_errors, 6);
+  set_label_color(primary_das_errors_last_state->das_error_steer_tout, das_errors, 7);
+  set_label_color(primary_das_errors_last_state->das_error_fsm, das_errors, 8);
+}
+
+void update_tab_debug_lv_errors_labels(primary_lv_errors_converted_t *primary_lv_errors_last_state) {
+  set_label_color(primary_lv_errors_last_state->errors_cell_undervoltage, lv_errors, 0);
+  set_label_color(primary_lv_errors_last_state->errors_cell_overvoltage, lv_errors, 1);
+  set_label_color(primary_lv_errors_last_state->errors_battery_open_wire, lv_errors, 2);
+  set_label_color(primary_lv_errors_last_state->errors_can, lv_errors, 3);
+  set_label_color(primary_lv_errors_last_state->errors_spi, lv_errors, 4);
+  set_label_color(primary_lv_errors_last_state->errors_over_current, lv_errors, 5);
+  set_label_color(primary_lv_errors_last_state->errors_cell_under_temperature,
+                            lv_errors, 6);
+  set_label_color(primary_lv_errors_last_state->errors_cell_over_temperature,
+                            lv_errors, 7);
+  set_label_color(primary_lv_errors_last_state->errors_relay, lv_errors, 8);
+  set_label_color(primary_lv_errors_last_state->errors_bms_monitor, lv_errors, 9);
+  set_label_color(primary_lv_errors_last_state->errors_voltages_not_ready, lv_errors, 10);
+  set_label_color(primary_lv_errors_last_state->errors_mcp23017, lv_errors, 11);
+  set_label_color(primary_lv_errors_last_state->errors_radiator, lv_errors, 12);
+  set_label_color(primary_lv_errors_last_state->errors_fan, lv_errors, 13);
+  set_label_color(primary_lv_errors_last_state->errors_pump, lv_errors, 14);
+  set_label_color(primary_lv_errors_last_state->errors_adc_init, lv_errors, 15);
+  set_label_color(primary_lv_errors_last_state->errors_mux, lv_errors, 16);
+}
+
+void set_label_color(bool label, lv_obj_t *errors[], int i) {
   if (label) {
     lv_obj_set_style_border_color(
-        das_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
-    lv_obj_set_style_bg_color(das_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX),
+            errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(errors[i], lv_color_hex(COLOR_RED_STATUS_HEX),
                               LV_PART_MAIN);
   } else {
     lv_obj_set_style_border_color(
-        das_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+            errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
     lv_obj_set_style_bg_color(
-        das_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
+            errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
   }
 }
 
-void das_errors_update() {
-  set_label_color_das_errors(das_errors_last_state.das_error_pedal_adc, 0);
-  set_label_color_das_errors(
-      das_errors_last_state.das_error_pedal_implausibility, 1);
-  set_label_color_das_errors(das_errors_last_state.das_error_imu_tout, 2);
-  set_label_color_das_errors(das_errors_last_state.das_error_irts_tout, 3);
-  set_label_color_das_errors(das_errors_last_state.das_error_ts_tout, 4);
-  set_label_color_das_errors(das_errors_last_state.das_error_invl_tout, 5);
-  set_label_color_das_errors(das_errors_last_state.das_error_invr_tout, 6);
-  set_label_color_das_errors(das_errors_last_state.das_error_steer_tout, 7);
-  set_label_color_das_errors(das_errors_last_state.das_error_fsm, 8);
-}
+#endif
 
-void set_label_color_lv_errors(bool label, int i) {
-  if (label) {
-    lv_obj_set_style_border_color(
-        lv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
-    lv_obj_set_style_bg_color(lv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX),
-                              LV_PART_MAIN);
-  } else {
-    lv_obj_set_style_border_color(
-        lv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
-    lv_obj_set_style_bg_color(
-        lv_errors[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
-  }
-}
 
-void lv_errors_update() {
-  set_label_color_lv_errors(lv_errors_last_state.errors_cell_undervoltage, 0);
-  set_label_color_lv_errors(lv_errors_last_state.errors_cell_overvoltage, 1);
-  set_label_color_lv_errors(lv_errors_last_state.errors_battery_open_wire, 2);
-  set_label_color_lv_errors(lv_errors_last_state.errors_can, 3);
-  set_label_color_lv_errors(lv_errors_last_state.errors_spi, 4);
-  set_label_color_lv_errors(lv_errors_last_state.errors_over_current, 5);
-  set_label_color_lv_errors(lv_errors_last_state.errors_cell_under_temperature,
-                            6);
-  set_label_color_lv_errors(lv_errors_last_state.errors_cell_over_temperature,
-                            7);
-  set_label_color_lv_errors(lv_errors_last_state.errors_relay, 8);
-  set_label_color_lv_errors(lv_errors_last_state.errors_bms_monitor, 9);
-  set_label_color_lv_errors(lv_errors_last_state.errors_voltages_not_ready, 10);
-  set_label_color_lv_errors(lv_errors_last_state.errors_mcp23017, 11);
-  set_label_color_lv_errors(lv_errors_last_state.errors_radiator, 12);
-  set_label_color_lv_errors(lv_errors_last_state.errors_fan, 13);
-  set_label_color_lv_errors(lv_errors_last_state.errors_pump, 14);
-  set_label_color_lv_errors(lv_errors_last_state.errors_adc_init, 15);
-  set_label_color_lv_errors(lv_errors_last_state.errors_mux, 16);
-}
