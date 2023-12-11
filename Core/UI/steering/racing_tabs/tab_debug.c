@@ -497,17 +497,20 @@ void set_label_color_hv_feedbacks(int label, int i) {
   // it's better to use the enum canlib, but we use 0 or 1 or 2 for simplicity’s
   // sake. If canlib specs will change, then we need to change also this code
   if (label == 0 || label == 2) {
+    //low or high status
     lv_obj_set_style_border_color(
             hv_feedbacks_status[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
     lv_obj_set_style_bg_color(
             hv_feedbacks_status[i], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
   } else {
     if (label == 1) {
+      //error status
       lv_obj_set_style_border_color(
               hv_feedbacks_status[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
       lv_obj_set_style_bg_color(
               hv_feedbacks_status[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
     } else {
+      //unknown status
       lv_obj_set_style_border_color(
               hv_feedbacks_status[i], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
       lv_obj_set_style_bg_color(
@@ -516,9 +519,7 @@ void set_label_color_hv_feedbacks(int label, int i) {
   }
 }
 
-void hv_feedbacks_status_update() {
-  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
-  GET_LAST_STATE(primary, hv_feedback_status, PRIMARY, HV_FEEDBACK_STATUS);
+void update_tab_debug_hv_feedbacks_labels(primary_hv_feedback_status_converted_t *primary_hv_feedback_status_last_state) {
   set_label_color_hv_feedbacks(
           primary_hv_feedback_status_last_state->feedback_implausibility_detected, 0);
   set_label_color_hv_feedbacks(
@@ -561,11 +562,9 @@ void hv_feedbacks_status_update() {
                                19);
 }
 
-void hv_errors_update() {
+void update_tab_debug_hv_errors_labels(primary_hv_errors_converted_t *primary_hv_errors_last_state) {
   // could be used enum_to_string but same outcome with still same number of
   // lines
-  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
-  GET_LAST_STATE(primary, hv_errors, PRIMARY, HV_ERRORS);
   set_label_color(primary_hv_errors_last_state->errors_cell_low_voltage, hv_errors, 0);
   set_label_color(primary_hv_errors_last_state->errors_cell_under_voltage, hv_errors, 1);
   set_label_color(primary_hv_errors_last_state->errors_cell_over_voltage, hv_errors, 2);
@@ -588,9 +587,7 @@ void hv_errors_update() {
   set_label_color(primary_hv_errors_last_state->errors_eeprom_write, hv_errors, 15);
 }
 
-void das_errors_update() {
-  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
-  GET_LAST_STATE(primary, das_errors, PRIMARY, DAS_ERRORS);
+void update_tab_debug_das_errors_labels(primary_das_errors_converted_t *primary_das_errors_last_state) {
   set_label_color(primary_das_errors_last_state->das_error_pedal_adc, das_errors, 0);
   set_label_color(
           primary_das_errors_last_state->das_error_pedal_implausibility, das_errors, 1);
@@ -603,9 +600,7 @@ void das_errors_update() {
   set_label_color(primary_das_errors_last_state->das_error_fsm, das_errors, 8);
 }
 
-void lv_errors_update() {
-  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
-  GET_LAST_STATE(primary, lv_errors, PRIMARY, LV_ERRORS);
+void update_tab_debug_lv_errors_labels(primary_lv_errors_converted_t *primary_lv_errors_last_state) {
   set_label_color(primary_lv_errors_last_state->errors_cell_undervoltage, lv_errors, 0);
   set_label_color(primary_lv_errors_last_state->errors_cell_overvoltage, lv_errors, 1);
   set_label_color(primary_lv_errors_last_state->errors_battery_open_wire, lv_errors, 2);

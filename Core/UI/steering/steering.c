@@ -176,6 +176,30 @@ void hv_temp_update() {
                              tab_sensors_lb_average_temperature);
 }
 
+void hv_feedbacks_status_update() {
+  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
+  GET_LAST_STATE(primary, hv_feedback_status, PRIMARY, HV_FEEDBACK_STATUS);
+  update_tab_debug_hv_feedbacks_labels(&primary_hv_feedback_status_last_state);
+}
+
+void hv_errors_update() {
+  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
+  GET_LAST_STATE(primary, hv_errors, PRIMARY, HV_ERRORS);
+  update_tab_debug_hv_errors_labels(&primary_hv_errors_last_state);
+}
+
+void das_errors_update() {
+  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
+  GET_LAST_STATE(primary, das_errors, PRIMARY, DAS_ERRORS);
+  update_tab_debug_das_errors_labels(&primary_das_errors_last_state);
+}
+
+void lv_errors_update() {
+  CHECK_CURRENT_TAB(racing, TAB_DEBUG);
+  GET_LAST_STATE(primary, lv_errors, PRIMARY, LV_ERRORS);
+  update_tab_debug_lv_errors_labels(&primary_lv_errors_last_state);
+}
+
 #define N_PORK_CELLBOARD 6
 bool cellboard_bal[N_PORK_CELLBOARD] = {0};
 
