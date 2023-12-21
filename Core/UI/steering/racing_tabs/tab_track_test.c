@@ -14,11 +14,8 @@ float dmt_steering_angle_target = 0.0f;
 #define STEERING_ANGLE_TARGET_LIMITS 20.0f
 
 void set_tab_track_test_lb_speed(const char *s) {
+  CHECK_CURRENT_TAB(racing, TAB_TRACK_TEST);
   lv_label_set_text(tab_track_test_lb_speed, s);
-}
-
-void set_tab_track_test_lb_inverter_speed_x(const char *s) {
-  // lv_label_set_text(tab_track_test_lb_inverter_speed_x, s);
 }
 
 void set_tab_track_test_steering_angle_bar(float v) {
@@ -42,6 +39,7 @@ void set_tab_track_test_steering_angle_bar(float v) {
 }
 
 void set_tab_track_test_dmt_steering_angle_target(float v) {
+  CHECK_CURRENT_TAB(racing, TAB_TRACK_TEST);
   dmt_steering_angle_target = v;
   lv_bar_set_range(tab_track_test_steering_angle_bar,
                    v - STEERING_ANGLE_TARGET_LIMITS - 10.0f,
@@ -54,25 +52,13 @@ void set_tab_track_test_dmt_steering_angle_target(float v) {
   display_notification(b, 1000);
 }
 
-void set_tab_track_test_lb_inverter_speed_y(const char *s) {
-  // lv_label_set_text(tab_track_test_lb_inverter_speed_y, s);
-}
-
-// invalidate functions
-
-void tab_track_test_lb_inverter_speed_x_invalidate() {
-  // lv_label_set_text(tab_track_test_lb_inverter_speed_x, "NA");
-}
-
-void tab_track_test_lb_inverter_speed_y_invalidate() {
-  // lv_label_set_text(tab_track_test_lb_inverter_speed_y, "NA");
-}
-
 void tab_track_test_lb_steering_angle_invalidate() {
+  CHECK_CURRENT_TAB(racing, TAB_TRACK_TEST);
   lv_label_set_text(tab_track_test_lb_steering_angle, "NA");
 }
 
 void tab_track_test_lb_speed_invalidate() {
+  CHECK_CURRENT_TAB(racing, TAB_TRACK_TEST);
   lv_label_set_text(tab_track_test_lb_speed, "NA");
 }
 

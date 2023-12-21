@@ -4,9 +4,9 @@
  * @brief General configuration file for steering wheel
  * @version 0.1
  * @date 2023-12-12
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #ifndef STEERING_CONFIG_H
 #define STEERING_CONFIG_H
@@ -17,13 +17,17 @@
 /****
  * If this is enabled, when changing tabs clears memory of past messages.
  * Should not be a problem with watchdog enabled
-*/
+ */
 #define STRICT_RELOAD_ALL_ENABLED 0
+/***
+ * Activate candump in the engineering tabs
+ * To date, it is very memory inefficient, so use only if strictly necessary
+*/
 #define CANSNIFFER_ENABLED 0
 #define CAN_LOG_ENABLED 0
-#define WATCHDOG_ENABLED 0
+#define WATCHDOG_ENABLED 1
 #define ENGINEERING_TAB_ENABLED 0
-#define CAN_OVER_SERIAL_ENABLED 1
+#define CAN_OVER_SERIAL_ENABLED 0
 
 #define STEER_TAB_CALIBRATION_ENABLED 0
 #define STEER_TAB_SENSORS_ENABLED 1

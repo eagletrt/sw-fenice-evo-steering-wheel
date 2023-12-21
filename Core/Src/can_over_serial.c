@@ -10,9 +10,7 @@ extern bool serial_received;
 void message_parser(uint8_t *msg, size_t msg_siz);
 void activate_usart_it(uint8_t *dataptr, uint32_t data_size);
 
-void can_over_serial_init(void) {
-  activate_usart_it(rcv_data, RCV_SIZ);
-}
+void can_over_serial_init(void) { activate_usart_it(rcv_data, RCV_SIZ); }
 
 void can_over_serial_routine(void) {
   if (serial_received) {

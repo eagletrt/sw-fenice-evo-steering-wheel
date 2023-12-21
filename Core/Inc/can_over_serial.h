@@ -2,8 +2,8 @@
 #define SERIAL_TO_CAN_H
 
 #include "steering_config.h"
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #define RCV_SIZ 23
 

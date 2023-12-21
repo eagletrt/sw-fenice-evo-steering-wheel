@@ -135,6 +135,7 @@ void speed_update(void) {
 }
 
 void hv_voltage_update(void) {
+#if 0
   GET_LAST_STATE(primary, hv_voltage, PRIMARY, HV_VOLTAGE);
   sprintf(sprintf_buffer, "%.1f",
           primary_hv_voltage_last_state->min_cell_voltage);
@@ -160,6 +161,7 @@ void hv_voltage_update(void) {
                 primary_hv_voltage_last_state->min_cell_voltage;
   sprintf(sprintf_buffer, "%d", (int)(delta * 1000.0f));
   set_tab_sensors_label_text(sprintf_buffer, tab_sensors_lb_hv_delta);
+#endif
 }
 
 void hv_current_update() {
@@ -328,16 +330,7 @@ void pedals_output_update() {
 #endif
 }
 
-void imu_acceleration_update() {
-  GET_LAST_STATE(secondary, imu_acceleration, SECONDARY, IMU_ACCELERATION);
-  sprintf(sprintf_buffer, "%.4f",
-          secondary_imu_acceleration_last_state->accel_x);
-  set_tab_track_test_lb_inverter_speed_x(sprintf_buffer);
-
-  sprintf(sprintf_buffer, "%.4f",
-          secondary_imu_acceleration_last_state->accel_y);
-  set_tab_track_test_lb_inverter_speed_y(sprintf_buffer);
-}
+void imu_acceleration_update() {}
 
 void lap_count_update() {
   GET_LAST_STATE(secondary, lap_count, SECONDARY, LAP_COUNT);

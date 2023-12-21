@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "can_messages.h"
+#include "can_over_serial.h"
 #include "graphics_manager.h"
 #include "inputs/inputs.h"
 #include "led_control.h"
@@ -41,7 +42,6 @@ extern "C" {
 #include "test/sdram_test.h"
 #include "watchdog.h"
 #include <string.h>
-#include "can_over_serial.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

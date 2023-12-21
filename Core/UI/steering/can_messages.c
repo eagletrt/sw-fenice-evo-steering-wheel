@@ -325,15 +325,15 @@ void message_parser(uint8_t *msg, size_t msg_siz) {
   msg[msg_siz] = 0;
   uint32_t msgi = 0, msgl = 0;
   uint8_t msg_data[8] = {0};
-  msgi = strtol((char *) msg, NULL, 16);
-  msgl = strtol((char *) msg + 2, NULL, 16);
+  msgi = strtol((char *)msg, NULL, 16);
+  msgl = strtol((char *)msg + 2, NULL, 16);
   for (size_t i = 0; i < 8; ++i) {
     char m[3] = {msg[6 + i * 2], msg[6 + i * 2 + 1], 0};
     msg_data[i] = strtol(m, NULL, 16);
   }
   can_message_t parsed_msg = {
-    .id = msgl,
-    .size = 0, // unused
+      .id = msgl,
+      .size = 0, // unused
   };
   memcpy(&parsed_msg.data, msg_data, 8);
   if (msgi == 0) {
