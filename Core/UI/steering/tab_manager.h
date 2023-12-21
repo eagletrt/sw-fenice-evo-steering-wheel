@@ -18,6 +18,8 @@
 #include "racing_tabs/tab_notification.h"
 #include "racing_tabs/tab_racing.h"
 #include "racing_tabs/tab_sensors.h"
+#include "racing_tabs/tab_hv.h"
+#include "racing_tabs/tab_lv.h"
 #include "racing_tabs/tab_track_test.h"
 #include "steering.h"
 #include "utils.h"

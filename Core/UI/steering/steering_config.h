@@ -40,14 +40,15 @@
 
 #if CANSNIFFER_ENABLED == 1
 #define PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS 0xC0600000
-#define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS                               \
+#define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS \
   ((0xC0600000) + ((CANSNIFFER_ELEM_T_SIZE) * CAN_POSSIBLE_IDS))
 #endif
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 480
 
-typedef enum {
+typedef enum
+{
   NOT_SCREEN = -1,
   TAB_RACING,
 #if STEER_TAB_CALIBRATION_ENABLED == 1
@@ -58,11 +59,14 @@ typedef enum {
 #endif
   TAB_TRACK_TEST,
   TAB_SENSORS,
+  TAB_HV,
+  TAB_LV,
   // add here new tabs
   NUM_RACING_TABS
 } racing_tab_t;
 
-typedef enum {
+typedef enum
+{
   TAB_ENGINEER_MODE,
   TAB_COOLING,
 #if CANSNIFFER_ENABLED == 1
@@ -83,7 +87,8 @@ extern engineer_tab_t current_engineer_tab;
 extern bool engineer_mode;
 extern bool racing_mode;
 
-typedef enum {
+typedef enum
+{
   tab_rac_pack_voltage_idx,
   tab_rac_hv_curr_idx,
   tab_rac_best_time_idx,
@@ -102,7 +107,8 @@ typedef enum {
   tab_rac_labels_n
 } tab_racing_labels_enum;
 
-typedef enum {
+typedef enum
+{
   tab_sensors_lb_fl_temp,
   tab_sensors_lb_fr_temp,
   tab_sensors_lb_rl_temp,
@@ -129,6 +135,45 @@ typedef enum {
   tab_sensors_lb_tlm_status,
   tab_sensors_labels_n
 } tab_sensors_labels_enum;
+
+typedef enum
+{
+  tab_hv_lb_temp_max,
+  tab_hv_lb_temp_min,
+  tab_hv_lb_temp_avg,
+  tab_hv_lb_voltage_max,
+  tab_hv_lb_voltage_min,
+  tab_hv_lb_voltage_delta,
+  tab_hv_lb_pack_voltage,
+  tab_hv_lb_pack_voltage_2,
+  tab_hv_lb_bus_voltage,
+  tab_hv_lb_current_state,
+  tab_hv_lb_last_error,
+  tab_hv_pork_speed_value,
+  shutdown_status,
+  tab_hv_labels_n
+} tab_hv_labels_enum;
+
+typedef enum
+{
+  tab_lv_lb_temp_max,
+  tab_lv_lb_temp_min,
+  tab_lv_lb_temp_avg,
+  tab_lv_lb_voltage_max,
+  tab_lv_lb_voltage_min,
+  tab_lv_lb_voltage_delta,
+  tab_lv_lb_pack_voltage,
+  tab_lv_lb_pack_voltage_2,
+  tab_lv_lb_bus_voltage,
+  tab_lv_lb_current_state,
+  tab_lv_lb_last_error,
+  tab_lv_lb_pumps_actual,
+  tab_lv_lb_pumps_local,
+  tab_lv_lb_radiators_actual,
+  tab_lv_lb_radiators_local,
+  tab_lv_lb_state,
+  tab_lv_labels_n
+} tab_lv_labels_enum;
 
 uint32_t get_current_time_ms(void);
 void openblt_reset(void);

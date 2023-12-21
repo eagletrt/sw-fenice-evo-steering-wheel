@@ -23,6 +23,8 @@ add_executable(SteeringSimulator
     steering/racing_tabs/tab_notification.c
     steering/racing_tabs/tab_racing.c
     steering/racing_tabs/tab_sensors.c
+    steering/racing_tabs/tab_hv.c
+    steering/racing_tabs/tab_lv.c
     steering/racing_tabs/tab_track_test.c
     steering/cansniffer.c
     steering/maxheap.c

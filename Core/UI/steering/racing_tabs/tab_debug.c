@@ -525,8 +525,8 @@ void set_label_color_hv_feedbacks(int label, int i) {
 #endif
 }
 
-void hv_feedbacks_status_update() {
-#if STEER_TAB_DEBUG_ENABLED == 1
+void debug_hv_feedbacks_status_update() {
+#if 0
   set_label_color_hv_feedbacks(
       hv_feedback_status_last_state.feedback_implausibility_detected, 0);
   set_label_color_hv_feedbacks(

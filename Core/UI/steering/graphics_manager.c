@@ -45,6 +45,10 @@ void update_graphics(lv_timer_t *t) {
         speed_update();
         break;
       }
+      case PRIMARY_TS_STATUS_FRAME_ID: {
+        // ts_status_update();
+        break;
+      }
       case PRIMARY_HV_VOLTAGE_FRAME_ID: {
         hv_voltage_update();
         break;
@@ -107,6 +111,7 @@ void update_graphics(lv_timer_t *t) {
       }
       case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
         hv_feedbacks_status_update();
+        debug_hv_feedbacks_status_update();
         break;
       }
       default:

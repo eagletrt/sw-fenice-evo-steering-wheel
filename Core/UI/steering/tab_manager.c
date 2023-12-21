@@ -2,6 +2,8 @@
 
 lv_obj_t *tab_racing_ptr;
 lv_obj_t *tab_sensors_ptr;
+lv_obj_t *tab_hv_ptr;
+lv_obj_t *tab_lv_ptr;
 
 #if STEER_TAB_CALIBRATION_ENABLED == 1
 lv_obj_t *tab_calibration_ptr;
@@ -47,6 +49,8 @@ void tab_manager(void) {
 
   tab_racing_ptr = lv_obj_create(NULL);
   tab_sensors_ptr = lv_obj_create(NULL);
+  tab_hv_ptr = lv_obj_create(NULL);
+  tab_lv_ptr = lv_obj_create(NULL);
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   tab_calibration_ptr = lv_obj_create(NULL);
 #endif
@@ -71,6 +75,9 @@ void tab_manager(void) {
 
   lv_group_add_obj(g, tab_racing_ptr);
   lv_group_add_obj(g, tab_sensors_ptr);
+  lv_group_add_obj(g, tab_hv_ptr);
+  lv_group_add_obj(g, tab_lv_ptr);
+
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   lv_group_add_obj(g, tab_calibration_ptr);
 #endif
@@ -97,6 +104,9 @@ void tab_manager(void) {
 
   tab_racing_create(tab_racing_ptr);
   tab_sensors_create(tab_sensors_ptr);
+  tab_hv_create(tab_hv_ptr);
+  tab_lv_create(tab_lv_ptr);
+  
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   tab_calibration_create(tab_calibration_ptr);
 #endif
@@ -196,6 +206,12 @@ void load_current_racing_tab() {
     break;
   case TAB_SENSORS:
     lv_scr_load(tab_sensors_ptr);
+    break;
+  case TAB_HV:
+    lv_scr_load(tab_hv_ptr);
+    break;
+  case TAB_LV:
+    lv_scr_load(tab_lv_ptr);
     break;
   default:
     break;

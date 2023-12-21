@@ -5,3 +5,4 @@ todo.md
 *.bin
 image-compression.out
 .idea/**
+STM32Make.make

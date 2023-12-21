@@ -323,11 +323,11 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
 
   switch (data.key) {
   case 'z': {
-    steering_change_tab(true);
+    steering_change_tab(false);
     break;
   }
   case 'x': {
-    steering_change_tab(false);
+    steering_change_tab(true);
     break;
   }
   case 'c': {

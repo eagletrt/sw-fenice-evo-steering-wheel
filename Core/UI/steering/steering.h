@@ -24,30 +24,43 @@
 #define BRAKE_RANGE_LOW 0
 #define BRAKE_RANGE_HIGH 180
 
-typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
+#define N_PORK_CELLBOARD 6
 
-#define GET_LAST_STATE(ntw, msg, NTW, MSG)                                     \
-  ntw##_##msg##_converted_t *ntw##_##msg##_last_state =                        \
-      (ntw##_##msg##_converted_t                                               \
+typedef enum
+{
+  BSE,
+  STEER,
+  APPS,
+  CALBOX_N
+} calibration_box_t;
+
+#define GET_LAST_STATE(ntw, msg, NTW, MSG)              \
+  ntw##_##msg##_converted_t *ntw##_##msg##_last_state = \
+      (ntw##_##msg##_converted_t                        \
            *)&ntw##_messages_last_state[NTW##_##MSG##_INDEX][0]
 
-#define STEER_UPDATE_COLOR_LABEL(name, color)                                  \
-  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                    \
-    if (name[itab] != NULL)                                                    \
-      lv_obj_set_style_text_color(name[itab], lv_color_hex(color),             \
-                                  LV_PART_MAIN);                               \
+#define STEER_UPDATE_COLOR_LABEL(name, color)                      \
+  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++)          \
+  {                                                                \
+    if (name[itab] != NULL)                                        \
+      lv_obj_set_style_text_color(name[itab], lv_color_hex(color), \
+                                  LV_PART_MAIN);                   \
   }
 
 #if STEER_TAB_DEBUG_ENABLED == 1
 #define STEER_ERROR_UPDATE(device, error_name, aindex)                         \
-  if (device##_last_state.error_name != data->error_name) {                    \
+  if (device##_last_state.error_name != data->error_name)                      \
+  {                                                                            \
     device##_last_state.error_name = data->error_name;                         \
-    if (data->error_name) {                                                    \
+    if (data->error_name)                                                      \
+    {                                                                          \
       lv_obj_set_style_border_color(                                           \
           device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
       lv_obj_set_style_bg_color(                                               \
           device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
-    } else {                                                                   \
+    }                                                                          \
+    else                                                                       \
+    {                                                                          \
       lv_obj_set_style_border_color(                                           \
           device[aindex], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN); \
       lv_obj_set_style_bg_color(                                               \
@@ -56,13 +69,13 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
   }
 #endif
 
-#define STEER_ERROR_INVALIDATE(device, error_name, aindex)                     \
-  lv_obj_set_style_bg_color(steering.device[aindex],                           \
-                            lv_color_hex(COLOR_YELLOW_STATUS_HEX),             \
+#define STEER_ERROR_INVALIDATE(device, error_name, aindex)         \
+  lv_obj_set_style_bg_color(steering.device[aindex],               \
+                            lv_color_hex(COLOR_YELLOW_STATUS_HEX), \
                             LV_PART_MAIN);
 
-#define CHECK_CURRENT_TAB(mod, curr)                                           \
-  if ((!mod##_mode) || (current_##mod##_tab != curr))                          \
+#define CHECK_CURRENT_TAB(mod, curr)                  \
+  if ((!mod##_mode) || (current_##mod##_tab != curr)) \
   return
 
 /*
@@ -80,6 +93,7 @@ void hv_temp_update();
 void hv_errors_update();
 void hv_cell_balancing_status_update();
 void hv_feedbacks_status_update();
+void debug_hv_feedbacks_status_update();
 void lv_feedbacks_update();
 void das_errors_update();
 
@@ -165,4 +179,19 @@ void set_label_color_lv_errors(bool label, int i);
 void set_label_color_hv_errors(int label, int i);
 void set_label_color_das_errors(bool label, int i);
 void set_label_color_hv_feedbacks(int label, int i);
+
+/***
+ * Tab hv
+ */
+void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
+void set_balancing_column(bool balancing, uint8_t idx);
+void tab_hv_set_pork_speed_bar(int32_t);
+void tab_hv_pork_speed_bar_invalidate();
+
+/***
+ * Tab lv
+ */
+void lv_set_pumps_speed_bar(int32_t);
+void lv_set_radiators_speed_bar(int32_t);
+
 #endif /* STEERING_H */
