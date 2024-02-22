@@ -77,12 +77,14 @@ void handle_primary(can_message_t *msg) {
     STEER_CAN_UNPACK(primary, PRIMARY, car_status, CAR_STATUS, is_pmsg_new);
     break;
   }
+#if 0
   case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, pedal_calibration_ack,
                      PEDAL_CALIBRATION_ACK, is_pmsg_new);
     pedal_calibration_ack();
     break;
   }
+#endif
   case PRIMARY_COOLING_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, cooling_status, COOLING_STATUS,
                      is_pmsg_new);
@@ -231,23 +233,32 @@ void handle_secondary(can_message_t *msg) {
                      is_smsg_new);
     break;
   }
+#if 0
   case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION,
                      is_smsg_new);
     break;
   }
+#endif
+#if 0
   case SECONDARY_LAP_COUNT_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, lap_count, LAP_COUNT, is_smsg_new);
     break;
   }
+#endif
+#if 0
   case SECONDARY_LC_STATUS_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, lc_status, LC_STATUS, is_smsg_new);
     break;
   }
+#endif
+#if 0
   case SECONDARY_TIMESTAMP_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, timestamp, TIMESTAMP, is_smsg_new);
     break;
   }
+#endif
+#if 0
   case SECONDARY_IRTS_FL_0_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_0, IRTS_FL_0, is_smsg_new);
     break;
@@ -312,7 +323,7 @@ void handle_secondary(can_message_t *msg) {
     STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_3, IRTS_RR_3, is_smsg_new);
     break;
   }
-
+#endif
   default:
     break;
   }
