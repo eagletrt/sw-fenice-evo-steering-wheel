@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * File Name          : freertos.c
-  * Description        : Code for freertos applications
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : freertos.c
+ * Description        : Code for freertos applications
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2024 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -50,27 +50,27 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-uint32_t defaultTaskBuffer[ 128 ];
+uint32_t defaultTaskBuffer[128];
 osStaticThreadDef_t defaultTaskControlBlock;
 const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .cb_mem = &defaultTaskControlBlock,
-  .cb_size = sizeof(defaultTaskControlBlock),
-  .stack_mem = &defaultTaskBuffer[0],
-  .stack_size = sizeof(defaultTaskBuffer),
-  .priority = (osPriority_t) osPriorityNormal,
+    .name = "defaultTask",
+    .cb_mem = &defaultTaskControlBlock,
+    .cb_size = sizeof(defaultTaskControlBlock),
+    .stack_mem = &defaultTaskBuffer[0],
+    .stack_size = sizeof(defaultTaskBuffer),
+    .priority = (osPriority_t)osPriorityNormal,
 };
 /* Definitions for graphicsTask */
 osThreadId_t graphicsTaskHandle;
-uint32_t graphicsTaskBuffer[ 128 ];
+uint32_t graphicsTaskBuffer[128];
 osStaticThreadDef_t graphicsTaskControlBlock;
 const osThreadAttr_t graphicsTask_attributes = {
-  .name = "graphicsTask",
-  .cb_mem = &graphicsTaskControlBlock,
-  .cb_size = sizeof(graphicsTaskControlBlock),
-  .stack_mem = &graphicsTaskBuffer[0],
-  .stack_size = sizeof(graphicsTaskBuffer),
-  .priority = (osPriority_t) osPriorityLow,
+    .name = "graphicsTask",
+    .cb_mem = &graphicsTaskControlBlock,
+    .cb_size = sizeof(graphicsTaskControlBlock),
+    .stack_mem = &graphicsTaskBuffer[0],
+    .stack_size = sizeof(graphicsTaskBuffer),
+    .priority = (osPriority_t)osPriorityLow,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,11 +84,12 @@ void StartGraphicsTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
-void MX_FREERTOS_Init(void) {
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
+void MX_FREERTOS_Init(void)
+{
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -123,21 +124,20 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
-
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
+ * @brief  Function implementing the defaultTask thread.
+ * @param  argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
-  for(;;)
+  for (;;)
   {
     osDelay(1);
   }
@@ -146,18 +146,21 @@ void StartDefaultTask(void *argument)
 
 /* USER CODE BEGIN Header_StartGraphicsTask */
 /**
-* @brief Function implementing the graphicsTask thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the graphicsTask thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartGraphicsTask */
 void StartGraphicsTask(void *argument)
 {
   /* USER CODE BEGIN StartGraphicsTask */
   /* Infinite loop */
-  for(;;)
+  for (;;)
   {
-    osDelay(1);
+    // TODO fix timer outside function
+    lv_timer_t *gtimer = lv_timer_create(update_graphics, 100, NULL);
+    lv_timer_set_repeat_count(gtimer, -1);
+    lv_timer_reset(gtimer);
   }
   /* USER CODE END StartGraphicsTask */
 }
@@ -166,4 +169,3 @@ void StartGraphicsTask(void *argument)
 /* USER CODE BEGIN Application */
 
 /* USER CODE END Application */
-

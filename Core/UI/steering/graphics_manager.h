@@ -10,7 +10,6 @@
 #include "tab_manager.h"
 
 void init_graphics_manager(void);
-void refresh_graphics(void);
 void update_graphics(lv_timer_t *t);
 
 #endif // GRAPHICS_MANAGER_H
