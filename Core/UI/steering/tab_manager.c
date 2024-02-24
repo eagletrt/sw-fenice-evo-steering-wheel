@@ -145,6 +145,9 @@ void tab_manager(void) {
  * Engineer Mode
  */
 
+/**
+ * @brief Reload all the messages by setting the last state to 0
+ */
 void reload_all(void) {
 #if STRICT_RELOAD_ALL_ENABLED == 1
   memset((void *)primary_messages_last_state, 0,
@@ -185,7 +188,9 @@ void switch_mode(void) {
 /***
  * Tab Manager
  */
-
+/**
+ * @brief Load the current racing tab
+ */
 void load_current_racing_tab() {
   switch (current_racing_tab) {
   case TAB_RACING:

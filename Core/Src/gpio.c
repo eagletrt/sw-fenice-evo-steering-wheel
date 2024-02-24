@@ -1,4 +1,5 @@
 /* USER CODE BEGIN Header */
+
 /**
  ******************************************************************************
  * @file    gpio.c
@@ -58,7 +59,7 @@ void MX_GPIO_Init(void) {
 
   /*Configure GPIO pins : PEPin PEPin */
   GPIO_InitStruct.Pin = INT1_Pin | INT3_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
@@ -69,17 +70,64 @@ void MX_GPIO_Init(void) {
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LCD_BL_EN_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PBPin PBPin PBPin */
-  GPIO_InitStruct.Pin = INT4_Pin | INT2_Pin | ExtraButton_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  /*Configure GPIO pins : PBPin PBPin */
+  GPIO_InitStruct.Pin = INT4_Pin | INT2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = ExtraButton_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(ExtraButton_GPIO_Port, &GPIO_InitStruct);
+
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
+
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
 
 /* USER CODE BEGIN 2 */
+
+#include <stdbool.h>
+
+
+bool int_pins[NUM_INTERRUPT_PINS] = {false};
+
+/**
+ * @brief This function handles EXTI interrupt.
+ * @param GPIO_Pin: The pin that triggered the interrupt
+ */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  switch (GPIO_Pin) {
+  case INT1_Pin:
+    int_pins[BUTTONS_INTERRUPT_INDEX] = true;
+    break;
+  case INT2_Pin:
+      int_pins[LEFT_MANETTINO_INTERRUPT_INDEX] = true;
+    break;
+  case INT3_Pin:
+      int_pins[CENTER_MANETTINO_INTERRUPT_INDEX] = true;
+    break;
+  case INT4_Pin:
+      int_pins[RIGHT_MANETTINO_INTERRUPT_INDEX] = true;
+    break;
+  case ExtraButton_Pin:
+      int_pins[EXTRA_BUTTON_INTERRUPT_INDEX] = true;
+    break;
+  default:
+    break;
+  }
+}
 
 /* USER CODE END 2 */

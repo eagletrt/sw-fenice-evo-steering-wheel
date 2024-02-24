@@ -2,12 +2,18 @@
 
 #include "can.h"
 
+/**
+ * @brief Initializes the can struct
+*/
 void can_init(const char *device, struct can_t *can) {
   can->device = device;
   can->opened = 0;
   can->bytes_exchanged = 0;
 }
 
+/**
+ * @brief Returns if the can is open
+ */
 int can_is_open(struct can_t *can) { return can->opened; }
 
 const char *can_get_device(struct can_t *can) { return can->device; }

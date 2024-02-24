@@ -33,16 +33,30 @@ extern "C" {
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
+/**
+ * 0 = INT1 -> buttons <br>
+ * 1 = INT2 -> left manettino<br>
+ * 2 = INT3 -> center manettino<br>
+ * 3 = INT4 -> right manettino<br>
+ * 4 = ExtraButton
+ */
+#define BUTTONS_INTERRUPT_INDEX 0
+#define LEFT_MANETTINO_INTERRUPT_INDEX 1
+#define CENTER_MANETTINO_INTERRUPT_INDEX 2
+#define RIGHT_MANETTINO_INTERRUPT_INDEX 3
+#define EXTRA_BUTTON_INTERRUPT_INDEX 4
+#define NUM_INTERRUPT_PINS 5
 
 /* USER CODE END Private defines */
 
 void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+extern bool int_pins[NUM_INTERRUPT_PINS];
 
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ GPIO_H__ */
+#endif /*__GPIO_H__ */

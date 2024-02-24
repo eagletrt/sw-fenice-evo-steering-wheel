@@ -1,4 +1,5 @@
 #include "inputs/inputs.h"
+#include <stdint.h>
 
 MCP23017_HandleTypeDef dev1;
 MCP23017_HandleTypeDef dev2;
@@ -33,9 +34,8 @@ void shutdown_circuit_turn_on_off(void);
 int imin(int x, int y) { return x > y ? y : x; }
 int imax(int x, int y) { return x > y ? x : y; }
 
-/***
+/**
  * Manettini mapping
- *
  */
 const static uint8_t MANETTINO_VALS_MAPPING[MANETTINI_N][BUTTONS_N] = {
     MANETTINO_LEFT_VALS, MANETTINO_CENTER_VALS, MANETTINO_RIGHT_VALS};
@@ -74,6 +74,24 @@ void inputs_init(void) {
       .addr = MCP23017_DEV2_ADDR, .hi2c = &hi2c4, .gpio = {0, 0}};
   mcp23017_init(&dev1);
   mcp23017_init(&dev2);
+
+  /**
+   * @paragraph Interrupts
+   * 
+   * Enable interrupts on all pins on both ports of both devices.
+   * For now use the current library(legacy)
+   * Wait for an update to the library found in micro-libs
+   * 
+   * Current configuration:
+   * Interrupt on all pins
+   * Interrupt mode is on change
+   * INT_A and INT_B function independently
+  */
+  uint8_t gpinten_register_value = 0b11111111;
+  mcp23017_write(&dev1, REGISTER_GPINTENA, &gpinten_register_value);
+  mcp23017_write(&dev1, REGISTER_GPINTENB, &gpinten_register_value);
+  mcp23017_write(&dev2, REGISTER_GPINTENA, &gpinten_register_value);
+  mcp23017_write(&dev2, REGISTER_GPINTENB, &gpinten_register_value);
 }
 
 void reinit_i2c() {
@@ -229,6 +247,12 @@ void buttons_long_pressed_actions(uint8_t button) {
   }
 }
 
+/**
+ * @param value: The value of the manettino
+ * @param manettino: The manettino index (left, center, right)
+ * @brief This function maps the manettino value to the manettino index.
+ * If the value is not found, it returns MANETTINO_INVALID_VALUE
+ */
 uint8_t from_manettino_value_to_index(uint8_t value, uint8_t manettino) {
   for (uint8_t ival = 0; ival < BUTTONS_N; ++ival) {
     if (value == MANETTINO_VALS_MAPPING[manettino][ival]) {
@@ -269,13 +293,13 @@ void send_set_car_status_check(lv_timer_t *tim) {
   }
 }
 
-GPIO_PinState foo = GPIO_PIN_SET;
+GPIO_PinState current_state_tson_button = GPIO_PIN_SET;
 
 void changed_pin_fn(void) {
   GPIO_PinState tson_pin_state =
       HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
-  if (foo != tson_pin_state) {
-    foo = tson_pin_state;
+  if (current_state_tson_button != tson_pin_state) {
+    current_state_tson_button = tson_pin_state;
     if (tson_pin_state == GPIO_PIN_SET) {
       tson_button_pressed = false;
     } else {
@@ -289,11 +313,6 @@ void changed_pin_fn(void) {
         lv_timer_reset(send_set_car_status_long_press_delay);
       }
     }
-  }
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  if (GPIO_Pin == ExtraButton_Pin) {
   }
 }
 
@@ -379,6 +398,12 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
   manettini[manettino] = new_manettino_index;
 }
 
+/**
+ * @brief This function is called when the interrupt pin of the MCP23017
+ * connected to the manettino left is triggered
+ * If the input has changed, it calls the manettini_actions function
+ * Then it updates the manettino value in the dev1 struct
+ */
 void read_manettino_left(void) {
   uint8_t manettino_input;
   if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOA, 1,
@@ -421,15 +446,32 @@ void read_manettino_right(void) {
   }
 }
 
+/**
+ * @brief This function is called periodically to read the inputs
+ * and read the value of the interrupt pins
+ * @param tim:   Pointer to the LVGL timer
+ */
 void read_inputs(lv_timer_t *tim) {
   UNUSED(tim);
   if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
     manettini_last_change = HAL_GetTick();
-    changed_pin_fn();
-    read_buttons();
-    read_manettino_left();
-    read_manettino_center();
-    read_manettino_right();
+
+    if (int_pins[BUTTONS_INTERRUPT_INDEX]) {
+      int_pins[BUTTONS_INTERRUPT_INDEX] = false;
+      read_buttons();
+    } else if (int_pins[LEFT_MANETTINO_INTERRUPT_INDEX]) {
+        int_pins[LEFT_MANETTINO_INTERRUPT_INDEX] = false;
+      read_manettino_left();
+    } else if (int_pins[CENTER_MANETTINO_INTERRUPT_INDEX]) {
+        int_pins[CENTER_MANETTINO_INTERRUPT_INDEX] = false;
+      read_manettino_center();
+    } else if (int_pins[RIGHT_MANETTINO_INTERRUPT_INDEX]) {
+        int_pins[RIGHT_MANETTINO_INTERRUPT_INDEX] = false;
+      read_manettino_right();
+    } else if (int_pins[EXTRA_BUTTON_INTERRUPT_INDEX]) {
+        int_pins[EXTRA_BUTTON_INTERRUPT_INDEX] = false;
+      changed_pin_fn();
+    }
   }
 }
 
