@@ -12,14 +12,17 @@
         "Drivers/CMSIS/Device/ST/STM32H7xx/Include",
         "Drivers/CMSIS/Include",
         "Drivers/STM32H7xx_HAL_Driver/Inc",
-        "Drivers/STM32H7xx_HAL_Driver/Inc/Legacy"
+        "Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
+        "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2",
+        "Middlewares/Third_Party/FreeRTOS/Source/include",
+        "Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F"
       ],
       "defines": [
         "LV_LVGL_H_INCLUDE_SIMPLE",
         "STM32H723xx",
         "USE_HAL_DRIVER"
       ],
-      "compilerPath": "/bin/arm-none-eabi-gcc"
+      "compilerPath": "/usr/bin/arm-none-eabi-gcc"
     }
   ],
   "version": 4

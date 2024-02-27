@@ -139,7 +139,23 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    osDelay(1);
+    send_set_car_status_check(lv_timer_t * tim);
+    read_inputs(lv_timer_t * tim);
+
+    send_steer_version(lv_timer_t * main_timer);
+    send_steer_status(lv_timer_t * main_timer);
+
+    ptt_tasks_fn(lv_timer_t * timer);
+
+    restore_previous_screen(lv_timer_t * timer);
+    remove_keep_lap_counter(lv_timer_t * timer);
+
+    watchdog_task_fn(lv_timer_t * tim);
+
+    update_primary_cansniffer_ui(lv_timer_t * unused_tim);
+    update_secondary_cansniffer_ui(lv_timer_t * unused_tim);
+
+    update_shutdown_circuit_ui(lv_timer_t * tim);
   }
   /* USER CODE END StartDefaultTask */
 }

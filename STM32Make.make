@@ -36,172 +36,11 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-Core/Lib/can/lib/bms/bms_network.c \
-Core/Lib/can/lib/bms/bms_watchdog.c \
-Core/Lib/can/lib/inverters/inverters_network.c \
-Core/Lib/can/lib/inverters/inverters_watchdog.c \
-Core/Lib/can/lib/primary/primary_network.c \
-Core/Lib/can/lib/primary/primary_watchdog.c \
-Core/Lib/can/lib/secondary/secondary_network.c \
-Core/Lib/can/lib/secondary/secondary_watchdog.c \
-Core/Lib/can/lib/simulator/simulator_network.c \
-Core/Lib/can/lib/simulator/simulator_watchdog.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_disp.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_event.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_group.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_indev.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_indev_scroll.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_obj.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_obj_class.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_obj_draw.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_obj_pos.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_obj_scroll.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_obj_style.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_obj_style_gen.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_obj_tree.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_refr.c \
-Core/Lib/lvgl-stm32/lvgl/src/core/lv_theme.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_draw_arc.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_draw_blend.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_draw_img.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_draw_label.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_draw_line.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_draw_mask.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_draw_rect.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_draw_triangle.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_img_buf.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_img_cache.c \
-Core/Lib/lvgl-stm32/lvgl/src/draw/lv_img_decoder.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/layouts/flex/lv_flex.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/layouts/grid/lv_grid.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/bmp/lv_bmp.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/freetype/lv_freetype.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/fsdrv/lv_fs_fatfs.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/fsdrv/lv_fs_posix.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/fsdrv/lv_fs_stdio.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/fsdrv/lv_fs_win32.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/gif/gifdec.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/gif/lv_gif.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/png/lodepng.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/png/lv_png.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/qrcode/lv_qrcode.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/qrcode/qrcodegen.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/rlottie/lv_rlottie.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/sjpg/lv_sjpg.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/libs/sjpg/tjpgd.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/lv_extra.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/others/snapshot/lv_snapshot.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/themes/basic/lv_theme_basic.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/themes/default/lv_theme_default.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/themes/mono/lv_theme_mono.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/animimg/lv_animimg.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/calendar/lv_calendar.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/calendar/lv_calendar_header_arrow.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/calendar/lv_calendar_header_dropdown.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/chart/lv_chart.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/colorwheel/lv_colorwheel.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/imgbtn/lv_imgbtn.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/keyboard/lv_keyboard.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/led/lv_led.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/list/lv_list.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/meter/lv_meter.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/msgbox/lv_msgbox.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/span/lv_span.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/spinbox/lv_spinbox.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/spinner/lv_spinner.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/tabview/lv_tabview.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/tileview/lv_tileview.c \
-Core/Lib/lvgl-stm32/lvgl/src/extra/widgets/win/lv_win.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_dejavu_16_persian_hebrew.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_fmt_txt.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_loader.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_10.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_12.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_12_subpx.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_14.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_16.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_18.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_20.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_22.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_24.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_26.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_28.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_28_compressed.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_30.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_32.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_34.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_36.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_38.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_40.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_42.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_44.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_46.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_48.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_montserrat_8.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_simsun_16_cjk.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_unscii_16.c \
-Core/Lib/lvgl-stm32/lvgl/src/font/lv_font_unscii_8.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/lv_gpu_nxp_pxp.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/lv_gpu_nxp_pxp_osa.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/lv_gpu_nxp_vglite.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/lv_gpu_sdl.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/lv_gpu_stm32_dma2d.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_draw_arc.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_draw_blend.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_draw_img.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_draw_label.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_draw_line.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_draw_rect.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_lru.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_mask.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_stack_blur.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_texture_cache.c \
-Core/Lib/lvgl-stm32/lvgl/src/gpu/sdl/lv_gpu_sdl_utils.c \
-Core/Lib/lvgl-stm32/lvgl/src/hal/lv_hal_disp.c \
-Core/Lib/lvgl-stm32/lvgl/src/hal/lv_hal_indev.c \
-Core/Lib/lvgl-stm32/lvgl/src/hal/lv_hal_tick.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_anim.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_anim_timeline.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_area.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_async.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_bidi.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_color.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_fs.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_gc.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_ll.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_log.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_math.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_mem.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_printf.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_style.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_style_gen.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_templ.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_timer.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_tlsf.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_txt.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_txt_ap.c \
-Core/Lib/lvgl-stm32/lvgl/src/misc/lv_utils.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_arc.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_bar.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_btn.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_btnmatrix.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_canvas.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_checkbox.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_dropdown.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_img.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_label.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_line.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_objx_templ.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_roller.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_slider.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_switch.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_table.c \
-Core/Lib/lvgl-stm32/lvgl/src/widgets/lv_textarea.c \
 Core/Src/dac.c \
 Core/Src/dma2d.c \
 Core/Src/fdcan.c \
 Core/Src/fmc.c \
+Core/Src/freertos.c \
 Core/Src/gpio.c \
 Core/Src/i2c.c \
 Core/Src/inputs/inputs.c \
@@ -213,6 +52,7 @@ Core/Src/memdriver.c \
 Core/Src/octospi.c \
 Core/Src/screen_driver.c \
 Core/Src/stm32h7xx_hal_msp.c \
+Core/Src/stm32h7xx_hal_timebase_tim.c \
 Core/Src/stm32h7xx_it.c \
 Core/Src/syscalls.c \
 Core/Src/sysmem.c \
@@ -279,7 +119,17 @@ Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart.c \
 Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_uart_ex.c \
-Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmc.c
+Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmc.c \
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
+Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
+Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+Middlewares/Third_Party/FreeRTOS/Source/list.c \
+Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
+Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+Middlewares/Third_Party/FreeRTOS/Source/timers.c
 
 
 CPP_SOURCES = \
@@ -298,7 +148,7 @@ PREFIX = arm-none-eabi-
 POSTFIX = "
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
-GCC_PATH="/bin
+GCC_PATH="/usr/bin
 ifdef GCC_PATH
 CXX = $(GCC_PATH)/$(PREFIX)g++$(POSTFIX)
 CC = $(GCC_PATH)/$(PREFIX)gcc$(POSTFIX)
@@ -361,7 +211,10 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32H7xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/STM32H7xx_HAL_Driver/Inc \
--IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy
+-IDrivers/STM32H7xx_HAL_Driver/Inc/Legacy \
+-IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
+-IMiddlewares/Third_Party/FreeRTOS/Source/include \
+-IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 
 
@@ -418,7 +271,6 @@ OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 
 # list of ASM program objects
-# list of ASM program objects
 UPPER_CASE_ASM_SOURCES = $(filter %.S,$(ASM_SOURCES))
 LOWER_CASE_ASM_SOURCES = $(filter %.s,$(ASM_SOURCES))
 
@@ -458,13 +310,13 @@ $(BUILD_DIR):
 # flash
 #######################################
 flash: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/local/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	"/usr/bin/openocd" -f ./openocd.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 #######################################
 # erase
 #######################################
 erase: $(BUILD_DIR)/$(TARGET).elf
-	"/usr/local/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32h7x mass_erase 0; exit"
+	"/usr/bin/openocd" -f ./openocd.cfg -c "init; reset halt; stm32h7x mass_erase 0; exit"
 
 #######################################
 # clean up
