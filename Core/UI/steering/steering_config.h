@@ -23,9 +23,9 @@
  * Activate candump in the engineering tabs
  * To date, it is very memory inefficient, so use only if strictly necessary
 */
-#define CANSNIFFER_ENABLED 0
+#define CANSNIFFER_ENABLED 1
 #define CAN_LOG_ENABLED 0
-#define WATCHDOG_ENABLED 1
+#define WATCHDOG_ENABLED 0
 #define ENGINEERING_TAB_ENABLED 1
 #define CAN_OVER_SERIAL_ENABLED 0
 

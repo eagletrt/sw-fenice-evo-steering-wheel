@@ -73,6 +73,7 @@ void car_status_update();
 void tlm_status_update();
 void speed_update();
 
+void hv_cell_voltage_update();
 void hv_voltage_update();
 void hv_current_update();
 void hv_temp_update();

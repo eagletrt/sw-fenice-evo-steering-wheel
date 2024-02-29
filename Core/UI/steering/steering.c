@@ -134,34 +134,26 @@ void speed_update(void) {
   set_tab_track_test_lb_speed(sprintf_buffer);
 }
 
-void hv_voltage_update(void) {
-#if 0
-  GET_LAST_STATE(primary, hv_voltage, PRIMARY, HV_VOLTAGE);
+void hv_cell_voltage_update(void) {
+  GET_LAST_STATE(primary, hv_cell_voltage, PRIMARY, HV_CELL_VOLTAGE);
   sprintf(sprintf_buffer, "%.1f",
-          primary_hv_voltage_last_state->min_cell_voltage);
+          primary_hv_cell_voltage_last_state->min_cell_voltage);
 
   set_tab_sensors_label_text(sprintf_buffer, tab_sensors_lb_min_cell_voltage);
 
+  float delta = primary_hv_cell_voltage_last_state->max_cell_voltage -
+                primary_hv_cell_voltage_last_state->min_cell_voltage;
+  sprintf(sprintf_buffer, "%d", (int)(delta * 1000.0f));
+  set_tab_sensors_label_text(sprintf_buffer, tab_sensors_lb_hv_delta);
+}
+
+void hv_voltage_update(void) {
+  GET_LAST_STATE(primary, hv_voltage, PRIMARY, HV_VOLTAGE);
   sprintf(sprintf_buffer, "%.0f", primary_hv_voltage_last_state->pack_voltage);
   set_tab_racing_label_text(sprintf_buffer, tab_rac_pack_voltage_idx);
   set_tab_sensors_label_text(sprintf_buffer, tab_sensors_lb_pack_voltage);
   set_tab_racing_hv_pack_voltage_bar(
       primary_hv_voltage_last_state->pack_voltage);
-
-  /***
-   * TODO For now disabled because of custom meter not working
-    float percentage = (primary_hv_voltage_last_state->bus_voltage) /
-                       (primary_hv_voltage_last_state->pack_voltage) * 100;
-    percentage = fmin(fmax(percentage, 0), 100);
-    lv_meter_set_indicator_value(get_tab_racing_custom_meter(),
-                                 get_tab_racing_indicator_blue(), percentage);
-  */
-
-  float delta = primary_hv_voltage_last_state->max_cell_voltage -
-                primary_hv_voltage_last_state->min_cell_voltage;
-  sprintf(sprintf_buffer, "%d", (int)(delta * 1000.0f));
-  set_tab_sensors_label_text(sprintf_buffer, tab_sensors_lb_hv_delta);
-#endif
 }
 
 void hv_current_update() {
