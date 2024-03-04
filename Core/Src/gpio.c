@@ -100,34 +100,4 @@ void MX_GPIO_Init(void) {
 
 #include <stdbool.h>
 
-
-bool int_pins[NUM_INTERRUPT_PINS] = {false};
-
-/**
- * @brief This function handles EXTI interrupt.
- * @param GPIO_Pin: The pin that triggered the interrupt
- */
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  switch (GPIO_Pin) {
-  case INT1_Pin:
-    int_pins[BUTTONS_INTERRUPT_INDEX] = true;
-    break;
-  case INT2_Pin:
-      int_pins[LEFT_MANETTINO_INTERRUPT_INDEX] = true;
-    break;
-  case INT3_Pin:
-      int_pins[CENTER_MANETTINO_INTERRUPT_INDEX] = true;
-    break;
-  case INT4_Pin:
-      int_pins[RIGHT_MANETTINO_INTERRUPT_INDEX] = true;
-    break;
-  case ExtraButton_Pin:
-      int_pins[EXTRA_BUTTON_INTERRUPT_INDEX] = true;
-    break;
-  default:
-    break;
-  }
-}
-
 /* USER CODE END 2 */
