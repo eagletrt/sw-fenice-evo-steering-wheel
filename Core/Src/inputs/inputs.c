@@ -446,7 +446,9 @@ void read_manettino_right(void) {
   }
 }
 
+#if MCP23017_IT_ENABLED == 1
 bool int_pins[NUM_INTERRUPT_PINS] = {false};
+#endif
 
 /**
  * @brief This function handles EXTI interrupt.
@@ -455,6 +457,7 @@ bool int_pins[NUM_INTERRUPT_PINS] = {false};
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   switch (GPIO_Pin) {
+#if MCP23017_IT_ENABLED == 1
   case INT1_Pin:
     int_pins[BUTTONS_INTERRUPT_INDEX] = true;
     break;
@@ -472,6 +475,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     break;
   default:
     break;
+#endif
   }
 }
 
@@ -485,6 +489,7 @@ void read_inputs(lv_timer_t *tim) {
   if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
     manettini_last_change = HAL_GetTick();
 
+#if MCP23017_IT_ENABLED == 1
     if (int_pins[BUTTONS_INTERRUPT_INDEX]) {
       int_pins[BUTTONS_INTERRUPT_INDEX] = false;
       read_buttons();
@@ -501,6 +506,13 @@ void read_inputs(lv_timer_t *tim) {
         int_pins[EXTRA_BUTTON_INTERRUPT_INDEX] = false;
       changed_pin_fn();
     }
+#else
+    read_buttons();
+    read_manettino_left();
+    read_manettino_center();
+    read_manettino_right();
+    changed_pin_fn();
+#endif
   }
 }
 
