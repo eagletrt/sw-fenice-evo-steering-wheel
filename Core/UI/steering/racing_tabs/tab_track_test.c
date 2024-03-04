@@ -14,7 +14,7 @@ float dmt_steering_angle_target = 0.0f;
 #define STEERING_ANGLE_TARGET_LIMITS 20.0f
 
 void set_tab_track_test_lb_speed(const char *s) {
-  CHECK_CURRENT_TAB(racing, TAB_TRACK_TEST);
+  CHECK_CURRENT_TAB(engineer, TAB_TRACK_TEST);
   lv_label_set_text(tab_track_test_lb_speed, s);
 }
 
@@ -39,7 +39,7 @@ void set_tab_track_test_steering_angle_bar(float v) {
 }
 
 void set_tab_track_test_dmt_steering_angle_target(float v) {
-  CHECK_CURRENT_TAB(racing, TAB_TRACK_TEST);
+  CHECK_CURRENT_TAB(engineer, TAB_TRACK_TEST);
   dmt_steering_angle_target = v;
   lv_bar_set_range(tab_track_test_steering_angle_bar,
                    v - STEERING_ANGLE_TARGET_LIMITS - 10.0f,
@@ -53,12 +53,12 @@ void set_tab_track_test_dmt_steering_angle_target(float v) {
 }
 
 void tab_track_test_lb_steering_angle_invalidate() {
-  CHECK_CURRENT_TAB(racing, TAB_TRACK_TEST);
+  CHECK_CURRENT_TAB(engineer, TAB_TRACK_TEST);
   lv_label_set_text(tab_track_test_lb_steering_angle, "NA");
 }
 
 void tab_track_test_lb_speed_invalidate() {
-  CHECK_CURRENT_TAB(racing, TAB_TRACK_TEST);
+  CHECK_CURRENT_TAB(engineer, TAB_TRACK_TEST);
   lv_label_set_text(tab_track_test_lb_speed, "NA");
 }
 

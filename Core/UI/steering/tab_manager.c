@@ -106,7 +106,7 @@ void tab_manager(void) {
   tab_sensors_create(tab_sensors_ptr);
   tab_hv_create(tab_hv_ptr);
   tab_lv_create(tab_lv_ptr);
-  
+
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   tab_calibration_create(tab_calibration_ptr);
 #endif
@@ -160,7 +160,6 @@ void reload_all(void) {
 }
 
 bool engineer_mode = false;
-bool racing_mode = true;
 
 #if ENGINEERING_TAB_ENABLED == 1
 void load_engineer_mode_screen(void) { load_current_engineering_tab(); }
@@ -170,14 +169,10 @@ void remove_engineer_mode_screen(void) { load_current_racing_tab(); }
 
 void switch_mode(void) {
   if (engineer_mode) {
-    // exit EM
-    racing_mode = true;
     engineer_mode = false;
     remove_engineer_mode_screen();
   } else {
 #if ENGINEERING_TAB_ENABLED == 1
-    // enter EM
-    racing_mode = false;
     engineer_mode = true;
     load_engineer_mode_screen();
 #endif

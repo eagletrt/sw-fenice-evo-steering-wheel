@@ -4,7 +4,7 @@
 
 /**
  * @brief Initializes the can struct
-*/
+ */
 void can_init(const char *device, struct can_t *can) {
   can->device = device;
   can->opened = 0;

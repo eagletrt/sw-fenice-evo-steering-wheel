@@ -46,92 +46,76 @@ void turn_telemetry_on_off(void) {
   can_send(&msg, true);
 }
 
-void pedal_calibration_ack() {
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-  primary_pedal_calibration_ack_bound bound =
-      primary_pedal_calibration_ack_last_state.bound;
+void manettino_right_actions(int dsteps) {
+  if (engineer_mode) {
 
-  lv_obj_set_style_bg_color(bound == primary_pedal_calibration_ack_bound_SET_MAX
-                                ? set_max_btn
-                                : set_min_btn,
-                            lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);
-#endif
-}
-
-void send_calibration(bool accel, bool max) {
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-  primary_set_pedal_calibration_converted_t converted = {0};
-  converted.pedal = accel ? primary_set_pedal_calibration_pedal_ACCELERATOR
-                          : primary_set_pedal_calibration_pedal_BRAKE;
-  converted.bound = max ? primary_set_pedal_calibration_bound_SET_MAX
-                        : primary_set_pedal_calibration_bound_SET_MIN;
-  STEER_CAN_PACK(primary, PRIMARY, set_pedal_calibration,
-                 SET_PEDAL_CALIBRATION);
-  can_send(&msg, true);
-#endif
-}
-
-void calibration_request_timeout_check(uint32_t current_time) {
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-  for (uint8_t iel = 0; iel < CALBOX_N; ++iel) {
-    if (calibration_min_sent_request[iel] &&
-        calibration_min_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
-            current_time) {
-      calibration_min_sent_request[iel] = false;
-      lv_obj_set_style_bg_color(set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX),
-                                LV_PART_MAIN);
-    }
-    if (calibration_max_sent_request[iel] &&
-        calibration_max_request_timestamp[iel] + CALIBRATION_TIMEOUT_RESPONSE <
-            current_time) {
-      calibration_max_sent_request[iel] = false;
-      lv_obj_set_style_bg_color(set_min_btn, lv_color_hex(COLOR_RED_STATUS_HEX),
-                                LV_PART_MAIN);
-    }
-  }
-#endif
-}
-
-void calibration_tool_set_min_max(bool maxv) {
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-  if (current_racing_tab == TAB_CALIBRATION) {
-
-    calibration_box_t *controls_curr_focus = get_tab_calibration_curr_focus();
-
-    calibration_box_t curr_focus = *controls_curr_focus;
-    if (curr_focus == STEER)
-      return;
-    switch (curr_focus) {
-    case BSE: {
-      send_calibration(false, maxv);
-      if (maxv) {
-        calibration_max_sent_request[BSE] = true;
-        calibration_max_request_timestamp[BSE] = get_current_time_ms();
-      } else {
-        calibration_min_sent_request[BSE] = true;
-        calibration_min_request_timestamp[BSE] = get_current_time_ms();
-      }
+  } else {
+    switch (current_racing_tab) {
+    case NOT_SCREEN:
       break;
-    }
-    case APPS: {
-      send_calibration(true, maxv);
-      if (maxv) {
-        calibration_max_sent_request[APPS] = true;
-        calibration_max_request_timestamp[APPS] = get_current_time_ms();
-      } else {
-        calibration_min_sent_request[APPS] = true;
-        calibration_min_request_timestamp[APPS] = get_current_time_ms();
-      }
+    case TAB_RACING:
       break;
-    }
+    case TAB_TRACK_TEST:
+      break;
+    case TAB_SENSORS:
+      break;
+    case TAB_HV:
+      break;
+    case TAB_LV:
+      break;
     default:
-      return;
+      break;
     }
-    lv_obj_set_style_bg_color(maxv ? set_max_btn : set_min_btn,
-                              lv_color_hex(COLOR_ORANGE_STATUS_HEX),
-                              LV_PART_MAIN);
   }
-#endif
+}
+
+void manettino_center_actions(int dsteps) {
+  if (engineer_mode) {
+
+  } else {
+    switch (current_racing_tab) {
+    case NOT_SCREEN:
+      break;
+    case TAB_RACING:
+      break;
+    case TAB_TRACK_TEST:
+      break;
+    case TAB_SENSORS:
+      break;
+    case TAB_HV:
+      break;
+    case TAB_LV:
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+void manettino_left_actions(int dsteps) {
+  if (engineer_mode) {
+
+  } else {
+    switch (current_racing_tab) {
+    case NOT_SCREEN:
+      break;
+    case TAB_RACING:
+      /***
+       * TODO: hai i dstep e hai il valore di prima e quind
+       */
+      break;
+    case TAB_TRACK_TEST:
+      break;
+    case TAB_SENSORS:
+      break;
+    case TAB_HV:
+      break;
+    case TAB_LV:
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 void manettino_send_slip_control(float val) {

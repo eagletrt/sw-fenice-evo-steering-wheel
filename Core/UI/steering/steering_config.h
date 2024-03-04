@@ -22,7 +22,7 @@
 /***
  * Activate candump in the engineering tabs
  * To date, it is very memory inefficient, so use only if strictly necessary
-*/
+ */
 #define CANSNIFFER_ENABLED 1
 #define CAN_LOG_ENABLED 0
 #define WATCHDOG_ENABLED 0
@@ -41,7 +41,7 @@
 
 #if CANSNIFFER_ENABLED == 1
 #define PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS 0xC0600000
-#define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS \
+#define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS                               \
   ((0xC0600000) + ((CANSNIFFER_ELEM_T_SIZE) * CAN_POSSIBLE_IDS))
 #endif
 
@@ -62,8 +62,7 @@
 #define EXTRA_BUTTON_INTERRUPT_INDEX 4
 #define NUM_INTERRUPT_PINS 5
 
-typedef enum
-{
+typedef enum {
   NOT_SCREEN = -1,
   TAB_RACING,
 #if STEER_TAB_CALIBRATION_ENABLED == 1
@@ -80,8 +79,7 @@ typedef enum
   NUM_RACING_TABS
 } racing_tab_t;
 
-typedef enum
-{
+typedef enum {
   TAB_ENGINEER_MODE,
   TAB_COOLING,
 #if CANSNIFFER_ENABLED == 1
@@ -100,10 +98,8 @@ extern racing_tab_t current_racing_tab;
 extern engineer_tab_t current_engineer_tab;
 #endif
 extern bool engineer_mode;
-extern bool racing_mode;
 
-typedef enum
-{
+typedef enum {
   tab_rac_pack_voltage_idx,
   tab_rac_hv_curr_idx,
   tab_rac_best_time_idx,
@@ -122,8 +118,7 @@ typedef enum
   tab_rac_labels_n
 } tab_racing_labels_enum;
 
-typedef enum
-{
+typedef enum {
   tab_sensors_lb_fl_temp,
   tab_sensors_lb_fr_temp,
   tab_sensors_lb_rl_temp,
@@ -151,8 +146,7 @@ typedef enum
   tab_sensors_labels_n
 } tab_sensors_labels_enum;
 
-typedef enum
-{
+typedef enum {
   tab_hv_lb_temp_max,
   tab_hv_lb_temp_min,
   tab_hv_lb_temp_avg,
@@ -169,8 +163,7 @@ typedef enum
   tab_hv_labels_n
 } tab_hv_labels_enum;
 
-typedef enum
-{
+typedef enum {
   tab_lv_lb_temp_max,
   tab_lv_lb_temp_min,
   tab_lv_lb_temp_avg,

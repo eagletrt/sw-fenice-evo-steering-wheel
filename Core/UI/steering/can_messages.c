@@ -100,7 +100,8 @@ void handle_primary(can_message_t *msg) {
     break;
   }
   case PRIMARY_HV_CELL_VOLTAGE_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, hv_cell_voltage, HV_CELL_VOLTAGE, is_pmsg_new);
+    STEER_CAN_UNPACK(primary, PRIMARY, hv_cell_voltage, HV_CELL_VOLTAGE,
+                     is_pmsg_new);
     break;
   }
   case PRIMARY_TS_STATUS_FRAME_ID: {

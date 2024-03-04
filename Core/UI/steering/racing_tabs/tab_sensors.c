@@ -31,7 +31,7 @@ lv_obj_t *tab_sensors_labels[tab_sensors_labels_n] = {
     [tab_sensors_lb_tlm_status] = NULL};
 
 void set_tab_sensors_label_text(const char *s, tab_sensors_labels_enum idx) {
-  CHECK_CURRENT_TAB(racing, TAB_SENSORS);
+  CHECK_CURRENT_TAB(engineer, TAB_SENSORS);
   lv_label_set_text(tab_sensors_labels[idx], s);
 }
 

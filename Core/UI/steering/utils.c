@@ -172,7 +172,7 @@ char *notch_labels[NUM_RACING_TABS] = {"RACE",
 #if STEER_TAB_DEBUG_ENABLED == 1
                                        "DEBUG",
 #endif
-                                       "TEST", "SENSORS", "HV", "LV"};
+                                       "TEST",      "SENSORS", "HV", "LV"};
 lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId) {
 
   lv_obj_t *notch = lv_obj_create(parent);

@@ -47,17 +47,6 @@ typedef enum {
   P_LENGTH
 } pumps_speed_t;
 
-#define POWER_MAP_MAPPING                                                      \
-  { -0.1f, 0.0f, 0.2f, 0.4f, 0.6f, 0.7f, 0.8f, 1.0f }
-#define TORQUE_MAP_MAPPING                                                     \
-  { 0.0f, 0.066f, 0.133f, 0.266f, 0.466f, 0.666f, 0.8f, 1.0f }
-#define SLIP_MAP_MAPPING                                                       \
-  { 0.0f, 0.066f, 0.133f, 0.266f, 0.466f, 0.666f, 0.8f, 1.0f }
-#define PUMPS_MAPPING                                                          \
-  { -1.0f, 0.0f, 0.10f, 0.20f, 0.40f, 0.60f, 0.80f, 1.0f }
-#define RADIATORS_MAPPING                                                      \
-  { -1.0f, 0.0f, 0.10f, 0.20f, 0.40f, 0.60f, 0.80f, 1.0f }
-
 void prepare_set_car_status(void);
 bool send_set_car_status_directly(void);
 
@@ -70,12 +59,10 @@ void manettino_send_set_radiators(float);
 void send_pork_fans_status(float val);
 
 void turn_telemetry_on_off(void);
-void calibration_tool_set_min_max(bool);
-void calibration_request_timeout_check(uint32_t);
 
-void set_controls_lb_slip(char *s);
-void set_lb_torque(char *s);
-void set_lb_power(char *s);
+void manettino_right_actions(int dsteps);
+void manettino_center_actions(int dsteps);
+void manettino_left_actions(int dsteps);
 
 #if CANSNIFFER_ENABLED == 1
 void switch_cansniffer(void);

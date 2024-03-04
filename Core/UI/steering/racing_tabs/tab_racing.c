@@ -24,17 +24,17 @@ lv_style_t bar_back_style;
 lv_obj_t *bottom_bar;
 
 void set_tab_racing_hv_current_bar(float v) {
-  CHECK_CURRENT_TAB(racing, TAB_RACING);
+  CHECK_CURRENT_TAB(engineer, TAB_RACING);
   lv_bar_set_value(tab_racing_hv_current_bar, v, LV_ANIM_OFF);
 }
 
 void set_tab_racing_hv_pack_voltage_bar(float v) {
-  CHECK_CURRENT_TAB(racing, TAB_RACING);
+  CHECK_CURRENT_TAB(engineer, TAB_RACING);
   lv_bar_set_value(tab_racing_hv_pack_voltage_bar, v, LV_ANIM_OFF);
 }
 
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx) {
-  CHECK_CURRENT_TAB(racing, TAB_RACING);
+  CHECK_CURRENT_TAB(engineer, TAB_RACING);
   lv_label_set_text(tab_racing_labels[idx], s);
 }
 

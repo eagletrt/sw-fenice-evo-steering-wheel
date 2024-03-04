@@ -26,41 +26,30 @@
 
 #define N_PORK_CELLBOARD 6
 
-typedef enum
-{
-  BSE,
-  STEER,
-  APPS,
-  CALBOX_N
-} calibration_box_t;
+typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
-#define GET_LAST_STATE(ntw, msg, NTW, MSG)              \
-  ntw##_##msg##_converted_t *ntw##_##msg##_last_state = \
-      (ntw##_##msg##_converted_t                        \
+#define GET_LAST_STATE(ntw, msg, NTW, MSG)                                     \
+  ntw##_##msg##_converted_t *ntw##_##msg##_last_state =                        \
+      (ntw##_##msg##_converted_t                                               \
            *)&ntw##_messages_last_state[NTW##_##MSG##_INDEX][0]
 
-#define STEER_UPDATE_COLOR_LABEL(name, color)                      \
-  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++)          \
-  {                                                                \
-    if (name[itab] != NULL)                                        \
-      lv_obj_set_style_text_color(name[itab], lv_color_hex(color), \
-                                  LV_PART_MAIN);                   \
+#define STEER_UPDATE_COLOR_LABEL(name, color)                                  \
+  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                    \
+    if (name[itab] != NULL)                                                    \
+      lv_obj_set_style_text_color(name[itab], lv_color_hex(color),             \
+                                  LV_PART_MAIN);                               \
   }
 
 #if STEER_TAB_DEBUG_ENABLED == 1
 #define STEER_ERROR_UPDATE(device, error_name, aindex)                         \
-  if (device##_last_state.error_name != data->error_name)                      \
-  {                                                                            \
+  if (device##_last_state.error_name != data->error_name) {                    \
     device##_last_state.error_name = data->error_name;                         \
-    if (data->error_name)                                                      \
-    {                                                                          \
+    if (data->error_name) {                                                    \
       lv_obj_set_style_border_color(                                           \
           device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
       lv_obj_set_style_bg_color(                                               \
           device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
-    }                                                                          \
-    else                                                                       \
-    {                                                                          \
+    } else {                                                                   \
       lv_obj_set_style_border_color(                                           \
           device[aindex], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN); \
       lv_obj_set_style_bg_color(                                               \
@@ -69,13 +58,13 @@ typedef enum
   }
 #endif
 
-#define STEER_ERROR_INVALIDATE(device, error_name, aindex)         \
-  lv_obj_set_style_bg_color(steering.device[aindex],               \
-                            lv_color_hex(COLOR_YELLOW_STATUS_HEX), \
+#define STEER_ERROR_INVALIDATE(device, error_name, aindex)                     \
+  lv_obj_set_style_bg_color(steering.device[aindex],                           \
+                            lv_color_hex(COLOR_YELLOW_STATUS_HEX),             \
                             LV_PART_MAIN);
 
-#define CHECK_CURRENT_TAB(mod, curr)                  \
-  if ((!mod##_mode) || (current_##mod##_tab != curr)) \
+#define CHECK_CURRENT_TAB(mod, curr)                                           \
+  if ((mod##_mode) || (current_racing_tab != curr))                            \
   return
 
 /*
