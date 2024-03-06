@@ -351,10 +351,10 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
 #endif
     break;
   case 'd':
-    calibration_tool_set_min_max(true);
+    // calibration_tool_set_min_max(true);
     break;
   case 'f':
-    calibration_tool_set_min_max(false);
+    //    calibration_tool_set_min_max(false);
     break;
   case 'g': {
     if (engineer_mode) {
@@ -386,6 +386,14 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
 #if ENGINEERING_TAB_ENABLED == 1
     shutdown_circuit_turn_on_off();
 #endif
+    break;
+  }
+  case 't': {
+    manettino_left_actions(-1);
+    break;
+  }
+  case 'y': {
+    manettino_left_actions(1);
     break;
   }
   default:

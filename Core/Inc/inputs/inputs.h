@@ -39,4 +39,6 @@ void buttons_long_pressed_actions(uint8_t button);
 void changed_pin_fn(void);
 void init_input_polling(void);
 
+int delta_step_position(int delta_step);
+
 #endif

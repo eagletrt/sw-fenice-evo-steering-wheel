@@ -4,11 +4,6 @@
 MCP23017_HandleTypeDef dev1;
 MCP23017_HandleTypeDef dev2;
 
-#define PORK_HIGH_FANS_SPEED 100
-#define PORK_LOW_FANS_SPEED -10
-#define POWER_MAP_MAX 100
-#define POWER_MAP_MIN 0
-
 bool buttons[BUTTONS_N] = {true};
 uint32_t buttons_long_press_check[BUTTONS_N] = {0};
 bool buttons_long_press_activated[BUTTONS_N] = {false};
@@ -20,7 +15,6 @@ bool manettini_initialized[MANETTINI_N] = {false};
 extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
-int power_map_last_state = 0;
 int hv_fans_override_last_state = 0;
 
 #define ERROR_THRESHOLD 100
@@ -74,8 +68,6 @@ void inputs_init(void) {
    * @paragraph Interrupts
    *
    * Enable interrupts on all pins on both ports of both devices.
-   * For now use the current library(legacy)
-   * Wait for an update to the library found in micro-libs
    *
    * Current configuration:
    * Interrupt on all pins
@@ -83,11 +75,57 @@ void inputs_init(void) {
    * INT_A and INT_B function independently
    */
 
-  uint8_t gpinten_register_value = 0b11111111;
-  mcp23017_write(&dev1, REGISTER_GPINTENA, &gpinten_register_value);
-  mcp23017_write(&dev1, REGISTER_GPINTENB, &gpinten_register_value);
-  mcp23017_write(&dev2, REGISTER_GPINTENA, &gpinten_register_value);
-  mcp23017_write(&dev2, REGISTER_GPINTENB, &gpinten_register_value);
+  /**
+   * Legacy implementation
+   */
+  // uint8_t gpinten_register_value = 0b11111111;
+  // mcp23017_write(&dev1, REGISTER_GPINTENA, &gpinten_register_value);
+  // mcp23017_write(&dev1, REGISTER_GPINTENB, &gpinten_register_value);
+  // mcp23017_write(&dev2, REGISTER_GPINTENA, &gpinten_register_value);
+  // mcp23017_write(&dev2, REGISTER_GPINTENB, &gpinten_register_value);
+
+  HAL_StatusTypeDef HAL_Status = HAL_ERROR;
+  uint8_t gpinten_register_value = 0b00000000;
+  uint8_t intcon_register_value = 0b00000000;
+  uint8_t defval_register_value = 0b00000000;
+  uint8_t mcp23017_i2c_timeout = 10; // ms
+
+  mcp23017_set_it_on_all_pins(&gpinten_register_value, &intcon_register_value,
+                              &defval_register_value, MCP23017_INT_ENABLED,
+                              MCP23017_INT_MODE_ON_CHANGE, 0);
+
+  /**
+   * With this settings we only need to write the register GPINTEN.
+   * This is because the other registers values are equal to their default.
+   */
+
+  // Write do device one, port a and b
+  HAL_Status = HAL_I2C_Mem_Write(
+      dev1.hi2c, dev1.addr, MCP23017_REGISTER_GPINTENA, MCP23017_I2C_SIZE,
+      &gpinten_register_value, MCP23017_I2C_SIZE, mcp23017_i2c_timeout);
+  if (HAL_Status != HAL_OK) {
+    // TO-DO: Error
+  }
+  HAL_Status = HAL_I2C_Mem_Write(
+      dev1.hi2c, dev1.addr, MCP23017_REGISTER_GPINTENB, MCP23017_I2C_SIZE,
+      &gpinten_register_value, MCP23017_I2C_SIZE, mcp23017_i2c_timeout);
+  if (HAL_Status != HAL_OK) {
+    // TO-DO: Error
+  }
+
+  // Write do device two, port a and b
+  HAL_Status = HAL_I2C_Mem_Write(
+      dev2.hi2c, dev2.addr, MCP23017_REGISTER_GPINTENA, MCP23017_I2C_SIZE,
+      &gpinten_register_value, MCP23017_I2C_SIZE, mcp23017_i2c_timeout);
+  if (HAL_Status != HAL_OK) {
+    // TO-DO: Error
+  }
+  HAL_Status = HAL_I2C_Mem_Write(
+      dev2.hi2c, dev2.addr, MCP23017_REGISTER_GPINTENB, MCP23017_I2C_SIZE,
+      &gpinten_register_value, MCP23017_I2C_SIZE, mcp23017_i2c_timeout);
+  if (HAL_Status != HAL_OK) {
+    // TO-DO: Error
+  }
 #endif
 }
 
@@ -173,9 +211,9 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(true);
       display_notification("BAL ON", 3000);
     } else {
-      ++power_map_last_state;
-      power_map_last_state = imin(power_map_last_state, POWER_MAP_MAX);
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
+      //      ++power_map_last_state;
+      //      power_map_last_state = imin(power_map_last_state, POWER_MAP_MAX);
+      //      manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
   }
@@ -184,9 +222,9 @@ void buttons_pressed_actions(uint8_t button) {
       send_bal(false);
       display_notification("BAL OFF", 3000);
     } else {
-      --power_map_last_state;
-      power_map_last_state = imax(power_map_last_state, POWER_MAP_MIN);
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
+      //      --power_map_last_state;
+      //      power_map_last_state = imax(power_map_last_state, POWER_MAP_MIN);
+      //      manettino_send_power_map((float)power_map_last_state / 100.0f);
     }
     break;
   }
@@ -328,6 +366,22 @@ void read_buttons(void) {
   dev1.gpio[1] = button_input;
 }
 
+int delta_step_position(int delta_step) {
+  if (delta_step == -7)
+    delta_step = 1;
+  if (delta_step == -6)
+    delta_step = 2;
+  if (delta_step == -5)
+    delta_step = 3;
+  if (delta_step == 5)
+    delta_step = -3;
+  if (delta_step == 6)
+    delta_step = -2;
+  if (delta_step == 7)
+    delta_step = -1;
+  return delta_step;
+}
+
 void manettini_actions(uint8_t value, uint8_t manettino) {
   if (!manettini_initialized[manettino]) {
     manettini_initialized[manettino] = true;
@@ -346,15 +400,8 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
   case MANETTINO_RIGHT_INDEX: {
     //
     int dstep = new_manettino_index - manettini[MANETTINO_RIGHT_INDEX];
-    if (dstep == -7)
-      dstep = 1;
-    if (dstep == -6)
-      dstep = 2;
-    if (dstep == 6)
-      dstep = -2;
-    if (dstep == 7)
-      dstep = -1;
-    manettino_right_actions(dstep);
+
+    manettino_right_actions(delta_step_position(dstep));
     /*
     if (!engineer_mode) {
       manettino_send_torque_vectoring(
@@ -368,15 +415,7 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
   }
   case MANETTINO_CENTER_INDEX: {
     int dstep = new_manettino_index - manettini[MANETTINO_CENTER_INDEX];
-    if (dstep == -7)
-      dstep = 1;
-    if (dstep == -6)
-      dstep = 2;
-    if (dstep == 6)
-      dstep = -2;
-    if (dstep == 7)
-      dstep = -1;
-    manettino_center_actions(dstep);
+    manettino_center_actions(delta_step_position(dstep));
 #if 0
     if (!engineer_mode) {
       power_map_last_state += (dstep * 10);
@@ -397,15 +436,7 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
   }
   case MANETTINO_LEFT_INDEX: {
     int dstep = new_manettino_index - manettini[MANETTINO_LEFT_INDEX];
-    if (dstep == -7)
-      dstep = 1;
-    if (dstep == -6)
-      dstep = 2;
-    if (dstep == 6)
-      dstep = -2;
-    if (dstep == 7)
-      dstep = -1;
-    manettino_left_actions(dstep);
+    manettino_left_actions(delta_step_position(dstep));
 #if 0
     if (!engineer_mode) {
       manettino_send_slip_control(val_slip_map_index[new_manettino_index]);
