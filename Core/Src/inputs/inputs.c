@@ -416,6 +416,7 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
   case MANETTINO_CENTER_INDEX: {
     int dstep = new_manettino_index - manettini[MANETTINO_CENTER_INDEX];
     manettino_center_actions(delta_step_position(dstep));
+    break;
 #if 0
     if (!engineer_mode) {
       power_map_last_state += (dstep * 10);

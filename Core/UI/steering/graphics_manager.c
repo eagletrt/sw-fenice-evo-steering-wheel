@@ -46,7 +46,7 @@ void update_graphics(lv_timer_t *t) {
         break;
       }
       case PRIMARY_TS_STATUS_FRAME_ID: {
-        // ts_status_update();
+        ts_status_update();
         break;
       }
       case PRIMARY_HV_VOLTAGE_FRAME_ID: {

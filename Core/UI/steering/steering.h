@@ -92,6 +92,7 @@ void lv_cells_voltage_update();
 void cooling_status_update();
 void lv_total_voltage_update();
 void lv_errors_update();
+void ts_status_update();
 void hv_fans_override_status_update();
 void tlm_status_update();
 
@@ -180,6 +181,7 @@ void tab_hv_pork_speed_bar_invalidate();
 /***
  * Tab lv
  */
+void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx);
 void lv_set_pumps_speed_bar(int32_t);
 void lv_set_radiators_speed_bar(int32_t);
 

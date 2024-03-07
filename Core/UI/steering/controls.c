@@ -32,8 +32,8 @@ primary_hv_fans_override_converted_t hv_fans_override_settings = {
     .fans_override = primary_hv_fans_override_fans_override_OFF,
     .fans_speed = 0.0f};
 
-//float fmin(float x, float y) { return x > y ? y : x; }
-//float fmax(float x, float y) { return x > y ? x : y; }
+// float fmin(float x, float y) { return x > y ? y : x; }
+// float fmax(float x, float y) { return x > y ? x : y; }
 
 void set_dmt_steering_angle_target(void) {
   GET_LAST_STATE(secondary, steering_angle, SECONDARY, STEERING_ANGLE);
@@ -57,8 +57,10 @@ void turn_telemetry_on_off(void) {
 }
 
 void manettino_right_actions(int dsteps) {
+  char tbuf[100];
+  snprintf(tbuf, 100, "manettino right %d", dsteps);
   if (engineer_mode) {
-
+    tab_terminal_new_message(tbuf);
   } else {
     switch (current_racing_tab) {
 
@@ -100,29 +102,27 @@ void manettino_right_actions(int dsteps) {
 }
 
 void manettino_center_actions(int dsteps) {
+  char tbuf[100];
+  snprintf(tbuf, 100, "manettino center %d", dsteps);
   if (engineer_mode) {
-
+    tab_terminal_new_message(tbuf);
   } else {
+    power_map_last_state += (dsteps * 10);
+    power_map_last_state = fminf(power_map_last_state, POWER_MAP_MAX);
+    power_map_last_state = fmaxf(power_map_last_state, POWER_MAP_MIN);
+    manettino_send_power_map((float)power_map_last_state / 100.0f);
     switch (current_racing_tab) {
-      power_map_last_state += (dsteps * 10);
-      power_map_last_state = fminf(power_map_last_state, POWER_MAP_MAX);
-      power_map_last_state = fmaxf(power_map_last_state, POWER_MAP_MIN);
     case NOT_SCREEN:
       break;
     case TAB_RACING:
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
       break;
     case TAB_TRACK_TEST:
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
       break;
     case TAB_SENSORS:
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
       break;
     case TAB_HV:
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
       break;
     case TAB_LV:
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
       break;
     default:
       break;
@@ -131,16 +131,20 @@ void manettino_center_actions(int dsteps) {
 }
 
 void manettino_left_actions(int dsteps) {
+  char tbuf[100];
+  snprintf(tbuf, 100, "manettino left %d", dsteps);
   if (engineer_mode) {
-
+    tab_terminal_new_message(tbuf);
   } else {
     switch (current_racing_tab) {
     case NOT_SCREEN:
       break;
     case TAB_RACING:
       slip_control_last_state += dsteps * 10;
-      slip_control_last_state = fminf(slip_control_last_state, SLIP_CONTROL_MAX);
-      slip_control_last_state = fmaxf(slip_control_last_state, SLIP_CONTROL_MIN);
+      slip_control_last_state =
+          fminf(slip_control_last_state, SLIP_CONTROL_MAX);
+      slip_control_last_state =
+          fmaxf(slip_control_last_state, SLIP_CONTROL_MIN);
       manettino_send_slip_control((float)slip_control_last_state / 100.0f);
       //      if (steer_status_last_state.map_sc + (float)dsteps / 10.0f > 0.0f
       //      && steer_status_last_state.map_sc + (float)dsteps / 10.0f < 1.0f)
@@ -205,7 +209,6 @@ void manettino_send_set_pumps_speed(float val) {
   can_send(&msg, true);
 
   if (val < 0.0f) {
-    lv_pumps_speed_bar_invalidate();
     set_tab_lv_label_text("AUTO", tab_lv_lb_pumps_local);
   } else {
     lv_set_pumps_speed_bar((int32_t)(val * 100.0f));
@@ -234,7 +237,6 @@ void manettino_send_set_radiators(float val) {
   can_send(&msg, true);
 
   if (val < 0.0f) {
-    lv_radiators_speed_bar_invalidate();
     set_tab_lv_label_text("AUTO", tab_lv_lb_radiators_local);
   } else {
     lv_set_radiators_speed_bar(
@@ -272,7 +274,6 @@ void send_pork_fans_status(float val) {
   can_send(&msg, true);
 
   if (val < 0.0f) {
-    tab_hv_pork_speed_bar_invalidate();
   } else {
     tab_hv_set_pork_speed_bar((int32_t)(val * 100));
   }

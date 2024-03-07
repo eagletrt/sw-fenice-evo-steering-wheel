@@ -181,8 +181,8 @@ void tab_lv_create(lv_obj_t *parent) {
 
   lv_obj_t *lv_minCellV_lb =
       lv_triple_label(top_data_panel, &tab_lv_labels[tab_lv_lb_pack_voltage_2],
-                      "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22,
-                      "PACK 2", &lv_font_inter_bold_20);
+                      "0", &lv_font_inter_bold_30, " A", &lv_font_inter_bold_22,
+                      "CURR", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(lv_minCellV_lb, LV_GRID_ALIGN_CENTER, 7, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 

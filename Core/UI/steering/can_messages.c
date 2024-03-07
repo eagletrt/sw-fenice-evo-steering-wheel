@@ -48,7 +48,8 @@ void send_bal(bool on) {
   primary_set_cell_balancing_status_converted_t converted = {
       .set_balancing_status =
           on ? primary_set_cell_balancing_status_set_balancing_status_ON
-             : primary_set_cell_balancing_status_set_balancing_status_OFF};
+             : primary_set_cell_balancing_status_set_balancing_status_OFF,
+      .balancing_threshold = 50};
   STEER_CAN_PACK(primary, PRIMARY, set_cell_balancing_status,
                  SET_CELL_BALANCING_STATUS)
   can_send(&msg, true);

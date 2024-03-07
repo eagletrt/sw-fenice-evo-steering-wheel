@@ -261,14 +261,14 @@ void tab_racing_create(lv_obj_t *parent) {
 
   /*inserting data into data right panel*/
   lv_obj_t *trq = lv_vertical_pair_label(
-      right_data_panel, &tab_racing_labels[tab_rac_torque_idx], "NA",
-      &lv_font_inter_bold_38, "TRQ", &lv_font_inter_bold_22);
+      right_data_panel, &tab_racing_labels[tab_rac_lap_count_idx], "NA",
+      &lv_font_inter_bold_38, "unused", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(trq, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0,
                        1);
 
   lv_obj_t *slip = lv_vertical_pair_label(
-      right_data_panel, &tab_racing_labels[tab_rac_slip_idx], "NA",
-      &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
+      right_data_panel, &tab_racing_labels[tab_rac_lap_count_idx], "NA",
+      &lv_font_inter_bold_38, "unused", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(slip, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER,
                        0, 1);
 
@@ -353,6 +353,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // lap counter
 
+#if 0
   lv_obj_t *lap_counter = lv_vertical_pair_label(
       data_panel, &tab_racing_labels[tab_rac_lap_count_idx], "NA",
       &lv_font_inter_bold_38, "LAP", &lv_font_inter_bold_22);
@@ -369,6 +370,24 @@ void tab_racing_create(lv_obj_t *parent) {
                        0, 1);
   lv_obj_set_style_pad_bottom(km_counter, 5, 0);
   lv_obj_set_style_pad_right(km_counter, 40, 0);
+#else
+  lv_obj_t *slip_robo_del_coso = lv_vertical_pair_label(
+      data_panel, &tab_racing_labels[tab_rac_slip_idx], "0",
+      &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
+  lv_obj_set_grid_cell(slip_robo_del_coso, LV_GRID_ALIGN_START, 1, 1,
+                       LV_GRID_ALIGN_END, 0, 1);
+  lv_obj_set_style_pad_bottom(slip_robo_del_coso, 5, 0);
+  lv_obj_set_style_pad_left(slip_robo_del_coso, 40, 0);
+
+  // ???
+  lv_obj_t *torque_robo_del_coso = lv_vertical_pair_label(
+      data_panel, &tab_racing_labels[tab_rac_torque_idx], "0",
+      &lv_font_inter_bold_38, "TORQUE", &lv_font_inter_bold_22);
+  lv_obj_set_grid_cell(torque_robo_del_coso, LV_GRID_ALIGN_END, 1, 1,
+                       LV_GRID_ALIGN_END, 0, 1);
+  lv_obj_set_style_pad_bottom(torque_robo_del_coso, 5, 0);
+  lv_obj_set_style_pad_right(torque_robo_del_coso, 40, 0);
+#endif
 
   // setting data panel position in central panel
   lv_obj_set_grid_cell(data_panel, LV_GRID_ALIGN_STRETCH, 0, 1,

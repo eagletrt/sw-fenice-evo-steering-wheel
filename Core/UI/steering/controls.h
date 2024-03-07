@@ -18,27 +18,27 @@
 
 #define MANETTINO_STEPS_N 8
 
-#define PADDLE_TOP_RIGHT 2
-#define PADDLE_TOP_LEFT 1
-#define PADDLE_BOTTOM_RIGHT 4
-#define PADDLE_BOTTOM_LEFT 5
-#define BUTTON_TOP_RIGHT 3
-#define BUTTON_TOP_LEFT 0
-#define BUTTON_BOTTOM_RIGHT 7
-#define BUTTON_BOTTOM_LEFT 6
+#define PADDLE_TOP_RIGHT (2)
+#define PADDLE_TOP_LEFT (1)
+#define PADDLE_BOTTOM_RIGHT (4)
+#define PADDLE_BOTTOM_LEFT (5)
+#define BUTTON_TOP_RIGHT (3)
+#define BUTTON_TOP_LEFT (0)
+#define BUTTON_BOTTOM_RIGHT (7)
+#define BUTTON_BOTTOM_LEFT (6)
 
-#define TORQUE_VECTORING_MAX 100
-#define TORQUE_VECTORING_MIN 0
-#define SLIP_CONTROL_MAX 100
-#define SLIP_CONTROL_MIN 0
-#define SET_PUMP_SPEED_MAX 100
-#define SET_PUMP_SPEED_MIN -100
-#define SET_RADIATORS_MAX 100
-#define SET_RADIATORS_MIN -10
-#define PORK_HIGH_FANS_SPEED 100
-#define PORK_LOW_FANS_SPEED -10
-#define POWER_MAP_MAX 100
-#define POWER_MAP_MIN -100
+#define TORQUE_VECTORING_MAX (100)
+#define TORQUE_VECTORING_MIN (0)
+#define SLIP_CONTROL_MAX (100)
+#define SLIP_CONTROL_MIN (0)
+#define SET_PUMP_SPEED_MAX (100)
+#define SET_PUMP_SPEED_MIN (-100)
+#define SET_RADIATORS_MAX (100)
+#define SET_RADIATORS_MIN (-10)
+#define PORK_HIGH_FANS_SPEED (100)
+#define PORK_LOW_FANS_SPEED (-10)
+#define POWER_MAP_MAX (100)
+#define POWER_MAP_MIN (0)
 
 typedef enum {
   RADS_AUTO,
@@ -77,8 +77,8 @@ void manettino_right_actions(int dsteps);
 void manettino_center_actions(int dsteps);
 void manettino_left_actions(int dsteps);
 
-//float fmin(float x, float y);
-//float fmax(float x, float y);
+// float fmin(float x, float y);
+// float fmax(float x, float y);
 
 #if CANSNIFFER_ENABLED == 1
 void switch_cansniffer(void);

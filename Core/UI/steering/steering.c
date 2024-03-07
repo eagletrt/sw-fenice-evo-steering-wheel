@@ -69,8 +69,8 @@ void car_status_update() {
   }
   case primary_car_status_car_status_DRIVE: {
     set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
-    set_tab_racing_label_text("DRIVE", tab_rac_status_idx);
-    set_tab_track_test_lb_speed("DRIVE");
+    // set_tab_racing_label_text("DRIVE", tab_rac_status_idx);
+    // set_tab_track_test_lb_speed("DRIVE");
     break;
   }
   case primary_car_status_car_status_DISABLE_INV_DRIVE:
@@ -92,15 +92,9 @@ void car_status_update() {
   }
 }
 
-void lv_pumps_actual_value_update(){
+void lv_pumps_actual_value_update() {}
 
-}
-
-void lv_radiators_actual_value_update(){
-
-}
-
-
+void lv_radiators_actual_value_update() {}
 
 void cooling_status_update() {
 #if ENGINEERING_TAB_ENABLED == 1
@@ -160,6 +154,11 @@ void hv_cell_voltage_update(void) {
                 primary_hv_cell_voltage_last_state->min_cell_voltage;
   sprintf(sprintf_buffer, "%d", (int)(delta * 1000.0f));
   set_tab_sensors_label_text(sprintf_buffer, tab_sensors_lb_hv_delta);
+  set_tab_hv_label_text(sprintf_buffer, tab_hv_lb_voltage_delta);
+
+  snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%0.f",
+           primary_hv_cell_voltage_last_state->sum_cell_voltage);
+  set_tab_hv_label_text(sprintf_buffer, tab_hv_lb_pack_voltage_2);
 }
 
 void hv_voltage_update(void) {
@@ -169,6 +168,8 @@ void hv_voltage_update(void) {
   set_tab_sensors_label_text(sprintf_buffer, tab_sensors_lb_pack_voltage);
   set_tab_racing_hv_pack_voltage_bar(
       primary_hv_voltage_last_state->pack_voltage);
+
+  set_tab_hv_label_text(sprintf_buffer, tab_hv_lb_pack_voltage);
 }
 
 void hv_current_update() {
@@ -247,9 +248,9 @@ void hv_feedbacks_status_update() {
   }
   if (primary_hv_feedback_status_last_state->feedback_sd_end ==
       primary_hv_feedback_status_feedback_sd_end_FEEDBACK_STATE_LOW) {
-    set_tab_racing_label_text("LOW", tab_rac_status_idx);
+    // set_tab_racing_label_text("LOW", tab_rac_status_idx);
   } else {
-    set_tab_racing_label_text("ERR", tab_rac_status_idx);
+    // set_tab_racing_label_text("ERR", tab_rac_status_idx);
   }
 }
 
@@ -259,15 +260,57 @@ primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
 
 void ecu_feedbacks_update() {}
 
+void ts_status_update() {
+  GET_LAST_STATE(primary, ts_status, PRIMARY, TS_STATUS);
+
+  switch (primary_ts_status_last_state->ts_status) {
+  case primary_ts_status_ts_status_INIT:
+    set_tab_hv_label_text("INIT", tab_hv_lb_current_state);
+    break;
+  case primary_ts_status_ts_status_IDLE:
+    set_tab_hv_label_text("IDLE", tab_hv_lb_current_state);
+    break;
+  case primary_ts_status_ts_status_AIRN_CLOSE:
+    set_tab_hv_label_text("AIRN CLOSE", tab_hv_lb_current_state);
+    break;
+  case primary_ts_status_ts_status_PRECHARGE:
+    set_tab_hv_label_text("PRECHARGE", tab_hv_lb_current_state);
+    break;
+  case primary_ts_status_ts_status_AIRP_CLOSE:
+    set_tab_hv_label_text("AIRP CLOSE", tab_hv_lb_current_state);
+    break;
+  case primary_ts_status_ts_status_TS_ON:
+    set_tab_hv_label_text("TS ON", tab_hv_lb_current_state);
+    break;
+  case primary_ts_status_ts_status_FATAL_ERROR:
+    set_tab_hv_label_text("FATAL ERROR", tab_hv_lb_current_state);
+    break;
+  };
+}
+
+extern int pork_fans_status_last_state;
+
 void hv_fans_override_status_update() {
-#if ENGINEERING_TAB_ENABLED == 1
   GET_LAST_STATE(primary, hv_fans_override_status, PRIMARY,
                  HV_FANS_OVERRIDE_STATUS);
+#if ENGINEERING_TAB_ENABLED == 1
   set_pork_speed_bar(primary_hv_fans_override_status_last_state->fans_speed *
                      100);
   set_pork_speed_value_label(
       primary_hv_fans_override_status_last_state->fans_speed);
 #endif
+  float cval = primary_hv_fans_override_status_last_state->fans_speed;
+  // pork_fans_status_last_state = cval * 100;
+  // tab_hv_set_pork_speed_bar((int32_t)(cval * 100));
+
+  if (cval < 0) {
+    snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "AUTO");
+    set_tab_hv_label_text(sprintf_buffer, tab_hv_pork_speed_value);
+  } else {
+    snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%0.1f",
+             primary_hv_fans_override_status_last_state->fans_speed);
+    set_tab_hv_label_text(sprintf_buffer, tab_hv_pork_speed_value);
+  }
 }
 
 void lv_currents_update() {
@@ -275,27 +318,33 @@ void lv_currents_update() {
   sprintf(sprintf_buffer, "%.1f",
           primary_lv_currents_last_state->current_lv_battery);
   set_tab_sensors_label_text(sprintf_buffer, tab_sensors_lb_lv_current);
+  set_tab_lv_label_text(sprintf_buffer, tab_lv_lb_pack_voltage_2);
 }
 
 void lv_cells_voltage_update(void) {
 #define N_LV_CELLS 6
-  float current_lv_temp[N_LV_CELLS] = {0};
-  current_lv_temp[0] = lv_voltages_stock_1.voltage_0;
-  current_lv_temp[1] = lv_voltages_stock_1.voltage_1;
-  current_lv_temp[2] = lv_voltages_stock_1.voltage_2;
-  current_lv_temp[3] = lv_voltages_stock_2.voltage_0;
-  current_lv_temp[4] = lv_voltages_stock_2.voltage_1;
-  current_lv_temp[5] = lv_voltages_stock_2.voltage_2;
+  float current_lv_voltages[N_LV_CELLS] = {0};
+  current_lv_voltages[0] = lv_voltages_stock_1.voltage_0;
+  current_lv_voltages[1] = lv_voltages_stock_1.voltage_1;
+  current_lv_voltages[2] = lv_voltages_stock_1.voltage_2;
+  current_lv_voltages[3] = lv_voltages_stock_2.voltage_0;
+  current_lv_voltages[4] = lv_voltages_stock_2.voltage_1;
+  current_lv_voltages[5] = lv_voltages_stock_2.voltage_2;
 
   float sum = 0;
   for (uint8_t temp_index = 0; temp_index < N_LV_CELLS; temp_index++)
-    sum += current_lv_temp[temp_index];
+    sum += current_lv_voltages[temp_index];
+
+  snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%0.0f", sum);
+  set_tab_lv_label_text(sprintf_buffer, tab_lv_lb_pack_voltage);
 
   float mean_voltage = (float)(sum / N_LV_CELLS);
   sprintf(sprintf_buffer, "%.0f", mean_voltage);
   set_tab_racing_label_text(sprintf_buffer, tab_rac_lv_temp_idx);
   set_tab_sensors_label_text(sprintf_buffer,
                              tab_sensors_lb_battery_temperature);
+
+  // set_tab_lv_label_text(sprintf_buffer, tab_lv_lb_);
 }
 
 void lv_cells_temp_update() {
@@ -311,11 +360,15 @@ void lv_cells_temp_update() {
   for (uint8_t temp_index = 0; temp_index < N_LV_CELLS; temp_index++)
     sum += current_lv_temp[temp_index];
 
+  for (size_t idx = 0; idx < N_LV_CELLS; idx++) {
+  }
+
   float mean_temp = (float)(sum / N_LV_CELLS);
   sprintf(sprintf_buffer, "%.0f", mean_temp);
   set_tab_racing_label_text(sprintf_buffer, tab_rac_lv_temp_idx);
   set_tab_sensors_label_text(sprintf_buffer,
                              tab_sensors_lb_battery_temperature);
+  set_tab_lv_label_text(sprintf_buffer, tab_lv_lb_temp_avg);
 }
 
 void lv_total_voltage_update() {

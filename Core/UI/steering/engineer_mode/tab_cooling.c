@@ -157,7 +157,7 @@ void tab_cooling_create(lv_obj_t *parent) {
   lv_obj_add_style(pork_speed_value_label, &label_style, LV_PART_MAIN);
   lv_obj_set_style_text_font(pork_speed_value_label, &lv_font_inter_bold_30,
                              LV_STATE_DEFAULT);
-  lv_label_set_text(pork_speed_value_label, "pork val");
+  lv_label_set_text(pork_speed_value_label, "LVAC");
   lv_obj_set_grid_cell(pork_speed_value_label, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 2, 1);
 

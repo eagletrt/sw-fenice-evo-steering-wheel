@@ -233,14 +233,14 @@ void tab_hv_create(lv_obj_t *parent) {
   lv_obj_t *hv_curr_lb =
       lv_triple_label(top_data_panel, &tab_hv_labels[tab_hv_lb_pack_voltage],
                       "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22,
-                      "PACK", &lv_font_inter_bold_20);
+                      "TOT", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_curr_lb, LV_GRID_ALIGN_CENTER, 6, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
   lv_obj_t *hv_minCellV_lb =
       lv_triple_label(top_data_panel, &tab_hv_labels[tab_hv_lb_pack_voltage_2],
                       "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22,
-                      "PACK 2", &lv_font_inter_bold_20);
+                      "SUM", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(hv_minCellV_lb, LV_GRID_ALIGN_CENTER, 7, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
@@ -390,7 +390,7 @@ void tab_hv_create(lv_obj_t *parent) {
   lv_obj_add_style(pork_label, &label_custom_style, LV_PART_MAIN);
   lv_obj_set_style_text_font(pork_label, &lv_font_inter_bold_30,
                              LV_STATE_DEFAULT);
-  lv_label_set_text(pork_label, "pork val");
+  lv_label_set_text(pork_label, "TSAC");
   lv_obj_set_grid_cell(pork_label, LV_GRID_ALIGN_CENTER, 0, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 
@@ -403,7 +403,7 @@ void tab_hv_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(tab_hv_labels[tab_hv_pork_speed_value],
                        LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-  //Pork fan bar
+  // Pork fan bar
   tab_hv_pork_speed_bar = lv_bar_create(pork_panel);
   lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_indic,
                    LV_PART_INDICATOR);

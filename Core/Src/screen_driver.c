@@ -52,7 +52,7 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
     last_tick = hal_tick;
 #endif
 
-    return;
+    // return;
   }
 
   // Swap the buffer for the one to display and reload the screen at the next
