@@ -77,6 +77,9 @@ void manettino_right_actions(int dsteps);
 void manettino_center_actions(int dsteps);
 void manettino_left_actions(int dsteps);
 
+//float fmin(float x, float y);
+//float fmax(float x, float y);
+
 #if CANSNIFFER_ENABLED == 1
 void switch_cansniffer(void);
 void change_cansniffer_index(bool);

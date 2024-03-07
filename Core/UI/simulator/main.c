@@ -388,11 +388,19 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
 #endif
     break;
   }
-  case 't': {
+  case '1': {
+    manettino_right_actions(-1);
+    break;
+  }
+  case '3': {
+    manettino_right_actions(1);
+    break;
+  }
+  case '4': {
     manettino_left_actions(-1);
     break;
   }
-  case 'y': {
+  case '6': {
     manettino_left_actions(1);
     break;
   }

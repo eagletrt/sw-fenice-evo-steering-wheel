@@ -92,6 +92,16 @@ void car_status_update() {
   }
 }
 
+void lv_pumps_actual_value_update(){
+
+}
+
+void lv_radiators_actual_value_update(){
+
+}
+
+
+
 void cooling_status_update() {
 #if ENGINEERING_TAB_ENABLED == 1
   GET_LAST_STATE(primary, cooling_status, PRIMARY, COOLING_STATUS);

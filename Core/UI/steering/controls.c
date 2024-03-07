@@ -32,8 +32,8 @@ primary_hv_fans_override_converted_t hv_fans_override_settings = {
     .fans_override = primary_hv_fans_override_fans_override_OFF,
     .fans_speed = 0.0f};
 
-int imin(int x, int y) { return x > y ? y : x; }
-int imax(int x, int y) { return x > y ? x : y; }
+//float fmin(float x, float y) { return x > y ? y : x; }
+//float fmax(float x, float y) { return x > y ? x : y; }
 
 void set_dmt_steering_angle_target(void) {
   GET_LAST_STATE(secondary, steering_angle, SECONDARY, STEERING_ANGLE);
@@ -67,9 +67,9 @@ void manettino_right_actions(int dsteps) {
     case TAB_RACING:
       torque_vectoring_last_state += dsteps * 10;
       torque_vectoring_last_state =
-          imin(torque_vectoring_last_state, TORQUE_VECTORING_MAX);
+          fminf(torque_vectoring_last_state, TORQUE_VECTORING_MAX);
       torque_vectoring_last_state =
-          imax(torque_vectoring_last_state, TORQUE_VECTORING_MIN);
+          fmaxf(torque_vectoring_last_state, TORQUE_VECTORING_MIN);
       manettino_send_torque_vectoring((float)torque_vectoring_last_state /
                                       100.0f);
       break;
@@ -80,17 +80,17 @@ void manettino_right_actions(int dsteps) {
     case TAB_HV:
       pork_fans_status_last_state += dsteps * 10;
       pork_fans_status_last_state =
-          imin(pork_fans_status_last_state, PORK_HIGH_FANS_SPEED);
+          fminf(pork_fans_status_last_state, PORK_HIGH_FANS_SPEED);
       pork_fans_status_last_state =
-          imax(pork_fans_status_last_state, PORK_LOW_FANS_SPEED);
+          fmaxf(pork_fans_status_last_state, PORK_LOW_FANS_SPEED);
       send_pork_fans_status((float)pork_fans_status_last_state / 100.0f);
       break;
     case TAB_LV:
       set_radiators_last_state += dsteps * 10;
       set_radiators_last_state =
-          imin(set_radiators_last_state, SET_RADIATORS_MAX);
+          fminf(set_radiators_last_state, SET_RADIATORS_MAX);
       set_radiators_last_state =
-          imax(set_radiators_last_state, SET_RADIATORS_MIN);
+          fmaxf(set_radiators_last_state, SET_RADIATORS_MIN);
       manettino_send_set_radiators((float)set_radiators_last_state / 100.f);
       break;
     default:
@@ -105,8 +105,8 @@ void manettino_center_actions(int dsteps) {
   } else {
     switch (current_racing_tab) {
       power_map_last_state += (dsteps * 10);
-      power_map_last_state = imin(power_map_last_state, POWER_MAP_MAX);
-      power_map_last_state = imax(power_map_last_state, POWER_MAP_MIN);
+      power_map_last_state = fminf(power_map_last_state, POWER_MAP_MAX);
+      power_map_last_state = fmaxf(power_map_last_state, POWER_MAP_MIN);
     case NOT_SCREEN:
       break;
     case TAB_RACING:
@@ -139,8 +139,8 @@ void manettino_left_actions(int dsteps) {
       break;
     case TAB_RACING:
       slip_control_last_state += dsteps * 10;
-      slip_control_last_state = imin(slip_control_last_state, SLIP_CONTROL_MAX);
-      slip_control_last_state = imax(slip_control_last_state, SLIP_CONTROL_MIN);
+      slip_control_last_state = fminf(slip_control_last_state, SLIP_CONTROL_MAX);
+      slip_control_last_state = fmaxf(slip_control_last_state, SLIP_CONTROL_MIN);
       manettino_send_slip_control((float)slip_control_last_state / 100.0f);
       //      if (steer_status_last_state.map_sc + (float)dsteps / 10.0f > 0.0f
       //      && steer_status_last_state.map_sc + (float)dsteps / 10.0f < 1.0f)
@@ -163,9 +163,9 @@ void manettino_left_actions(int dsteps) {
     case TAB_LV:
       set_pumps_speed_last_state += dsteps * 10;
       set_pumps_speed_last_state =
-          imin(set_pumps_speed_last_state, SET_PUMP_SPEED_MAX);
+          fminf(set_pumps_speed_last_state, SET_PUMP_SPEED_MAX);
       set_pumps_speed_last_state =
-          imax(set_pumps_speed_last_state, SET_PUMP_SPEED_MIN);
+          fmaxf(set_pumps_speed_last_state, SET_PUMP_SPEED_MIN);
       manettino_send_set_pumps_speed((float)set_pumps_speed_last_state /
                                      100.0f);
       break;
@@ -206,9 +206,9 @@ void manettino_send_set_pumps_speed(float val) {
 
   if (val < 0.0f) {
     lv_pumps_speed_bar_invalidate();
-    set_tab_lv_label_text("0", tab_lv_lb_pumps_local);
+    set_tab_lv_label_text("AUTO", tab_lv_lb_pumps_local);
   } else {
-    lv_set_pumps_speed_bar((int32_t)val * 100);
+    lv_set_pumps_speed_bar((int32_t)(val * 100.0f));
     int map_val = (int)(steering_cooling_settings.pumps_speed * 100);
     sprintf(sprintf_buffer_controls, "%u", map_val);
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_local);
@@ -235,10 +235,10 @@ void manettino_send_set_radiators(float val) {
 
   if (val < 0.0f) {
     lv_radiators_speed_bar_invalidate();
-    set_tab_lv_label_text("0", tab_lv_lb_radiators_local);
+    set_tab_lv_label_text("AUTO", tab_lv_lb_radiators_local);
   } else {
     lv_set_radiators_speed_bar(
-        (int32_t)steering_cooling_settings.radiators_speed * 100);
+        (int32_t)(steering_cooling_settings.radiators_speed * 100));
     int map_val = (int)(steering_cooling_settings.radiators_speed * 100);
     sprintf(sprintf_buffer_controls, "%u", map_val);
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_local);
@@ -274,7 +274,7 @@ void send_pork_fans_status(float val) {
   if (val < 0.0f) {
     tab_hv_pork_speed_bar_invalidate();
   } else {
-    tab_hv_set_pork_speed_bar((int32_t)val * 100);
+    tab_hv_set_pork_speed_bar((int32_t)(val * 100));
   }
 
 #if 0

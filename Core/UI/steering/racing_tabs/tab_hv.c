@@ -95,10 +95,10 @@ void init_hv_styles(void) {
   /* BAR STYLE INDICATOR */
   lv_style_init(&tab_hv_style_indic);
   lv_style_set_bg_opa(&tab_hv_style_indic, LV_OPA_COVER);
-  lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_RED));
+  lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_BLUE));
   lv_style_set_bg_grad_color(&tab_hv_style_indic,
-                             lv_palette_main(LV_PALETTE_BLUE));
-  lv_style_set_bg_grad_dir(&tab_hv_style_indic, LV_GRAD_DIR_VER);
+                             lv_palette_main(LV_PALETTE_RED));
+  lv_style_set_bg_grad_dir(&tab_hv_style_indic, LV_GRAD_DIR_HOR);
 
   lv_style_init(&label_custom_style);
   lv_style_set_base_dir(&label_custom_style, LV_BASE_DIR_LTR);
@@ -403,6 +403,7 @@ void tab_hv_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(tab_hv_labels[tab_hv_pork_speed_value],
                        LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
+  //Pork fan bar
   tab_hv_pork_speed_bar = lv_bar_create(pork_panel);
   lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_indic,
                    LV_PART_INDICATOR);
