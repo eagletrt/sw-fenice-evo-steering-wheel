@@ -11,14 +11,20 @@ lv_style_t tab_lv_style_indic;
 char tab_lv_new_label_buffer[10];
 
 lv_obj_t *tab_lv_labels[tab_lv_labels_n] = {
-    [tab_lv_lb_temp_max] = NULL,         [tab_lv_lb_temp_min] = NULL,
-    [tab_lv_lb_temp_avg] = NULL,         [tab_lv_lb_voltage_max] = NULL,
-    [tab_lv_lb_voltage_min] = NULL,      [tab_lv_lb_voltage_delta] = NULL,
-    [tab_lv_lb_pack_voltage] = NULL,     [tab_lv_lb_pack_voltage_2] = NULL,
-    [tab_lv_lb_bus_voltage] = NULL,      [tab_lv_lb_current_state] = NULL,
-    [tab_lv_lb_last_error] = NULL,       [tab_lv_lb_state] = NULL,
-    [tab_lv_lb_pumps_actual] = NULL,     [tab_lv_lb_pumps_local] = NULL,
-    [tab_lv_lb_radiators_actual] = NULL, [tab_lv_lb_radiators_local] = NULL,
+    [tab_lv_lb_temp_max] = NULL,        [tab_lv_lb_temp_min] = NULL,
+    [tab_lv_lb_temp_avg] = NULL,        [tab_lv_lb_voltage_max] = NULL,
+    [tab_lv_lb_voltage_min] = NULL,     [tab_lv_lb_voltage_delta] = NULL,
+    [tab_lv_lb_pack_voltage] = NULL,    [tab_lv_lb_pack_voltage_2] = NULL,
+    [tab_lv_lb_bus_voltage] = NULL,     [tab_lv_lb_current_state] = NULL,
+    [tab_lv_lb_last_error] = NULL,      [tab_lv_lb_state] = NULL,
+#if 0 
+   [tab_lv_lb_pumps_actual] = NULL,
+#endif
+    [tab_lv_lb_pumps_local] = NULL,
+#if 0
+    [tab_lv_lb_radiators_actual] = NULL,
+#endif
+    [tab_lv_lb_radiators_local] = NULL,
 };
 
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx) {
@@ -259,11 +265,13 @@ void tab_lv_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(pumps_bar_panel, LV_GRID_ALIGN_STRETCH, 0, 1,
                        LV_GRID_ALIGN_STRETCH, 1, 1);
 
+#if 0
   lv_obj_t *pumps_actual_value = lv_horizontal_pair_label(
       pumps_bar_panel, &tab_lv_labels[tab_lv_lb_pumps_actual], "0",
       &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(pumps_actual_value, LV_GRID_ALIGN_END, 0, 1,
                        LV_GRID_ALIGN_START, 0, 1);
+#endif
 
   tab_lv_pumps_speed_bar = lv_bar_create(pumps_bar_panel);
   lv_obj_set_size(tab_lv_pumps_speed_bar, 50, BAR_HEIGHT);
@@ -367,11 +375,13 @@ void tab_lv_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(radiators_bar_panel, LV_GRID_ALIGN_STRETCH, 0, 1,
                        LV_GRID_ALIGN_STRETCH, 1, 1);
 
+#if 0
   lv_obj_t *radiators_actual_value = lv_horizontal_pair_label(
       radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_actual], "0",
       &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(radiators_actual_value, LV_GRID_ALIGN_END, 0, 1,
                        LV_GRID_ALIGN_START, 0, 1);
+#endif
 
   tab_lv_radiators_speed_bar = lv_bar_create(radiators_bar_panel);
   lv_obj_set_size(tab_lv_radiators_speed_bar, 50, BAR_HEIGHT);

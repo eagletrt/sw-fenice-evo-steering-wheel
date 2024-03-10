@@ -200,7 +200,7 @@ void buttons_pressed_actions(uint8_t button) {
   case BUTTON_TOP_LEFT:
     if (engineer_mode) {
 #if ENGINEERING_TAB_ENABLED == 1
-      shutdown_circuit_turn_on_off();
+      // shutdown_circuit_turn_on_off();
 #endif
     } else {
       set_ptt_button_pressed(true);

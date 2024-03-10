@@ -9,7 +9,6 @@
 #include "maxheap.h"
 #include "messages.h"
 
-#define CAN_POSSIBLE_IDS 2048
 #define CANSNIFFER_ELEM_T_SIZE 20
 
 #define TAB_CANSNIFFER_N_MESSAGES_SHOWN 12
@@ -24,8 +23,6 @@ typedef struct {
   uint8_t len;
   uint8_t data[8];
 } cansniffer_elem_t;
-
-void cansniffer_buffer_init(void);
 
 void cansniffer_secondary_new_message(can_message_t *msg);
 void switch_secondary_cansniffer();

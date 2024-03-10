@@ -68,9 +68,7 @@ typedef enum {
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   TAB_CALIBRATION,
 #endif
-#if STEER_TAB_DEBUG_ENABLED == 1
-  TAB_DEBUG,
-#endif
+
   TAB_TRACK_TEST,
   TAB_SENSORS,
   TAB_HV,
@@ -80,15 +78,15 @@ typedef enum {
 } racing_tab_t;
 
 typedef enum {
-  TAB_ENGINEER_MODE,
-  TAB_COOLING,
+  TAB_TERMINAL,
+  TAB_BALANCING_STATUS,
 #if CANSNIFFER_ENABLED == 1
   TAB_SECONDARY_CANSNIFFER,
   TAB_PRIMARY_CANSNIFFER,
 #endif
-  TAB_TERMINAL,
-  TAB_SHUTDOWN_CIRCUIT,
-  TAB_BALANCING_STATUS,
+#if STEER_TAB_DEBUG_ENABLED == 1
+  TAB_DEBUG,
+#endif
   // add here new tabs
   NUM_ENGINEER_TABS
 } engineer_tab_t;
@@ -175,9 +173,13 @@ typedef enum {
   tab_lv_lb_bus_voltage,
   tab_lv_lb_current_state,
   tab_lv_lb_last_error,
+#if 0
   tab_lv_lb_pumps_actual,
+#endif
   tab_lv_lb_pumps_local,
+#if 0
   tab_lv_lb_radiators_actual,
+#endif
   tab_lv_lb_radiators_local,
   tab_lv_lb_state,
   tab_lv_labels_n

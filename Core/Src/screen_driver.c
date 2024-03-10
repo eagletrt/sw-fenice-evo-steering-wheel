@@ -44,7 +44,7 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area,
   lv_disp_t *disp = _lv_refr_get_disp_refreshing();
   uint16_t *dma_xfer_src, *dma_xfer_dst;
   if (!lv_disp_flush_is_last(disp_drv)) {
-    lv_disp_flush_ready(disp_drv);
+    // lv_disp_flush_ready(disp_drv); //  TODO: check
 
 #if 0
     uint32_t hal_tick = HAL_GetTick();

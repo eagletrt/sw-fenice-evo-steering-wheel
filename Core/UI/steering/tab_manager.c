@@ -16,10 +16,7 @@ lv_obj_t *tab_debug_ptr;
 #endif
 
 lv_obj_t *notif_screen;
-lv_obj_t *tab_engineer_mode_ptr;
-lv_obj_t *tab_cooling_ptr;
 lv_obj_t *tab_fatal_error_ptr;
-lv_obj_t *tab_shutdown_circuit_ptr;
 
 #if CANSNIFFER_ENABLED == 1
 lv_obj_t *tab_primary_cansniffer_ptr;
@@ -61,15 +58,12 @@ void tab_manager(void) {
   notif_screen = lv_obj_create(NULL);
 
 #if ENGINEERING_TAB_ENABLED == 1
-  tab_engineer_mode_ptr = lv_obj_create(NULL);
-  tab_cooling_ptr = lv_obj_create(NULL);
 #if CANSNIFFER_ENABLED == 1
   tab_primary_cansniffer_ptr = lv_obj_create(NULL);
   tab_secondary_cansniffer_ptr = lv_obj_create(NULL);
 #endif
   tab_terminal_ptr = lv_obj_create(NULL);
   tab_fatal_error_ptr = lv_obj_create(NULL);
-  tab_shutdown_circuit_ptr = lv_obj_create(NULL);
   tab_balancing_status_ptr = lv_obj_create(NULL);
 #endif
 
@@ -90,15 +84,12 @@ void tab_manager(void) {
   lv_group_add_obj(g, notif_screen);
 
 #if ENGINEERING_TAB_ENABLED == 1
-  lv_group_add_obj(g, tab_engineer_mode_ptr);
-  lv_group_add_obj(g, tab_cooling_ptr);
 #if CANSNIFFER_ENABLED == 1
   lv_group_add_obj(g, tab_primary_cansniffer_ptr);
   lv_group_add_obj(g, tab_secondary_cansniffer_ptr);
 #endif
   lv_group_add_obj(g, tab_terminal_ptr);
   lv_group_add_obj(g, tab_fatal_error_ptr);
-  lv_group_add_obj(g, tab_shutdown_circuit_ptr);
   lv_group_add_obj(g, tab_balancing_status_ptr);
 #endif
 
@@ -119,15 +110,12 @@ void tab_manager(void) {
   tab_notification_screen_create(notif_screen);
 
 #if ENGINEERING_TAB_ENABLED == 1
-  tab_engineer_screen_create(tab_engineer_mode_ptr);
-  tab_cooling_create(tab_cooling_ptr);
 #if CANSNIFFER_ENABLED == 1
   primary_tab_cansniffer_create(tab_primary_cansniffer_ptr);
   secondary_tab_cansniffer_create(tab_secondary_cansniffer_ptr);
 #endif
   tab_terminal_create(tab_terminal_ptr);
   tab_fatal_error_create(tab_fatal_error_ptr);
-  tab_shutdown_circuit_create(tab_shutdown_circuit_ptr);
   tab_balancing_status_screen_create(tab_balancing_status_ptr);
 #endif
 
@@ -135,7 +123,7 @@ void tab_manager(void) {
   current_racing_tab = TAB_RACING;
 
 #if ENGINEERING_TAB_ENABLED == 1
-  current_engineer_tab = TAB_ENGINEER_MODE;
+  current_engineer_tab = TAB_TERMINAL;
 #endif
 
   steering_initialized = true;
@@ -221,12 +209,6 @@ void load_current_racing_tab() {
 #if ENGINEERING_TAB_ENABLED == 1
 void load_current_engineering_tab() {
   switch (current_engineer_tab) {
-  case TAB_ENGINEER_MODE:
-    lv_scr_load(tab_engineer_mode_ptr);
-    break;
-  case TAB_COOLING:
-    lv_scr_load(tab_cooling_ptr);
-    break;
 #if CANSNIFFER_ENABLED == 1
   case TAB_SECONDARY_CANSNIFFER:
     lv_scr_load(tab_secondary_cansniffer_ptr);
@@ -237,9 +219,6 @@ void load_current_engineering_tab() {
 #endif
   case TAB_TERMINAL:
     lv_scr_load(tab_terminal_ptr);
-    break;
-  case TAB_SHUTDOWN_CIRCUIT:
-    lv_scr_load(tab_shutdown_circuit_ptr);
     break;
   case TAB_BALANCING_STATUS:
     lv_scr_load(tab_balancing_status_ptr);

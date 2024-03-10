@@ -16,12 +16,6 @@ extern bool is_imsg_new[inverters_MESSAGE_COUNT];
 lv_timer_t *steer_status_task;
 lv_timer_t *steer_version_task;
 
-#if CANSNIFFER_ENABLED == 1
-extern cansniffer_elem_t *primary_cansniffer_buffer;
-extern cansniffer_elem_t *secondary_cansniffer_buffer;
-extern bool cansniffer_initialized;
-#endif
-
 char name_buffer[BUFSIZ];
 
 void send_steer_version(lv_timer_t *main_timer) {
@@ -60,9 +54,7 @@ void handle_primary(can_message_t *msg) {
     return;
 #if ENGINEERING_TAB_ENABLED == 1
 #if CANSNIFFER_ENABLED == 1
-  if (cansniffer_initialized) {
-    cansniffer_primary_new_message(msg);
-  }
+  cansniffer_primary_new_message(msg);
 #endif // CANSNIFFER_ENABLED
 #endif // ENGINEERING_TAB_ENABLED
 #if CAN_LOG_ENABLED
@@ -221,11 +213,7 @@ void handle_secondary(can_message_t *msg) {
   if (!steering_initialized)
     return;
 #if ENGINEERING_TAB_ENABLED == 1
-#if CANSNIFFER_ENABLED == 1
-  if (cansniffer_initialized) {
-    cansniffer_secondary_new_message(msg);
-  }
-#endif // CANSNIFFER_ENABLED
+  cansniffer_secondary_new_message(msg);
 #endif // ENGINEERING_TAB_ENABLED
 #if CAN_LOG_ENABLED
   secondary_message_name_from_id(msg->id, name_buffer);

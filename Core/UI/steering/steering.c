@@ -99,12 +99,15 @@ void lv_radiators_actual_value_update() {}
 void cooling_status_update() {
 #if ENGINEERING_TAB_ENABLED == 1
   GET_LAST_STATE(primary, cooling_status, PRIMARY, COOLING_STATUS);
-  set_pumps_speed_bar(primary_cooling_status_last_state->pumps_speed * 100);
-  set_pumps_speed_value_label(primary_cooling_status_last_state->pumps_speed);
-  set_radiators_speed_bar(primary_cooling_status_last_state->radiators_speed *
-                          100);
-  set_radiators_speed_value_label(
-      primary_cooling_status_last_state->radiators_speed);
+  // TODO: only set the last cooling value
+  // set_tab_lv_label_text("");
+  // set_tab
+  // set_pumps_speed_bar(primary_cooling_status_last_state->pumps_speed * 100);
+  // set_pumps_speed_value_label(primary_cooling_status_last_state->pumps_speed);
+  // set_radiators_speed_bar(primary_cooling_status_last_state->radiators_speed
+  // * 100);
+  // set_radiators_speed_value_label(
+  // primary_cooling_status_last_state->radiators_speed);
 #endif
 }
 
@@ -294,10 +297,10 @@ void hv_fans_override_status_update() {
   GET_LAST_STATE(primary, hv_fans_override_status, PRIMARY,
                  HV_FANS_OVERRIDE_STATUS);
 #if ENGINEERING_TAB_ENABLED == 1
-  set_pork_speed_bar(primary_hv_fans_override_status_last_state->fans_speed *
-                     100);
-  set_pork_speed_value_label(
-      primary_hv_fans_override_status_last_state->fans_speed);
+  // set_pork_speed_bar(primary_hv_fans_override_status_last_state->fans_speed *
+  //  100);
+  // set_pork_speed_value_label(
+  // primary_hv_fans_override_status_last_state->fans_speed);
 #endif
   float cval = primary_hv_fans_override_status_last_state->fans_speed;
   // pork_fans_status_last_state = cval * 100;

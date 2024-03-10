@@ -7,15 +7,12 @@
 #include "tab_secondary_cansniffer.h"
 
 lv_style_t secondary_cansniffer_label_style;
-
 lv_timer_t *secondary_cansniffer_update_task;
 bool listening_to_secondary_cansniffer = false;
 
-extern int secondary_cansniffer_ids[CAN_POSSIBLE_IDS];
-extern size_t secondary_cansniffer_ids_size;
-
-extern cansniffer_elem_t *secondary_cansniffer_buffer;
-
+int secondary_cansniffer_ids[secondary_MESSAGE_COUNT] = {0};
+cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT] = {0};
+size_t secondary_cansniffer_ids_size = 0;
 extern int secondary_cansniffer_start_index;
 
 void init_secondary_cansniffer_tab_styles() {
@@ -93,17 +90,18 @@ void update_secondary_cansniffer_ui(lv_timer_t *unused_tim) {
           iindex -
           (TAB_CANSNIFFER_N_MESSAGES_SHOWN * secondary_cansniffer_start_index));
     } else {
-      can_id_t id = (can_id_t)(secondary_cansniffer_ids[iindex]);
-      secondary_message_name_from_id(id, secondary_cansniffer_id_name);
-      for (size_t jindex = 0; jindex < secondary_cansniffer_buffer[id].len;
+      int index = secondary_cansniffer_ids[iindex];
+      secondary_message_name_from_id(secondary_id_from_index(index),
+                                     secondary_cansniffer_id_name);
+      for (size_t jindex = 0; jindex < secondary_cansniffer_buffer[index].len;
            ++jindex) {
         sprintf(secondary_cansniffer_data_string + jindex * 3, "%02X ",
-                secondary_cansniffer_buffer[id].data[jindex]);
+                secondary_cansniffer_buffer[index].data[jindex]);
       }
       update_secondary_cansniffer_value(iindex -
                                             (TAB_CANSNIFFER_N_MESSAGES_SHOWN *
                                              secondary_cansniffer_start_index),
-                                        id);
+                                        index);
       sprintf(secondary_cansniffer_id_name, "unknown");
     }
   }
@@ -123,24 +121,26 @@ void switch_secondary_cansniffer() {
 }
 
 void cansniffer_secondary_new_message(can_message_t *msg) {
-  can_id_t id = msg->id;
-  if (id >= CAN_POSSIBLE_IDS) {
+  int index = secondary_index_from_id(msg->id);
+  if (index == -1) {
     return;
   }
-  size_t old = secondary_cansniffer_ids_size;
-  if (secondary_cansniffer_buffer[id].id == 0) {
-    secondary_cansniffer_ids[secondary_cansniffer_ids_size] = (int)(id);
+  // size_t old = secondary_cansniffer_ids_size;
+  if (secondary_cansniffer_buffer[index].id == 0) {
+    secondary_cansniffer_ids[secondary_cansniffer_ids_size] = (int)(index);
     secondary_cansniffer_ids_size++;
   }
   uint32_t current_time = get_current_time_ms();
-  secondary_cansniffer_buffer[id].delta =
-      current_time - secondary_cansniffer_buffer[id].timestamp;
-  secondary_cansniffer_buffer[id].timestamp = current_time;
-  secondary_cansniffer_buffer[id].id = msg->id;
-  secondary_cansniffer_buffer[id].len = msg->size;
-  memcpy(secondary_cansniffer_buffer[id].data, msg->data, 8);
-  if (old != secondary_cansniffer_ids_size)
-    heap_sort(secondary_cansniffer_ids, secondary_cansniffer_ids_size);
+  secondary_cansniffer_buffer[index].delta =
+      current_time - secondary_cansniffer_buffer[index].timestamp;
+  secondary_cansniffer_buffer[index].timestamp = current_time;
+  secondary_cansniffer_buffer[index].id = msg->id;
+  secondary_cansniffer_buffer[index].len = msg->size;
+  memcpy(secondary_cansniffer_buffer[index].data, msg->data, msg->size);
+  // TODO: fix sorting by id
+  // if (old != secondary_cansniffer_ids_size)
+    // heap_sort(secondary_cansniffer_ids, secondary_cansniffer_ids_size,
+              // secondary_id_from_index);
 }
 
 void secondary_tab_cansniffer_create(lv_obj_t *parent) {

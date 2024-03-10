@@ -7,16 +7,17 @@
 #include "tab_primary_cansniffer.h"
 
 lv_style_t primary_cansniffer_label_style;
-
 lv_timer_t *primary_cansniffer_update_task;
 bool listening_to_primary_cansniffer = false;
 
-extern int primary_cansniffer_ids[CAN_POSSIBLE_IDS];
-extern size_t primary_cansniffer_ids_size;
-
-extern cansniffer_elem_t *primary_cansniffer_buffer;
-
+int primary_cansniffer_ids[primary_MESSAGE_COUNT] = {0};
+cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT] = {0};
+size_t primary_cansniffer_ids_size = 0;
 extern int primary_cansniffer_start_index;
+
+static_assert(
+    sizeof(cansniffer_elem_t) == CANSNIFFER_ELEM_T_SIZE,
+    "Please set CANSNIFFER_ELEM_T_SIZE accordingly to cansniffer_elem_t size");
 
 void init_primary_cansniffer_tab_styles() {
   lv_style_init(&primary_cansniffer_label_style);
@@ -37,7 +38,7 @@ lv_obj_t *primary_cansniffer_len_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 lv_obj_t *primary_cansniffer_data_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 
 char primary_cansniffer_id_name[128] = {0};
-char primary_cansniffer_data_string[128];
+char primary_cansniffer_data_string[128] = {0};
 
 void clear_primary_cansniffer_ui_item(size_t i) {
   lv_label_set_text_fmt(primary_cansniffer_timestamp_labels[i], "-");
@@ -92,17 +93,18 @@ void update_primary_cansniffer_ui(lv_timer_t *unused_tim) {
           iindex -
           (TAB_CANSNIFFER_N_MESSAGES_SHOWN * primary_cansniffer_start_index));
     } else {
-      can_id_t id = (can_id_t)(primary_cansniffer_ids[iindex]);
-      primary_message_name_from_id(id, primary_cansniffer_id_name);
-      for (size_t jindex = 0; jindex < primary_cansniffer_buffer[id].len;
+      int index = (primary_cansniffer_ids[iindex]);
+      primary_message_name_from_id(primary_id_from_index(index),
+                                   primary_cansniffer_id_name);
+      for (size_t jindex = 0; jindex < primary_cansniffer_buffer[index].len;
            ++jindex) {
         sprintf(primary_cansniffer_data_string + jindex * 3, "%02X ",
-                primary_cansniffer_buffer[id].data[jindex]);
+                primary_cansniffer_buffer[index].data[jindex]);
       }
       update_primary_cansniffer_value(iindex -
                                           (TAB_CANSNIFFER_N_MESSAGES_SHOWN *
                                            primary_cansniffer_start_index),
-                                      id);
+                                      index);
       sprintf(primary_cansniffer_id_name, "unknown");
     }
   }
@@ -122,24 +124,26 @@ void switch_primary_cansniffer() {
 }
 
 void cansniffer_primary_new_message(can_message_t *msg) {
-  can_id_t id = msg->id;
-  if (id >= CAN_POSSIBLE_IDS) {
+  int index = primary_index_from_id(msg->id);
+  if (index == -1) {
     return;
   }
-  size_t old = primary_cansniffer_ids_size;
-  if (primary_cansniffer_buffer[id].id == 0) {
-    primary_cansniffer_ids[primary_cansniffer_ids_size] = (int)(id);
+  // size_t old = primary_cansniffer_ids_size;
+  if (primary_cansniffer_buffer[index].id == 0) {
+    primary_cansniffer_ids[primary_cansniffer_ids_size] = (int)(index);
     primary_cansniffer_ids_size++;
   }
   uint32_t current_time = get_current_time_ms();
-  primary_cansniffer_buffer[id].delta =
-      current_time - primary_cansniffer_buffer[id].timestamp;
-  primary_cansniffer_buffer[id].timestamp = current_time;
-  primary_cansniffer_buffer[id].id = msg->id;
-  primary_cansniffer_buffer[id].len = msg->size;
-  memcpy(primary_cansniffer_buffer[id].data, msg->data, 8);
-  if (old != primary_cansniffer_ids_size)
-    heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size);
+  primary_cansniffer_buffer[index].delta =
+      current_time - primary_cansniffer_buffer[index].timestamp;
+  primary_cansniffer_buffer[index].timestamp = current_time;
+  primary_cansniffer_buffer[index].id = msg->id;
+  primary_cansniffer_buffer[index].len = msg->size;
+  memcpy(primary_cansniffer_buffer[index].data, msg->data, msg->size);
+  // TODO: fix sorting by id
+  // if (old != primary_cansniffer_ids_size)
+    // heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size,
+              // primary_id_from_index);
 }
 
 void primary_tab_cansniffer_create(lv_obj_t *parent) {

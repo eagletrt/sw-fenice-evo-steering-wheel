@@ -1,7 +1,6 @@
 #ifndef STEERING_H
 #define STEERING_H
 
-#include "engineer_mode/tab_cooling.h"
 #include "inverters/inverters_network.h"
 #include "lvgl.h"
 #include "primary/primary_network.h"

@@ -67,8 +67,8 @@ static int tick_thread(void *data);
  **********************/
 
 #if CANSNIFFER_ENABLED == 1
-cansniffer_elem_t *primary_cansniffer_buffer;
-cansniffer_elem_t *secondary_cansniffer_buffer;
+extern cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT];
+extern cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT];
 #endif
 
 /**********************
@@ -144,14 +144,6 @@ void canread(thread_data_t *thread_data) {
 int main(int argc, char **argv) {
   (void)argc; /*Unused*/
   (void)argv; /*Unused*/
-
-#if CANSNIFFER_ENABLED == 1
-  primary_cansniffer_buffer =
-      malloc(sizeof(cansniffer_elem_t) * CAN_POSSIBLE_IDS);
-  secondary_cansniffer_buffer =
-      malloc(sizeof(cansniffer_elem_t) * CAN_POSSIBLE_IDS);
-  cansniffer_buffer_init();
-#endif
 
   /*Initialize LVGL*/
   lv_init();
@@ -237,13 +229,13 @@ int main(int argc, char **argv) {
 
 #if CANSNIFFER_ENABLED == 1
 void save_cansniffer_data(lv_timer_t *timer) {
-  for (int i = 0; i < CAN_POSSIBLE_IDS; i++) {
+  for (int i = 0; i < primary_MESSAGE_COUNT; i++) {
     if (primary_cansniffer_buffer[i].timestamp != 0) {
       printf("primary_cansniffer_buffer[%d].timestamp = %d\n", i,
              primary_cansniffer_buffer[i].timestamp);
     }
   }
-  for (int i = 0; i < CAN_POSSIBLE_IDS; i++) {
+  for (int i = 0; i < secondary_MESSAGE_COUNT; i++) {
     if (secondary_cansniffer_buffer[i].timestamp != 0) {
       printf("secondary_cansniffer_buffer[%d].timestamp = %d\n", i,
              secondary_cansniffer_buffer[i].timestamp);
@@ -350,12 +342,6 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
     change_errors_view(true);
 #endif
     break;
-  case 'd':
-    // calibration_tool_set_min_max(true);
-    break;
-  case 'f':
-    //    calibration_tool_set_min_max(false);
-    break;
   case 'g': {
     if (engineer_mode) {
 #if CANSNIFFER_ENABLED == 1
@@ -384,7 +370,7 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
   }
   case 'r': {
 #if ENGINEERING_TAB_ENABLED == 1
-    shutdown_circuit_turn_on_off();
+    // shutdown_circuit_turn_on_off();
 #endif
     break;
   }

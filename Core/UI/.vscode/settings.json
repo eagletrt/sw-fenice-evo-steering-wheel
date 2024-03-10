@@ -1,28 +1,3 @@
 {
-    "files.associations": {
-        "lvgl.h": "c",
-        "keyboard.h": "c",
-        "tab_manager.h": "c",
-        "utils.h": "c",
-        "steering.h": "c",
-        "exception": "c",
-        "optional": "c",
-        "functional": "c",
-        "iosfwd": "c",
-        "ranges": "c",
-        "stdexcept": "c",
-        "system_error": "c",
-        "tuple": "c",
-        "tab_racing.h": "c",
-        "sdl.h": "c",
-        "condition_variable": "c",
-        "network.h": "c",
-        "can_data.h": "c",
-        "tab_debug_hvfeedbacks.h": "c",
-        "tab_debug.h": "c",
-        "if.h": "c",
-        "mouse.h": "c",
-        "can_messages.h": "c"
-    },
-    "cmake.sourceDirectory": "/home/tzarjakob/STM32CubeIDE/workspace_1.11.2/fenice-evo-steering-wheel/Core/UI"
+    "cmake.sourceDirectory": "/home/gmazzucchi/ssd/eagle/volante/fenice-evo-steering-wheel/Core/UI"
 }

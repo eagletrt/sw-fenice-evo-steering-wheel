@@ -6,6 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void heap_sort(int array[], int ARRAYSIZE);
+void heap_sort(int array[], int ARRAYSIZE, int cmp(int index));
 
 #endif // MAXHEAP_H

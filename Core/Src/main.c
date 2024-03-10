@@ -54,16 +54,8 @@
 /* USER CODE BEGIN PV */
 
 #if CANSNIFFER_ENABLED == 1
-cansniffer_elem_t init_pbuf[CAN_POSSIBLE_IDS];
-cansniffer_elem_t init_sbuf[CAN_POSSIBLE_IDS];
-/***
- * Cansniffer buffers in the external SDRAM are too slow:
- * they need to be in the internal one.
- */
-cansniffer_elem_t *primary_cansniffer_buffer = (cansniffer_elem_t *)
-    init_pbuf; // (cansniffer_elem_t* ) PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS;
-cansniffer_elem_t *secondary_cansniffer_buffer = (cansniffer_elem_t *)
-    init_sbuf; // (cansniffer_elem_t*) SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS;
+extern cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT];
+extern cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT];
 #endif
 
 extern bool primary_can_fatal_error;
@@ -157,9 +149,6 @@ int main(void) {
   }
 #endif
 
-#if CANSNIFFER_ENABLED == 1
-  cansniffer_buffer_init();
-#endif
   init_graphics_manager();
   init_periodic_can_messages_timers();
 
