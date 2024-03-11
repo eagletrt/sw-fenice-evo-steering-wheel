@@ -12,6 +12,8 @@ uint8_t manettini[MANETTINI_N] = {0};
 uint32_t manettini_last_change;
 bool manettini_initialized[MANETTINI_N] = {false};
 
+int left_manettino_selection = 0;
+
 extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
@@ -219,6 +221,25 @@ void buttons_pressed_actions(uint8_t button) {
       if (current_racing_tab == TAB_HV) {
         send_bal(false);
         display_notification("BAL OFF", 500);
+      }
+
+      if (current_racing_tab == TAB_RACING){
+        switch(left_manettino_selection) {
+          case LEFT_MANETTINO_SLIP_OPTION: {
+            left_manettino_selection = LEFT_MANETTINO_POWER_MAP_OPTION;
+            break;
+          }
+          case LEFT_MANETTINO_POWER_MAP_OPTION: {
+            left_manettino_selection = LEFT_MANETTINO_TORQUE_OPTION;
+            break;
+          }
+          case LEFT_MANETTINO_TORQUE_OPTION: {
+            left_manettino_selection = LEFT_MANETTINO_SLIP_OPTION;
+            break;
+          }
+          default:
+            break;
+        }
       }
     }
     break;
@@ -432,7 +453,22 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
   }
   case MANETTINO_LEFT_INDEX: {
     int dstep = new_manettino_index - manettini[MANETTINO_LEFT_INDEX];
-    manettino_left_actions(delta_step_position(dstep));
+
+    switch (left_manettino_selection) {
+      case LEFT_MANETTINO_SLIP_OPTION:
+        manettino_left_actions(delta_step_position(dstep));
+        break;
+      case LEFT_MANETTINO_TORQUE_OPTION:
+        manettino_right_actions(delta_step_position(dstep));
+        break;
+      case LEFT_MANETTINO_POWER_MAP_OPTION:
+        manettino_center_actions(delta_step_position(dstep));
+        break;
+      default:
+        break;
+
+    }
+
 #if 0
     if (!engineer_mode) {
       manettino_send_slip_control(val_slip_map_index[new_manettino_index]);
