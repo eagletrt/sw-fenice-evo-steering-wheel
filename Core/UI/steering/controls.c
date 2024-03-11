@@ -198,6 +198,7 @@ void manettino_send_power_map(float val) {
   float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
   sprintf(sprintf_buffer_controls, "%.0f", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);
+  // display_notification("")
 }
 
 void manettino_send_set_pumps_speed(float val) {
@@ -206,7 +207,7 @@ void manettino_send_set_pumps_speed(float val) {
   primary_set_pumps_speed_converted_t converted = {0};
   converted.pumps_speed = steering_cooling_settings.pumps_speed;
   STEER_CAN_PACK(primary, PRIMARY, set_pumps_speed, SET_PUMPS_SPEED);
-  can_send(&msg, true);
+  // can_send(&msg, true);
 
   if (val < 0.0f) {
     set_tab_lv_label_text("AUTO", tab_lv_lb_pumps_local);
@@ -223,7 +224,7 @@ void manettino_send_set_radiators(float val) {
   primary_set_radiator_speed_converted_t converted = {0};
   converted.radiators_speed = steering_cooling_settings.radiators_speed;
   STEER_CAN_PACK(primary, PRIMARY, set_radiator_speed, SET_RADIATOR_SPEED);
-  can_send(&msg, true);
+  // can_send(&msg, true);
 
   if (val < 0.0f) {
     set_tab_lv_label_text("AUTO", tab_lv_lb_radiators_local);
