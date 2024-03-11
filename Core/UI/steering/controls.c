@@ -216,17 +216,6 @@ void manettino_send_set_pumps_speed(float val) {
     sprintf(sprintf_buffer_controls, "%u", map_val);
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_local);
   }
-
-#if 0
-  int map_val = (int)(steering_cooling_settings.pumps_speed * 100.0f);
-
-  if (steering_cooling_settings.pumps_speed < 0.0f) {
-    sprintf(sprintf_buffer_controls, "PUMPS SPEED AUTO");
-  } else {
-    sprintf(sprintf_buffer_controls, "PUMPS SPEED %d", map_val);
-  }
-  display_notification(sprintf_buffer_controls, 750);
-#endif
 }
 
 void manettino_send_set_radiators(float val) {
@@ -360,7 +349,6 @@ bool send_set_car_status_directly(void) {
 
 #if CANSNIFFER_ENABLED == 1
 void switch_cansniffer(void) {
-#if ENGINEERING_TAB_ENABLED
   if (!engineer_mode)
     return;
   if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
@@ -368,11 +356,9 @@ void switch_cansniffer(void) {
   } else if (current_engineer_tab == TAB_SECONDARY_CANSNIFFER) {
     switch_secondary_cansniffer();
   }
-#endif // ENGINEERING_TAB_ENABLED
 }
 
 void change_cansniffer_index(bool plus) {
-#if ENGINEERING_TAB_ENABLED == 1
   if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
     if (plus) {
       primary_cansniffer_start_index++;
@@ -393,6 +379,5 @@ void change_cansniffer_index(bool plus) {
       update_secondary_cansniffer_ui(NULL);
     }
   }
-#endif // ENGINEERING_TAB_ENABLED
 }
 #endif // CANSNIFFER_ENABLED

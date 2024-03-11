@@ -16,6 +16,13 @@ uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT]
 uint8_t inverters_messages_last_state[inverters_MESSAGE_COUNT]
                                      [inverters_MAX_STRUCT_SIZE_CONVERSION];
 
+// extern int torque_vectoring_last_state;
+// extern int slip_control_last_state;
+extern int set_pumps_speed_last_state;
+extern int set_radiators_last_state;
+extern int pork_fans_status_last_state;
+// extern int power_map_last_state;
+
 primary_lv_cells_voltage_converted_t lv_voltages_stock_1 = {0};
 primary_lv_cells_voltage_converted_t lv_voltages_stock_2 = {0};
 primary_lv_cells_temp_converted_t lv_temps_stock_1 = {0};
@@ -97,18 +104,28 @@ void lv_pumps_actual_value_update() {}
 void lv_radiators_actual_value_update() {}
 
 void cooling_status_update() {
-#if ENGINEERING_TAB_ENABLED == 1
   GET_LAST_STATE(primary, cooling_status, PRIMARY, COOLING_STATUS);
-  // TODO: only set the last cooling value
-  // set_tab_lv_label_text("");
-  // set_tab
-  // set_pumps_speed_bar(primary_cooling_status_last_state->pumps_speed * 100);
-  // set_pumps_speed_value_label(primary_cooling_status_last_state->pumps_speed);
-  // set_radiators_speed_bar(primary_cooling_status_last_state->radiators_speed
-  // * 100);
-  // set_radiators_speed_value_label(
-  // primary_cooling_status_last_state->radiators_speed);
-#endif
+  float pspeed = primary_cooling_status_last_state->pumps_speed;
+  set_pumps_speed_last_state = (int)(pspeed * 100.0f);
+  if (pspeed < 0.0f) {
+    snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "AUTO");
+    lv_set_pumps_speed_bar(0);
+  } else {
+    snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%0.f", pspeed);
+    lv_set_pumps_speed_bar((int32_t)set_pumps_speed_last_state);
+  }
+  set_tab_lv_label_text(sprintf_buffer, tab_lv_lb_pumps_local);
+
+  float rspeed = primary_cooling_status_last_state->radiators_speed;
+  set_radiators_last_state = (int)(rspeed * 100.0f);
+  if (rspeed < 0.0f) {
+    snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "AUTO");
+    lv_set_radiators_speed_bar(0);
+  } else {
+    lv_set_radiators_speed_bar((int32_t)set_radiators_last_state);
+    snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%0.f", rspeed);
+  }
+  set_tab_lv_label_text(sprintf_buffer, tab_lv_lb_radiators_local);
 }
 
 void tlm_status_update() {
@@ -227,11 +244,10 @@ bool cellboard_bal[N_PORK_CELLBOARD] = {0};
 void set_bal_status_label_text(char *text);
 
 void hv_cell_balancing_status_update() {
-#if ENGINEERING_TAB_ENABLED == 1
-  GET_LAST_STATE(primary, hv_cell_balancing_status, PRIMARY, HV_CELL_BALANCING_STATUS);
-
-  uint8_t cellboard_id = (uint8_t)primary_hv_cell_balancing_status_last_state->cellboard_id;
-
+  GET_LAST_STATE(primary, hv_cell_balancing_status, PRIMARY,
+                 HV_CELL_BALANCING_STATUS);
+  uint8_t cellboard_id =
+      (uint8_t)primary_hv_cell_balancing_status_last_state->cellboard_id;
   if (cellboard_id < 0 || cellboard_id >= N_PORK_CELLBOARD) {
     return;
   }
@@ -250,7 +266,6 @@ void hv_cell_balancing_status_update() {
 
   set_balancing_column(cellboard_bal[cellboard_id], cellboard_id);
   // TODO: if bal is off, write bal off on the screen
-#endif
 }
 
 void hv_feedbacks_status_update() {
@@ -326,24 +341,17 @@ extern int pork_fans_status_last_state;
 void hv_fans_override_status_update() {
   GET_LAST_STATE(primary, hv_fans_override_status, PRIMARY,
                  HV_FANS_OVERRIDE_STATUS);
-#if ENGINEERING_TAB_ENABLED == 1
-  // set_pork_speed_bar(primary_hv_fans_override_status_last_state->fans_speed *
-  //  100);
-  // set_pork_speed_value_label(
-  // primary_hv_fans_override_status_last_state->fans_speed);
-#endif
   float cval = primary_hv_fans_override_status_last_state->fans_speed;
-  // pork_fans_status_last_state = cval * 100;
-  // tab_hv_set_pork_speed_bar((int32_t)(cval * 100));
-
+  pork_fans_status_last_state = (int)(cval * 100.0f);
   if (cval < 0) {
     snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "AUTO");
-    set_tab_hv_label_text(sprintf_buffer, tab_hv_pork_speed_value);
+    tab_hv_set_pork_speed_bar(0);
   } else {
     snprintf(sprintf_buffer, SPRINTF_BUFFER_SIZE, "%0.1f",
              primary_hv_fans_override_status_last_state->fans_speed);
-    set_tab_hv_label_text(sprintf_buffer, tab_hv_pork_speed_value);
+    tab_hv_set_pork_speed_bar((int32_t)(cval * 100));
   }
+  set_tab_hv_label_text(sprintf_buffer, tab_hv_pork_speed_value);
 }
 
 void lv_currents_update() {

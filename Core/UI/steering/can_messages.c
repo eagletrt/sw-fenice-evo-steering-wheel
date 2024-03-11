@@ -52,11 +52,9 @@ void send_bal(bool on) {
 void handle_primary(can_message_t *msg) {
   if (!steering_initialized)
     return;
-#if ENGINEERING_TAB_ENABLED == 1
 #if CANSNIFFER_ENABLED == 1
   cansniffer_primary_new_message(msg);
 #endif // CANSNIFFER_ENABLED
-#endif // ENGINEERING_TAB_ENABLED
 #if CAN_LOG_ENABLED
   primary_message_name_from_id(msg->id, name_buffer);
   print("Primary network - message id %s\n", name_buffer);
@@ -221,9 +219,9 @@ void handle_primary(can_message_t *msg) {
 void handle_secondary(can_message_t *msg) {
   if (!steering_initialized)
     return;
-#if ENGINEERING_TAB_ENABLED == 1
+#if CANSNIFFER_ENABLED == 1
   cansniffer_secondary_new_message(msg);
-#endif // ENGINEERING_TAB_ENABLED
+#endif // CANSNIFFER_ENABLED
 #if CAN_LOG_ENABLED
   secondary_message_name_from_id(msg->id, name_buffer);
   print("Secondary network - message id %s\n", name_buffer);

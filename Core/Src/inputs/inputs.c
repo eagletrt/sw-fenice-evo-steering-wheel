@@ -21,10 +21,6 @@ int hv_fans_override_last_state = 0;
 uint32_t inputs_error_counter = 0;
 bool inputs_fatal_error = false;
 
-#if ENGINEERING_TAB_ENABLED == 1
-void shutdown_circuit_turn_on_off(void);
-#endif
-
 int imin(int x, int y) { return x > y ? y : x; }
 int imax(int x, int y) { return x > y ? x : y; }
 
@@ -199,9 +195,6 @@ void buttons_pressed_actions(uint8_t button) {
     break;
   case BUTTON_TOP_LEFT:
     if (engineer_mode) {
-#if ENGINEERING_TAB_ENABLED == 1
-      // shutdown_circuit_turn_on_off();
-#endif
     } else {
       set_ptt_button_pressed(true);
     }
