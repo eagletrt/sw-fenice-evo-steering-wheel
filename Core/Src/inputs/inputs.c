@@ -202,22 +202,24 @@ void buttons_pressed_actions(uint8_t button) {
   case BUTTON_BOTTOM_RIGHT: {
     if (engineer_mode) {
       send_bal(true);
-      display_notification("BAL ON", 3000);
+      display_notification("BAL ON", 500);
     } else {
-      //      ++power_map_last_state;
-      //      power_map_last_state = imin(power_map_last_state, POWER_MAP_MAX);
-      //      manettino_send_power_map((float)power_map_last_state / 100.0f);
+      if (current_racing_tab == TAB_HV) {
+        send_bal(true);
+        display_notification("BAL ON", 500);
+      }
     }
     break;
   }
   case BUTTON_BOTTOM_LEFT: {
     if (engineer_mode) {
       send_bal(false);
-      display_notification("BAL OFF", 3000);
+      display_notification("BAL OFF", 500);
     } else {
-      //      --power_map_last_state;
-      //      power_map_last_state = imax(power_map_last_state, POWER_MAP_MIN);
-      //      manettino_send_power_map((float)power_map_last_state / 100.0f);
+      if (current_racing_tab == TAB_HV) {
+        send_bal(false);
+        display_notification("BAL OFF", 500);
+      }
     }
     break;
   }
