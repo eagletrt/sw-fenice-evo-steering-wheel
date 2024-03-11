@@ -1,7 +1,5 @@
 #include "steering_config.h"
 
-#if ENGINEERING_TAB_ENABLED == 1
-
 #if CANSNIFFER_ENABLED == 1
 
 #include "tab_primary_cansniffer.h"
@@ -142,8 +140,8 @@ void cansniffer_primary_new_message(can_message_t *msg) {
   memcpy(primary_cansniffer_buffer[index].data, msg->data, msg->size);
   // TODO: fix sorting by id
   // if (old != primary_cansniffer_ids_size)
-    // heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size,
-              // primary_id_from_index);
+  // heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size,
+  // primary_id_from_index);
 }
 
 void primary_tab_cansniffer_create(lv_obj_t *parent) {
@@ -254,5 +252,3 @@ void primary_tab_cansniffer_create(lv_obj_t *parent) {
 }
 
 #endif // CANSNIFFER_ENABLED == 1
-
-#endif // ENGINEERING_TAB_ENABLED == 1

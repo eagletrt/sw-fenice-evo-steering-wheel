@@ -362,7 +362,7 @@ void tab_hv_create(lv_obj_t *parent) {
                    LV_PART_MAIN);
   lv_obj_set_style_text_font(tab_hv_labels[shutdown_status],
                              &lv_font_inter_bold_30, LV_STATE_DEFAULT);
-  lv_label_set_text(tab_hv_labels[shutdown_status], "SHOTDOWN X");
+  lv_label_set_text(tab_hv_labels[shutdown_status], "SHUTDOWN X");
   lv_obj_set_grid_cell(tab_hv_labels[shutdown_status], LV_GRID_ALIGN_CENTER, 0,
                        1, LV_GRID_ALIGN_START, 0, 1);
 

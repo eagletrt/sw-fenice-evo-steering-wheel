@@ -26,7 +26,6 @@
 #define CANSNIFFER_ENABLED 1
 #define CAN_LOG_ENABLED 0
 #define WATCHDOG_ENABLED 0
-#define ENGINEERING_TAB_ENABLED 1
 #define CAN_OVER_SERIAL_ENABLED 0
 #define MCP23017_IT_ENABLED 0
 
@@ -92,9 +91,7 @@ typedef enum {
 } engineer_tab_t;
 
 extern racing_tab_t current_racing_tab;
-#if ENGINEERING_TAB_ENABLED == 1
 extern engineer_tab_t current_engineer_tab;
-#endif
 extern bool engineer_mode;
 
 typedef enum {

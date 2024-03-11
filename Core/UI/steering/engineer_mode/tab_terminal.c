@@ -1,7 +1,5 @@
 #include "tab_terminal.h"
 
-#if ENGINEERING_TAB_ENABLED == 1
-
 lv_style_t tab_terminal_style;
 uint32_t tab_terminal_message_index = 0;
 
@@ -80,5 +78,3 @@ void tab_terminal_clear() {
     lv_label_set_text_fmt(tab_terminal_labels[i], "-----");
   }
 }
-
-#endif

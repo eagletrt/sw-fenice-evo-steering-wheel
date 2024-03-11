@@ -1,7 +1,5 @@
 #include "tab_balancing_status.h"
 
-#if ENGINEERING_TAB_ENABLED == 1
-
 lv_style_t bal_status_style;
 
 lv_obj_t *bal_status_label;
@@ -35,4 +33,3 @@ void tab_balancing_status_screen_create(lv_obj_t *parent) {
   lv_label_set_text(bal_status_label, "BAL STATUS: UNKNOWN");
   lv_obj_align(bal_status_label, LV_ALIGN_CENTER, 0, 0);
 }
-#endif
