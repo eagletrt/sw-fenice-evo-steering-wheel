@@ -158,6 +158,7 @@ void switch_mode(void) {
 void load_current_racing_tab() {
   switch (current_racing_tab) {
   case TAB_RACING:
+    tab_racing_refresh_values();
     lv_scr_load(tab_racing_ptr);
     break;
 #if STEER_TAB_CALIBRATION_ENABLED == 1

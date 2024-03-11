@@ -134,6 +134,7 @@ void tab_calibration_lb_steering_angle_invalidate();
 /***
  * Tab racing
  */
+void tab_racing_refresh_values(void);
 void set_tab_racing_hv_current_bar(float v);
 void set_tab_racing_hv_pack_voltage_bar(float v);
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx);
