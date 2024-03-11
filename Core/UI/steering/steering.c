@@ -99,6 +99,16 @@ void car_status_update() {
   }
 }
 
+extern primary_steer_status_converted_t steer_status_last_state;
+char refresh_values_buf[124];
+
+void tab_racing_refresh_values(void) {
+  CHECK_CURRENT_TAB(engineer, TAB_RACING);
+  float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
+  snprintf(refresh_values_buf, 124, "%.0f", map_val);
+  set_tab_racing_label_text(refresh_values_buf, tab_rac_pow_idx);  
+}
+
 void lv_pumps_actual_value_update() {}
 
 void lv_radiators_actual_value_update() {}
