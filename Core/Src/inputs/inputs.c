@@ -20,6 +20,7 @@ lv_timer_t *send_set_car_status_long_press_delay = NULL;
 int hv_fans_override_last_state = 0;
 
 #define ERROR_THRESHOLD 100
+#define BUFFER_SIZE_PRINT_BUTTONS (100u)
 uint32_t inputs_error_counter = 0;
 bool inputs_fatal_error = false;
 
@@ -137,11 +138,11 @@ void print_buttons(void) {
 #ifdef STEERING_LOG_ENABLED
   char buffer[100];
   uint32_t len = 0;
-  len += snprintf(buffer + len, sizeof(buffer)*100, "Buttons: ");
+  len += snprintf(buffer + len, BUFFER_SIZE_PRINT_BUTTONS, "Buttons: ");
   for (int i = 0; i < BUTTONS_N; i++) {
-    len += snprintf(buffer + len, sizeof(buffer)*100, "%d ", buttons[i]);
+    len += snprintf(buffer + len, BUFFER_SIZE_PRINT_BUTTONS, "%d ", buttons[i]);
   }
-  len += snprintf(buffer + len, sizeof(buffer)*100, "\n");
+  len += snprintf(buffer + len, BUFFER_SIZE_PRINT_BUTTONS, "\n");
   print("%s", buffer);
 #endif
 }
