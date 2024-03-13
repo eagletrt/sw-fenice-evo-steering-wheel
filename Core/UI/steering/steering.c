@@ -142,10 +142,10 @@ void tlm_status_update() {
   GET_LAST_STATE(primary, tlm_status, PRIMARY, TLM_STATUS);
   if (primary_tlm_status_last_state->tlm_status ==
       primary_tlm_status_tlm_status_ON) {
-    snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "ON");
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "ON");
     all_leds_green();
   } else {
-    snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "OFF");
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "OFF");
     all_leds_red();
   }
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_tlm_status);
@@ -193,19 +193,19 @@ void hv_debug_signals_update(void) {
 
 void hv_cell_voltage_update(void) {
   GET_LAST_STATE(primary, hv_cell_voltage, PRIMARY, HV_CELL_VOLTAGE);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.1f",
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
           primary_hv_cell_voltage_last_state->min_cell_voltage);
 
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_min_cell_voltage);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_voltage_min);
 
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.1f",
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
           primary_hv_cell_voltage_last_state->max_cell_voltage);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_voltage_max);
 
   float delta = primary_hv_cell_voltage_last_state->max_cell_voltage -
                 primary_hv_cell_voltage_last_state->min_cell_voltage;
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%d", (int)(delta * 1000.0f));
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)(delta * 1000.0f));
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_hv_delta);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_voltage_delta);
 
@@ -216,7 +216,7 @@ void hv_cell_voltage_update(void) {
 
 void hv_voltage_update(void) {
   GET_LAST_STATE(primary, hv_voltage, PRIMARY, HV_VOLTAGE);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", primary_hv_voltage_last_state->pack_voltage);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_hv_voltage_last_state->pack_voltage);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_pack_voltage_idx);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_pack_voltage);
   set_tab_racing_hv_pack_voltage_bar(
@@ -227,7 +227,7 @@ void hv_voltage_update(void) {
 
 void hv_current_update() {
   GET_LAST_STATE(primary, hv_current, PRIMARY, HV_CURRENT);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.1f", primary_hv_current_last_state->current);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_hv_current_last_state->current);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_hv_current);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_curr_idx);
   set_tab_racing_hv_current_bar(primary_hv_current_last_state->current);
@@ -236,16 +236,16 @@ void hv_current_update() {
 void hv_temp_update() {
   GET_LAST_STATE(primary, hv_temp, PRIMARY, HV_TEMP);
 
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->average_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->average_temp);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_avg_temp_idx);
   set_tab_sensors_label_text(snprintf_buffer,
                              tab_sensors_lb_average_temperature);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_avg);
 
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->max_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->max_temp);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_max);
 
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->min_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->min_temp);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_min);
 }
 
@@ -271,7 +271,7 @@ void hv_cell_balancing_status_update() {
     }
   }
   char buf[BUFSIZ] = {0};
-  snprintf(buf, sizeof(char)*BUFSIZ, "BAL STATUS: %s", is_bal ? "ON" : "OFF");
+  snprintf(buf, BUFSIZ, "BAL STATUS: %s", is_bal ? "ON" : "OFF");
   set_bal_status_label_text(buf);
 
   set_balancing_column(cellboard_bal[cellboard_id], cellboard_id);
@@ -366,7 +366,7 @@ void hv_fans_override_status_update() {
 
 void lv_currents_update() {
   GET_LAST_STATE(primary, lv_currents, PRIMARY, LV_CURRENTS);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.1f",
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
           primary_lv_currents_last_state->current_lv_battery);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_lv_current);
   set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pack_voltage_2);
@@ -390,7 +390,7 @@ void lv_cells_voltage_update(void) {
   set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pack_voltage);
 
   float mean_voltage = (float)(sum / N_LV_CELLS);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", mean_voltage);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", mean_voltage);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_temp_idx);
   set_tab_sensors_label_text(snprintf_buffer,
                              tab_sensors_lb_battery_temperature);
@@ -415,7 +415,7 @@ void lv_cells_temp_update() {
   }
 
   float mean_temp = (float)(sum / N_LV_CELLS);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", mean_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", mean_temp);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_temp_idx);
   set_tab_sensors_label_text(snprintf_buffer,
                              tab_sensors_lb_battery_temperature);
@@ -424,14 +424,14 @@ void lv_cells_temp_update() {
 
 void lv_total_voltage_update() {
   GET_LAST_STATE(primary, lv_total_voltage, PRIMARY, LV_TOTAL_VOLTAGE);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.1f",
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
           primary_lv_total_voltage_last_state->total_voltage);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_voltage);
 }
 
 void steering_angle_update() {
   GET_LAST_STATE(secondary, steering_angle, SECONDARY, STEERING_ANGLE);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.1f", secondary_steering_angle_last_state->angle);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", secondary_steering_angle_last_state->angle);
   set_tab_track_test_steering_angle_bar(
       secondary_steering_angle_last_state->angle);
 #if STEER_TAB_CALIBRATION_ENABLED == 1
@@ -452,7 +452,7 @@ void steering_angle_update() {
 void pedals_output_update() {
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   GET_LAST_STATE(secondary, pedals_output, SECONDARY, PEDALS_OUTPUT);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%d", (int)secondary_pedals_output_last_state->apps);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)secondary_pedals_output_last_state->apps);
   calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
 
   if (*curr_focus == APPS) {
@@ -462,7 +462,7 @@ void pedals_output_update() {
     lv_slider_set_value(get_tab_calibration_slider(),
                         secondary_pedals_output_last_state->apps, LV_ANIM_OFF);
   }
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.1f",
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
           secondary_pedals_output_last_state->bse_front);
   if (*curr_focus == BSE) {
     lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
@@ -485,12 +485,12 @@ void lap_count_update() {
   float last_time_seconds = secondary_lap_count_last_state->lap_time;
   int minutes = (int)(last_time_seconds / 60.0f);
   int seconds = (int)(last_time_seconds - minutes * 60.0f);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
 
   set_tab_racing_label_text(snprintf_buffer, tab_rac_last_time_idx);
 
   float delta = last_time_seconds - secondary_lc_status_last_state->best_time;
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%+.2f", delta);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%+.2f", delta);
 
   set_tab_racing_label_text(snprintf_buffer, tab_rac_dtime_idx);
 }
@@ -502,13 +502,13 @@ void lc_status_update(secondary_lc_status_converted_t *data) {
   int minutes = (int)(secondary_lc_status_last_state->best_time / 60.0f);
   int seconds =
       (int)(secondary_lc_status_last_state->best_time - minutes * 60.0f);
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
 
   set_tab_racing_label_text(snprintf_buffer, tab_rac_best_time_idx);
 
   float delta = secondary_lc_status_last_state->last_time -
                 secondary_lc_status_last_state->best_time;
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%+.2f", delta);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%+.2f", delta);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_dtime_idx);
 
   if (secondary_lc_status_last_state->last_time !=
@@ -518,11 +518,11 @@ void lc_status_update(secondary_lc_status_converted_t *data) {
     secondary_lc_status_last_state->last_time = last_time_seconds;
     int minutes = (int)(last_time_seconds / 60);
     int seconds = (int)(last_time_seconds - minutes * 60);
-    snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
 
     set_tab_racing_label_text(snprintf_buffer, tab_rac_last_time_idx);
   }
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%d",
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d",
           (int)secondary_lc_status_last_state->lap_number);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_lap_count_idx);
 }
@@ -541,11 +541,11 @@ void inv_l_rcv_update(void) {
   if (inverters_inv_l_rcv_last_state->rcv_mux ==
       INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
     l_motor_temp = (inverters_inv_l_rcv_last_state->t_motor - 9393.9f) / 55.1f;
-    snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", l_motor_temp);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", l_motor_temp);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_mot_idx);
 
     if (r_motor_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-      snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", (l_motor_temp + r_motor_temp) / 2.0f);
+      snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", (l_motor_temp + r_motor_temp) / 2.0f);
       set_tab_sensors_label_text(snprintf_buffer,
                                  tab_sensors_lb_left_motor_temp);
     }
@@ -555,12 +555,12 @@ void inv_l_rcv_update(void) {
       INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
     l_igbt_temp =
         INVERTER_TEMP_CONVERSION(inverters_inv_l_rcv_last_state->t_igbt);
-    snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", l_igbt_temp);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", l_igbt_temp);
     set_tab_sensors_label_text(snprintf_buffer,
                                tab_sensors_lb_left_inverter_temp);
 
     if (r_igbt_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-      snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", (l_igbt_temp + r_igbt_temp) / 2.0f);
+      snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", (l_igbt_temp + r_igbt_temp) / 2.0f);
       set_tab_racing_label_text(snprintf_buffer, tab_rac_inv_idx);
     }
   }
@@ -571,7 +571,7 @@ void inv_r_rcv_update() {
   if (inverters_inv_r_rcv_last_state->rcv_mux ==
       INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
     r_motor_temp = (inverters_inv_r_rcv_last_state->t_motor - 9393.9f) / 55.1f;
-    snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", r_motor_temp);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", r_motor_temp);
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_right_motor_temp);
   }
 
@@ -579,7 +579,7 @@ void inv_r_rcv_update() {
       INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
     r_igbt_temp =
         INVERTER_TEMP_CONVERSION(inverters_inv_r_rcv_last_state->t_igbt);
-    snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", r_igbt_temp);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", r_igbt_temp);
     set_tab_sensors_label_text(snprintf_buffer,
                                tab_sensors_lb_right_inverter_temp);
   }
@@ -605,7 +605,7 @@ void irts_fl_update() {
                     secondary_irts_fl_3_last_state->channel14 +
                     secondary_irts_fl_3_last_state->channel15) /
                    14.0f;
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_fl_temp);
 }
 
@@ -629,7 +629,7 @@ void irts_fr_update() {
                     secondary_irts_fr_3_last_state->channel14 +
                     secondary_irts_fr_3_last_state->channel15) /
                    14.0f;
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_fr_temp);
 }
 
@@ -654,7 +654,7 @@ void irts_rl_update() {
                     secondary_irts_rl_3_last_state->channel15) /
                    14.0f;
 
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_rl_temp);
 }
 
@@ -678,7 +678,7 @@ void irts_rr_update() {
                     secondary_irts_rr_3_last_state->channel14 +
                     secondary_irts_rr_3_last_state->channel15) /
                    14.0f;
-  snprintf(snprintf_buffer, sizeof(char)*SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_rr_temp);
 }
 

@@ -3,6 +3,9 @@
 #if CANSNIFFER_ENABLED == 1
 
 #include "tab_primary_cansniffer.h"
+#define PRIMARY_CANSNIFFER_ID_NAME_SIZE 128
+#define PRIMARY_CANSNIFFER_DATA_STRING_SIZE 128
+
 
 lv_style_t primary_cansniffer_label_style;
 lv_timer_t *primary_cansniffer_update_task;
@@ -35,8 +38,8 @@ lv_obj_t
 lv_obj_t *primary_cansniffer_len_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 lv_obj_t *primary_cansniffer_data_labels[TAB_CANSNIFFER_N_MESSAGES_SHOWN];
 
-char primary_cansniffer_id_name[128] = {0};
-char primary_cansniffer_data_string[128] = {0};
+char primary_cansniffer_id_name[PRIMARY_CANSNIFFER_ID_NAME_SIZE] = {0};
+char primary_cansniffer_data_string[PRIMARY_CANSNIFFER_DATA_STRING_SIZE] = {0};
 
 void clear_primary_cansniffer_ui_item(size_t i) {
   lv_label_set_text_fmt(primary_cansniffer_timestamp_labels[i], "-");
@@ -96,14 +99,14 @@ void update_primary_cansniffer_ui(lv_timer_t *unused_tim) {
                                    primary_cansniffer_id_name);
       for (size_t jindex = 0; jindex < primary_cansniffer_buffer[index].len;
            ++jindex) {
-        sprintf(primary_cansniffer_data_string + jindex * 3, "%02X ",
+        snprintf(primary_cansniffer_data_string + jindex * 3, PRIMARY_CANSNIFFER_DATA_STRING_SIZE, "%02X ",
                 primary_cansniffer_buffer[index].data[jindex]);
       }
       update_primary_cansniffer_value(iindex -
                                           (TAB_CANSNIFFER_N_MESSAGES_SHOWN *
                                            primary_cansniffer_start_index),
                                       index);
-      sprintf(primary_cansniffer_id_name, "unknown");
+      snprintf(primary_cansniffer_id_name, PRIMARY_CANSNIFFER_ID_NAME_SIZE, "unknown");
     }
   }
 }
