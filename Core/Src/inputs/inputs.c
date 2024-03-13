@@ -137,11 +137,11 @@ void print_buttons(void) {
 #ifdef STEERING_LOG_ENABLED
   char buffer[100];
   uint32_t len = 0;
-  len += sprintf(buffer + len, "Buttons: ");
+  len += snprintf(buffer + len, sizeof(buffer)*100, "Buttons: ");
   for (int i = 0; i < BUTTONS_N; i++) {
-    len += sprintf(buffer + len, "%d ", buttons[i]);
+    len += snprintf(buffer + len, sizeof(buffer)*100, "%d ", buttons[i]);
   }
-  len += sprintf(buffer + len, "\n");
+  len += snprintf(buffer + len, sizeof(buffer)*100, "\n");
   print("%s", buffer);
 #endif
 }

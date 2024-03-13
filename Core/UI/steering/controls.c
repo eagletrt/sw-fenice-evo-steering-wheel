@@ -182,21 +182,21 @@ void manettino_left_actions(int dsteps) {
 void manettino_send_slip_control(float val) {
   steer_status_last_state.map_sc = val;
   int map_val = (int)(steer_status_last_state.map_sc * 100.0f);
-  sprintf(sprintf_buffer_controls, "%u", map_val);
+  snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "%u", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_slip_idx);
 }
 
 void manettino_send_torque_vectoring(float val) {
   steer_status_last_state.map_tv = val;
   int map_val = (int)(steer_status_last_state.map_tv * 100.0f);
-  sprintf(sprintf_buffer_controls, "%u", map_val);
+  snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "%u", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_torque_idx);
 }
 
 void manettino_send_power_map(float val) {
   steer_status_last_state.map_pw = val;
   float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
-  sprintf(sprintf_buffer_controls, "%.0f", map_val);
+  snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "%.0f", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);
   // display_notification("")
 }
@@ -214,7 +214,7 @@ void manettino_send_set_pumps_speed(float val) {
   } else {
     lv_set_pumps_speed_bar((int32_t)(val * 100.0f));
     int map_val = (int)(steering_cooling_settings.pumps_speed * 100);
-    sprintf(sprintf_buffer_controls, "%u", map_val);
+    snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "%u", map_val);
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_local);
   }
 }
@@ -232,7 +232,7 @@ void manettino_send_set_radiators(float val) {
     lv_set_radiators_speed_bar(
         (int32_t)(steering_cooling_settings.radiators_speed * 100));
     int map_val = (int)(steering_cooling_settings.radiators_speed * 100);
-    sprintf(sprintf_buffer_controls, "%u", map_val);
+    snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "%u", map_val);
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_local);
   }
 
@@ -240,9 +240,9 @@ void manettino_send_set_radiators(float val) {
   int map_val = (int)(steering_cooling_settings.radiators_speed * 100.0f);
 
   if (steering_cooling_settings.radiators_speed < 0.0f) {
-    sprintf(sprintf_buffer_controls, "RADIATOR SPEED AUTO");
+    snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "RADIATOR SPEED AUTO");
   } else {
-    sprintf(sprintf_buffer_controls, "RADIATORS SPEED %d", map_val);
+    snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "RADIATORS SPEED %d", map_val);
   }
   // display_notification(sprintf_buffer_controls, 750);
 #endif
@@ -275,9 +275,9 @@ void send_pork_fans_status(float val) {
   int map_val = (int)(hv_fans_override_settings.fans_speed * 100.0f);
   if (hv_fans_override_settings.fans_override ==
       primary_hv_fans_override_fans_override_OFF) {
-    sprintf(sprintf_buffer_controls, "FANS AUTO");
+    snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "FANS AUTO");
   } else {
-    sprintf(sprintf_buffer_controls, "FANS %d", map_val);
+    snprintf(sprintf_buffer_controls, sizeof(char)*BUFSIZ, "FANS %d", map_val);
   }
   display_notification(sprintf_buffer_controls, 750);
 #endif
