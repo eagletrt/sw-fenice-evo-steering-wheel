@@ -18,8 +18,11 @@
   ntw##_##msg_name##_converted_t *last_state =                                 \
       (ntw##_##msg_name##_converted_t                                          \
            *)&ntw##_messages_last_state[ntw##_index_from_id(msg->id)][0];      \
+  if (! (memcmp(last_state, &converted, sizeof(ntw##_##msg_name##_converted_t)) == \
+      0)) {                                                                    \
   memcpy(last_state, &converted, sizeof(ntw##_##msg_name##_converted_t));      \
-  arr[ntw##_index_from_id(NTW##_##MSG_NAME##_FRAME_ID)] = true;
+  arr[ntw##_index_from_id(NTW##_##MSG_NAME##_FRAME_ID)] = true;                \
+  }         
 
 #define STEER_CAN_PACK(ntw, NTW, msg_name, MSG_NAME)                           \
   can_message_t msg = {0};                                                     \
