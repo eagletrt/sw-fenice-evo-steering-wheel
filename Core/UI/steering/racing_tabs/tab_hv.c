@@ -38,7 +38,28 @@ lv_obj_t *balancing_columns[N_PORK_CELLBOARD] = {
     [0] = NULL, [1] = NULL, [2] = NULL, [3] = NULL, [4] = NULL, [5] = NULL,
 };
 
+const char* debug_signal_error_labels[] = {
+  "cell low voltage",
+  "cell under voltage",
+  "cell over voltage",
+  "cell high temperature",
+  "cell over temperature",
+  "over current",
+  "can error",
+  "internal voltage mismatch",
+  "cellboard communication",
+  "cellboard internal",
+  "connector disconnected",
+  "fans disconnected",
+  "feedback error",
+  "feedback circuitry error",
+  "eeprom communication error",
+  "eeprom write error"
+};
+
 bool balancing_status[N_PORK_CELLBOARD] = {0};
+
+bool debug_signal_error_status[DEBUG_SIGNAL_ERROR_SIZE] = {false};
 
 void custom_balancing_column(lv_obj_t *bar, bool balancing);
 
@@ -72,6 +93,34 @@ void tab_hv_pork_speed_bar_invalidate() {
   lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_RED));
   lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_indic,
                    LV_PART_INDICATOR);
+}
+
+void tab_hv_set_error_status(debug_signal_error_t error, bool status) {
+  debug_signal_error_status[error] = status;
+}
+
+void tab_hv_update_error_label(){
+  CHECK_CURRENT_TAB(engineer, TAB_HV);
+  u_int8_t last_error_index = -1;
+  u_int8_t error_count = 0;
+  for (uint8_t i = 0; i < DEBUG_SIGNAL_ERROR_SIZE; i++) {
+    if (debug_signal_error_status[i]) {
+      last_error_index = i;
+      error_count++;
+      return;
+    }
+  }
+  if(error_count == 0){
+    lv_label_set_text(tab_hv_labels[tab_hv_lb_last_error], "NO");
+    return;
+  } else if(error_count == 1) {
+    lv_label_set_text(tab_hv_labels[tab_hv_lb_last_error], debug_signal_error_labels[last_error_index]);
+    return;
+  } else {
+    lv_label_set_text(tab_hv_labels[tab_hv_lb_last_error], "MULTIPLE ERRORS");
+    return;
+  }
+  return;
 }
 
 void init_hv_styles(void) {
@@ -290,7 +339,7 @@ void tab_hv_create(lv_obj_t *parent) {
   lv_obj_t *error_lb =
       lv_triple_label(center_data_panel, &tab_hv_labels[tab_hv_lb_last_error],
                       "X", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22,
-                      "ERROR", &lv_font_inter_bold_20);
+                      "ERRORS", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(error_lb, LV_GRID_ALIGN_CENTER, 1, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 

@@ -141,6 +141,29 @@ void speed_update(void) {
   set_tab_track_test_lb_speed(sprintf_buffer);
 }
 
+void hv_debug_signals_update(void) {
+  GET_LAST_STATE(primary, hv_debug_signals, PRIMARY, HV_DEBUG_SIGNALS);
+  // primary_hv_debug_signals_last_state
+  tab_hv_set_error_status(debug_signal_error_cell_low_voltage, primary_hv_debug_signals_last_state->debug_signals_error_cell_low_voltage);
+  tab_hv_set_error_status(debug_signal_error_cell_under_voltage, primary_hv_debug_signals_last_state->debug_signals_error_cell_under_voltage);
+  tab_hv_set_error_status(debug_signal_error_cell_over_voltage, primary_hv_debug_signals_last_state->debug_signals_error_cell_over_voltage);
+  tab_hv_set_error_status(debug_signal_error_cell_high_temperature, primary_hv_debug_signals_last_state->debug_signals_error_cell_high_temperature);
+  tab_hv_set_error_status(debug_signal_error_cell_over_temperature, primary_hv_debug_signals_last_state->debug_signals_error_cell_over_temperature);
+  tab_hv_set_error_status(debug_signal_error_over_current, primary_hv_debug_signals_last_state->debug_signals_error_over_current);
+  tab_hv_set_error_status(debug_signal_error_can, primary_hv_debug_signals_last_state->debug_signals_error_can);
+  tab_hv_set_error_status(debug_signal_error_int_voltage_mismatch, primary_hv_debug_signals_last_state->debug_signals_error_int_voltage_mismatch);
+  tab_hv_set_error_status(debug_signal_error_cellboard_comm, primary_hv_debug_signals_last_state->debug_signals_error_cellboard_comm);
+  tab_hv_set_error_status(debug_signal_error_cellboard_internal, primary_hv_debug_signals_last_state->debug_signals_error_cellboard_internal);
+  tab_hv_set_error_status(debug_signal_error_connector_disconnected, primary_hv_debug_signals_last_state->debug_signals_error_connector_disconnected);
+  tab_hv_set_error_status(debug_signal_error_fans_disconnected, primary_hv_debug_signals_last_state->debug_signals_error_fans_disconnected);
+  tab_hv_set_error_status(debug_signal_error_feedback, primary_hv_debug_signals_last_state->debug_signals_error_feedback);
+  tab_hv_set_error_status(debug_signal_error_feedback_circuitry, primary_hv_debug_signals_last_state->debug_signals_error_feedback_circuitry);
+  tab_hv_set_error_status(debug_signal_error_eeprom_comm, primary_hv_debug_signals_last_state->debug_signals_error_eeprom_comm);
+  tab_hv_set_error_status(debug_signal_error_eeprom_write, primary_hv_debug_signals_last_state->debug_signals_error_eeprom_write);
+
+  tab_hv_update_error_label();
+}
+
 void hv_cell_voltage_update(void) {
   GET_LAST_STATE(primary, hv_cell_voltage, PRIMARY, HV_CELL_VOLTAGE);
   sprintf(sprintf_buffer, "%.1f",

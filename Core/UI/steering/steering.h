@@ -75,6 +75,7 @@ void tlm_status_update();
 void speed_update();
 void ecu_feedbacks_update();
 
+void hv_debug_signals_update();
 void hv_cell_voltage_update();
 void hv_voltage_update();
 void hv_current_update();
@@ -173,6 +174,8 @@ void set_label_color_hv_feedbacks(int label, int i);
 /***
  * Tab hv
  */
+void tab_hv_set_error_status(debug_signal_error_t error, bool status);
+void tab_hv_update_error_label();
 void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
 void set_balancing_column(bool balancing, uint8_t idx);
 void tab_hv_set_pork_speed_bar(int32_t, bool);

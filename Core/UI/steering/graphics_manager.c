@@ -53,6 +53,10 @@ void update_graphics(lv_timer_t *t) {
         ts_status_update();
         break;
       }
+      case PRIMARY_HV_DEBUG_SIGNALS_FRAME_ID: {
+        hv_debug_signals_update();
+        break;
+      }
       case PRIMARY_HV_VOLTAGE_FRAME_ID: {
         hv_voltage_update();
         break;

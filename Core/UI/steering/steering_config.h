@@ -162,6 +162,26 @@ typedef enum {
 } tab_hv_labels_enum;
 
 typedef enum {
+  debug_signal_error_cell_low_voltage,
+  debug_signal_error_cell_under_voltage,
+  debug_signal_error_cell_over_voltage,
+  debug_signal_error_cell_high_temperature,
+  debug_signal_error_cell_over_temperature,
+  debug_signal_error_over_current,
+  debug_signal_error_can,
+  debug_signal_error_int_voltage_mismatch,
+  debug_signal_error_cellboard_comm,
+  debug_signal_error_cellboard_internal,
+  debug_signal_error_connector_disconnected,
+  debug_signal_error_fans_disconnected,
+  debug_signal_error_feedback,
+  debug_signal_error_feedback_circuitry,
+  debug_signal_error_eeprom_comm,
+  debug_signal_error_eeprom_write,
+  DEBUG_SIGNAL_ERROR_SIZE
+} debug_signal_error_t;
+
+typedef enum {
   tab_lv_lb_temp_max,
   tab_lv_lb_temp_min,
   tab_lv_lb_temp_avg,
