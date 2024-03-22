@@ -138,7 +138,7 @@ void update_shutdown_circuit_ui(lv_timer_t *tim) {
   }
 }
 
-void update_shutdown_circuit(shutdown_component_state_t *comps) {
+void tab_shutdown_update_shutdown_circuit(shutdown_component_state_t *comps) {
   for (uint32_t iindex = 0; iindex < SHUTDOWN_COMPONENT_SIZE; ++iindex) {
     if (comps[iindex] != SC_UNKNOWN) {
       shutdown_circuit_last_state[iindex] = comps[iindex];
