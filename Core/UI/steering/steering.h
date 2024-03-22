@@ -73,6 +73,7 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 void car_status_update();
 void tlm_status_update();
 void speed_update();
+void ecu_feedbacks_update();
 
 void hv_cell_voltage_update();
 void hv_voltage_update();
@@ -119,7 +120,7 @@ void all_leds_green(void);
 void all_leds_red(void);
 void tab_terminal_new_message(const char *message);
 void tab_terminal_clear(void);
-void update_shutdown_circuit(shutdown_component_state_t *);
+void tab_shutdown_update_shutdown_circuit(shutdown_component_state_t *);
 void set_ptt_button_pressed(bool);
 
 void set_lb_estimated_velocity(const char *s);
@@ -176,6 +177,8 @@ void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
 void set_balancing_column(bool balancing, uint8_t idx);
 void tab_hv_set_pork_speed_bar(int32_t);
 void tab_hv_pork_speed_bar_invalidate();
+
+void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, float shutdown_circuit_state);
 
 /***
  * Tab lv

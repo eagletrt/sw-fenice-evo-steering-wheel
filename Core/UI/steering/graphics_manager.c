@@ -45,6 +45,10 @@ void update_graphics(lv_timer_t *t) {
         speed_update();
         break;
       }
+      case PRIMARY_ECU_FEEDBACKS_FRAME_ID: {
+        ecu_feedbacks_update();
+        break;
+      }
       case PRIMARY_TS_STATUS_FRAME_ID: {
         ts_status_update();
         break;

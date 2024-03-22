@@ -2,12 +2,13 @@
 #define SHUTDOWN_H
 
 #include <stdbool.h>
+#include "steering_config.h"
 
 #define SHUTDOWN_CIRCUIT_ROWS 8
 
 typedef enum { SC_UNKNOWN, SC_LOW, SC_HIGH } shutdown_component_state_t;
 
-enum shutdown_circuit_indexes {
+typedef enum {
   sd_start_index,
   feedbacks_status_feedback_sd_in_index,
   feedbacks_status_feedback_sd_out_index,
@@ -27,6 +28,14 @@ enum shutdown_circuit_indexes {
   feedbacks_status_feedback_airn_gate_index,
   //
   SHUTDOWN_COMPONENT_SIZE
-};
+} shutdown_circuit_indexes_t;
+
+/*
+* true: close
+* false: open
+*/
+extern char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][20];
+
+extern bool shutdown_status_array[SHUTDOWN_COMPONENT_SIZE];
 
 #endif // SHUTDOWN_H

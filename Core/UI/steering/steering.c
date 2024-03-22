@@ -235,20 +235,13 @@ void hv_cell_balancing_status_update() {
 
 void hv_feedbacks_status_update() {
   GET_LAST_STATE(primary, hv_feedback_status, PRIMARY, HV_FEEDBACK_STATUS);
-  switch (primary_hv_feedback_status_last_state->feedback_sd_end) {
-  case primary_hv_feedback_status_feedback_sd_end_FEEDBACK_STATE_LOW:
-    set_tab_hv_label_text("SHOTDOWN OPEN", shutdown_status);
-    break;
-  case primary_hv_feedback_status_feedback_sd_end_FEEDBACK_STATE_ERROR:
-    set_tab_hv_label_text("SHOTDOWN ERROR", shutdown_status);
-    break;
-  case primary_hv_feedback_status_feedback_sd_end_FEEDBACK_STATE_HIGH:
-    set_tab_hv_label_text("SHOTDOWN CLOSE", shutdown_status);
-    break;
+  update_shutdown_circuit_component(feedbacks_status_feedback_sd_in_index, primary_hv_feedback_status_last_state->feedback_sd_in);
+  update_shutdown_circuit_component(feedbacks_status_feedback_sd_out_index, primary_hv_feedback_status_last_state->feedback_sd_out);
+  update_shutdown_circuit_component(feedbacks_status_feedback_sd_end_index, primary_hv_feedback_status_last_state->feedback_sd_end);
+  update_shutdown_circuit_component(feedbacks_status_feedback_precharge_status_index, primary_hv_feedback_status_last_state->feedback_precharge_status);
+  update_shutdown_circuit_component(feedbacks_status_feedback_airp_gate_index, primary_hv_feedback_status_last_state->feedback_airp_status);
+  update_shutdown_circuit_component(feedbacks_status_feedback_airn_gate_index, primary_hv_feedback_status_last_state->feedback_airn_status);
 
-  default:
-    break;
-  }
   if (primary_hv_feedback_status_last_state->feedback_sd_end ==
       primary_hv_feedback_status_feedback_sd_end_FEEDBACK_STATE_LOW) {
     // set_tab_racing_label_text("LOW", tab_rac_status_idx);
@@ -257,11 +250,28 @@ void hv_feedbacks_status_update() {
   }
 }
 
-void lv_feedbacks_update() {}
+void lv_feedbacks_update() {
+  GET_LAST_STATE(primary, lv_feedbacks, PRIMARY, LV_FEEDBACKS);
+  update_shutdown_circuit_component(sd_start_index, primary_lv_feedbacks_last_state->sd_start);
+  update_shutdown_circuit_component(feedbacks_interlock_fb_index, primary_lv_feedbacks_last_state->feedbacks_interlock_fb);
+  update_shutdown_circuit_component(feedbacks_invc_lid_fb_index, primary_lv_feedbacks_last_state->feedbacks_invc_lid_fb);
+  update_shutdown_circuit_component(feedbacks_hvd_fb_index, primary_lv_feedbacks_last_state->feedbacks_hvd_fb);
+  update_shutdown_circuit_component(feedbacks_bspd_fb_index, primary_lv_feedbacks_last_state->feedbacks_bspd_fb);
+  update_shutdown_circuit_component(feedbacks_invc_interlock_fb_index, primary_lv_feedbacks_last_state->feedbacks_invc_interlock_fb);
+  update_shutdown_circuit_component(sd_end_index, primary_lv_feedbacks_last_state->sd_end);
+
+}
 
 primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
 
-void ecu_feedbacks_update() {}
+void ecu_feedbacks_update(void) {
+  GET_LAST_STATE(primary, ecu_feedbacks, PRIMARY, ECU_FEEDBACKS);
+  update_shutdown_circuit_component(ecu_feedbacks_sd_in_index, primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_in);
+  update_shutdown_circuit_component(ecu_feedbacks_sd_cock_fb_index, primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_cock_fb);
+  update_shutdown_circuit_component(ecu_feedbacks_sd_interial_fb_index, primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_interial_fb);
+  update_shutdown_circuit_component(ecu_feedbacks_sd_bots_fb_index, primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_bots_fb);
+}
+
 
 void ts_status_update() {
   GET_LAST_STATE(primary, ts_status, PRIMARY, TS_STATUS);

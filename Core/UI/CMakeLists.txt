@@ -31,6 +31,7 @@ add_executable(SteeringSimulator
     steering/engineer_mode/tab_secondary_cansniffer.c
     steering/utils.c
     steering/controls.c
+    steering/shutdown.c
     steering/can_messages.c
     steering/fonts/lv_font_inter_bold_14.c
     steering/fonts/lv_font_inter_bold_18.c

@@ -92,6 +92,10 @@ void handle_primary(can_message_t *msg) {
     STEER_CAN_UNPACK(primary, PRIMARY, speed, SPEED, is_pmsg_new);
     break;
   }
+  case PRIMARY_ECU_FEEDBACKS_FRAME_ID: {
+    STEER_CAN_UNPACK(primary, PRIMARY, ecu_feedbacks, ECU_FEEDBACKS, is_pmsg_new)
+    break;
+  }
   case PRIMARY_HV_CELL_VOLTAGE_FRAME_ID: {
     STEER_CAN_UNPACK(primary, PRIMARY, hv_cell_voltage, HV_CELL_VOLTAGE,
                      is_pmsg_new);
