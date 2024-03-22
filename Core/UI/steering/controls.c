@@ -273,9 +273,12 @@ void send_pork_fans_status(float val) {
   STEER_CAN_PACK(primary, PRIMARY, hv_fans_override, HV_FANS_OVERRIDE);
   can_send(&msg, true);
 
-  if (val < 0.0f) {
+  bool auto_mode = hv_fans_override_settings.fans_override ==
+                   primary_hv_fans_override_fans_override_OFF;
+
+  if (val < 0.0f) { // TODO: move outside of cansend
   } else {
-    tab_hv_set_pork_speed_bar((int32_t)(val * 100));
+    tab_hv_set_pork_speed_bar((int32_t)(val * 100), auto_mode);
   }
 
 #if 0
