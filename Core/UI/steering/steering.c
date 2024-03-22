@@ -205,18 +205,15 @@ void set_bal_status_label_text(char *text);
 
 void hv_cell_balancing_status_update() {
 #if ENGINEERING_TAB_ENABLED == 1
-  GET_LAST_STATE(primary, hv_cell_balancing_status, PRIMARY,
-                 HV_CELL_BALANCING_STATUS);
-  uint8_t cellboard_id =
-      (uint8_t)primary_hv_cell_balancing_status_last_state->cellboard_id;
+  GET_LAST_STATE(primary, hv_cell_balancing_status, PRIMARY, HV_CELL_BALANCING_STATUS);
+
+  uint8_t cellboard_id = (uint8_t)primary_hv_cell_balancing_status_last_state->cellboard_id;
+
   if (cellboard_id < 0 || cellboard_id >= N_PORK_CELLBOARD) {
     return;
   }
-  primary_hv_cell_balancing_status_balancing_status status =
-      primary_hv_cell_balancing_status_last_state->balancing_status;
-  cellboard_bal[cellboard_id] =
-      status == primary_hv_cell_balancing_status_balancing_status_OFF ? false
-                                                                      : true;
+  primary_hv_cell_balancing_status_balancing_status status = primary_hv_cell_balancing_status_last_state->balancing_status;
+  cellboard_bal[cellboard_id] = status == primary_hv_cell_balancing_status_balancing_status_OFF ? false : true;
   bool is_bal = false;
   for (uint8_t i = 0; i < N_PORK_CELLBOARD; i++) {
     if (cellboard_bal[i]) {

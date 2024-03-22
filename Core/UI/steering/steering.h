@@ -175,7 +175,7 @@ void set_label_color_hv_feedbacks(int label, int i);
  */
 void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
 void set_balancing_column(bool balancing, uint8_t idx);
-void tab_hv_set_pork_speed_bar(int32_t);
+void tab_hv_set_pork_speed_bar(int32_t, bool);
 void tab_hv_pork_speed_bar_invalidate();
 
 void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, float shutdown_circuit_state);

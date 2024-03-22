@@ -19,6 +19,7 @@ lv_style_t not_balancing_columns_style;
 
 lv_obj_t *tab_hv_pork_speed_bar;
 lv_style_t tab_hv_style_indic;
+lv_style_t tab_hv_style_back_indic;
 char tab_hv_new_label_buffer[10];
 
 lv_style_t label_custom_style;
@@ -55,7 +56,14 @@ void set_balancing_column(bool balancing, uint8_t idx) {
   }
 }
 
-void tab_hv_set_pork_speed_bar(int32_t val) {
+void tab_hv_set_pork_speed_bar(int32_t val, bool auto_mode) {
+  auto_mode ? lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_BLUE))
+            : lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_GREEN));
+
+  snprintf(tab_hv_new_label_buffer, 10, "%ld", val);
+  lv_label_set_text(tab_hv_labels[tab_hv_pork_speed_value],
+                    tab_hv_new_label_buffer);
+
   lv_bar_set_value(tab_hv_pork_speed_bar, val, LV_ANIM_OFF);
 }
 
@@ -75,8 +83,7 @@ void init_hv_styles(void) {
   lv_style_set_pad_top(&balancing_panel_style, 0);
   lv_style_set_pad_row(&balancing_panel_style, 0);
   lv_style_set_bg_opa(&balancing_panel_style, LV_OPA_TRANSP);
-  lv_style_set_border_color(&balancing_panel_style,
-                            lv_color_hex(COLOR_SECONDARY_HEX));
+  lv_style_set_border_color(&balancing_panel_style, lv_color_hex(COLOR_SECONDARY_HEX));
   lv_style_set_border_width(&balancing_panel_style, BP_BORDER_WIDTH);
   lv_style_set_radius(&balancing_panel_style, 0);
 
@@ -84,7 +91,7 @@ void init_hv_styles(void) {
   lv_style_init(&balancing_columns_style);
   lv_style_set_bg_opa(&balancing_columns_style, LV_OPA_COVER);
   lv_style_set_bg_color(&balancing_columns_style,
-                        lv_color_hex(COLOR_GREEN_STATUS_HEX));
+                        lv_color_hex(COLOR_YELLOW_STATUS_HEX));
 
   /* NOT BALANCING COLUMN */
   lv_style_init(&not_balancing_columns_style);
@@ -94,11 +101,17 @@ void init_hv_styles(void) {
 
   /* BAR STYLE INDICATOR */
   lv_style_init(&tab_hv_style_indic);
+  lv_style_set_radius(&tab_hv_style_indic, 0);
   lv_style_set_bg_opa(&tab_hv_style_indic, LV_OPA_COVER);
   lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_BLUE));
   lv_style_set_bg_grad_color(&tab_hv_style_indic,
                              lv_palette_main(LV_PALETTE_RED));
   lv_style_set_bg_grad_dir(&tab_hv_style_indic, LV_GRAD_DIR_HOR);
+
+  lv_style_init(&tab_hv_style_back_indic);
+  lv_style_set_radius(&tab_hv_style_back_indic, 0);
+  lv_style_set_bg_opa(&tab_hv_style_back_indic, LV_OPA_COVER);
+  lv_style_set_bg_color(&tab_hv_style_back_indic, lv_color_hex(COLOR_SECONDARY_HEX));
 
   lv_style_init(&label_custom_style);
   lv_style_set_base_dir(&label_custom_style, LV_BASE_DIR_LTR);
@@ -362,7 +375,7 @@ void tab_hv_create(lv_obj_t *parent) {
                    LV_PART_MAIN);
   lv_obj_set_style_text_font(tab_hv_labels[shutdown_status],
                              &lv_font_inter_bold_30, LV_STATE_DEFAULT);
-  lv_label_set_text(tab_hv_labels[shutdown_status], "SHOTDOWN X");
+  lv_label_set_text(tab_hv_labels[shutdown_status], "SHUTDOWN X");
   lv_obj_set_grid_cell(tab_hv_labels[shutdown_status], LV_GRID_ALIGN_CENTER, 0,
                        1, LV_GRID_ALIGN_START, 0, 1);
 
@@ -405,8 +418,9 @@ void tab_hv_create(lv_obj_t *parent) {
 
   // Pork fan bar
   tab_hv_pork_speed_bar = lv_bar_create(pork_panel);
-  lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_indic,
-                   LV_PART_INDICATOR);
+  lv_obj_remove_style_all(tab_hv_pork_speed_bar);
+  lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_indic, LV_PART_INDICATOR);
+  lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_back_indic, LV_PART_MAIN);
   lv_obj_set_size(tab_hv_pork_speed_bar, 350, 50);
   lv_bar_set_range(tab_hv_pork_speed_bar, 0, 100);
   lv_bar_set_value(tab_hv_pork_speed_bar, 0, LV_ANIM_OFF);
@@ -421,16 +435,15 @@ void tab_hv_create(lv_obj_t *parent) {
  * @param balancing true if cell is balancing, false otherwise
  */
 void custom_balancing_column(lv_obj_t *bar, bool balancing) {
+  
+  lv_obj_remove_style_all(bar);
 
   if (balancing) {
-    lv_obj_remove_style_all(bar);
     lv_obj_add_style(bar, &balancing_columns_style, LV_PART_MAIN);
-    lv_obj_set_size(bar, B_COLUMN_WIDTH, B_COLUMN_HEIGHT);
-    lv_obj_center(bar);
   } else {
-    lv_obj_remove_style_all(bar);
     lv_obj_add_style(bar, &not_balancing_columns_style, LV_PART_MAIN);
-    lv_obj_set_size(bar, B_COLUMN_WIDTH, B_COLUMN_HEIGHT);
-    lv_obj_center(bar);
   }
+
+  lv_obj_set_size(bar, B_COLUMN_WIDTH, B_COLUMN_HEIGHT);
+  lv_obj_center(bar);
 }

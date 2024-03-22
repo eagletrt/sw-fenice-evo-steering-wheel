@@ -7,6 +7,7 @@
 lv_obj_t *tab_lv_pumps_speed_bar;
 lv_obj_t *tab_lv_radiators_speed_bar;
 lv_style_t tab_lv_style_indic;
+lv_style_t tab_lv_style_back_indic;
 
 char tab_lv_new_label_buffer[10];
 
@@ -54,7 +55,19 @@ void lv_radiators_speed_bar_invalidate() {
   //   LV_PART_INDICATOR);
 }
 
-void init_lv_styles(void) {}
+void init_lv_styles(void) {
+    lv_style_init(&tab_lv_style_indic);
+    lv_style_set_radius(&tab_lv_style_indic, 0);
+    lv_style_set_bg_opa(&tab_lv_style_indic, LV_OPA_COVER);
+    lv_style_set_bg_color(&tab_lv_style_indic, lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_bg_grad_color(&tab_lv_style_indic, lv_palette_main(LV_PALETTE_RED));
+    lv_style_set_bg_grad_dir(&tab_lv_style_indic, LV_GRAD_DIR_VER);
+    
+    lv_style_init(&tab_lv_style_back_indic);
+    lv_style_set_radius(&tab_lv_style_back_indic, 0);
+    lv_style_set_bg_opa(&tab_lv_style_back_indic, LV_OPA_COVER);
+    lv_style_set_bg_color(&tab_lv_style_back_indic, lv_color_hex(COLOR_SECONDARY_HEX));
+}
 
 void tab_lv_create(lv_obj_t *parent) {
   init_lv_styles();
@@ -274,6 +287,9 @@ void tab_lv_create(lv_obj_t *parent) {
 #endif
 
   tab_lv_pumps_speed_bar = lv_bar_create(pumps_bar_panel);
+  lv_obj_remove_style_all(tab_lv_pumps_speed_bar);
+  lv_obj_add_style(tab_lv_pumps_speed_bar, &tab_lv_style_indic, LV_PART_INDICATOR);
+  lv_obj_add_style(tab_lv_pumps_speed_bar, &tab_lv_style_back_indic, LV_PART_MAIN);
   lv_obj_set_size(tab_lv_pumps_speed_bar, 50, BAR_HEIGHT);
   lv_bar_set_range(tab_lv_pumps_speed_bar, 0, 100);
   lv_bar_set_value(tab_lv_pumps_speed_bar, 0, LV_ANIM_OFF);
@@ -384,6 +400,9 @@ void tab_lv_create(lv_obj_t *parent) {
 #endif
 
   tab_lv_radiators_speed_bar = lv_bar_create(radiators_bar_panel);
+  lv_obj_remove_style_all(tab_lv_radiators_speed_bar);
+  lv_obj_add_style(tab_lv_radiators_speed_bar, &tab_lv_style_indic, LV_PART_INDICATOR);
+  lv_obj_add_style(tab_lv_radiators_speed_bar, &tab_lv_style_back_indic, LV_PART_MAIN);
   lv_obj_set_size(tab_lv_radiators_speed_bar, 50, BAR_HEIGHT);
   lv_bar_set_range(tab_lv_radiators_speed_bar, 0, 100);
   lv_bar_set_value(tab_lv_radiators_speed_bar, 0, LV_ANIM_OFF);
