@@ -3,7 +3,6 @@
 
 #include "lvgl.h"
 #include "steering.h"
-#include "utils.h"
 
 #define TAB_HV_CENTRAL_PANEL_WIDTH 660
 #define BOTTOM_BAR_HEIGHT 120
@@ -16,6 +15,12 @@
 #define DATA_LEFT_WIDTH 185
 #define DATA_RIGHT_WIDTH 185
 #define DATA_CENTER_WIDTH 290
+
+
+extern const char* debug_signal_error_labels[];
+
+// true: error, false: no error
+extern bool debug_signal_error_status[DEBUG_SIGNAL_ERROR_SIZE];
 
 void tab_hv_create(lv_obj_t *parent);
 
