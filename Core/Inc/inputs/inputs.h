@@ -29,16 +29,9 @@
 #define MANETTINO_LEFT_VALS                                                    \
   { 127, 191, 247, 251, 253, 254, 239, 223 }
 
-#define LEFT_MANETTINO_SLIP_OPTION 0
-#define LEFT_MANETTINO_POWER_MAP_OPTION 1
-#define LEFT_MANETTINO_TORQUE_OPTION 2
 
 void inputs_init(void);
 void read_inputs(lv_timer_t *);
-
-void buttons_pressed_actions(uint8_t button);
-void buttons_released_actions(uint8_t button);
-void buttons_long_pressed_actions(uint8_t button);
 
 void changed_pin_fn(void);
 void init_input_polling(void);

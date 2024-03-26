@@ -268,7 +268,7 @@ void hv_feedbacks_status_update() {
     set_tab_hv_label_text("SHUTDOWN ERROR", shutdown_status);
     break;
   case primary_hv_feedback_status_feedback_sd_end_FEEDBACK_STATE_HIGH:
-    set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status);
+    set_tab_hv_label_text("SDC CLOSED", shutdown_status);
     break;
 
   default:

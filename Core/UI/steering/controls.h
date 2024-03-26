@@ -32,13 +32,16 @@
 #define SLIP_CONTROL_MAX (100)
 #define SLIP_CONTROL_MIN (0)
 #define SET_PUMP_SPEED_MAX (100)
-#define SET_PUMP_SPEED_MIN (-100)
+#define SET_PUMP_SPEED_MIN (-10)
 #define SET_RADIATORS_MAX (100)
 #define SET_RADIATORS_MIN (-10)
 #define PORK_HIGH_FANS_SPEED (100)
 #define PORK_LOW_FANS_SPEED (-10)
 #define POWER_MAP_MAX (100)
 #define POWER_MAP_MIN (0)
+#define LEFT_MANETTINO_SLIP_OPTION 0
+#define LEFT_MANETTINO_POWER_MAP_OPTION 1
+#define LEFT_MANETTINO_TORQUE_OPTION 2
 
 typedef enum {
   RADS_AUTO,
@@ -76,6 +79,10 @@ void turn_telemetry_on_off(void);
 void manettino_right_actions(int dsteps);
 void manettino_center_actions(int dsteps);
 void manettino_left_actions(int dsteps);
+
+void buttons_pressed_actions(uint8_t button);
+void buttons_released_actions(uint8_t button);
+void buttons_long_pressed_actions(uint8_t button);
 
 // float fmin(float x, float y);
 // float fmax(float x, float y);

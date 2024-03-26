@@ -311,76 +311,345 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
   keyboard_read(indev_drv, &data);
 
   switch (data.key) {
-  case 'z': {
-    steering_change_tab(false);
-    break;
-  }
-  case 'x': {
-    steering_change_tab(true);
-    break;
-  }
-  case 'c': {
-    switch_mode();
-    break;
-  }
-  case 'a':
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-    shift_box_focus(true);
-#endif
-#if STEER_TAB_DEBUG_ENABLED == 1
-    change_errors_view(false);
-#endif
-    break;
-  case 's':
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-    shift_box_focus(false);
-#endif
-#if STEER_TAB_DEBUG_ENABLED == 1
-    change_errors_view(true);
-#endif
-    break;
-  case 'g': {
-    if (engineer_mode) {
-#if CANSNIFFER_ENABLED == 1
-      switch_cansniffer();
-#endif
-    } else {
-      turn_telemetry_on_off();
+//   case 'z': {
+//     steering_change_tab(false);
+//     break;
+//   }
+//   case 'x': {
+//     steering_change_tab(true);
+//     break;
+//   }
+//   case 'c': {
+//     switch_mode();
+//     break;
+//   }
+//   case 'a':
+// #if STEER_TAB_CALIBRATION_ENABLED == 1
+//     shift_box_focus(true);
+// #endif
+// #if STEER_TAB_DEBUG_ENABLED == 1
+//     change_errors_view(false);
+// #endif
+//     break;
+//   case 's':
+// #if STEER_TAB_CALIBRATION_ENABLED == 1
+//     shift_box_focus(false);
+// #endif
+// #if STEER_TAB_DEBUG_ENABLED == 1
+//     change_errors_view(true);
+// #endif
+//     break;
+//   case 'g': {
+//     if (engineer_mode) {
+// #if CANSNIFFER_ENABLED == 1
+//       switch_cansniffer();
+// #endif
+//     } else {
+//       turn_telemetry_on_off();
+//     }
+//     break;
+//   }
+//   case 'h': {
+// #if CANSNIFFER_ENABLED == 1
+//     change_cansniffer_index(true);
+// #endif
+//     break;
+//   }
+//   case 'j': {
+// #if CANSNIFFER_ENABLED == 1
+//     change_cansniffer_index(false);
+// #endif
+//     break;
+//   }
+//   case 'p': {
+//     set_dmt_steering_angle_target();
+//     break;
+//   }
+//   case '1': {
+//     manettino_right_actions(-1);
+//     break;
+//   }
+//   case '3': {
+//     manettino_right_actions(1);
+//     break;
+//   }
+//   case '4': {
+//     manettino_left_actions(-1);
+//     break;
+//   }
+//   case '6': {
+//     manettino_left_actions(1);
+//     break;
+//   }
+
+  case 'q':{ //levetta sinistra alto
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        //none
+        break;
+      }
+      case TAB_RACING:{
+        //none
+        break;
+      }
+      case TAB_SENSORS:{
+        //none
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        //none
+        break;
+      }
+      case TAB_LV:{
+        //none
+        break;
+      }
+      default:
+        break;
     }
     break;
   }
-  case 'h': {
-#if CANSNIFFER_ENABLED == 1
-    change_cansniffer_index(true);
-#endif
+  case 'p':{  //levetta destra alto
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        //none
+        break;
+      }
+      case TAB_RACING:{
+        //none
+        break;
+      }
+      case TAB_SENSORS:{
+        //none
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        //none
+        break;
+      }
+      case TAB_LV:{
+        //none
+        break;
+      }
+      default:
+        break;
+    }
     break;
   }
-  case 'j': {
-#if CANSNIFFER_ENABLED == 1
-    change_cansniffer_index(false);
-#endif
+  case 'a':{  //bottone sinistra alto
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        //balancing
+        break;
+      }
+      case TAB_RACING:{
+        //Telemetry (hold)
+        break;
+      }
+      case TAB_SENSORS:{
+        //Telemetry (hold)
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        //Set angle
+        break;
+      }
+      case TAB_LV:{
+        //Charging
+        break;
+      }
+      default:
+        break;
+    }
     break;
   }
-  case 'p': {
-    set_dmt_steering_angle_target();
+  case 'l':{  //bottone destra alto
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        //PTT
+        break;
+      }
+      case TAB_RACING:{
+        //PTT
+        break;
+      }
+      case TAB_SENSORS:{
+        //PTT
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        //PTT
+        break;
+      }
+      case TAB_LV:{
+        //PTT
+        break;
+      }
+      default:
+        break;
+    }
     break;
   }
-  case '1': {
-    manettino_right_actions(-1);
+  case 's':{  //bottone sinistra basso
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        //Help
+        break;
+      }
+      case TAB_RACING:{
+        //Help
+        break;
+      }
+      case TAB_SENSORS:{
+        //Help
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        //Help
+        break;
+      }
+      case TAB_LV:{
+        //Help
+        break;
+      }
+      default:
+        break;
+    }
     break;
   }
-  case '3': {
-    manettino_right_actions(1);
+  case 'k':{  //bottone destra basso
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        //none
+        break;
+      }
+      case TAB_RACING:{
+        //none
+        break;
+      }
+      case TAB_SENSORS:{
+        //none
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        //none
+        break;
+      }
+      case TAB_LV:{
+        //flashing
+        break;
+      }
+      default:
+        break;
+    }
     break;
   }
-  case '4': {
+  case 'z':{  //levetta sinistra basso
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        steering_change_tab(false);
+        break;
+      }
+      case TAB_RACING:{
+        steering_change_tab(false);
+        break;
+      }
+      case TAB_SENSORS:{
+        steering_change_tab(false);
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        steering_change_tab(false);
+        break;
+      }
+      case TAB_LV:{
+        steering_change_tab(false);
+        break;
+      }
+      default:
+        break;
+    }
+    break;
+  }
+  case 'm':{  //levetta destra basso
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        steering_change_tab(true);
+        break;
+      }
+      case TAB_RACING:{
+        steering_change_tab(true);
+        break;
+      }
+      case TAB_SENSORS:{
+        steering_change_tab(true);
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        steering_change_tab(true);
+        break;
+      }
+      case TAB_LV:{
+        steering_change_tab(true);
+        break;
+      }
+      default:
+        break;
+    }
+    break;
+  }
+  case 'b':{  //bottone centrale basso
+    switch (current_racing_tab) {
+      case TAB_HV:{
+        //TS ON
+        break;
+      }
+      case TAB_RACING:{
+        //TS ON
+        break;
+      }
+      case TAB_SENSORS:{
+        //TS ON
+        break;
+      }
+      case TAB_TRACK_TEST:{
+        //TS ON
+        break;
+      }
+      case TAB_LV:{
+        //TS ON
+        break;
+      }
+      default:
+        break;
+    }
+    break;
+  }
+  case '1':{  //manettino sinistro verso sinistra
     manettino_left_actions(-1);
     break;
   }
-  case '6': {
+  case '2':{  //manettino sinistro verso destra
     manettino_left_actions(1);
     break;
   }
+  case '3':{  //manettino centrale verso sinistra
+    manettino_center_actions(-1);
+    break;
+  }
+  case '4':{  //manettino centrale verso destra
+    manettino_center_actions(1);
+    break;
+  }
+  case '5':{  //manettino destro verso sinistra
+    manettino_right_actions(-1);
+    break;
+  }
+  case '6':{  //manettino destro verso destra
+    manettino_right_actions(1);
+    break;
+  }
+
   default:
     break;
   }
