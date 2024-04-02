@@ -415,7 +415,7 @@ void send_pork_fans_status(float val) {
   primary_hv_fans_status_converted_t converted = {0};
   converted.fans_override = hv_fans_override_settings.fans_override;
   converted.fans_speed = hv_fans_override_settings.fans_speed;
-  STEER_CAN_PACK(primary, PRIMARY, hv_set_fans_status_handcart, HV_SET_FANS_STATUS_HANDCART);
+  STEER_CAN_PACK(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
   can_send(&msg, true);
 
   bool auto_mode = hv_fans_override_settings.fans_override == primary_hv_fans_status_fans_override_off;
