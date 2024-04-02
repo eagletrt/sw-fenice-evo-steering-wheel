@@ -109,10 +109,10 @@ void tab_racing_resync(void) {
   set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_pow_idx);
   float map_sc = (float)(steer_status_last_state.map_sc * 100.0f);
   snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_sc);
-  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_pow_idx);
+  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_slip_idx);
   float map_tv = (float)(steer_status_last_state.map_tv * 100.0f);
   snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_tv);
-  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_pow_idx);
+  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_torque_idx);
 }
 
 void lv_pumps_actual_value_update() {}
@@ -410,16 +410,7 @@ void lv_cells_voltage_update(void) {
 }
 
 void tab_sensor_resync(void) {
-  //we still sync the value in racing tab
-  // float map_pw = (float)(steer_status_last_state.map_pw * 100.0f);
-  // snprintf(snprintf_buffer_controls[BUFSIZ], BUFSIZ, "%.0f", map_pw);
-  // set_tab_racing_label_text(snprintf_buffer_controls[BUFSIZ], tab_rac_pow_idx);
-  // float map_sc = (float)(steer_status_last_state.map_sc * 100.0f);
-  // snprintf(snprintf_buffer_controls[BUFSIZ], BUFSIZ, "%.0f", map_sc);
-  // set_tab_racing_label_text(snprintf_buffer_controls[BUFSIZ], tab_rac_pow_idx);
-  // float map_tv = (float)(steer_status_last_state.map_tv * 100.0f);
-  // snprintf(snprintf_buffer_controls[BUFSIZ], BUFSIZ, "%.0f", map_tv);
-  // set_tab_racing_label_text(snprintf_buffer_controls[BUFSIZ], tab_rac_torque_idx);
+  
 }
 
 void lv_cells_temp_update() {
