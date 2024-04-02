@@ -366,11 +366,11 @@ void hv_fans_override_status_update() {
   pork_fans_status_last_state = (int)(cval * 100.0f);
   if (cval < 0) {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
-    tab_hv_set_pork_speed_bar(0);
+    tab_hv_set_pork_speed_bar(0, true);
   } else {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f",
              primary_hv_fans_override_status_last_state->fans_speed);
-    tab_hv_set_pork_speed_bar((int32_t)(cval * 100));
+    tab_hv_set_pork_speed_bar((int32_t)(cval * 100), false);
   }
   set_tab_hv_label_text(snprintf_buffer, tab_hv_pork_speed_value);
 }
