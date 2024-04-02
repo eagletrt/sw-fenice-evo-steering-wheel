@@ -39,12 +39,12 @@ void send_steer_status(lv_timer_t *main_timer) {
 }
 
 void send_bal(bool on) {
-  primary_hv_set_balancing_status_handcart_converted_t converted = {
+  primary_hv_set_balancing_status_converted_t converted = {
       .set_balancing_status =
-          on ? primary_hv_set_balancing_status_handcart_set_balancing_status_on
-             : primary_hv_set_balancing_status_handcart_set_balancing_status_off,
+          on ? primary_hv_set_balancing_status_set_balancing_status_on
+             : primary_hv_set_balancing_status_set_balancing_status_off,
       .balancing_threshold = 50};
-  STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_handcart, HV_SET_BALANCING_STATUS_HANDCART)
+  STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status, HV_SET_BALANCING_STATUS)
   can_send(&msg, true);
 }
 
