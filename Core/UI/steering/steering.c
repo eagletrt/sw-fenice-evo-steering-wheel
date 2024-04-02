@@ -1,4 +1,5 @@
 #include "steering.h"
+#include "steering_config.h"
 
 lv_obj_t *lb_estimated_velocity;
 lv_obj_t *lb_apps;
@@ -100,13 +101,18 @@ void car_status_update() {
 }
 
 extern primary_steer_status_converted_t steer_status_last_state;
-char refresh_values_buf[124];
+char snprintf_buffer_controls[BUFSIZ];
 
-void tab_racing_refresh_values(void) {
-  CHECK_CURRENT_TAB(engineer, TAB_RACING);
-  float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
-  snprintf(refresh_values_buf, 124, "%.0f", map_val);
-  set_tab_racing_label_text(refresh_values_buf, tab_rac_pow_idx);  
+void tab_racing_resync(void) {
+  float map_pw = (float)(steer_status_last_state.map_pw * 100.0f);
+  snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_pw);
+  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_pow_idx);
+  float map_sc = (float)(steer_status_last_state.map_sc * 100.0f);
+  snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_sc);
+  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_pow_idx);
+  float map_tv = (float)(steer_status_last_state.map_tv * 100.0f);
+  snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_tv);
+  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_pow_idx);
 }
 
 void lv_pumps_actual_value_update() {}
@@ -115,25 +121,25 @@ void lv_radiators_actual_value_update() {}
 
 void cooling_status_update() {
   GET_LAST_STATE(primary, cooling_status, PRIMARY, COOLING_STATUS);
-  float pspeed = primary_cooling_status_last_state->pumps_speed;
-  set_pumps_speed_last_state = (int)(pspeed * 100.0f);
-  if (pspeed < 0.0f) {
+  float pumps_speed = primary_cooling_status_last_state->pumps_speed;
+  set_pumps_speed_last_state = (int)(pumps_speed * 100.0f);
+  if (pumps_speed < 0.0f) {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
     lv_set_pumps_speed_bar(0);
   } else {
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", pspeed);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", pumps_speed);
     lv_set_pumps_speed_bar((int32_t)set_pumps_speed_last_state);
   }
   set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_local);
 
-  float rspeed = primary_cooling_status_last_state->radiators_speed;
-  set_radiators_last_state = (int)(rspeed * 100.0f);
-  if (rspeed < 0.0f) {
+  float radiators_speed = primary_cooling_status_last_state->radiators_speed;
+  set_radiators_last_state = (int)(radiators_speed * 100.0f);
+  if (radiators_speed < 0.0f) {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
     lv_set_radiators_speed_bar(0);
   } else {
     lv_set_radiators_speed_bar((int32_t)set_radiators_last_state);
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", rspeed);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", radiators_speed);
   }
   set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_local);
 }
@@ -194,13 +200,13 @@ void hv_debug_signals_update(void) {
 void hv_cell_voltage_update(void) {
   GET_LAST_STATE(primary, hv_cell_voltage, PRIMARY, HV_CELL_VOLTAGE);
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
-          primary_hv_cell_voltage_last_state->min_cell_voltage);
+           primary_hv_cell_voltage_last_state->min_cell_voltage);
 
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_min_cell_voltage);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_voltage_min);
 
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
-          primary_hv_cell_voltage_last_state->max_cell_voltage);
+           primary_hv_cell_voltage_last_state->max_cell_voltage);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_voltage_max);
 
   float delta = primary_hv_cell_voltage_last_state->max_cell_voltage -
@@ -216,7 +222,8 @@ void hv_cell_voltage_update(void) {
 
 void hv_voltage_update(void) {
   GET_LAST_STATE(primary, hv_voltage, PRIMARY, HV_VOLTAGE);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_hv_voltage_last_state->pack_voltage);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f",
+           primary_hv_voltage_last_state->pack_voltage);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_pack_voltage_idx);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_pack_voltage);
   set_tab_racing_hv_pack_voltage_bar(
@@ -227,7 +234,8 @@ void hv_voltage_update(void) {
 
 void hv_current_update() {
   GET_LAST_STATE(primary, hv_current, PRIMARY, HV_CURRENT);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_hv_current_last_state->current);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
+           primary_hv_current_last_state->current);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_hv_current);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_curr_idx);
   set_tab_racing_hv_current_bar(primary_hv_current_last_state->current);
@@ -236,16 +244,19 @@ void hv_current_update() {
 void hv_temp_update() {
   GET_LAST_STATE(primary, hv_temp, PRIMARY, HV_TEMP);
 
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->average_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f",
+           primary_hv_temp_last_state->average_temp);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_avg_temp_idx);
   set_tab_sensors_label_text(snprintf_buffer,
                              tab_sensors_lb_average_temperature);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_avg);
 
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->max_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f",
+           primary_hv_temp_last_state->max_temp);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_max);
 
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_temp_last_state->min_temp);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f",
+           primary_hv_temp_last_state->min_temp);
   set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_min);
 }
 
@@ -367,7 +378,7 @@ void hv_fans_override_status_update() {
 void lv_currents_update() {
   GET_LAST_STATE(primary, lv_currents, PRIMARY, LV_CURRENTS);
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
-          primary_lv_currents_last_state->current_lv_battery);
+           primary_lv_currents_last_state->current_lv_battery);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_lv_current);
   set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pack_voltage_2);
 }
@@ -398,6 +409,19 @@ void lv_cells_voltage_update(void) {
   // set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_);
 }
 
+void tab_sensor_resync(void) {
+  //we still sync the value in racing tab
+  // float map_pw = (float)(steer_status_last_state.map_pw * 100.0f);
+  // snprintf(snprintf_buffer_controls[BUFSIZ], BUFSIZ, "%.0f", map_pw);
+  // set_tab_racing_label_text(snprintf_buffer_controls[BUFSIZ], tab_rac_pow_idx);
+  // float map_sc = (float)(steer_status_last_state.map_sc * 100.0f);
+  // snprintf(snprintf_buffer_controls[BUFSIZ], BUFSIZ, "%.0f", map_sc);
+  // set_tab_racing_label_text(snprintf_buffer_controls[BUFSIZ], tab_rac_pow_idx);
+  // float map_tv = (float)(steer_status_last_state.map_tv * 100.0f);
+  // snprintf(snprintf_buffer_controls[BUFSIZ], BUFSIZ, "%.0f", map_tv);
+  // set_tab_racing_label_text(snprintf_buffer_controls[BUFSIZ], tab_rac_torque_idx);
+}
+
 void lv_cells_temp_update() {
   float current_lv_temp[N_LV_CELLS] = {0};
   current_lv_temp[0] = lv_temps_stock_1.temp_0;
@@ -425,13 +449,14 @@ void lv_cells_temp_update() {
 void lv_total_voltage_update() {
   GET_LAST_STATE(primary, lv_total_voltage, PRIMARY, LV_TOTAL_VOLTAGE);
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
-          primary_lv_total_voltage_last_state->total_voltage);
+           primary_lv_total_voltage_last_state->total_voltage);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_voltage);
 }
 
 void steering_angle_update() {
   GET_LAST_STATE(secondary, steering_angle, SECONDARY, STEERING_ANGLE);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", secondary_steering_angle_last_state->angle);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
+           secondary_steering_angle_last_state->angle);
   set_tab_track_test_steering_angle_bar(
       secondary_steering_angle_last_state->angle);
 #if STEER_TAB_CALIBRATION_ENABLED == 1
@@ -452,7 +477,8 @@ void steering_angle_update() {
 void pedals_output_update() {
 #if STEER_TAB_CALIBRATION_ENABLED == 1
   GET_LAST_STATE(secondary, pedals_output, SECONDARY, PEDALS_OUTPUT);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)secondary_pedals_output_last_state->apps);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d",
+           (int)secondary_pedals_output_last_state->apps);
   calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
 
   if (*curr_focus == APPS) {
@@ -463,7 +489,7 @@ void pedals_output_update() {
                         secondary_pedals_output_last_state->apps, LV_ANIM_OFF);
   }
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
-          secondary_pedals_output_last_state->bse_front);
+           secondary_pedals_output_last_state->bse_front);
   if (*curr_focus == BSE) {
     lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
     lv_slider_set_range(get_tab_calibration_slider(), BRAKE_RANGE_LOW,
@@ -485,7 +511,8 @@ void lap_count_update() {
   float last_time_seconds = secondary_lap_count_last_state->lap_time;
   int minutes = (int)(last_time_seconds / 60.0f);
   int seconds = (int)(last_time_seconds - minutes * 60.0f);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes,
+           seconds);
 
   set_tab_racing_label_text(snprintf_buffer, tab_rac_last_time_idx);
 
@@ -502,7 +529,8 @@ void lc_status_update(secondary_lc_status_converted_t *data) {
   int minutes = (int)(secondary_lc_status_last_state->best_time / 60.0f);
   int seconds =
       (int)(secondary_lc_status_last_state->best_time - minutes * 60.0f);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes,
+           seconds);
 
   set_tab_racing_label_text(snprintf_buffer, tab_rac_best_time_idx);
 
@@ -518,12 +546,13 @@ void lc_status_update(secondary_lc_status_converted_t *data) {
     secondary_lc_status_last_state->last_time = last_time_seconds;
     int minutes = (int)(last_time_seconds / 60);
     int seconds = (int)(last_time_seconds - minutes * 60);
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes, seconds);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes,
+             seconds);
 
     set_tab_racing_label_text(snprintf_buffer, tab_rac_last_time_idx);
   }
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d",
-          (int)secondary_lc_status_last_state->lap_number);
+           (int)secondary_lc_status_last_state->lap_number);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_lap_count_idx);
 }
 
@@ -545,7 +574,8 @@ void inv_l_rcv_update(void) {
     set_tab_racing_label_text(snprintf_buffer, tab_rac_mot_idx);
 
     if (r_motor_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-      snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", (l_motor_temp + r_motor_temp) / 2.0f);
+      snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f",
+               (l_motor_temp + r_motor_temp) / 2.0f);
       set_tab_sensors_label_text(snprintf_buffer,
                                  tab_sensors_lb_left_motor_temp);
     }
@@ -560,7 +590,8 @@ void inv_l_rcv_update(void) {
                                tab_sensors_lb_left_inverter_temp);
 
     if (r_igbt_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-      snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", (l_igbt_temp + r_igbt_temp) / 2.0f);
+      snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f",
+               (l_igbt_temp + r_igbt_temp) / 2.0f);
       set_tab_racing_label_text(snprintf_buffer, tab_rac_inv_idx);
     }
   }
@@ -572,7 +603,8 @@ void inv_r_rcv_update() {
       INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
     r_motor_temp = (inverters_inv_r_rcv_last_state->t_motor - 9393.9f) / 55.1f;
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", r_motor_temp);
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_right_motor_temp);
+    set_tab_sensors_label_text(snprintf_buffer,
+                               tab_sensors_lb_right_motor_temp);
   }
 
   if (inverters_inv_r_rcv_last_state->rcv_mux ==
@@ -631,6 +663,12 @@ void irts_fr_update() {
                    14.0f;
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", avg_temp);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_fr_temp);
+}
+
+void tab_track_test_resync(void) { 
+  GET_LAST_STATE(secondary, steering_angle, SECONDARY, STEERING_ANGLE);
+  set_tab_track_test_dmt_steering_angle_target(
+      secondary_steering_angle_last_state->angle);
 }
 
 void irts_rl_update() {
@@ -702,6 +740,13 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
   }
 }
 
+void tab_hv_resync(void) {
+  // Sets the text about the shutdown
+  hv_feedbacks_status_update();
+  // Sets the text about the speed of the fans and the bar
+  hv_fans_override_status_update();
+}
+
 /***
  * PTT
  */
@@ -758,3 +803,5 @@ void handle_ptt_message(void) {
     ecu_ack = true;
   }
 }
+
+void tab_lv_resync(void) { cooling_status_update(); }

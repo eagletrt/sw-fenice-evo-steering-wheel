@@ -12,8 +12,6 @@ uint8_t manettini[MANETTINI_N] = {0};
 uint32_t manettini_last_change;
 bool manettini_initialized[MANETTINI_N] = {false};
 
-int left_manettino_selection = 0;
-
 extern bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
@@ -302,21 +300,7 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
   }
   case MANETTINO_LEFT_INDEX: {
     int dstep = new_manettino_index - manettini[MANETTINO_LEFT_INDEX];
-
-    switch (left_manettino_selection) {
-      case LEFT_MANETTINO_SLIP_OPTION:
-        manettino_left_actions(delta_step_position(dstep));
-        break;
-      case LEFT_MANETTINO_TORQUE_OPTION:
-        manettino_right_actions(delta_step_position(dstep));
-        break;
-      case LEFT_MANETTINO_POWER_MAP_OPTION:
-        manettino_center_actions(delta_step_position(dstep));
-        break;
-      default:
-        break;
-
-    }
+    manettino_left_actions(delta_step_position(dstep));
 
 #if 0
     if (!engineer_mode) {

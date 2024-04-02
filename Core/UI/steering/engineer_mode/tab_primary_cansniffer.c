@@ -6,7 +6,6 @@
 #define PRIMARY_CANSNIFFER_ID_NAME_SIZE 128
 #define PRIMARY_CANSNIFFER_DATA_STRING_SIZE 128
 
-
 lv_style_t primary_cansniffer_label_style;
 lv_timer_t *primary_cansniffer_update_task;
 bool listening_to_primary_cansniffer = false;
@@ -99,14 +98,16 @@ void update_primary_cansniffer_ui(lv_timer_t *unused_tim) {
                                    primary_cansniffer_id_name);
       for (size_t jindex = 0; jindex < primary_cansniffer_buffer[index].len;
            ++jindex) {
-        snprintf(primary_cansniffer_data_string + jindex * 3, PRIMARY_CANSNIFFER_DATA_STRING_SIZE, "%02X ",
-                primary_cansniffer_buffer[index].data[jindex]);
+        snprintf(primary_cansniffer_data_string + jindex * 3,
+                 PRIMARY_CANSNIFFER_DATA_STRING_SIZE, "%02X ",
+                 primary_cansniffer_buffer[index].data[jindex]);
       }
       update_primary_cansniffer_value(iindex -
                                           (TAB_CANSNIFFER_N_MESSAGES_SHOWN *
                                            primary_cansniffer_start_index),
                                       index);
-      snprintf(primary_cansniffer_id_name, PRIMARY_CANSNIFFER_ID_NAME_SIZE, "unknown");
+      snprintf(primary_cansniffer_id_name, PRIMARY_CANSNIFFER_ID_NAME_SIZE,
+               "unknown");
     }
   }
 }

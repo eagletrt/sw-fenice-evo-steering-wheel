@@ -30,7 +30,8 @@ void set_tab_racing_hv_current_bar(float v) {
 
 void set_tab_racing_hv_pack_voltage_bar(float v) {
   CHECK_CURRENT_TAB(engineer, TAB_RACING);
-  lv_bar_set_value(tab_racing_hv_pack_voltage_bar, (int32_t) fabsf(v), LV_ANIM_OFF);
+  lv_bar_set_value(tab_racing_hv_pack_voltage_bar, (int32_t)fabsf(v),
+                   LV_ANIM_OFF);
 }
 
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx) {

@@ -165,6 +165,8 @@ void manettino_left_actions(int dsteps) {
     case TAB_SENSORS:
       break;
     case TAB_HV:
+      // TODO: implement Balancing threshold as defined by the new steering
+      // wheel map (see images)
       break;
     case TAB_LV:
       set_pumps_speed_last_state += dsteps * 10;
@@ -200,7 +202,9 @@ void manettino_send_power_map(float val) {
   float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
   snprintf(sprintf_buffer_controls, BUFSIZ, "%.0f", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);
-  // display_notification("")
+
+  // tab_racing_resync();
+  //  display_notification("")
 }
 
 void manettino_send_set_pumps_speed(float val) {
@@ -252,153 +256,153 @@ void manettino_send_set_radiators(float val) {
 
 void buttons_pressed_actions(uint8_t button) {
   switch (button) {
-    case PADDLE_TOP_RIGHT: {
-      steering_change_tab(true);
-      break;
-    }
-    case PADDLE_TOP_LEFT: {
-      steering_change_tab(false);
-      break;
-    }
-    case PADDLE_BOTTOM_RIGHT: {
-      if (!engineer_mode) {
+  case PADDLE_TOP_RIGHT: {
+    steering_change_tab(true);
+    break;
+  }
+  case PADDLE_TOP_LEFT: {
+    steering_change_tab(false);
+    break;
+  }
+  case PADDLE_BOTTOM_RIGHT: {
+    if (!engineer_mode) {
 #if STEER_TAB_CALIBRATION_ENABLED == 1
-        shift_box_focus(true);
+      shift_box_focus(true);
 #endif
 #if STEER_TAB_DEBUG_ENABLED == 1
-        change_errors_view(false);
+      change_errors_view(false);
 #endif
-      } else {
+    } else {
 #if CANSNIFFER_ENABLED == 1
-        change_cansniffer_index(true);
+      change_cansniffer_index(true);
 #endif
-      }
-      break;
     }
-    case PADDLE_BOTTOM_LEFT: {
-      if (!engineer_mode) {
+    break;
+  }
+  case PADDLE_BOTTOM_LEFT: {
+    if (!engineer_mode) {
 #if STEER_TAB_CALIBRATION_ENABLED == 1
-        shift_box_focus(false);
+      shift_box_focus(false);
 #endif
 #if STEER_TAB_DEBUG_ENABLED == 1
-        change_errors_view(true);
+      change_errors_view(true);
 #endif
-      } else {
+    } else {
 #if CANSNIFFER_ENABLED == 1
-        change_cansniffer_index(false);
+      change_cansniffer_index(false);
 #endif
-      }
-      break;
     }
-    case BUTTON_TOP_RIGHT:
-      if (engineer_mode) {
+    break;
+  }
+  case BUTTON_TOP_RIGHT:
+    if (engineer_mode) {
 #if CANSNIFFER_ENABLED == 1
-        switch_cansniffer();
+      switch_cansniffer();
 #endif
-      } else {
-        set_dmt_steering_angle_target();
-      }
-      break;
-    case BUTTON_TOP_LEFT:
-      if (engineer_mode) {
-      } else {
-        set_ptt_button_pressed(true);
-      }
-      break;
-    case BUTTON_BOTTOM_RIGHT: {
-      if (engineer_mode) {
+    } else {
+      set_dmt_steering_angle_target();
+    }
+    break;
+  case BUTTON_TOP_LEFT:
+    if (engineer_mode) {
+    } else {
+      set_ptt_button_pressed(true);
+    }
+    break;
+  case BUTTON_BOTTOM_RIGHT: {
+    if (engineer_mode) {
+      send_bal(true);
+      display_notification("BAL ON", 500);
+    } else {
+      if (current_racing_tab == TAB_HV) {
         send_bal(true);
         display_notification("BAL ON", 500);
-      } else {
-        if (current_racing_tab == TAB_HV) {
-          send_bal(true);
-          display_notification("BAL ON", 500);
-        }
       }
-      break;
     }
-    case BUTTON_BOTTOM_LEFT: {
-      if (engineer_mode) {
+    break;
+  }
+  case BUTTON_BOTTOM_LEFT: {
+    if (engineer_mode) {
+      send_bal(false);
+      display_notification("BAL OFF", 500);
+    } else {
+      if (current_racing_tab == TAB_HV) {
         send_bal(false);
         display_notification("BAL OFF", 500);
-      } else {
-        if (current_racing_tab == TAB_HV) {
-          send_bal(false);
-          display_notification("BAL OFF", 500);
-        }
+      }
 
-        if (current_racing_tab == TAB_RACING){
-          switch(left_manettino_selection) {
-            case LEFT_MANETTINO_SLIP_OPTION: {
-              left_manettino_selection = LEFT_MANETTINO_POWER_MAP_OPTION;
-              break;
-            }
-            case LEFT_MANETTINO_POWER_MAP_OPTION: {
-              left_manettino_selection = LEFT_MANETTINO_TORQUE_OPTION;
-              break;
-            }
-            case LEFT_MANETTINO_TORQUE_OPTION: {
-              left_manettino_selection = LEFT_MANETTINO_SLIP_OPTION;
-              break;
-            }
-            default:
-              break;
-          }
+      if (current_racing_tab == TAB_RACING) {
+        switch (left_manettino_selection) {
+        case LEFT_MANETTINO_SLIP_OPTION: {
+          left_manettino_selection = LEFT_MANETTINO_POWER_MAP_OPTION;
+          break;
+        }
+        case LEFT_MANETTINO_POWER_MAP_OPTION: {
+          left_manettino_selection = LEFT_MANETTINO_TORQUE_OPTION;
+          break;
+        }
+        case LEFT_MANETTINO_TORQUE_OPTION: {
+          left_manettino_selection = LEFT_MANETTINO_SLIP_OPTION;
+          break;
+        }
+        default:
+          break;
         }
       }
-      break;
     }
+    break;
+  }
 
-      break;
+  break;
   }
 }
 
 void buttons_released_actions(uint8_t button) {
   switch (button) {
-    case PADDLE_TOP_RIGHT:
-      break;
-    case PADDLE_TOP_LEFT:
-      break;
-    case PADDLE_BOTTOM_RIGHT:
-      break;
-    case PADDLE_BOTTOM_LEFT:
-      break;
-    case BUTTON_TOP_RIGHT:
-      break;
-    case BUTTON_TOP_LEFT:
-      set_ptt_button_pressed(false);
-      break;
-    case BUTTON_BOTTOM_RIGHT:
-      break;
-    case BUTTON_BOTTOM_LEFT:
-      break;
+  case PADDLE_TOP_RIGHT:
+    break;
+  case PADDLE_TOP_LEFT:
+    break;
+  case PADDLE_BOTTOM_RIGHT:
+    break;
+  case PADDLE_BOTTOM_LEFT:
+    break;
+  case BUTTON_TOP_RIGHT:
+    break;
+  case BUTTON_TOP_LEFT:
+    set_ptt_button_pressed(false);
+    break;
+  case BUTTON_BOTTOM_RIGHT:
+    break;
+  case BUTTON_BOTTOM_LEFT:
+    break;
   }
 }
 
 void buttons_long_pressed_actions(uint8_t button) {
   switch (button) {
-    case PADDLE_TOP_RIGHT:
-      switch_mode();
-      break;
-    case PADDLE_TOP_LEFT:
-      break;
-    case PADDLE_BOTTOM_RIGHT:
-      break;
-    case PADDLE_BOTTOM_LEFT:
-      break;
-    case BUTTON_TOP_RIGHT: {
-      if (engineer_mode) {
-      } else {
-        turn_telemetry_on_off();
-      }
-      break;
+  case PADDLE_TOP_RIGHT:
+    switch_mode();
+    break;
+  case PADDLE_TOP_LEFT:
+    break;
+  case PADDLE_BOTTOM_RIGHT:
+    break;
+  case PADDLE_BOTTOM_LEFT:
+    break;
+  case BUTTON_TOP_RIGHT: {
+    if (engineer_mode) {
+    } else {
+      turn_telemetry_on_off();
     }
-    case BUTTON_TOP_LEFT:
-      break;
-    case BUTTON_BOTTOM_RIGHT:
-      break;
-    case BUTTON_BOTTOM_LEFT:
-      break;
+    break;
+  }
+  case BUTTON_TOP_LEFT:
+    break;
+  case BUTTON_BOTTOM_RIGHT:
+    break;
+  case BUTTON_BOTTOM_LEFT:
+    break;
   }
 }
 

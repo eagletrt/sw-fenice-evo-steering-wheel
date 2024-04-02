@@ -134,7 +134,7 @@ void tab_calibration_lb_steering_angle_invalidate();
 /***
  * Tab racing
  */
-void tab_racing_refresh_values(void);
+void tab_racing_resync(void);
 void set_tab_racing_hv_current_bar(float v);
 void set_tab_racing_hv_pack_voltage_bar(float v);
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx);
@@ -142,11 +142,13 @@ void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx);
 /***
  * Tab sensors
  */
+void tab_sensor_resync(void);
 void set_tab_sensors_label_text(const char *s, tab_sensors_labels_enum idx);
 
 /***
  * Tab Track Test
  */
+void tab_track_test_resync(void);
 void set_tab_track_test_steering_angle_bar(float v);
 void set_tab_track_test_lb_speed(const char *s);
 void set_tab_track_test_dmt_steering_angle_target(float f);
@@ -177,6 +179,7 @@ void set_label_color_hv_feedbacks(int label, int i);
  */
 void tab_hv_set_error_status(debug_signal_error_t error, bool status);
 void tab_hv_update_error_label();
+void tab_hv_resync(void);
 void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
 void set_balancing_column(bool balancing, uint8_t idx);
 void tab_hv_set_pork_speed_bar(int32_t, bool);
@@ -187,6 +190,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, float shu
 /***
  * Tab lv
  */
+void tab_lv_resync(void);
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx);
 void lv_set_pumps_speed_bar(int32_t);
 void lv_set_radiators_speed_bar(int32_t);

@@ -95,14 +95,16 @@ void update_secondary_cansniffer_ui(lv_timer_t *unused_tim) {
                                      secondary_cansniffer_id_name);
       for (size_t jindex = 0; jindex < secondary_cansniffer_buffer[index].len;
            ++jindex) {
-        snprintf(secondary_cansniffer_data_string + jindex * 3, SECONDARY_CANSNIFFER_DATA_STRING_SIZE, "%02X ",
-                secondary_cansniffer_buffer[index].data[jindex]);
+        snprintf(secondary_cansniffer_data_string + jindex * 3,
+                 SECONDARY_CANSNIFFER_DATA_STRING_SIZE, "%02X ",
+                 secondary_cansniffer_buffer[index].data[jindex]);
       }
       update_secondary_cansniffer_value(iindex -
                                             (TAB_CANSNIFFER_N_MESSAGES_SHOWN *
                                              secondary_cansniffer_start_index),
                                         index);
-      snprintf(secondary_cansniffer_id_name, SECONDARY_CANSNIFFER_ID_NAME_SIZE, "unknown");
+      snprintf(secondary_cansniffer_id_name, SECONDARY_CANSNIFFER_ID_NAME_SIZE,
+               "unknown");
     }
   }
 }
