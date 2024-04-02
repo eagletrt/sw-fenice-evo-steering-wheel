@@ -43,7 +43,7 @@
 #define LEFT_MANETTINO_POWER_MAP_OPTION 1
 #define LEFT_MANETTINO_TORQUE_OPTION 2
 
-extern primary_steer_status_converted_t steer_status_last_state;
+extern primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state;
 
 typedef enum {
   RADS_AUTO,

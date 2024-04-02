@@ -33,23 +33,21 @@ void update_graphics(lv_timer_t *t) {
       is_pmsg_new[iindex] = false;
       can_id_t id = primary_id_from_index(iindex);
       switch (id) {
-      case PRIMARY_CAR_STATUS_FRAME_ID: {
+      case PRIMARY_ECU_STATUS_FRAME_ID: {
         car_status_update();
         break;
       }
-      case PRIMARY_COOLING_STATUS_FRAME_ID: {
+      case PRIMARY_LV_RADIATOR_SPEED_FRAME_ID:
+      case PRIMARY_LV_PUMPS_SPEED_FRAME_ID: {
         cooling_status_update();
         break;
       }
-      case PRIMARY_SPEED_FRAME_ID: {
-        speed_update();
-        break;
-      }
+      
       case PRIMARY_ECU_FEEDBACKS_FRAME_ID: {
         ecu_feedbacks_update();
         break;
       }
-      case PRIMARY_TS_STATUS_FRAME_ID: {
+      case PRIMARY_HV_STATUS_FRAME_ID: {
         ts_status_update();
         break;
       }
@@ -57,7 +55,7 @@ void update_graphics(lv_timer_t *t) {
         hv_debug_signals_update();
         break;
       }
-      case PRIMARY_HV_VOLTAGE_FRAME_ID: {
+      case PRIMARY_HV_TOTAL_VOLTAGE_FRAME_ID: {
         hv_voltage_update();
         break;
       }
@@ -65,7 +63,7 @@ void update_graphics(lv_timer_t *t) {
         hv_current_update();
         break;
       }
-      case PRIMARY_HV_TEMP_FRAME_ID: {
+      case PRIMARY_HV_CELLS_TEMP_STATS_FRAME_ID: {
         hv_temp_update();
         break;
       }
@@ -73,15 +71,16 @@ void update_graphics(lv_timer_t *t) {
         hv_errors_update();
         break;
       }
-      case PRIMARY_HV_CELL_BALANCING_STATUS_FRAME_ID: {
+      case PRIMARY_HV_BALANCING_STATUS_FRAME_ID: {
         hv_cell_balancing_status_update();
         break;
       }
-      case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
-        lv_feedbacks_update();
-        break;
-      }
-      case PRIMARY_HV_FANS_OVERRIDE_STATUS_FRAME_ID: {
+      // TODO RICKY
+      // case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
+        // lv_feedbacks_update();
+        // break;
+      // }
+      case PRIMARY_HV_FANS_STATUS_FRAME_ID: {
         hv_fans_override_status_update();
         break;
       }
@@ -89,11 +88,12 @@ void update_graphics(lv_timer_t *t) {
         tlm_status_update();
         break;
       }
-      case PRIMARY_DAS_ERRORS_FRAME_ID: {
-        das_errors_update();
-        break;
-      }
-      case PRIMARY_LV_CURRENTS_FRAME_ID: {
+      // TODO
+      // case PRIMARY_DAS_ERRORS_FRAME_ID: {
+        // das_errors_update();
+        // break;
+      // }
+      case PRIMARY_LV_CURRENT_BATTERY_FRAME_ID: {
         lv_currents_update();
         break;
       }
@@ -113,7 +113,7 @@ void update_graphics(lv_timer_t *t) {
         lv_errors_update();
         break;
       }
-      case PRIMARY_HV_CELL_VOLTAGE_FRAME_ID: {
+      case PRIMARY_HV_CELLS_VOLTAGE_STATS_FRAME_ID: {
         hv_cell_voltage_update();
         break;
       }
@@ -150,26 +150,31 @@ void update_graphics(lv_timer_t *t) {
     if (is_smsg_new[iindex]) {
       can_id_t id = secondary_id_from_index(iindex);
       switch (id) {
-      case SECONDARY_STEERING_ANGLE_FRAME_ID: {
+      case SECONDARY_SPEED_FRAME_ID: {
+        speed_update();
+        break;
+      }
+      case SECONDARY_STEER_ANGLE_FRAME_ID: {
         steering_angle_update();
         break;
       }
-      case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
-        pedals_output_update();
-        break;
-      }
+      // case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
+        // pedals_output_update();
+        // break;
+      // }
       case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
         imu_acceleration_update();
         break;
       }
-      case SECONDARY_LAP_COUNT_FRAME_ID: {
-        lap_count_update();
-        break;
-      }
-      case SECONDARY_LC_STATUS_FRAME_ID: {
-        lc_status_update();
-        break;
-      }
+      // TODO RICKY
+      // case SECONDARY_LAP_COUNT_FRAME_ID: {
+        // lap_count_update();
+        // break;
+      // }
+      // case SECONDARY_LC_STATUS_FRAME_ID: {
+        // lc_status_update();
+        // break;
+      // }
       case SECONDARY_IRTS_FL_0_FRAME_ID:
       case SECONDARY_IRTS_FL_1_FRAME_ID:
       case SECONDARY_IRTS_FL_2_FRAME_ID:

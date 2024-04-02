@@ -26,35 +26,32 @@ extern lv_obj_t *set_max_btn;
 #endif
 char sprintf_buffer_controls[BUFSIZ];
 
-primary_steer_status_converted_t steer_status_last_state = {
+primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
-primary_cooling_status_converted_t steering_cooling_settings = {
-    .pumps_speed = -1.0f, .radiators_speed = -1.0f};
-primary_hv_fans_override_converted_t hv_fans_override_settings = {
-    .fans_override = primary_hv_fans_override_fans_override_OFF,
+
+primary_lv_radiator_speed_converted_t lv_radiator_speed_last_state = { .radiator_speed = -0.1f };
+primary_lv_pumps_speed_converted_t lv_pumps_speed_last_state = { .pumps_speed = -0.1f };
+primary_hv_fans_status_converted_t hv_fans_override_settings = {
+    .fans_override = primary_hv_fans_status_fans_override_off,
     .fans_speed = 0.0f};
 
-// float fmin(float x, float y) { return x > y ? y : x; }
-// float fmax(float x, float y) { return x > y ? x : y; }
-
 void set_dmt_steering_angle_target(void) {
-  GET_LAST_STATE(secondary, steering_angle, SECONDARY, STEERING_ANGLE);
-  set_tab_track_test_dmt_steering_angle_target(
-      secondary_steering_angle_last_state->angle);
+  GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
+  set_tab_track_test_dmt_steering_angle_target( secondary_steer_angle_last_state->angle);
 }
 
 void turn_telemetry_on_off(void) {
   GET_LAST_STATE(primary, tlm_status, PRIMARY, TLM_STATUS);
-  primary_set_tlm_status_converted_t converted = {0};
-  if (primary_tlm_status_last_state->tlm_status ==
-      (primary_set_tlm_status_tlm_status)primary_set_tlm_status_tlm_status_ON) {
+  primary_tlm_set_status_converted_t converted = {0};
+  if (primary_tlm_status_last_state->status ==
+      primary_tlm_status_status_on) {
     display_notification("Sending Telemetry OFF", 800);
-    converted.tlm_status = primary_set_tlm_status_tlm_status_OFF;
+    converted.status = primary_tlm_set_status_status_off;
   } else {
     display_notification("Sending Telemetry ON", 800);
-    converted.tlm_status = primary_set_tlm_status_tlm_status_ON;
+    converted.status = primary_tlm_set_status_status_on;
   }
-  STEER_CAN_PACK(primary, PRIMARY, set_tlm_status, SET_TLM_STATUS);
+  STEER_CAN_PACK(primary, PRIMARY, tlm_set_status, TLM_SET_STATUS);
   can_send(&msg, true);
 }
 
@@ -148,12 +145,12 @@ void manettino_left_actions(int dsteps) {
       slip_control_last_state =
           fmaxf(slip_control_last_state, SLIP_CONTROL_MIN);
       manettino_send_slip_control((float)slip_control_last_state / 100.0f);
-      //      if (steer_status_last_state.map_sc + (float)dsteps / 10.0f > 0.0f
-      //      && steer_status_last_state.map_sc + (float)dsteps / 10.0f < 1.0f)
+      //      if (ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f > 0.0f
+      //      && ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f < 1.0f)
       //      {
-      //        manettino_send_slip_control(steer_status_last_state.map_sc +
+      //        manettino_send_slip_control(ecu_set_power_maps_last_state.map_sc +
       //        (float)dsteps / 10.0f);
-      //      }else if (steer_status_last_state.map_sc + (float)dsteps / 10.0f <
+      //      }else if (ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f <
       //      0.0f) {
       //        manettino_send_slip_control(0.0f);
       //      }else {
@@ -184,22 +181,22 @@ void manettino_left_actions(int dsteps) {
 }
 
 void manettino_send_slip_control(float val) {
-  steer_status_last_state.map_sc = val;
-  int map_val = (int)(steer_status_last_state.map_sc * 100.0f);
+  ecu_set_power_maps_last_state.map_sc = val;
+  int map_val = (int)(ecu_set_power_maps_last_state.map_sc * 100.0f);
   snprintf(sprintf_buffer_controls, BUFSIZ, "%u", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_slip_idx);
 }
 
 void manettino_send_torque_vectoring(float val) {
-  steer_status_last_state.map_tv = val;
-  int map_val = (int)(steer_status_last_state.map_tv * 100.0f);
+  ecu_set_power_maps_last_state.map_tv = val;
+  int map_val = (int)(ecu_set_power_maps_last_state.map_tv * 100.0f);
   snprintf(sprintf_buffer_controls, BUFSIZ, "%u", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_torque_idx);
 }
 
 void manettino_send_power_map(float val) {
-  steer_status_last_state.map_pw = val;
-  float map_val = (float)(steer_status_last_state.map_pw * 100.0f);
+  ecu_set_power_maps_last_state.map_pw = val;
+  float map_val = (float)(ecu_set_power_maps_last_state.map_pw * 100.0f);
   snprintf(sprintf_buffer_controls, BUFSIZ, "%.0f", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);
 
@@ -208,36 +205,36 @@ void manettino_send_power_map(float val) {
 }
 
 void manettino_send_set_pumps_speed(float val) {
-  steering_cooling_settings.pumps_speed = val;
+  lv_pumps_speed_last_state.pumps_speed = val;
 
-  primary_set_pumps_speed_converted_t converted = {0};
-  converted.pumps_speed = steering_cooling_settings.pumps_speed;
-  STEER_CAN_PACK(primary, PRIMARY, set_pumps_speed, SET_PUMPS_SPEED);
+  primary_lv_set_pumps_speed_converted_t converted = {0};
+  converted.pumps_speed = lv_pumps_speed_last_state.pumps_speed;
+  STEER_CAN_PACK(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED);
   // can_send(&msg, true);
 
   if (val < 0.0f) {
     set_tab_lv_label_text("AUTO", tab_lv_lb_pumps_local);
   } else {
     lv_set_pumps_speed_bar((int32_t)(val * 100.0f));
-    int map_val = (int)(steering_cooling_settings.pumps_speed * 100);
+    int map_val = (int)(lv_pumps_speed_last_state.pumps_speed * 100);
     snprintf(sprintf_buffer_controls, BUFSIZ, "%u", map_val);
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_local);
   }
 }
 
 void manettino_send_set_radiators(float val) {
-  steering_cooling_settings.radiators_speed = val;
-  primary_set_radiator_speed_converted_t converted = {0};
-  converted.radiators_speed = steering_cooling_settings.radiators_speed;
-  STEER_CAN_PACK(primary, PRIMARY, set_radiator_speed, SET_RADIATOR_SPEED);
-  // can_send(&msg, true);
+  lv_radiator_speed_last_state.radiator_speed = val;
+  primary_lv_set_radiator_speed_converted_t converted = {0};
+  converted.radiator_speed = lv_radiator_speed_last_state.radiator_speed;
+  STEER_CAN_PACK(primary, PRIMARY, lv_set_radiator_speed, LV_SET_RADIATOR_SPEED);
+  can_send(&msg, true);
 
   if (val < 0.0f) {
     set_tab_lv_label_text("AUTO", tab_lv_lb_radiators_local);
   } else {
     lv_set_radiators_speed_bar(
-        (int32_t)(steering_cooling_settings.radiators_speed * 100));
-    int map_val = (int)(steering_cooling_settings.radiators_speed * 100);
+        (int32_t)(lv_radiator_speed_last_state.radiator_speed * 100));
+    int map_val = (int)(lv_radiator_speed_last_state.radiator_speed * 100);
     snprintf(sprintf_buffer_controls, BUFSIZ, "%u", map_val);
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_local);
   }
@@ -409,20 +406,19 @@ void buttons_long_pressed_actions(uint8_t button) {
 void send_pork_fans_status(float val) {
   if (val < 0.0f) {
     hv_fans_override_settings.fans_override =
-        primary_hv_fans_override_fans_override_OFF;
+        primary_hv_fans_status_fans_override_off;
   } else {
     hv_fans_override_settings.fans_override =
-        primary_hv_fans_override_fans_override_ON;
+        primary_hv_fans_status_fans_override_on;
     hv_fans_override_settings.fans_speed = fmax(0.0f, fmin(1.0f, val));
   }
-  primary_hv_fans_override_converted_t converted = {0};
+  primary_hv_fans_status_converted_t converted = {0};
   converted.fans_override = hv_fans_override_settings.fans_override;
   converted.fans_speed = hv_fans_override_settings.fans_speed;
-  STEER_CAN_PACK(primary, PRIMARY, hv_fans_override, HV_FANS_OVERRIDE);
+  STEER_CAN_PACK(primary, PRIMARY, hv_set_fans_status_handcart, HV_SET_FANS_STATUS_HANDCART);
   can_send(&msg, true);
 
-  bool auto_mode = hv_fans_override_settings.fans_override ==
-                   primary_hv_fans_override_fans_override_OFF;
+  bool auto_mode = hv_fans_override_settings.fans_override == primary_hv_fans_status_fans_override_off;
 
   if (val < 0.0f) { // TODO: move outside of cansend
   } else {
@@ -441,50 +437,50 @@ void send_pork_fans_status(float val) {
 #endif
 }
 
-void send_set_car_status(primary_set_car_status_car_status_set val) {
-  primary_set_car_status_converted_t converted = {0};
-  converted.car_status_set = val;
-  STEER_CAN_PACK(primary, PRIMARY, set_car_status, SET_CAR_STATUS);
+void send_set_car_status(primary_ecu_set_status_status val) {
+  primary_ecu_set_status_converted_t converted = {0};
+  converted.status = val;
+  STEER_CAN_PACK(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS);
   can_send(&msg, true);
   can_send(&msg, true);
 }
 
 void prepare_set_car_status(void) {
-  GET_LAST_STATE(primary, car_status, PRIMARY, CAR_STATUS);
-  switch (primary_car_status_last_state->car_status) {
-  case primary_car_status_car_status_INIT:
-  case primary_car_status_car_status_ENABLE_INV_UPDATES:
-  case primary_car_status_car_status_CHECK_INV_SETTINGS: {
-    send_set_car_status(primary_set_car_status_car_status_set_IDLE);
+  GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
+  switch (primary_ecu_status_last_state->status) {
+  case primary_ecu_status_status_init:
+  case primary_ecu_status_status_enable_inv_updates:
+  case primary_ecu_status_status_check_inv_settings: {
+    send_set_car_status(primary_ecu_set_status_status_idle);
     display_notification("ECU not in IDLE yet, sending IDLE anyway", 1500);
     break;
   }
-  case primary_car_status_car_status_IDLE: {
-    send_set_car_status(primary_set_car_status_car_status_set_READY);
+  case primary_ecu_status_status_idle: {
+    send_set_car_status(primary_ecu_set_status_status_ready);
     display_notification("TSON", 1500);
     break;
   }
-  case primary_car_status_car_status_START_TS_PRECHARGE:
-  case primary_car_status_car_status_WAIT_TS_PRECHARGE: {
+  case primary_ecu_status_status_start_ts_precharge:
+  case primary_ecu_status_status_wait_ts_precharge: {
     display_notification("Precharge not finished yet", 1500);
     break;
   }
-  case primary_car_status_car_status_WAIT_DRIVER: {
-    send_set_car_status(primary_set_car_status_car_status_set_DRIVE);
+  case primary_ecu_status_status_wait_driver: {
+    send_set_car_status(primary_ecu_set_status_status_drive);
     display_notification("DRIVE", 1500);
     break;
   }
-  case primary_car_status_car_status_ENABLE_INV_DRIVE:
-  case primary_car_status_car_status_DRIVE:
-  case primary_car_status_car_status_DISABLE_INV_DRIVE:
-  case primary_car_status_car_status_START_TS_DISCHARGE:
-  case primary_car_status_car_status_WAIT_TS_DISCHARGE: {
-    send_set_car_status(primary_set_car_status_car_status_set_IDLE);
+  case primary_ecu_status_status_enable_inv_drive:
+  case primary_ecu_status_status_drive:
+  case primary_ecu_status_status_disable_inv_drive:
+  case primary_ecu_status_status_start_ts_discharge:
+  case primary_ecu_status_status_wait_ts_discharge: {
+    send_set_car_status(primary_ecu_set_status_status_idle);
     display_notification("IDLE", 1500);
     break;
   }
-  case primary_car_status_car_status_FATAL_ERROR: {
-    send_set_car_status(primary_set_car_status_car_status_set_IDLE);
+  case primary_ecu_status_status_fatal_error: {
+    send_set_car_status(primary_ecu_set_status_status_idle);
     display_notification("ECU in FATAL ERROR, sending IDLE anyway", 1500);
     break;
   }
@@ -492,11 +488,11 @@ void prepare_set_car_status(void) {
 }
 
 bool send_set_car_status_directly(void) {
-  GET_LAST_STATE(primary, car_status, PRIMARY, CAR_STATUS);
+  GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
   bool retval = true;
-  switch (primary_car_status_last_state->car_status) {
-  case primary_car_status_car_status_IDLE:
-  case primary_car_status_car_status_WAIT_DRIVER: {
+  switch (primary_ecu_status_last_state->status) {
+  case primary_ecu_status_status_idle:
+  case primary_ecu_status_status_wait_driver: {
     retval = false;
     break;
   }
