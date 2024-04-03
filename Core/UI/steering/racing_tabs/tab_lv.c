@@ -12,20 +12,14 @@ lv_style_t tab_lv_style_back_indic;
 char tab_lv_new_label_buffer[10];
 
 lv_obj_t *tab_lv_labels[tab_lv_labels_n] = {
-    [tab_lv_lb_temp_max] = NULL,        [tab_lv_lb_temp_min] = NULL,
-    [tab_lv_lb_temp_avg] = NULL,        [tab_lv_lb_voltage_max] = NULL,
-    [tab_lv_lb_voltage_min] = NULL,     [tab_lv_lb_voltage_delta] = NULL,
-    [tab_lv_lb_pack_voltage] = NULL,    [tab_lv_lb_pack_voltage_2] = NULL,
-    [tab_lv_lb_bus_voltage] = NULL,     [tab_lv_lb_current_state] = NULL,
-    [tab_lv_lb_last_error] = NULL,      [tab_lv_lb_state] = NULL,
-#if 0 
-   [tab_lv_lb_pumps_actual] = NULL,
-#endif
-    [tab_lv_lb_pumps_local] = NULL,
-#if 0
-    [tab_lv_lb_radiators_actual] = NULL,
-#endif
-    [tab_lv_lb_radiators_local] = NULL,
+    [tab_lv_lb_temp_max] = NULL,         [tab_lv_lb_temp_min] = NULL,
+    [tab_lv_lb_temp_avg] = NULL,         [tab_lv_lb_voltage_max] = NULL,
+    [tab_lv_lb_voltage_min] = NULL,      [tab_lv_lb_voltage_delta] = NULL,
+    [tab_lv_lb_pack_voltage] = NULL,     [tab_lv_lb_pack_voltage_2] = NULL,
+    [tab_lv_lb_bus_voltage] = NULL,      [tab_lv_lb_current_state] = NULL,
+    [tab_lv_lb_last_error] = NULL,       [tab_lv_lb_state] = NULL,
+    [tab_lv_lb_pumps_actual] = NULL,     [tab_lv_lb_pumps_local] = NULL,
+    [tab_lv_lb_radiators_actual] = NULL, [tab_lv_lb_radiators_local] = NULL,
 };
 
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx) {
@@ -56,17 +50,19 @@ void lv_radiators_speed_bar_invalidate() {
 }
 
 void init_lv_styles(void) {
-    lv_style_init(&tab_lv_style_indic);
-    lv_style_set_radius(&tab_lv_style_indic, 0);
-    lv_style_set_bg_opa(&tab_lv_style_indic, LV_OPA_COVER);
-    lv_style_set_bg_color(&tab_lv_style_indic, lv_palette_main(LV_PALETTE_BLUE));
-    lv_style_set_bg_grad_color(&tab_lv_style_indic, lv_palette_main(LV_PALETTE_RED));
-    lv_style_set_bg_grad_dir(&tab_lv_style_indic, LV_GRAD_DIR_VER);
-    
-    lv_style_init(&tab_lv_style_back_indic);
-    lv_style_set_radius(&tab_lv_style_back_indic, 0);
-    lv_style_set_bg_opa(&tab_lv_style_back_indic, LV_OPA_COVER);
-    lv_style_set_bg_color(&tab_lv_style_back_indic, lv_color_hex(COLOR_SECONDARY_HEX));
+  lv_style_init(&tab_lv_style_indic);
+  lv_style_set_radius(&tab_lv_style_indic, 0);
+  lv_style_set_bg_opa(&tab_lv_style_indic, LV_OPA_COVER);
+  lv_style_set_bg_color(&tab_lv_style_indic, lv_palette_main(LV_PALETTE_BLUE));
+  lv_style_set_bg_grad_color(&tab_lv_style_indic,
+                             lv_palette_main(LV_PALETTE_RED));
+  lv_style_set_bg_grad_dir(&tab_lv_style_indic, LV_GRAD_DIR_VER);
+
+  lv_style_init(&tab_lv_style_back_indic);
+  lv_style_set_radius(&tab_lv_style_back_indic, 0);
+  lv_style_set_bg_opa(&tab_lv_style_back_indic, LV_OPA_COVER);
+  lv_style_set_bg_color(&tab_lv_style_back_indic,
+                        lv_color_hex(COLOR_SECONDARY_HEX));
 }
 
 void tab_lv_create(lv_obj_t *parent) {
@@ -278,18 +274,18 @@ void tab_lv_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(pumps_bar_panel, LV_GRID_ALIGN_STRETCH, 0, 1,
                        LV_GRID_ALIGN_STRETCH, 1, 1);
 
-#if 0
   lv_obj_t *pumps_actual_value = lv_horizontal_pair_label(
       pumps_bar_panel, &tab_lv_labels[tab_lv_lb_pumps_actual], "0",
       &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(pumps_actual_value, LV_GRID_ALIGN_END, 0, 1,
                        LV_GRID_ALIGN_START, 0, 1);
-#endif
 
   tab_lv_pumps_speed_bar = lv_bar_create(pumps_bar_panel);
   lv_obj_remove_style_all(tab_lv_pumps_speed_bar);
-  lv_obj_add_style(tab_lv_pumps_speed_bar, &tab_lv_style_indic, LV_PART_INDICATOR);
-  lv_obj_add_style(tab_lv_pumps_speed_bar, &tab_lv_style_back_indic, LV_PART_MAIN);
+  lv_obj_add_style(tab_lv_pumps_speed_bar, &tab_lv_style_indic,
+                   LV_PART_INDICATOR);
+  lv_obj_add_style(tab_lv_pumps_speed_bar, &tab_lv_style_back_indic,
+                   LV_PART_MAIN);
   lv_obj_set_size(tab_lv_pumps_speed_bar, 50, BAR_HEIGHT);
   lv_bar_set_range(tab_lv_pumps_speed_bar, 0, 100);
   lv_bar_set_value(tab_lv_pumps_speed_bar, 0, LV_ANIM_OFF);
@@ -391,18 +387,18 @@ void tab_lv_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(radiators_bar_panel, LV_GRID_ALIGN_STRETCH, 0, 1,
                        LV_GRID_ALIGN_STRETCH, 1, 1);
 
-#if 0
   lv_obj_t *radiators_actual_value = lv_horizontal_pair_label(
       radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_actual], "0",
       &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
   lv_obj_set_grid_cell(radiators_actual_value, LV_GRID_ALIGN_END, 0, 1,
                        LV_GRID_ALIGN_START, 0, 1);
-#endif
 
   tab_lv_radiators_speed_bar = lv_bar_create(radiators_bar_panel);
   lv_obj_remove_style_all(tab_lv_radiators_speed_bar);
-  lv_obj_add_style(tab_lv_radiators_speed_bar, &tab_lv_style_indic, LV_PART_INDICATOR);
-  lv_obj_add_style(tab_lv_radiators_speed_bar, &tab_lv_style_back_indic, LV_PART_MAIN);
+  lv_obj_add_style(tab_lv_radiators_speed_bar, &tab_lv_style_indic,
+                   LV_PART_INDICATOR);
+  lv_obj_add_style(tab_lv_radiators_speed_bar, &tab_lv_style_back_indic,
+                   LV_PART_MAIN);
   lv_obj_set_size(tab_lv_radiators_speed_bar, 50, BAR_HEIGHT);
   lv_bar_set_range(tab_lv_radiators_speed_bar, 0, 100);
   lv_bar_set_value(tab_lv_radiators_speed_bar, 0, LV_ANIM_OFF);
@@ -416,3 +412,5 @@ void tab_lv_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(radiators_local_value, LV_GRID_ALIGN_START, 2, 1,
                        LV_GRID_ALIGN_START, 0, 1);
 }
+
+void tab_lv_resync(void) {}

@@ -8,8 +8,6 @@ uint32_t calibration_max_request_timestamp[CALBOX_N];
 
 int torque_vectoring_last_state = 0;
 int slip_control_last_state = 0;
-int set_pumps_speed_last_state = 0;
-int set_radiators_last_state = 0;
 int pork_fans_status_last_state = 0;
 int power_map_last_state = 0;
 
@@ -29,22 +27,31 @@ char sprintf_buffer_controls[BUFSIZ];
 primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state = {
     .map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
 
-primary_lv_radiator_speed_converted_t lv_radiator_speed_last_state = { .radiator_speed = -0.1f };
-primary_lv_pumps_speed_converted_t lv_pumps_speed_last_state = { .pumps_speed = -0.1f };
+primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed = {
+    .radiator_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
+primary_lv_pumps_speed_converted_t steering_wheel_state_pumps_speed = {
+    .pumps_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
 primary_hv_fans_status_converted_t hv_fans_override_settings = {
     .fans_override = primary_hv_fans_status_fans_override_off,
     .fans_speed = 0.0f};
 
+uint32_t steering_wheel_lv_pumps_speed_sent_timestamp = 0;
+uint32_t steering_wheel_lv_radiators_speed_sent_timestamp = 0;
+steering_wheel_cooling_status_t steering_wheel_lv_pumps_speed_state =
+    STEERING_WHEEL_COOLING_STATUS_SYNC;
+steering_wheel_cooling_status_t steering_wheel_lv_radiator_speed_state =
+    STEERING_WHEEL_COOLING_STATUS_SYNC;
+
 void set_dmt_steering_angle_target(void) {
   GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
-  set_tab_track_test_dmt_steering_angle_target( secondary_steer_angle_last_state->angle);
+  set_tab_track_test_dmt_steering_angle_target(
+      secondary_steer_angle_last_state->angle);
 }
 
 void turn_telemetry_on_off(void) {
   GET_LAST_STATE(primary, tlm_status, PRIMARY, TLM_STATUS);
   primary_tlm_set_status_converted_t converted = {0};
-  if (primary_tlm_status_last_state->status ==
-      primary_tlm_status_status_on) {
+  if (primary_tlm_status_last_state->status == primary_tlm_status_status_on) {
     display_notification("Sending Telemetry OFF", 800);
     converted.status = primary_tlm_set_status_status_off;
   } else {
@@ -89,14 +96,14 @@ void manettino_right_actions(int dsteps) {
           fmaxf(pork_fans_status_last_state, PORK_LOW_FANS_SPEED);
       send_pork_fans_status((float)pork_fans_status_last_state / 100.0f);
       break;
-    case TAB_LV:
-      set_radiators_last_state += dsteps * 10;
-      set_radiators_last_state =
-          fminf(set_radiators_last_state, SET_RADIATORS_MAX);
-      set_radiators_last_state =
-          fmaxf(set_radiators_last_state, SET_RADIATORS_MIN);
-      manettino_send_set_radiators((float)set_radiators_last_state / 100.f);
+    case TAB_LV: {
+      float new_radspeed_val = steering_wheel_state_radiator_speed.radiator_speed + ((float)dsteps / 10.0f);
+      new_radspeed_val = fminf(new_radspeed_val, SET_RADIATORS_MAX);
+      new_radspeed_val = fmaxf(new_radspeed_val, SET_RADIATORS_MIN);
+      steering_wheel_state_radiator_speed.radiator_speed = new_radspeed_val;
+      manettino_set_radiators_speed();
       break;
+    }
     default:
       break;
     }
@@ -154,13 +161,15 @@ void manettino_left_actions(int dsteps) {
       slip_control_last_state =
           fmaxf(slip_control_last_state, SLIP_CONTROL_MIN);
       manettino_send_slip_control((float)slip_control_last_state / 100.0f);
-      //      if (ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f > 0.0f
-      //      && ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f < 1.0f)
+      //      if (ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f >
+      //      0.0f
+      //      && ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f
+      //      < 1.0f)
       //      {
-      //        manettino_send_slip_control(ecu_set_power_maps_last_state.map_sc +
-      //        (float)dsteps / 10.0f);
-      //      }else if (ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f <
-      //      0.0f) {
+      //        manettino_send_slip_control(ecu_set_power_maps_last_state.map_sc
+      //        + (float)dsteps / 10.0f);
+      //      }else if (ecu_set_power_maps_last_state.map_sc + (float)dsteps
+      //      / 10.0f < 0.0f) {
       //        manettino_send_slip_control(0.0f);
       //      }else {
       //          manettino_send_slip_control(1.0f);
@@ -174,15 +183,14 @@ void manettino_left_actions(int dsteps) {
       // TODO: implement Balancing threshold as defined by the new steering
       // wheel map (see images)
       break;
-    case TAB_LV:
-      set_pumps_speed_last_state += dsteps * 10;
-      set_pumps_speed_last_state =
-          fminf(set_pumps_speed_last_state, SET_PUMP_SPEED_MAX);
-      set_pumps_speed_last_state =
-          fmaxf(set_pumps_speed_last_state, SET_PUMP_SPEED_MIN);
-      manettino_send_set_pumps_speed((float)set_pumps_speed_last_state /
-                                     100.0f);
+    case TAB_LV: {
+      float new_pumps_speed_val = steering_wheel_state_pumps_speed.pumps_speed + ((float)dsteps / 10.0f);
+      new_pumps_speed_val = fminf(new_pumps_speed_val, SET_PUMP_SPEED_MAX);
+      new_pumps_speed_val = fmaxf(new_pumps_speed_val, SET_PUMP_SPEED_MIN);
+      steering_wheel_state_pumps_speed.pumps_speed = new_pumps_speed_val;
+      manettino_set_pumps_speed();
       break;
+    }
     default:
       break;
     }
@@ -208,56 +216,54 @@ void manettino_send_power_map(float val) {
   float map_val = (float)(ecu_set_power_maps_last_state.map_pw * 100.0f);
   snprintf(sprintf_buffer_controls, BUFSIZ, "%.0f", map_val);
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);
-
-  // tab_racing_resync();
-  //  display_notification("")
 }
 
-void manettino_send_set_pumps_speed(float val) {
-  lv_pumps_speed_last_state.pumps_speed = val;
-
-  primary_lv_set_pumps_speed_converted_t converted = {0};
-  converted.pumps_speed = lv_pumps_speed_last_state.pumps_speed;
-  STEER_CAN_PACK(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED);
-  // can_send(&msg, true);
-
-  if (val < 0.0f) {
-    set_tab_lv_label_text("AUTO", tab_lv_lb_pumps_local);
-  } else {
-    lv_set_pumps_speed_bar((int32_t)(val * 100.0f));
-    int map_val = (int)(lv_pumps_speed_last_state.pumps_speed * 100);
-    snprintf(sprintf_buffer_controls, BUFSIZ, "%u", map_val);
-    set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_local);
-  }
-}
-
-void manettino_send_set_radiators(float val) {
-  lv_radiator_speed_last_state.radiator_speed = val;
+void manettino_send_radiators_speed() {
   primary_lv_set_radiator_speed_converted_t converted = {0};
-  converted.radiator_speed = lv_radiator_speed_last_state.radiator_speed;
+  converted.status = steering_wheel_state_radiator_speed.status;
+  converted.radiator_speed = steering_wheel_state_radiator_speed.radiator_speed;
   STEER_CAN_PACK(primary, PRIMARY, lv_set_radiator_speed, LV_SET_RADIATOR_SPEED);
   can_send(&msg, true);
+}
 
-  if (val < 0.0f) {
-    set_tab_lv_label_text("AUTO", tab_lv_lb_radiators_local);
+void manettino_set_radiators_speed() {
+  steering_wheel_lv_radiator_speed_state = STEERING_WHEEL_COOLING_STATUS_SET;
+  steering_wheel_lv_radiators_speed_sent_timestamp = get_current_time_ms();
+
+  if (steering_wheel_state_radiator_speed.radiator_speed < 0.0f) {
+    steering_wheel_state_radiator_speed.radiator_speed = 0.0f;
+    steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_auto;
+    snprintf(sprintf_buffer_controls, BUFSIZ, "AUTO");
   } else {
-    lv_set_radiators_speed_bar(
-        (int32_t)(lv_radiator_speed_last_state.radiator_speed * 100));
-    int map_val = (int)(lv_radiator_speed_last_state.radiator_speed * 100);
-    snprintf(sprintf_buffer_controls, BUFSIZ, "%u", map_val);
-    set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_local);
+    steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_manual;
+    snprintf(sprintf_buffer_controls, BUFSIZ, "%0.1f", steering_wheel_state_radiator_speed.radiator_speed);
   }
+  set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_local);
+  manettino_send_radiators_speed();
+}
 
-#if 0
-  int map_val = (int)(steering_cooling_settings.radiators_speed * 100.0f);
+void manettino_send_pumps_speed() {
+  primary_lv_set_pumps_speed_converted_t converted = {0};
+  converted.status = steering_wheel_state_pumps_speed.status;
+  converted.pumps_speed = steering_wheel_state_pumps_speed.pumps_speed;
+  STEER_CAN_PACK(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED);
+  can_send(&msg, true);
+}
 
-  if (steering_cooling_settings.radiators_speed < 0.0f) {
-    snprintf(sprintf_buffer_controls, BUFSIZ, "RADIATOR SPEED AUTO");
+void manettino_set_pumps_speed() {
+  steering_wheel_lv_pumps_speed_state = STEERING_WHEEL_COOLING_STATUS_SET;
+  steering_wheel_lv_pumps_speed_sent_timestamp = get_current_time_ms();
+
+  if (steering_wheel_state_pumps_speed.pumps_speed < 0.0f) {
+    steering_wheel_state_pumps_speed.pumps_speed = 0.0f;
+    steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_auto;
+    snprintf(sprintf_buffer_controls, BUFSIZ, "AUTO");
   } else {
-    snprintf(sprintf_buffer_controls, BUFSIZ, "RADIATORS SPEED %d", map_val);
+    steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_manual;
+    snprintf(sprintf_buffer_controls, BUFSIZ, "%d%%", (int)(steering_wheel_state_pumps_speed.pumps_speed * 100.f));
   }
-  // display_notification(sprintf_buffer_controls, 750);
-#endif
+  set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_local);
+  manettino_send_pumps_speed();
 }
 
 void buttons_pressed_actions(uint8_t button) {
@@ -427,7 +433,8 @@ void send_pork_fans_status(float val) {
   STEER_CAN_PACK(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
   can_send(&msg, true);
 
-  bool auto_mode = hv_fans_override_settings.fans_override == primary_hv_fans_status_fans_override_off;
+  bool auto_mode = hv_fans_override_settings.fans_override ==
+                   primary_hv_fans_status_fans_override_off;
 
   if (val < 0.0f) { // TODO: move outside of cansend
   } else {

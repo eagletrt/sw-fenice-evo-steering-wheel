@@ -38,24 +38,22 @@ lv_obj_t *balancing_columns[N_PORK_CELLBOARD] = {
     [0] = NULL, [1] = NULL, [2] = NULL, [3] = NULL, [4] = NULL, [5] = NULL,
 };
 
-const char* debug_signal_error_labels[] = {
-  "cell low voltage",
-  "cell under voltage",
-  "cell over voltage",
-  "cell high temperature",
-  "cell over temperature",
-  "over current",
-  "can error",
-  "internal voltage mismatch",
-  "cellboard communication",
-  "cellboard internal",
-  "connector disconnected",
-  "fans disconnected",
-  "feedback error",
-  "feedback circuitry error",
-  "eeprom communication error",
-  "eeprom write error"
-};
+const char *debug_signal_error_labels[] = {"cell low voltage",
+                                           "cell under voltage",
+                                           "cell over voltage",
+                                           "cell high temperature",
+                                           "cell over temperature",
+                                           "over current",
+                                           "can error",
+                                           "internal voltage mismatch",
+                                           "cellboard communication",
+                                           "cellboard internal",
+                                           "connector disconnected",
+                                           "fans disconnected",
+                                           "feedback error",
+                                           "feedback circuitry error",
+                                           "eeprom communication error",
+                                           "eeprom write error"};
 
 bool balancing_status[N_PORK_CELLBOARD] = {0};
 
@@ -78,8 +76,10 @@ void set_balancing_column(bool balancing, uint8_t idx) {
 }
 
 void tab_hv_set_pork_speed_bar(int32_t val, bool auto_mode) {
-  auto_mode ? lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_BLUE))
-            : lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_GREEN));
+  auto_mode ? lv_style_set_bg_color(&tab_hv_style_indic,
+                                    lv_palette_main(LV_PALETTE_BLUE))
+            : lv_style_set_bg_color(&tab_hv_style_indic,
+                                    lv_palette_main(LV_PALETTE_GREEN));
 
   snprintf(tab_hv_new_label_buffer, 10, "%ld", val);
   lv_label_set_text(tab_hv_labels[tab_hv_pork_speed_value],
@@ -99,10 +99,10 @@ void tab_hv_set_error_status(debug_signal_error_t error, bool status) {
   debug_signal_error_status[error] = status;
 }
 
-void tab_hv_update_error_label(){
+void tab_hv_update_error_label() {
   CHECK_CURRENT_TAB(engineer, TAB_HV);
-  u_int8_t last_error_index = -1;
-  u_int8_t error_count = 0;
+  uint8_t last_error_index = -1;
+  uint8_t error_count = 0;
   for (uint8_t i = 0; i < DEBUG_SIGNAL_ERROR_SIZE; i++) {
     if (debug_signal_error_status[i]) {
       last_error_index = i;
@@ -110,11 +110,12 @@ void tab_hv_update_error_label(){
       return;
     }
   }
-  if(error_count == 0){
+  if (error_count == 0) {
     lv_label_set_text(tab_hv_labels[tab_hv_lb_last_error], "NO");
     return;
-  } else if(error_count == 1) {
-    lv_label_set_text(tab_hv_labels[tab_hv_lb_last_error], debug_signal_error_labels[last_error_index]);
+  } else if (error_count == 1) {
+    lv_label_set_text(tab_hv_labels[tab_hv_lb_last_error],
+                      debug_signal_error_labels[last_error_index]);
     return;
   } else {
     lv_label_set_text(tab_hv_labels[tab_hv_lb_last_error], "MULTIPLE ERRORS");
@@ -132,7 +133,8 @@ void init_hv_styles(void) {
   lv_style_set_pad_top(&balancing_panel_style, 0);
   lv_style_set_pad_row(&balancing_panel_style, 0);
   lv_style_set_bg_opa(&balancing_panel_style, LV_OPA_TRANSP);
-  lv_style_set_border_color(&balancing_panel_style, lv_color_hex(COLOR_SECONDARY_HEX));
+  lv_style_set_border_color(&balancing_panel_style,
+                            lv_color_hex(COLOR_SECONDARY_HEX));
   lv_style_set_border_width(&balancing_panel_style, BP_BORDER_WIDTH);
   lv_style_set_radius(&balancing_panel_style, 0);
 
@@ -160,7 +162,8 @@ void init_hv_styles(void) {
   lv_style_init(&tab_hv_style_back_indic);
   lv_style_set_radius(&tab_hv_style_back_indic, 0);
   lv_style_set_bg_opa(&tab_hv_style_back_indic, LV_OPA_COVER);
-  lv_style_set_bg_color(&tab_hv_style_back_indic, lv_color_hex(COLOR_SECONDARY_HEX));
+  lv_style_set_bg_color(&tab_hv_style_back_indic,
+                        lv_color_hex(COLOR_SECONDARY_HEX));
 
   lv_style_init(&label_custom_style);
   lv_style_set_base_dir(&label_custom_style, LV_BASE_DIR_LTR);
@@ -468,8 +471,10 @@ void tab_hv_create(lv_obj_t *parent) {
   // Pork fan bar
   tab_hv_pork_speed_bar = lv_bar_create(pork_panel);
   lv_obj_remove_style_all(tab_hv_pork_speed_bar);
-  lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_indic, LV_PART_INDICATOR);
-  lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_back_indic, LV_PART_MAIN);
+  lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_indic,
+                   LV_PART_INDICATOR);
+  lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_back_indic,
+                   LV_PART_MAIN);
   lv_obj_set_size(tab_hv_pork_speed_bar, 350, 50);
   lv_bar_set_range(tab_hv_pork_speed_bar, 0, 100);
   lv_bar_set_value(tab_hv_pork_speed_bar, 0, LV_ANIM_OFF);
@@ -484,7 +489,7 @@ void tab_hv_create(lv_obj_t *parent) {
  * @param balancing true if cell is balancing, false otherwise
  */
 void custom_balancing_column(lv_obj_t *bar, bool balancing) {
-  
+
   lv_obj_remove_style_all(bar);
 
   if (balancing) {
@@ -495,4 +500,11 @@ void custom_balancing_column(lv_obj_t *bar, bool balancing) {
 
   lv_obj_set_size(bar, B_COLUMN_WIDTH, B_COLUMN_HEIGHT);
   lv_obj_center(bar);
+}
+
+void tab_hv_resync(void) {
+  // Sets the text about the shutdown
+  hv_feedbacks_status_update();
+  // Sets the text about the speed of the fans and the bar
+  hv_fans_override_status_update();
 }

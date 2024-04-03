@@ -29,4 +29,6 @@ void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx);
 
 void init_lv_styles(void);
 
+void tab_lv_resync(void);
+
 #endif // TAB_LV_H

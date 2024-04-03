@@ -72,8 +72,6 @@ void set_dmt_steering_angle_target(void);
 void manettino_send_slip_control(float);
 void manettino_send_torque_vectoring(float);
 void manettino_send_power_map(float);
-void manettino_send_set_pumps_speed(float);
-void manettino_send_set_radiators(float);
 void send_pork_fans_status(float val);
 
 void turn_telemetry_on_off(void);

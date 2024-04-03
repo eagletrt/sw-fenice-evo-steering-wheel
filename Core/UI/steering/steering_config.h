@@ -190,18 +190,27 @@ typedef enum {
   tab_lv_lb_bus_voltage,
   tab_lv_lb_current_state,
   tab_lv_lb_last_error,
-#if 0
   tab_lv_lb_pumps_actual,
-#endif
   tab_lv_lb_pumps_local,
-#if 0
   tab_lv_lb_radiators_actual,
-#endif
   tab_lv_lb_radiators_local,
   tab_lv_lb_state,
   tab_lv_labels_n
 } tab_lv_labels_enum;
 
+/***
+ * Cooling
+ */
+#define COOLING_STATE_SYNC_TIMEOUT 500 // in ms
+
+typedef enum {
+  STEERING_WHEEL_COOLING_STATUS_SYNC,
+  STEERING_WHEEL_COOLING_STATUS_SET,
+} steering_wheel_cooling_status_t;
+
+/***
+ * Hardware dependent functions
+ */
 uint32_t get_current_time_ms(void);
 void openblt_reset(void);
 

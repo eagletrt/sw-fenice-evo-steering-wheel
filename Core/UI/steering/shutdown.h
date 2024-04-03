@@ -1,8 +1,8 @@
 #ifndef SHUTDOWN_H
 #define SHUTDOWN_H
 
-#include <stdbool.h>
 #include "steering_config.h"
+#include <stdbool.h>
 
 #define SHUTDOWN_CIRCUIT_ROWS 8
 
@@ -31,9 +31,9 @@ typedef enum {
 } shutdown_circuit_indexes_t;
 
 /*
-* true: close
-* false: open
-*/
+ * true: close
+ * false: open
+ */
 extern char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][20];
 
 extern bool shutdown_status_array[SHUTDOWN_COMPONENT_SIZE];

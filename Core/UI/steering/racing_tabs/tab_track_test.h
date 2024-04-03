@@ -17,5 +17,6 @@
 #define DATA_CENTER_WIDTH 290
 
 void tab_track_test_create(lv_obj_t *parent);
+void tab_track_test_resync(void);
 
 #endif // TAB_SENSORS_H

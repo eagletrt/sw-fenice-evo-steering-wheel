@@ -199,3 +199,9 @@ void tab_track_test_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(x_axis_j, LV_GRID_ALIGN_CENTER, 2, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 }
+
+void tab_track_test_resync(void) {
+  GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
+  set_tab_track_test_dmt_steering_angle_target(
+      secondary_steer_angle_last_state->angle);
+}

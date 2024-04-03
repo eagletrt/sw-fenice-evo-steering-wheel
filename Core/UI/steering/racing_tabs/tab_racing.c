@@ -525,3 +525,18 @@ void racing_error_notification(char *msg) {
   lv_obj_set_style_text_font(label_err, &lv_font_inter_bold_30, LV_PART_MAIN);
   lv_obj_set_style_bg_opa(label_err, LV_OPA_COVER, LV_PART_MAIN);
 }
+
+extern primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state;
+char snprintf_buffer_controls[BUFSIZ];
+
+void tab_racing_resync(void) {
+  float map_pw = (float)(ecu_set_power_maps_last_state.map_pw * 100.0f);
+  snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_pw);
+  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_pow_idx);
+  float map_sc = (float)(ecu_set_power_maps_last_state.map_sc * 100.0f);
+  snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_sc);
+  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_slip_idx);
+  float map_tv = (float)(ecu_set_power_maps_last_state.map_tv * 100.0f);
+  snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_tv);
+  set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_torque_idx);
+}

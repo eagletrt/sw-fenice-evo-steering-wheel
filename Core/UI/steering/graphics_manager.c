@@ -37,16 +37,19 @@ void update_graphics(lv_timer_t *t) {
         car_status_update();
         break;
       }
-      case PRIMARY_LV_RADIATOR_SPEED_FRAME_ID:
-      case PRIMARY_LV_PUMPS_SPEED_FRAME_ID: {
-        cooling_status_update();
-        break;
-      }
-      
       case PRIMARY_ECU_FEEDBACKS_FRAME_ID: {
         ecu_feedbacks_update();
         break;
       }
+      case PRIMARY_TLM_STATUS_FRAME_ID: {
+        tlm_status_update();
+        break;
+      }
+      // TODO
+      // case PRIMARY_DAS_ERRORS_FRAME_ID: {
+      // das_errors_update();
+      // break;
+      // }
       case PRIMARY_HV_STATUS_FRAME_ID: {
         ts_status_update();
         break;
@@ -75,42 +78,8 @@ void update_graphics(lv_timer_t *t) {
         hv_cell_balancing_status_update();
         break;
       }
-      // TODO RICKY
-      // case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
-        // lv_feedbacks_update();
-        // break;
-      // }
       case PRIMARY_HV_FANS_STATUS_FRAME_ID: {
         hv_fans_override_status_update();
-        break;
-      }
-      case PRIMARY_TLM_STATUS_FRAME_ID: {
-        tlm_status_update();
-        break;
-      }
-      // TODO
-      // case PRIMARY_DAS_ERRORS_FRAME_ID: {
-        // das_errors_update();
-        // break;
-      // }
-      case PRIMARY_LV_CURRENT_BATTERY_FRAME_ID: {
-        lv_currents_update();
-        break;
-      }
-      case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
-        lv_cells_temp_update();
-        break;
-      }
-      case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
-        lv_cells_voltage_update();
-        break;
-      }
-      case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
-        lv_total_voltage_update();
-        break;
-      }
-      case PRIMARY_LV_ERRORS_FRAME_ID: {
-        lv_errors_update();
         break;
       }
       case PRIMARY_HV_CELLS_VOLTAGE_STATS_FRAME_ID: {
@@ -120,6 +89,50 @@ void update_graphics(lv_timer_t *t) {
       case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
         hv_feedbacks_status_update();
         debug_hv_feedbacks_status_update();
+        break;
+      }
+      // TODO RICKY
+      // case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
+      // lv_feedbacks_update();
+      // break;
+      // }
+      case PRIMARY_LV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
+        lv_feedback_sd_voltage_update();
+        break;
+      }
+      case PRIMARY_LV_ERRORS_FRAME_ID: {
+        lv_errors_update();
+        break;
+      }
+      case PRIMARY_LV_RADIATOR_SPEED_FRAME_ID: {
+        lv_radiator_speed_update();
+      }
+      case PRIMARY_LV_PUMPS_SPEED_FRAME_ID: {
+        lv_pumps_speed_update();
+        break;
+      }
+      case PRIMARY_LV_CURRENT_BATTERY_FRAME_ID: {
+        lv_currents_update();
+        break;
+      }
+      case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
+        lv_total_voltage_update();
+        break;
+      }
+      case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
+        lv_cells_voltage_update();
+        break;
+      }
+      case PRIMARY_LV_CELLS_VOLTAGE_STATS_FRAME_ID: {
+        lv_cells_voltage_stats_update();
+        break;
+      }
+      case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
+        lv_cells_temp_update();
+        break;
+      }
+      case PRIMARY_LV_CELLS_TEMP_STATS_FRAME_ID: {
+        lv_cells_temp_stats_update();
         break;
       }
       default:
@@ -159,8 +172,8 @@ void update_graphics(lv_timer_t *t) {
         break;
       }
       // case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
-        // pedals_output_update();
-        // break;
+      // pedals_output_update();
+      // break;
       // }
       case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
         imu_acceleration_update();
@@ -168,12 +181,12 @@ void update_graphics(lv_timer_t *t) {
       }
       // TODO RICKY
       // case SECONDARY_LAP_COUNT_FRAME_ID: {
-        // lap_count_update();
-        // break;
+      // lap_count_update();
+      // break;
       // }
       // case SECONDARY_LC_STATUS_FRAME_ID: {
-        // lc_status_update();
-        // break;
+      // lc_status_update();
+      // break;
       // }
       case SECONDARY_IRTS_FL_0_FRAME_ID:
       case SECONDARY_IRTS_FL_1_FRAME_ID:

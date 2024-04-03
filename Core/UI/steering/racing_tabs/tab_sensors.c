@@ -555,3 +555,5 @@ void tab_sensors_create(lv_obj_t *parent) {
   lv_obj_set_grid_cell(brake_r_bar, LV_GRID_ALIGN_CENTER, 3, 1,
                        LV_GRID_ALIGN_CENTER, 0, 1);
 }
+
+void tab_sensor_resync(void) {}

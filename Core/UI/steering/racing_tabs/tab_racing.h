@@ -25,5 +25,6 @@ void lv_custom_meter(lv_obj_t **custom_meter,
 void custom_side_bar(lv_obj_t *bar);
 
 void racing_error_notification(char *msg);
+void tab_racing_resync(void);
 
 #endif // TAB_RACING_H
