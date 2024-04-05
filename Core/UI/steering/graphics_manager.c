@@ -150,7 +150,7 @@ void update_graphics(lv_timer_t *t) {
     if (is_smsg_new[iindex]) {
       can_id_t id = secondary_id_from_index(iindex);
       switch (id) {
-      case SECONDARY_SPEED_FRAME_ID: {
+      case SECONDARY_ANGULAR_VELOCITY_FRAME_ID: {
         speed_update();
         break;
       }

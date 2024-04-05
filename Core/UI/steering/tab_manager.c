@@ -173,7 +173,7 @@ void load_current_racing_tab() {
     break;
 #endif
   case TAB_TRACK_TEST:
-    tab_track_test_resync();
+    // tab_track_test_resync(); // Removed because this calls display_notification which calls the resync etc.
     lv_scr_load(tab_track_test_ptr);
     break;
   case TAB_SENSORS:

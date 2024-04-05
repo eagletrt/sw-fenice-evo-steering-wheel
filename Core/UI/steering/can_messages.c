@@ -224,8 +224,8 @@ void handle_secondary(can_message_t *msg) {
 #endif
   can_id_t id = msg->id;
   switch (id) {
-  case SECONDARY_SPEED_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, speed, SPEED, is_smsg_new);
+  case SECONDARY_ANGULAR_VELOCITY_FRAME_ID: {
+    STEER_CAN_UNPACK(secondary, SECONDARY, angular_velocity, ANGULAR_VELOCITY, is_smsg_new);
     break;
   }
   case SECONDARY_STEER_ANGLE_FRAME_ID: {

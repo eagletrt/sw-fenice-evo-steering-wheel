@@ -120,6 +120,7 @@ void lv_pumps_actual_value_update() {}
 void lv_radiators_actual_value_update() {}
 
 void cooling_status_update() {
+#if 0
   GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
   // GET_LAST_STATE(primary, cooling_status, PRIMARY, COOLING_STATUS);
   float pumps_speed = primary_lv_pumps_speed_last_state->pumps_speed;
@@ -144,6 +145,7 @@ void cooling_status_update() {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", radiators_speed);
   }
   set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_local);
+#endif
 }
 
 void tlm_status_update() {
@@ -160,13 +162,13 @@ void tlm_status_update() {
 }
 
 void speed_update(void) {
-  GET_LAST_STATE(secondary, speed, SECONDARY, SPEED);
+  GET_LAST_STATE(secondary, angular_velocity, SECONDARY, ANGULAR_VELOCITY);
   GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
   if (primary_ecu_status_last_state->status !=
       primary_ecu_status_status_drive) {
     return;
   }
-  float speed = fabs((secondary_speed_last_state->fl + secondary_speed_last_state->fr) / 2.0f) * 3.6f * 0.203f;
+  float speed = fabs((secondary_angular_velocity_last_state->fl + secondary_angular_velocity_last_state->fr) / 2.0f) * 3.6f * 0.203f;
   set_tab_racing_label_text("KM/H", tab_rac_bottom_status_idx);
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", speed);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_status_idx);
@@ -176,10 +178,10 @@ void speed_update(void) {
 void hv_debug_signals_update(void) {
   GET_LAST_STATE(primary, hv_debug_signals, PRIMARY, HV_DEBUG_SIGNALS);
   // primary_hv_debug_signals_last_state
-  tab_hv_set_error_status(debug_signal_error_cell_low_voltage, primary_hv_debug_signals_last_state->errors_cell_low_voltage);
+  // tab_hv_set_error_status(debug_signal_error_cell_low_voltage, primary_hv_debug_signals_last_state->errors_cell_low_voltage);
   tab_hv_set_error_status(debug_signal_error_cell_under_voltage, primary_hv_debug_signals_last_state->errors_cell_under_voltage);
   tab_hv_set_error_status(debug_signal_error_cell_over_voltage, primary_hv_debug_signals_last_state->errors_cell_over_voltage);
-  tab_hv_set_error_status(debug_signal_error_cell_high_temperature, primary_hv_debug_signals_last_state->errors_cell_high_temperature);
+  // tab_hv_set_error_status(debug_signal_error_cell_high_temperature, primary_hv_debug_sigdnals_last_state->errors_cell_high_temperature);
   tab_hv_set_error_status(debug_signal_error_cell_over_temperature, primary_hv_debug_signals_last_state->errors_cell_over_temperature);
   tab_hv_set_error_status(debug_signal_error_over_current, primary_hv_debug_signals_last_state->errors_over_current);
   tab_hv_set_error_status(debug_signal_error_can, primary_hv_debug_signals_last_state->errors_can);

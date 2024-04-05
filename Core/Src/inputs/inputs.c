@@ -242,6 +242,8 @@ int delta_step_position(int delta_step) {
     delta_step = -2;
   if (delta_step == 7)
     delta_step = -1;
+  if (delta_step < -7)
+    delta_step = 0;
   return delta_step;
 }
 

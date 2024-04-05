@@ -56,6 +56,9 @@ void turn_telemetry_on_off(void) {
 }
 
 void manettino_right_actions(int dsteps) {
+  if (dsteps == 0) {
+    return;
+  }
   char tbuf[100];
   snprintf(tbuf, 100, "manettino right %d", dsteps);
   if (engineer_mode) {
@@ -101,6 +104,9 @@ void manettino_right_actions(int dsteps) {
 }
 
 void manettino_center_actions(int dsteps) {
+  if (dsteps == 0) {
+    return;
+  }
   char tbuf[100];
   snprintf(tbuf, 100, "manettino center %d", dsteps);
   if (engineer_mode) {
@@ -130,6 +136,9 @@ void manettino_center_actions(int dsteps) {
 }
 
 void manettino_left_actions(int dsteps) {
+  if (dsteps == 0) {
+    return;
+  }
   char tbuf[100];
   snprintf(tbuf, 100, "manettino left %d", dsteps);
   if (engineer_mode) {
