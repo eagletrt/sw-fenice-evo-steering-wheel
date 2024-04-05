@@ -256,29 +256,23 @@ void hv_feedbacks_status_update() {
   GET_LAST_STATE(primary, hv_feedback_status, PRIMARY, HV_FEEDBACK_STATUS);
   update_shutdown_circuit_component(
       feedbacks_status_feedback_sd_in_index,
-      primary_hv_feedback_status_last_state->feedbacks_sd_in);
+      primary_hv_feedback_status_last_state->feedback_sd_in);
   update_shutdown_circuit_component(
       feedbacks_status_feedback_sd_out_index,
-      primary_hv_feedback_status_last_state->feedbacks_sd_out);
+      primary_hv_feedback_status_last_state->feedback_sd_out);
   update_shutdown_circuit_component(
       feedbacks_status_feedback_sd_end_index,
-      primary_hv_feedback_status_last_state->feedbacks_sd_end);
+      primary_hv_feedback_status_last_state->feedback_sd_end);
   update_shutdown_circuit_component(
       feedbacks_status_feedback_precharge_status_index,
-      primary_hv_feedback_status_last_state->feedbacks_precharge_status);
+      primary_hv_feedback_status_last_state->feedback_precharge_status);
   update_shutdown_circuit_component(
       feedbacks_status_feedback_airp_gate_index,
-      primary_hv_feedback_status_last_state->feedbacks_airp_status);
+      primary_hv_feedback_status_last_state->feedback_airp_status);
   update_shutdown_circuit_component(
       feedbacks_status_feedback_airn_gate_index,
-      primary_hv_feedback_status_last_state->feedbacks_airn_status);
+      primary_hv_feedback_status_last_state->feedback_airn_status);
 
-  // if (primary_hv_feedback_status_last_state->feedbacks_sd_end ==
-  // primary_hv_feedback_status_feedback_sd_end_FEEDBACK_STATE_LOW) {
-  // set_tab_racing_label_text("LOW", tab_rac_status_idx);
-  // } else {
-  // set_tab_racing_label_text("ERR", tab_rac_status_idx);
-  // }
 }
 
 primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
@@ -436,7 +430,7 @@ void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->radiator_speed);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_local);
   }
-  lv_set_radiator_speed_bar((int32_t) (msg->radiator_speed * 100.0f));
+  lv_set_radiators_speed_bar((int32_t) (msg->radiator_speed * 100.0f));
 }
 
 void lv_radiator_speed_update() {
@@ -467,7 +461,7 @@ void lv_radiator_speed_update() {
     
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", actual_speed);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_actual);
-    lv_set_radiator_speed_bar((int32_t) (actual_speed * 100.0f));
+    lv_set_radiators_speed_bar((int32_t) (actual_speed * 100.0f));
     } else {
       lv_radiator_speed_update_all_graphics(&steering_wheel_state_radiator_speed);
       steering_wheel_lv_radiator_speed_state = STEERING_WHEEL_COOLING_STATUS_SYNC;

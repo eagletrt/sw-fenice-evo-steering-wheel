@@ -456,7 +456,7 @@ void send_pork_fans_status(float val) {
 void send_set_car_status(primary_ecu_set_status_status val) {
   primary_ecu_set_status_converted_t converted = {0};
   converted.status = val;
-  STEER_CAN_PACK(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS);
+  STEER_CAN_PACK(primary, PRIMARY, ecu_set_status, ECU_SET_STATUS);
   can_send(&msg, true);
   can_send(&msg, true);
 }
