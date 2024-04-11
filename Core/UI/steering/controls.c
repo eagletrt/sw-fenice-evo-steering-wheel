@@ -97,6 +97,7 @@ void manettino_right_actions(int dsteps) {
       send_pork_fans_status((float)pork_fans_status_last_state / 100.0f);
       break;
     case TAB_LV: {
+      steering_wheel_lv_radiator_speed_state = STEERING_WHEEL_COOLING_STATUS_SET;
       float new_radspeed_val = steering_wheel_state_radiator_speed.radiator_speed + ((float)dsteps / 10.0f);
       new_radspeed_val = fminf(new_radspeed_val, SET_RADIATORS_MAX);
       new_radspeed_val = fmaxf(new_radspeed_val, SET_RADIATORS_MIN);
@@ -184,6 +185,7 @@ void manettino_left_actions(int dsteps) {
       // wheel map (see images)
       break;
     case TAB_LV: {
+      steering_wheel_lv_pumps_speed_state = STEERING_WHEEL_COOLING_STATUS_SET;
       float new_pumps_speed_val = steering_wheel_state_pumps_speed.pumps_speed + ((float)dsteps / 10.0f);
       new_pumps_speed_val = fminf(new_pumps_speed_val, SET_PUMP_SPEED_MAX);
       new_pumps_speed_val = fmaxf(new_pumps_speed_val, SET_PUMP_SPEED_MIN);
@@ -227,15 +229,13 @@ void manettino_send_radiators_speed() {
 }
 
 void manettino_set_radiators_speed() {
-  steering_wheel_lv_radiator_speed_state = STEERING_WHEEL_COOLING_STATUS_SET;
   steering_wheel_lv_radiators_speed_sent_timestamp = get_current_time_ms();
+  steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_manual;
 
   if (steering_wheel_state_radiator_speed.radiator_speed < 0.0f) {
     steering_wheel_state_radiator_speed.radiator_speed = 0.0f;
-    steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_auto;
-    snprintf(sprintf_buffer_controls, BUFSIZ, "AUTO");
+    snprintf(sprintf_buffer_controls, BUFSIZ, "zero");
   } else {
-    steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_manual;
     snprintf(sprintf_buffer_controls, BUFSIZ, "%0.1f", steering_wheel_state_radiator_speed.radiator_speed);
   }
   set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_local);
@@ -251,19 +251,28 @@ void manettino_send_pumps_speed() {
 }
 
 void manettino_set_pumps_speed() {
-  steering_wheel_lv_pumps_speed_state = STEERING_WHEEL_COOLING_STATUS_SET;
   steering_wheel_lv_pumps_speed_sent_timestamp = get_current_time_ms();
+  steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_manual;
 
   if (steering_wheel_state_pumps_speed.pumps_speed < 0.0f) {
     steering_wheel_state_pumps_speed.pumps_speed = 0.0f;
-    steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_auto;
-    snprintf(sprintf_buffer_controls, BUFSIZ, "AUTO");
+    snprintf(sprintf_buffer_controls, BUFSIZ, "zero");
   } else {
-    steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_manual;
-    snprintf(sprintf_buffer_controls, BUFSIZ, "%d%%", (int)(steering_wheel_state_pumps_speed.pumps_speed * 100.f));
+    snprintf(sprintf_buffer_controls, BUFSIZ, "%0.1f", steering_wheel_state_pumps_speed.pumps_speed);
   }
   set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_local);
   manettino_send_pumps_speed();
+}
+
+void set_cooling_auto_mode() {
+  steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_auto;
+  steering_wheel_state_pumps_speed.pumps_speed = 0.0f;
+
+  steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_auto;
+  steering_wheel_state_radiator_speed.radiator_speed = 0.0f;
+
+  manettino_send_pumps_speed();
+  manettino_send_radiators_speed();
 }
 
 void buttons_pressed_actions(uint8_t button) {
@@ -360,6 +369,8 @@ void buttons_pressed_actions(uint8_t button) {
         default:
           break;
         }
+      } else if (current_racing_tab == TAB_LV) {
+        set_cooling_auto_mode();
       }
     }
     break;

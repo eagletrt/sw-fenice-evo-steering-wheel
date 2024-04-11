@@ -40,14 +40,25 @@ void send_steer_status(lv_timer_t *main_timer) {
 }
 
 void send_bal(bool on) {
-  primary_hv_set_balancing_status_steering_wheel_converted_t converted = {
+  {
+    primary_hv_set_balancing_status_steering_wheel_converted_t converted = {
       .set_balancing_status =
           on ? primary_hv_set_balancing_status_steering_wheel_set_balancing_status_on
              : primary_hv_set_balancing_status_steering_wheel_set_balancing_status_off,
       .balancing_threshold = 50};
-  STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_steering_wheel,
-                 HV_SET_BALANCING_STATUS_STEERING_WHEEL)
-  can_send(&msg, true);
+    STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_steering_wheel, HV_SET_BALANCING_STATUS_STEERING_WHEEL)
+    can_send(&msg, true);
+  }
+
+  {
+    primary_hv_set_balancing_status_handcart_converted_t converted = {
+      .set_balancing_status =
+          on ? primary_hv_set_balancing_status_handcart_set_balancing_status_on
+             : primary_hv_set_balancing_status_handcart_set_balancing_status_off,
+        .balancing_threshold = 50};
+    STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_handcart, HV_SET_BALANCING_STATUS_HANDCART)
+    can_send(&msg, true);
+  }
 }
 
 void handle_primary(can_message_t *msg) {

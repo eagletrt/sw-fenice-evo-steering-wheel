@@ -201,7 +201,7 @@ typedef enum {
 /***
  * Cooling
  */
-#define COOLING_STATE_SYNC_TIMEOUT 500 // in ms
+#define COOLING_STATE_SYNC_TIMEOUT 1000 // in ms
 
 typedef enum {
   STEERING_WHEEL_COOLING_STATUS_SYNC,

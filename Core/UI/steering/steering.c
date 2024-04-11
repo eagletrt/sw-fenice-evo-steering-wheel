@@ -376,6 +376,9 @@ void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t* msg)
   }
   lv_set_pumps_speed_bar((int32_t) (msg->pumps_speed * 100.0f));
 }
+
+#define ALMOST_ERROR (0.05f)
+#define IS_ALMOST_EQUAL(val1, val2) ((fabs(val1 - val2) < ALMOST_ERROR))
 /*
   - valori diversi - timeout passato -> errore, aggiorno e cambio stato (1)
   - valori diversi - timeout non passato -> aggiorno solo i valori del porchetto (2)
@@ -383,6 +386,7 @@ void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t* msg)
   - valori uguali - timeout non passato -> aggiorno e cambio stato (3)
   */
 void lv_pumps_speed_update() {
+  return;
   GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
   float actual_speed = primary_lv_pumps_speed_last_state->pumps_speed;
   float actual_status = primary_lv_pumps_speed_last_state->status;
@@ -396,8 +400,8 @@ void lv_pumps_speed_update() {
     break;
   }
   case STEERING_WHEEL_COOLING_STATUS_SET: {
-    if ((steering_wheel_state_pumps_speed.pumps_speed != actual_speed) &&
-        (steering_wheel_state_pumps_speed.status != actual_status) &&
+    if ((!IS_ALMOST_EQUAL (steering_wheel_state_pumps_speed.pumps_speed, actual_speed)) &&
+        !IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.status, actual_status) &&
         ((get_current_time_ms() - steering_wheel_lv_pumps_speed_sent_timestamp) > COOLING_STATE_SYNC_TIMEOUT)) {
 
       display_notification("Porket does not respond on pumps settings", 500);
@@ -408,9 +412,9 @@ void lv_pumps_speed_update() {
     } else if ((steering_wheel_state_pumps_speed.pumps_speed != actual_speed) &&
                 (steering_wheel_state_pumps_speed.status != actual_status)){
     
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", actual_speed);
-    set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_actual);
-    lv_set_pumps_speed_bar((int32_t) (actual_speed * 100.0f));
+      // snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", actual_speed);
+      // set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_actual);
+      // lv_set_pumps_speed_bar((int32_t) (actual_speed * 100.0f));
     } else {
       lv_pumps_speed_update_all_graphics(&steering_wheel_state_pumps_speed);
       steering_wheel_lv_pumps_speed_state = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -434,10 +438,10 @@ void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t
 }
 
 void lv_radiator_speed_update() {
+  return;
   GET_LAST_STATE(primary, lv_radiator_speed, PRIMARY, LV_RADIATOR_SPEED);
   float actual_speed = primary_lv_radiator_speed_last_state->radiator_speed;
   float actual_status = primary_lv_radiator_speed_last_state->status;
-
 
   switch (steering_wheel_lv_radiator_speed_state) {
   case STEERING_WHEEL_COOLING_STATUS_SYNC: {
@@ -447,8 +451,8 @@ void lv_radiator_speed_update() {
     break;
   }
   case STEERING_WHEEL_COOLING_STATUS_SET: {
-    if ((steering_wheel_state_radiator_speed.radiator_speed != actual_speed) &&
-        (steering_wheel_state_radiator_speed.status != actual_status) &&
+    if (!IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.radiator_speed, actual_speed) &&
+        !IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.status, actual_status) &&
         ((get_current_time_ms() - steering_wheel_lv_radiators_speed_sent_timestamp) > COOLING_STATE_SYNC_TIMEOUT)) {
 
       display_notification("Porket does not respond on radiator settings", 500);
@@ -459,9 +463,9 @@ void lv_radiator_speed_update() {
     } else if ((steering_wheel_state_radiator_speed.radiator_speed != actual_speed) &&
                 (steering_wheel_state_radiator_speed.status != actual_status)){
     
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", actual_speed);
-    set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_actual);
-    lv_set_radiators_speed_bar((int32_t) (actual_speed * 100.0f));
+    // snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", actual_speed);
+    // set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_actual);
+    // lv_set_radiators_speed_bar((int32_t) (actual_speed * 100.0f));
     } else {
       lv_radiator_speed_update_all_graphics(&steering_wheel_state_radiator_speed);
       steering_wheel_lv_radiator_speed_state = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -701,11 +705,19 @@ float l_igbt_temp = INVERTER_MESSAGE_UNINITIALIZED;
 float r_motor_temp = INVERTER_MESSAGE_UNINITIALIZED;
 float r_igbt_temp = INVERTER_MESSAGE_UNINITIALIZED;
 
+
+float IGBT_TEMP_COEFFICIENT[6] = { (float) 3.58282057e-18, (float) -4.14165530e-13, (float) 1.90916947e-08, (float) -4.38539758e-04, (float) 5.02717412e+00, (float) -2.30219791e+04 };
+
+float convert_t_motor(float val) { return (val - 9393.9f) / 55.1f; }
+float convert_t_igbt(float val) {
+  return (powf((val), 5) * IGBT_TEMP_COEFFICIENT[0]) + (powf((val), 4) * IGBT_TEMP_COEFFICIENT[1]) + (powf((val), 3) * IGBT_TEMP_COEFFICIENT[2]) + (powf((val), 2) * IGBT_TEMP_COEFFICIENT[3]) + (val * IGBT_TEMP_COEFFICIENT[4]) + IGBT_TEMP_COEFFICIENT[5];
+}
+
 void inv_l_rcv_update(void) {
   GET_LAST_STATE(inverters, inv_l_rcv, INVERTERS, INV_L_RCV);
   if (inverters_inv_l_rcv_last_state->rcv_mux ==
       INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
-    l_motor_temp = (inverters_inv_l_rcv_last_state->t_motor - 9393.9f) / 55.1f;
+    l_motor_temp = convert_t_motor(inverters_inv_l_rcv_last_state->t_motor);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", l_motor_temp);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_mot_idx);
 
@@ -719,8 +731,7 @@ void inv_l_rcv_update(void) {
 
   if (inverters_inv_l_rcv_last_state->rcv_mux ==
       INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
-    l_igbt_temp =
-        INVERTER_TEMP_CONVERSION(inverters_inv_l_rcv_last_state->t_igbt);
+    l_igbt_temp = convert_t_igbt(inverters_inv_l_rcv_last_state->t_igbt);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", l_igbt_temp);
     set_tab_sensors_label_text(snprintf_buffer,
                                tab_sensors_lb_left_inverter_temp);
@@ -737,7 +748,7 @@ void inv_r_rcv_update() {
   GET_LAST_STATE(inverters, inv_r_rcv, INVERTERS, INV_R_RCV);
   if (inverters_inv_r_rcv_last_state->rcv_mux ==
       INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
-    r_motor_temp = (inverters_inv_r_rcv_last_state->t_motor - 9393.9f) / 55.1f;
+    r_motor_temp = convert_t_motor(inverters_inv_r_rcv_last_state->t_motor);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", r_motor_temp);
     set_tab_sensors_label_text(snprintf_buffer,
                                tab_sensors_lb_right_motor_temp);
@@ -745,8 +756,7 @@ void inv_r_rcv_update() {
 
   if (inverters_inv_r_rcv_last_state->rcv_mux ==
       INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
-    r_igbt_temp =
-        INVERTER_TEMP_CONVERSION(inverters_inv_r_rcv_last_state->t_igbt);
+    r_igbt_temp = convert_t_igbt(inverters_inv_r_rcv_last_state->t_igbt);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", r_igbt_temp);
     set_tab_sensors_label_text(snprintf_buffer,
                                tab_sensors_lb_right_inverter_temp);
