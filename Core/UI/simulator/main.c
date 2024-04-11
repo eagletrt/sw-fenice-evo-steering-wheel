@@ -181,21 +181,6 @@ int main(int argc, char **argv) {
   thread_id_1 = SDL_CreateThread(canread, "thread_1", &thread_data_1);
 #endif
 
-  secondary_pedals_output_converted_t converted = {
-      .apps = 0, .bse_front = 0.0f, .bse_rear = 0.0f};
-
-  int gggcounter = 0;
-
-  primary_set_pumps_speed_converted_t pumps_speed = {.pumps_speed = 0.8f};
-  primary_set_pumps_speed_t psraw;
-  can_message_t msg = {0};
-  msg.id = PRIMARY_SET_PUMPS_SPEED_FRAME_ID;
-  msg.size = PRIMARY_SET_PUMPS_SPEED_BYTE_SIZE;
-  primary_set_pumps_speed_conversion_to_raw_struct(&psraw, &pumps_speed);
-  primary_set_pumps_speed_pack(msg.data, &psraw,
-                               PRIMARY_SET_PUMPS_SPEED_BYTE_SIZE);
-  printf("msg.data = %X\n", msg.data[0]);
-
   lv_timer_t *ugt = lv_timer_create(update_graphics, 100, NULL);
   lv_timer_set_repeat_count(ugt, -1);
   lv_timer_reset(ugt);

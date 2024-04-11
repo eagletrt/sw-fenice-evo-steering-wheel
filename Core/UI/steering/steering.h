@@ -164,6 +164,8 @@ void pork_speed_bar_invalidate();
 void pumps_speed_value_label_invalidate();
 void radiators_speed_value_label_invalidate();
 void pork_speed_value_label_invalidate();
+void precharge_bar_update(int32_t);
+void precharge_bar_insert(bool precharge);
 
 calibration_box_t *get_tab_calibration_curr_focus();
 lv_obj_t *get_tab_calibration_slider();
@@ -192,6 +194,9 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx,
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx);
 void lv_set_pumps_speed_bar(int32_t);
 void lv_set_radiators_speed_bar(int32_t);
+
+void lv_radiator_speed_update(void);
+void lv_pumps_speed_update(void);
 
 extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT]
                                           [primary_MAX_STRUCT_SIZE_CONVERSION];

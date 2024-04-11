@@ -20,6 +20,7 @@ char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][20] = {"SD start",
 
 bool shutdown_status_array[SHUTDOWN_COMPONENT_SIZE] = {false};
 
+// TODO: check if this is the right place for this function
 void shutdown_circuit_update() {
   int last_opend_index = -1;
   for (int i = 0; i < SHUTDOWN_COMPONENT_SIZE; i++) {

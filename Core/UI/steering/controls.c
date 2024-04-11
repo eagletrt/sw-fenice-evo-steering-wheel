@@ -42,6 +42,9 @@ steering_wheel_cooling_status_t steering_wheel_lv_pumps_speed_state =
 steering_wheel_cooling_status_t steering_wheel_lv_radiator_speed_state =
     STEERING_WHEEL_COOLING_STATUS_SYNC;
 
+void manettino_set_radiators_speed(void);
+void manettino_set_pumps_speed(void);
+
 void set_dmt_steering_angle_target(void) {
   GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
   set_tab_track_test_dmt_steering_angle_target(
@@ -220,7 +223,7 @@ void manettino_send_power_map(float val) {
   set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);
 }
 
-void manettino_send_radiators_speed() {
+void manettino_send_radiators_speed(void) {
   primary_lv_set_radiator_speed_converted_t converted = {0};
   converted.status = steering_wheel_state_radiator_speed.status;
   converted.radiator_speed = steering_wheel_state_radiator_speed.radiator_speed;
@@ -228,7 +231,7 @@ void manettino_send_radiators_speed() {
   can_send(&msg, true);
 }
 
-void manettino_set_radiators_speed() {
+void manettino_set_radiators_speed(void) {
   steering_wheel_lv_radiators_speed_sent_timestamp = get_current_time_ms();
   steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_manual;
 
@@ -242,7 +245,7 @@ void manettino_set_radiators_speed() {
   manettino_send_radiators_speed();
 }
 
-void manettino_send_pumps_speed() {
+void manettino_send_pumps_speed(void) {
   primary_lv_set_pumps_speed_converted_t converted = {0};
   converted.status = steering_wheel_state_pumps_speed.status;
   converted.pumps_speed = steering_wheel_state_pumps_speed.pumps_speed;
@@ -250,7 +253,7 @@ void manettino_send_pumps_speed() {
   can_send(&msg, true);
 }
 
-void manettino_set_pumps_speed() {
+void manettino_set_pumps_speed(void) {
   steering_wheel_lv_pumps_speed_sent_timestamp = get_current_time_ms();
   steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_manual;
 
@@ -438,7 +441,7 @@ void send_pork_fans_status(float val) {
         primary_hv_fans_status_fans_override_on;
     hv_fans_override_settings.fans_speed = fmax(0.0f, fmin(1.0f, val));
   }
-  primary_hv_fans_status_converted_t converted = {0};
+  primary_hv_set_fans_status_converted_t converted = {0};
   converted.fans_override = hv_fans_override_settings.fans_override;
   converted.fans_speed = hv_fans_override_settings.fans_speed;
   STEER_CAN_PACK(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);

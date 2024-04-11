@@ -13,12 +13,17 @@
 #define B_COLUMN_WIDTH (BP_WIDTH - 2 * BP_BORDER_WIDTH) / N_PORK_CELLBOARD
 #define B_COLUMN_SPACING 6
 
+lv_obj_t *data_panel;
+lv_obj_t *precharge_panel;
+
 lv_style_t balancing_panel_style;
 lv_style_t balancing_columns_style;
 lv_style_t not_balancing_columns_style;
 
+lv_obj_t *tab_hv_precharge_bar;
 lv_obj_t *tab_hv_pork_speed_bar;
 lv_style_t tab_hv_style_indic;
+lv_style_t tab_hv_style_precharge;
 lv_style_t tab_hv_style_back_indic;
 char tab_hv_new_label_buffer[10];
 
@@ -124,6 +129,52 @@ void tab_hv_update_error_label() {
   return;
 }
 
+
+void precharge_bar_update(int32_t val) {
+  CHECK_CURRENT_TAB(engineer, TAB_HV);
+  if (precharge_panel != NULL) {
+    lv_bar_set_value(tab_hv_precharge_bar, val, LV_ANIM_OFF);
+  }
+}
+
+void precharge_bar_insert(bool precharge) {
+  CHECK_CURRENT_TAB(engineer, TAB_HV);
+  if(precharge && precharge_panel == NULL){
+    static lv_coord_t precharge_panel_cols[] = {DATA_PANEL_WIDTH, LV_GRID_TEMPLATE_LAST};
+    static lv_coord_t precharge_panel_rows[] = {150, LV_GRID_TEMPLATE_LAST};
+
+
+    precharge_panel = lv_obj_create(data_panel);
+    lv_obj_set_layout(precharge_panel, LV_LAYOUT_GRID);
+    lv_obj_remove_style_all(precharge_panel);
+    lv_obj_clear_flag(precharge_panel, LV_OBJ_FLAG_SCROLLABLE);
+
+    lv_obj_add_style(precharge_panel, &box_panels_style, 0);
+    lv_obj_center(precharge_panel);
+    lv_obj_set_style_base_dir(precharge_panel, LV_BASE_DIR_LTR, 0);
+    lv_obj_set_grid_dsc_array(precharge_panel, precharge_panel_cols, precharge_panel_rows);
+
+    lv_obj_set_grid_cell(precharge_panel, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
+
+
+    tab_hv_precharge_bar = lv_bar_create(precharge_panel);
+    lv_obj_remove_style_all(tab_hv_precharge_bar);
+    lv_obj_add_style(tab_hv_precharge_bar, &tab_hv_style_precharge, LV_PART_INDICATOR);
+    lv_obj_add_style(tab_hv_precharge_bar, &tab_hv_style_back_indic, LV_PART_MAIN);
+    lv_obj_set_size(tab_hv_precharge_bar, 700, 100);
+    lv_bar_set_range(tab_hv_precharge_bar, 0, 100);
+    lv_bar_set_value(tab_hv_precharge_bar, 0, LV_ANIM_OFF);
+
+    lv_obj_set_grid_cell(tab_hv_precharge_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+  } else if(!precharge && precharge_panel != NULL){
+    lv_obj_del(precharge_panel);
+    precharge_panel = NULL;
+  } else {
+    return;
+  }
+
+}
+
 void init_hv_styles(void) {
   /* BALANCING PANEL */
   lv_style_init(&balancing_panel_style);
@@ -158,6 +209,13 @@ void init_hv_styles(void) {
   lv_style_set_bg_grad_color(&tab_hv_style_indic,
                              lv_palette_main(LV_PALETTE_RED));
   lv_style_set_bg_grad_dir(&tab_hv_style_indic, LV_GRAD_DIR_HOR);
+
+  lv_style_init(&tab_hv_style_precharge);
+  lv_style_set_radius(&tab_hv_style_precharge, 0);
+  lv_style_set_bg_opa(&tab_hv_style_precharge, LV_OPA_COVER);
+  lv_style_set_bg_color(&tab_hv_style_precharge, lv_palette_main(LV_PALETTE_YELLOW));
+  lv_style_set_bg_grad_color(&tab_hv_style_precharge, lv_palette_main(LV_PALETTE_RED));
+  lv_style_set_bg_grad_dir(&tab_hv_style_precharge, LV_GRAD_DIR_HOR);
 
   lv_style_init(&tab_hv_style_back_indic);
   lv_style_set_radius(&tab_hv_style_back_indic, 0);
@@ -206,7 +264,7 @@ void tab_hv_create(lv_obj_t *parent) {
   static lv_coord_t dpanel_rows[] = {100, 150, DATA_PANEL_HEIGHT - 250,
                                      LV_GRID_TEMPLATE_LAST};
 
-  lv_obj_t *data_panel = lv_obj_create(main_panel);
+  data_panel = lv_obj_create(main_panel);
   lv_obj_remove_style_all(data_panel);
   // lv_obj_set_layout(data_panel, LV_LAYOUT_GRID);
   lv_obj_clear_flag(data_panel, LV_OBJ_FLAG_SCROLLABLE);

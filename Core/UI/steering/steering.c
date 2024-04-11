@@ -185,6 +185,8 @@ void hv_cell_voltage_update(void) {
 
 void hv_voltage_update(void) {
   GET_LAST_STATE(primary, hv_total_voltage, PRIMARY, HV_TOTAL_VOLTAGE);
+
+  precharge_bar_update((int32_t) primary_hv_total_voltage_last_state->pack);
   snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f",
            primary_hv_total_voltage_last_state->pack);
   set_tab_racing_label_text(snprintf_buffer, tab_rac_pack_voltage_idx);
@@ -295,24 +297,31 @@ void ts_status_update() {
 
   switch (primary_hv_status_last_state->status) {
   case primary_hv_status_status_init:
+    precharge_bar_insert(false);
     set_tab_hv_label_text("INIT", tab_hv_lb_current_state);
     break;
   case primary_hv_status_status_idle:
+    precharge_bar_insert(false);
     set_tab_hv_label_text("IDLE", tab_hv_lb_current_state);
     break;
   case primary_hv_status_status_airn_close:
+    precharge_bar_insert(false);
     set_tab_hv_label_text("AIRN CLOSE", tab_hv_lb_current_state);
     break;
   case primary_hv_status_status_precharge:
+    precharge_bar_insert(true);
     set_tab_hv_label_text("PRECHARGE", tab_hv_lb_current_state);
     break;
   case primary_hv_status_status_airp_close:
+    precharge_bar_insert(false);
     set_tab_hv_label_text("AIRP CLOSE", tab_hv_lb_current_state);
     break;
   case primary_hv_status_status_ts_on:
+    precharge_bar_insert(false);
     set_tab_hv_label_text("TS ON", tab_hv_lb_current_state);
     break;
   case primary_hv_status_status_fatal_error:
+    precharge_bar_insert(false);
     set_tab_hv_label_text("FATAL ERROR", tab_hv_lb_current_state);
     break;
   };
@@ -385,7 +394,7 @@ void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t* msg)
   - valori uguali - timeout passato -> aggiorno e cambio stato (3)
   - valori uguali - timeout non passato -> aggiorno e cambio stato (3)
   */
-void lv_pumps_speed_update() {
+void lv_pumps_speed_update(void) {
   return;
   GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
   float actual_speed = primary_lv_pumps_speed_last_state->pumps_speed;
@@ -437,7 +446,7 @@ void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t
   lv_set_radiators_speed_bar((int32_t) (msg->radiator_speed * 100.0f));
 }
 
-void lv_radiator_speed_update() {
+void lv_radiator_speed_update(void) {
   return;
   GET_LAST_STATE(primary, lv_radiator_speed, PRIMARY, LV_RADIATOR_SPEED);
   float actual_speed = primary_lv_radiator_speed_last_state->radiator_speed;
@@ -477,16 +486,14 @@ void lv_radiator_speed_update() {
 
 void lv_currents_update() {
   GET_LAST_STATE(primary, lv_current_battery, PRIMARY, LV_CURRENT_BATTERY);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
-           primary_lv_current_battery_last_state->lv_current);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_current_battery_last_state->lv_current);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_lv_current);
   set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pack_voltage_2);
 }
 
 void lv_total_voltage_update() {
   GET_LAST_STATE(primary, lv_total_voltage, PRIMARY, LV_TOTAL_VOLTAGE);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f",
-           primary_lv_total_voltage_last_state->total);
+  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_total_voltage_last_state->total);
   set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_voltage);
 }
 

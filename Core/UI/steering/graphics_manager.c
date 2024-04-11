@@ -106,6 +106,7 @@ void update_graphics(lv_timer_t *t) {
       }
       case PRIMARY_LV_RADIATOR_SPEED_FRAME_ID: {
         lv_radiator_speed_update();
+        break;
       }
       case PRIMARY_LV_PUMPS_SPEED_FRAME_ID: {
         lv_pumps_speed_update();
