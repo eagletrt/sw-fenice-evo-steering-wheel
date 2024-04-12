@@ -7,15 +7,15 @@
 #endif
 
 typedef struct queue_element_t {
-  int can_network;
-  struct can_frame frame;
-  uint64_t timestamp;
+    int can_network;
+    struct can_frame frame;
+    uint64_t timestamp;
 } queue_element_t;
 
 typedef struct queue_t {
-  queue_element_t data[DIM_queue];
-  int tail;
-  int head;
+    queue_element_t data[DIM_queue];
+    int tail;
+    int head;
 } queue_t;
 
 void queue_init(queue_t *q);

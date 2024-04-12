@@ -11,17 +11,13 @@
 #include "secondary/secondary_network.h"
 #include "secondary/secondary_watchdog.h"
 #include "steering.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 
-extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT]
-                                          [primary_MAX_STRUCT_SIZE_CONVERSION];
-extern uint8_t
-    secondary_messages_last_state[secondary_MESSAGE_COUNT]
-                                 [secondary_MAX_STRUCT_SIZE_CONVERSION];
-extern uint8_t
-    inverters_messages_last_state[inverters_MESSAGE_COUNT]
-                                 [inverters_MAX_STRUCT_SIZE_CONVERSION];
+extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT][primary_MAX_STRUCT_SIZE_CONVERSION];
+extern uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT][secondary_MAX_STRUCT_SIZE_CONVERSION];
+extern uint8_t inverters_messages_last_state[inverters_MESSAGE_COUNT][inverters_MAX_STRUCT_SIZE_CONVERSION];
 
 extern primary_lv_cells_voltage_converted_t lv_voltages_stock_1;
 extern primary_lv_cells_voltage_converted_t lv_voltages_stock_2;
@@ -41,4 +37,4 @@ void handle_secondary(can_message_t *msg);
 
 void init_periodic_can_messages_timers(void);
 
-#endif // CAN_MESSAGES_H
+#endif  // CAN_MESSAGES_H

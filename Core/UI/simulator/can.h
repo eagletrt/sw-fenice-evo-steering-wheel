@@ -1,12 +1,11 @@
 #ifndef CAN_H
 #define CAN_H
 
-#include <stdio.h>
-#include <string.h>
-
 #include <errno.h>
 #include <inttypes.h>
 #include <net/if.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -16,13 +15,13 @@
 #include <linux/can/raw.h>
 
 typedef struct can_t {
-  int sock;                    // socket fd
-  const char *device;          // name of device
-  struct sockaddr_can address; // address of device
+    int sock;                     // socket fd
+    const char *device;           // name of device
+    struct sockaddr_can address;  // address of device
 
-  uint64_t bytes_exchanged;
+    uint64_t bytes_exchanged;
 
-  int opened;
+    int opened;
 } can_t;
 
 /**

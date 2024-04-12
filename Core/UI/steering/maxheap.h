@@ -8,4 +8,4 @@
 
 void heap_sort(int array[], int ARRAYSIZE, int cmp(int index));
 
-#endif // MAXHEAP_H
+#endif  // MAXHEAP_H

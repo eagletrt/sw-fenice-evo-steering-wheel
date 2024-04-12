@@ -5,4 +5,4 @@
 
 bool i2c_test_read_write_register();
 
-#endif // IC2_TEST_H
+#endif  // IC2_TEST_H

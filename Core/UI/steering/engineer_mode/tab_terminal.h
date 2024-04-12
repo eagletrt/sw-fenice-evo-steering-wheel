@@ -8,4 +8,4 @@
 
 void tab_terminal_create(lv_obj_t *parent);
 
-#endif // TAB_TERMINAL_H
+#endif  // TAB_TERMINAL_H

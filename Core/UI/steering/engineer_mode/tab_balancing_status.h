@@ -6,4 +6,4 @@
 
 void tab_balancing_status_screen_create(lv_obj_t *parent);
 
-#endif // TAB_BALANCING_STATUS_H
+#endif  // TAB_BALANCING_STATUS_H

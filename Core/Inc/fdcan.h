@@ -38,7 +38,7 @@ extern FDCAN_HandleTypeDef hfdcan2;
 
 /* USER CODE BEGIN Private defines */
 
-#define CAN_PRIMARY_NETWORK hfdcan1
+#define CAN_PRIMARY_NETWORK   hfdcan1
 #define CAN_SECONDARY_NETWORK hfdcan2
 
 /* USER CODE END Private defines */

@@ -16,11 +16,11 @@
  * GENERAL SETTING
  *******************/
 #define LV_EX_PRINTF 1 /*Enable printf-ing data in demoes and examples*/
-#define LV_EX_KEYBOARD                                                         \
-  1 /*Add PC keyboard support to some examples (`lv_drivers` repository is     \
+#define LV_EX_KEYBOARD \
+    1 /*Add PC keyboard support to some examples (`lv_drivers` repository is     \
        required)*/
-#define LV_EX_MOUSEWHEEL                                                       \
-  1 /*Add 'encoder' (mouse wheel) support to some examples (`lv_drivers`       \
+#define LV_EX_MOUSEWHEEL \
+    1 /*Add 'encoder' (mouse wheel) support to some examples (`lv_drivers`       \
        repository is required)*/
 
 /*********************
@@ -49,7 +49,7 @@
 #define LV_USE_DEMO_MUSIC 1
 #if LV_USE_DEMO_MUSIC
 #define LV_DEMO_MUSIC_LANDSCAPE 0
-#define LV_DEMO_MUSIC_LARGE 0
+#define LV_DEMO_MUSIC_LARGE     0
 #define LV_DEMO_MUSIC_AUTO_PLAY 0
 #endif
 

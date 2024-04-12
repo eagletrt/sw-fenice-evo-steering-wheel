@@ -7,4 +7,4 @@
 void tab_fatal_error_create(lv_obj_t *);
 void set_tab_fatal_error_text(const char *);
 
-#endif // TAB_FATAL_ERROR_H
+#endif  // TAB_FATAL_ERROR_H

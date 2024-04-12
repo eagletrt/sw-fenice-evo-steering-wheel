@@ -13,15 +13,15 @@
 
 #define TAB_CANSNIFFER_N_MESSAGES_SHOWN 12
 
-#define PRIMARY_BUFSIZE 40
+#define PRIMARY_BUFSIZE   40
 #define SECONDARY_BUFSIZE 10
 
 typedef struct {
-  uint32_t timestamp;
-  uint32_t delta;
-  can_id_t id;
-  uint8_t len;
-  uint8_t data[8];
+    uint32_t timestamp;
+    uint32_t delta;
+    can_id_t id;
+    uint8_t len;
+    uint8_t data[8];
 } cansniffer_elem_t;
 
 void cansniffer_secondary_new_message(can_message_t *msg);
@@ -31,6 +31,6 @@ void cansniffer_primary_new_message(can_message_t *msg);
 void switch_primary_cansniffer();
 void update_primary_cansniffer_ui(lv_timer_t *unused_tim);
 
-#endif // CANSNIFFER_H
+#endif  // CANSNIFFER_H
 
-#endif // CANSNIFFER_ENABLED == 1
+#endif  // CANSNIFFER_ENABLED == 1

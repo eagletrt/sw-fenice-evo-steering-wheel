@@ -8,63 +8,55 @@
 #include "shutdown.h"
 #include "steering_config.h"
 #include "utils.h"
+
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 
-#define INV_MAX_SPEED 6500.f // MOT_RPM_LIMIT_REAL
+#define INV_MAX_SPEED 6500.f  // MOT_RPM_LIMIT_REAL
 
-#define STEERING_ANGLE_RANGE_LOW -150
+#define STEERING_ANGLE_RANGE_LOW  -150
 #define STEERING_ANGLE_RANGE_HIGH 150
-#define APPS_RANGE_LOW 0
-#define APPS_RANGE_HIGH 130
-#define BRAKE_RANGE_LOW 0
-#define BRAKE_RANGE_HIGH 180
+#define APPS_RANGE_LOW            0
+#define APPS_RANGE_HIGH           130
+#define BRAKE_RANGE_LOW           0
+#define BRAKE_RANGE_HIGH          180
 
 #define N_PORK_CELLBOARD 6
 
 typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
-#define GET_LAST_STATE(ntw, msg, NTW, MSG)                                     \
-  ntw##_##msg##_converted_t *ntw##_##msg##_last_state =                        \
-      (ntw##_##msg##_converted_t                                               \
-           *)&ntw##_messages_last_state[NTW##_##MSG##_INDEX][0]
+#define GET_LAST_STATE(ntw, msg, NTW, MSG) \
+    ntw##_##msg##_converted_t *ntw##_##msg##_last_state = (ntw##_##msg##_converted_t *)&ntw##_messages_last_state[NTW##_##MSG##_INDEX][0]
 
-#define STEER_UPDATE_COLOR_LABEL(name, color)                                  \
-  for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                    \
-    if (name[itab] != NULL)                                                    \
-      lv_obj_set_style_text_color(name[itab], lv_color_hex(color),             \
-                                  LV_PART_MAIN);                               \
-  }
+#define STEER_UPDATE_COLOR_LABEL(name, color)                                           \
+    for (uint32_t itab = 0; itab < NUM_RACING_TABS; itab++) {                           \
+        if (name[itab] != NULL)                                                         \
+            lv_obj_set_style_text_color(name[itab], lv_color_hex(color), LV_PART_MAIN); \
+    }
 
 #if STEER_TAB_DEBUG_ENABLED == 1
-#define STEER_ERROR_UPDATE(device, error_name, aindex)                         \
-  if (device##_last_state.error_name != data->error_name) {                    \
-    device##_last_state.error_name = data->error_name;                         \
-    if (data->error_name) {                                                    \
-      lv_obj_set_style_border_color(                                           \
-          device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
-      lv_obj_set_style_bg_color(                                               \
-          device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
-    } else {                                                                   \
-      lv_obj_set_style_border_color(                                           \
-          device[aindex], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN); \
-      lv_obj_set_style_bg_color(                                               \
-          device[aindex], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN); \
-    }                                                                          \
-  }
+#define STEER_ERROR_UPDATE(device, error_name, aindex)                                                         \
+    if (device##_last_state.error_name != data->error_name) {                                                  \
+        device##_last_state.error_name = data->error_name;                                                     \
+        if (data->error_name) {                                                                                \
+            lv_obj_set_style_border_color(device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);   \
+            lv_obj_set_style_bg_color(device[aindex], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);       \
+        } else {                                                                                               \
+            lv_obj_set_style_border_color(device[aindex], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN); \
+            lv_obj_set_style_bg_color(device[aindex], lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_MAIN);     \
+        }                                                                                                      \
+    }
 #endif
 
-#define STEER_ERROR_INVALIDATE(device, error_name, aindex)                     \
-  lv_obj_set_style_bg_color(steering.device[aindex],                           \
-                            lv_color_hex(COLOR_YELLOW_STATUS_HEX),             \
-                            LV_PART_MAIN);
+#define STEER_ERROR_INVALIDATE(device, error_name, aindex) \
+    lv_obj_set_style_bg_color(steering.device[aindex], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
 
-#define CHECK_CURRENT_TAB(mod, curr)                                           \
-  if ((mod##_mode) || (current_racing_tab != curr))                            \
-  return
+#define CHECK_CURRENT_TAB(mod, curr)                  \
+    if ((mod##_mode) || (current_racing_tab != curr)) \
+    return
 
 /*
  * UPDATE
@@ -185,8 +177,7 @@ void set_balancing_column(bool balancing, uint8_t idx);
 void tab_hv_set_pork_speed_bar(int32_t, bool);
 void tab_hv_pork_speed_bar_invalidate();
 
-void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx,
-                                       float shutdown_circuit_state);
+void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, float shutdown_circuit_state);
 
 /***
  * Tab lv
@@ -198,13 +189,8 @@ void lv_set_radiators_speed_bar(int32_t);
 void lv_radiator_speed_update(void);
 void lv_pumps_speed_update(void);
 
-extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT]
-                                          [primary_MAX_STRUCT_SIZE_CONVERSION];
-extern uint8_t
-    secondary_messages_last_state[secondary_MESSAGE_COUNT]
-                                 [secondary_MAX_STRUCT_SIZE_CONVERSION];
-extern uint8_t
-    inverters_messages_last_state[inverters_MESSAGE_COUNT]
-                                 [inverters_MAX_STRUCT_SIZE_CONVERSION];
+extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT][primary_MAX_STRUCT_SIZE_CONVERSION];
+extern uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT][secondary_MAX_STRUCT_SIZE_CONVERSION];
+extern uint8_t inverters_messages_last_state[inverters_MESSAGE_COUNT][inverters_MAX_STRUCT_SIZE_CONVERSION];
 
 #endif /* STEERING_H */

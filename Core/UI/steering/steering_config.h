@@ -23,29 +23,30 @@
  * Activate candump in the engineering tabs
  * To date, it is very memory inefficient, so use only if strictly necessary
  */
-#define CANSNIFFER_ENABLED 1
-#define CAN_LOG_ENABLED 0
-#define WATCHDOG_ENABLED 0
+#define CANSNIFFER_ENABLED      1
+#define CAN_LOG_ENABLED         0
+#define WATCHDOG_ENABLED        0
 #define CAN_OVER_SERIAL_ENABLED 0
-#define MCP23017_IT_ENABLED 0
+#define MCP23017_IT_ENABLED     0
 
 #define STEER_TAB_CALIBRATION_ENABLED 0
-#define STEER_TAB_SENSORS_ENABLED 1
-#define STEER_TAB_TRACK_TEST_ENABLED 1
-#define STEER_TAB_DEBUG_ENABLED 0
+#define STEER_TAB_SENSORS_ENABLED     1
+#define STEER_TAB_TRACK_TEST_ENABLED  1
+#define STEER_TAB_DEBUG_ENABLED       0
 
 #define SDRAM_BASE_ADDRESS 0xC0000000
-#define FRAMEBUFFER1_ADDR SDRAM_BASE_ADDRESS
-#define FRAMEBUFFER2_ADDR 0xC0200000
+#define FRAMEBUFFER1_ADDR  SDRAM_BASE_ADDRESS
+#define FRAMEBUFFER2_ADDR  0xC0200000
 
 #if CANSNIFFER_ENABLED == 1
-#define PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS 0xC0600000
-#define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS                               \
-  ((0xC0600000) + ((CANSNIFFER_ELEM_T_SIZE) * CAN_POSSIBLE_IDS))
+#define PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS   0xC0600000
+#define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS ((0xC0600000) + ((CANSNIFFER_ELEM_T_SIZE) * CAN_POSSIBLE_IDS))
 #endif
 
-#define SCREEN_WIDTH 800
+#define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 480
+
+#define HV_BUS_VOLTAGE_LIMIT (450U)
 
 /**
  * 0 = INT1 -> buttons <br>
@@ -54,40 +55,40 @@
  * 3 = INT4 -> right manettino<br>
  * 4 = ExtraButton
  */
-#define BUTTONS_INTERRUPT_INDEX 0
-#define LEFT_MANETTINO_INTERRUPT_INDEX 1
+#define BUTTONS_INTERRUPT_INDEX          0
+#define LEFT_MANETTINO_INTERRUPT_INDEX   1
 #define CENTER_MANETTINO_INTERRUPT_INDEX 2
-#define RIGHT_MANETTINO_INTERRUPT_INDEX 3
-#define EXTRA_BUTTON_INTERRUPT_INDEX 4
-#define NUM_INTERRUPT_PINS 5
+#define RIGHT_MANETTINO_INTERRUPT_INDEX  3
+#define EXTRA_BUTTON_INTERRUPT_INDEX     4
+#define NUM_INTERRUPT_PINS               5
 
 typedef enum {
-  NOT_SCREEN = -1,
-  TAB_RACING,
+    NOT_SCREEN = -1,
+    TAB_RACING,
 #if STEER_TAB_CALIBRATION_ENABLED == 1
-  TAB_CALIBRATION,
+    TAB_CALIBRATION,
 #endif
 
-  TAB_TRACK_TEST,
-  TAB_SENSORS,
-  TAB_HV,
-  TAB_LV,
-  // add here new tabs
-  NUM_RACING_TABS
+    TAB_TRACK_TEST,
+    TAB_SENSORS,
+    TAB_HV,
+    TAB_LV,
+    // add here new tabs
+    NUM_RACING_TABS
 } racing_tab_t;
 
 typedef enum {
-  TAB_TERMINAL,
-  TAB_BALANCING_STATUS,
+    TAB_TERMINAL,
+    TAB_BALANCING_STATUS,
 #if CANSNIFFER_ENABLED == 1
-  TAB_SECONDARY_CANSNIFFER,
-  TAB_PRIMARY_CANSNIFFER,
+    TAB_SECONDARY_CANSNIFFER,
+    TAB_PRIMARY_CANSNIFFER,
 #endif
 #if STEER_TAB_DEBUG_ENABLED == 1
-  TAB_DEBUG,
+    TAB_DEBUG,
 #endif
-  // add here new tabs
-  NUM_ENGINEER_TABS
+    // add here new tabs
+    NUM_ENGINEER_TABS
 } engineer_tab_t;
 
 extern racing_tab_t current_racing_tab;
@@ -95,117 +96,117 @@ extern engineer_tab_t current_engineer_tab;
 extern bool engineer_mode;
 
 typedef enum {
-  tab_rac_pack_voltage_idx,
-  tab_rac_hv_curr_idx,
-  tab_rac_best_time_idx,
-  tab_rac_last_time_idx,
-  tab_rac_dtime_idx,
-  tab_rac_torque_idx,
-  tab_rac_slip_idx,
-  tab_rac_inv_idx,
-  tab_rac_mot_idx,
-  tab_rac_lv_temp_idx,
-  tab_rac_hv_avg_temp_idx,
-  tab_rac_pow_idx,
-  tab_rac_status_idx,
-  tab_rac_bottom_status_idx,
-  tab_rac_lap_count_idx,
-  tab_rac_labels_n
+    tab_rac_pack_voltage_idx,
+    tab_rac_hv_curr_idx,
+    tab_rac_best_time_idx,
+    tab_rac_last_time_idx,
+    tab_rac_dtime_idx,
+    tab_rac_torque_idx,
+    tab_rac_slip_idx,
+    tab_rac_inv_idx,
+    tab_rac_mot_idx,
+    tab_rac_lv_temp_idx,
+    tab_rac_hv_avg_temp_idx,
+    tab_rac_pow_idx,
+    tab_rac_status_idx,
+    tab_rac_bottom_status_idx,
+    tab_rac_lap_count_idx,
+    tab_rac_labels_n
 } tab_racing_labels_enum;
 
 typedef enum {
-  tab_sensors_lb_fl_temp,
-  tab_sensors_lb_fr_temp,
-  tab_sensors_lb_rl_temp,
-  tab_sensors_lb_rr_temp,
-  tab_sensors_lb_fl_press,
-  tab_sensors_lb_fr_press,
-  tab_sensors_lb_rl_press,
-  tab_sensors_lb_rr_press,
-  tab_sensors_lb_right_inverter_temp,
-  tab_sensors_lb_right_motor_temp,
-  tab_sensors_lb_average_temperature,
-  tab_sensors_lb_left_inverter_temp,
-  tab_sensors_lb_left_motor_temp,
-  tab_sensors_lb_pack_voltage,
-  tab_sensors_lb_hv_current,
-  tab_sensors_lb_min_cell_voltage,
-  tab_sensors_lb_battery_temperature,
-  tab_sensors_lb_voltage,
-  tab_sensors_lb_lv_current,
-  tab_sensors_lb_hv_delta,
-  tab_sensors_extra_value0,
-  tab_sensors_extra_value1,
-  tab_sensors_extra_value2,
-  tab_sensors_lb_tlm_status,
-  tab_sensors_labels_n
+    tab_sensors_lb_fl_temp,
+    tab_sensors_lb_fr_temp,
+    tab_sensors_lb_rl_temp,
+    tab_sensors_lb_rr_temp,
+    tab_sensors_lb_fl_press,
+    tab_sensors_lb_fr_press,
+    tab_sensors_lb_rl_press,
+    tab_sensors_lb_rr_press,
+    tab_sensors_lb_right_inverter_temp,
+    tab_sensors_lb_right_motor_temp,
+    tab_sensors_lb_average_temperature,
+    tab_sensors_lb_left_inverter_temp,
+    tab_sensors_lb_left_motor_temp,
+    tab_sensors_lb_pack_voltage,
+    tab_sensors_lb_hv_current,
+    tab_sensors_lb_min_cell_voltage,
+    tab_sensors_lb_battery_temperature,
+    tab_sensors_lb_voltage,
+    tab_sensors_lb_lv_current,
+    tab_sensors_lb_hv_delta,
+    tab_sensors_extra_value0,
+    tab_sensors_extra_value1,
+    tab_sensors_extra_value2,
+    tab_sensors_lb_tlm_status,
+    tab_sensors_labels_n
 } tab_sensors_labels_enum;
 
 typedef enum {
-  tab_hv_lb_temp_max,
-  tab_hv_lb_temp_min,
-  tab_hv_lb_temp_avg,
-  tab_hv_lb_voltage_max,
-  tab_hv_lb_voltage_min,
-  tab_hv_lb_voltage_delta,
-  tab_hv_lb_pack_voltage,
-  tab_hv_lb_pack_voltage_2,
-  tab_hv_lb_bus_voltage,
-  tab_hv_lb_current_state,
-  tab_hv_lb_last_error,
-  tab_hv_pork_speed_value,
-  shutdown_status,
-  tab_hv_labels_n
+    tab_hv_lb_temp_max,
+    tab_hv_lb_temp_min,
+    tab_hv_lb_temp_avg,
+    tab_hv_lb_voltage_max,
+    tab_hv_lb_voltage_min,
+    tab_hv_lb_voltage_delta,
+    tab_hv_lb_pack_voltage,
+    tab_hv_lb_pack_voltage_2,
+    tab_hv_lb_bus_voltage,
+    tab_hv_lb_current_state,
+    tab_hv_lb_last_error,
+    tab_hv_pork_speed_value,
+    shutdown_status,
+    tab_hv_labels_n
 } tab_hv_labels_enum;
 
 typedef enum {
-  debug_signal_error_cell_low_voltage,
-  debug_signal_error_cell_under_voltage,
-  debug_signal_error_cell_over_voltage,
-  debug_signal_error_cell_high_temperature,
-  debug_signal_error_cell_over_temperature,
-  debug_signal_error_over_current,
-  debug_signal_error_can,
-  debug_signal_error_int_voltage_mismatch,
-  debug_signal_error_cellboard_comm,
-  debug_signal_error_cellboard_internal,
-  debug_signal_error_connector_disconnected,
-  debug_signal_error_fans_disconnected,
-  debug_signal_error_feedback,
-  debug_signal_error_feedback_circuitry,
-  debug_signal_error_eeprom_comm,
-  debug_signal_error_eeprom_write,
-  DEBUG_SIGNAL_ERROR_SIZE
+    debug_signal_error_cell_low_voltage,
+    debug_signal_error_cell_under_voltage,
+    debug_signal_error_cell_over_voltage,
+    debug_signal_error_cell_high_temperature,
+    debug_signal_error_cell_over_temperature,
+    debug_signal_error_over_current,
+    debug_signal_error_can,
+    debug_signal_error_int_voltage_mismatch,
+    debug_signal_error_cellboard_comm,
+    debug_signal_error_cellboard_internal,
+    debug_signal_error_connector_disconnected,
+    debug_signal_error_fans_disconnected,
+    debug_signal_error_feedback,
+    debug_signal_error_feedback_circuitry,
+    debug_signal_error_eeprom_comm,
+    debug_signal_error_eeprom_write,
+    DEBUG_SIGNAL_ERROR_SIZE
 } debug_signal_error_t;
 
 typedef enum {
-  tab_lv_lb_temp_max,
-  tab_lv_lb_temp_min,
-  tab_lv_lb_temp_avg,
-  tab_lv_lb_voltage_max,
-  tab_lv_lb_voltage_min,
-  tab_lv_lb_voltage_delta,
-  tab_lv_lb_pack_voltage,
-  tab_lv_lb_pack_voltage_2,
-  tab_lv_lb_bus_voltage,
-  tab_lv_lb_current_state,
-  tab_lv_lb_last_error,
-  tab_lv_lb_pumps_actual,
-  tab_lv_lb_pumps_local,
-  tab_lv_lb_radiators_actual,
-  tab_lv_lb_radiators_local,
-  tab_lv_lb_state,
-  tab_lv_labels_n
+    tab_lv_lb_temp_max,
+    tab_lv_lb_temp_min,
+    tab_lv_lb_temp_avg,
+    tab_lv_lb_voltage_max,
+    tab_lv_lb_voltage_min,
+    tab_lv_lb_voltage_delta,
+    tab_lv_lb_pack_voltage,
+    tab_lv_lb_pack_voltage_2,
+    tab_lv_lb_bus_voltage,
+    tab_lv_lb_current_state,
+    tab_lv_lb_last_error,
+    tab_lv_lb_pumps_actual,
+    tab_lv_lb_pumps_local,
+    tab_lv_lb_radiators_actual,
+    tab_lv_lb_radiators_local,
+    tab_lv_lb_state,
+    tab_lv_labels_n
 } tab_lv_labels_enum;
 
 /***
  * Cooling
  */
-#define COOLING_STATE_SYNC_TIMEOUT 1000 // in ms
+#define COOLING_STATE_SYNC_TIMEOUT 1000  // in ms
 
 typedef enum {
-  STEERING_WHEEL_COOLING_STATUS_SYNC,
-  STEERING_WHEEL_COOLING_STATUS_SET,
+    STEERING_WHEEL_COOLING_STATUS_SYNC,
+    STEERING_WHEEL_COOLING_STATUS_SET,
 } steering_wheel_cooling_status_t;
 
 /***
@@ -214,4 +215,4 @@ typedef enum {
 uint32_t get_current_time_ms(void);
 void openblt_reset(void);
 
-#endif // STEERING_CONFIG_H
+#endif  // STEERING_CONFIG_H

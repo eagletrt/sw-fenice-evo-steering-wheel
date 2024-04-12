@@ -10,6 +10,6 @@
 
 void secondary_tab_cansniffer_create(lv_obj_t *parent);
 
-#endif // SECONDARY_TAB_CAN_SNIFFER_H
+#endif  // SECONDARY_TAB_CAN_SNIFFER_H
 
-#endif // CANSNIFFER_ENABLED == 1
+#endif  // CANSNIFFER_ENABLED == 1
