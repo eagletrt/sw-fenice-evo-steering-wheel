@@ -51,7 +51,7 @@ void update_graphics(lv_timer_t *t) {
                 // break;
                 // }
                 case PRIMARY_HV_STATUS_FRAME_ID: {
-                    ts_status_update();
+                    hv_status_update();
                     break;
                 }
                 case PRIMARY_HV_DEBUG_SIGNALS_FRAME_ID: {
@@ -59,7 +59,7 @@ void update_graphics(lv_timer_t *t) {
                     break;
                 }
                 case PRIMARY_HV_TOTAL_VOLTAGE_FRAME_ID: {
-                    hv_voltage_update();
+                    hv_total_voltage_update();
                     break;
                 }
                 case PRIMARY_HV_CURRENT_FRAME_ID: {
@@ -67,7 +67,7 @@ void update_graphics(lv_timer_t *t) {
                     break;
                 }
                 case PRIMARY_HV_CELLS_TEMP_STATS_FRAME_ID: {
-                    hv_temp_update();
+                    hv_cells_temp_stats_update();
                     break;
                 }
                 case PRIMARY_HV_ERRORS_FRAME_ID: {
@@ -83,7 +83,7 @@ void update_graphics(lv_timer_t *t) {
                     break;
                 }
                 case PRIMARY_HV_CELLS_VOLTAGE_STATS_FRAME_ID: {
-                    hv_cell_voltage_update();
+                    hv_cells_voltage_stats_update();
                     break;
                 }
                 case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
@@ -165,11 +165,11 @@ void update_graphics(lv_timer_t *t) {
             can_id_t id = secondary_id_from_index(iindex);
             switch (id) {
                 case SECONDARY_ANGULAR_VELOCITY_FRAME_ID: {
-                    speed_update();
+                    angular_velocity_update();
                     break;
                 }
                 case SECONDARY_STEER_ANGLE_FRAME_ID: {
-                    steering_angle_update();
+                    steer_angle_update();
                     break;
                 }
                 // case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {

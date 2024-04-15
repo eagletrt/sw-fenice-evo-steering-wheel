@@ -64,14 +64,14 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
 void car_status_update();
 void tlm_status_update();
-void speed_update();
+void angular_velocity_update();
 void ecu_feedbacks_update();
 
 void hv_debug_signals_update();
-void hv_cell_voltage_update();
-void hv_voltage_update();
+void hv_cells_voltage_stats_update();
+void hv_total_voltage_update();
 void hv_current_update();
-void hv_temp_update();
+void hv_cells_temp_stats_update();
 void hv_errors_update();
 void hv_cell_balancing_status_update();
 void hv_feedbacks_status_update();
@@ -87,11 +87,11 @@ void lv_cells_voltage_stats_update();
 void lv_cells_temp_update();
 void lv_cells_temp_stats_update();
 
-void ts_status_update();
+void hv_status_update();
 void hv_fans_override_status_update();
 void tlm_status_update();
 
-void steering_angle_update();
+void steer_angle_update();
 void pedals_output_update();
 void imu_acceleration_update();
 void lap_count_update();

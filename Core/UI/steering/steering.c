@@ -120,7 +120,7 @@ void tlm_status_update() {
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_tlm_status);
 }
 
-void speed_update(void) {
+void angular_velocity_update(void) {
     GET_LAST_STATE(secondary, angular_velocity, SECONDARY, ANGULAR_VELOCITY);
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
     if (primary_ecu_status_last_state->status != primary_ecu_status_status_drive) {
@@ -158,7 +158,7 @@ void hv_debug_signals_update(void) {
     tab_hv_update_error_label();
 }
 
-void hv_cell_voltage_update(void) {
+void hv_cells_voltage_stats_update(void) {
     GET_LAST_STATE(primary, hv_cells_voltage_stats, PRIMARY, HV_CELLS_VOLTAGE_STATS);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_hv_cells_voltage_stats_last_state->min);
 
@@ -181,7 +181,7 @@ void hv_cell_voltage_update(void) {
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_voltage_delta);
 }
 
-void hv_voltage_update(void) {
+void hv_total_voltage_update(void) {
     GET_LAST_STATE(primary, hv_total_voltage, PRIMARY, HV_TOTAL_VOLTAGE);
 
     precharge_bar_update((int32_t)primary_hv_total_voltage_last_state->bus);
@@ -201,7 +201,7 @@ void hv_current_update() {
     set_tab_racing_hv_current_bar(primary_hv_current_last_state->current);
 }
 
-void hv_temp_update() {
+void hv_cells_temp_stats_update() {
     GET_LAST_STATE(primary, hv_cells_temp_stats, PRIMARY, HV_CELLS_TEMP_STATS);
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->avg);
@@ -268,7 +268,7 @@ void ecu_feedbacks_update(void) {
     // primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_bots_fb);
 }
 
-void ts_status_update() {
+void hv_status_update() {
     GET_LAST_STATE(primary, hv_status, PRIMARY, HV_STATUS);
 
     switch (primary_hv_status_last_state->status) {
@@ -552,7 +552,7 @@ void lv_feedbacks_update() {
     // primary_lv_feedbacks_last_state->sd_end);
 }
 
-void steering_angle_update() {
+void steer_angle_update() {
     GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", secondary_steer_angle_last_state->angle);
     set_tab_track_test_steering_angle_bar(secondary_steer_angle_last_state->angle);
