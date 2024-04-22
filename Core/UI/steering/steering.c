@@ -256,16 +256,12 @@ void hv_feedbacks_status_update() {
 primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
 
 void ecu_feedbacks_update(void) {
-    // TODO RICKY
-    // GET_LAST_STATE(primary, ecu_feedbacks, PRIMARY, ECU_FEEDBACKS);
-    // update_shutdown_circuit_component(ecu_feedbacks_sd_in_index,
-    // primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_in);
-    // update_shutdown_circuit_component(ecu_feedbacks_sd_cock_fb_index,
-    // primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_cock_fb);
-    // update_shutdown_circuit_component(ecu_feedbacks_sd_interial_fb_index,
-    // primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_interial_fb);
-    // update_shutdown_circuit_component(ecu_feedbacks_sd_bots_fb_index,
-    // primary_ecu_feedbacks_last_state->ecu_feedbacks_sd_bots_fb);
+    GET_LAST_STATE(primary, ecu_feedbacks, PRIMARY, ECU_FEEDBACKS);
+
+    update_shutdown_circuit_component(ecu_feedbacks_sd_in_index, primary_ecu_feedbacks_last_state->feedbacks_sd_in);
+    update_shutdown_circuit_component(ecu_feedbacks_sd_cock_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_cock_fb);
+    update_shutdown_circuit_component(ecu_feedbacks_sd_interial_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_interial_fb);
+    update_shutdown_circuit_component(ecu_feedbacks_sd_bots_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_bots_fb);
 }
 
 void hv_status_update() {
@@ -307,6 +303,7 @@ extern int pork_fans_status_last_state;
 
 void hv_fans_override_status_update() {
     GET_LAST_STATE(primary, hv_fans_status, PRIMARY, HV_FANS_STATUS);
+
     float cval                  = primary_hv_fans_status_last_state->fans_speed;
     pork_fans_status_last_state = (int)(cval * 100.0f);
     if (cval < 0) {
@@ -324,15 +321,21 @@ void lv_feedback_sd_voltage_update() {
 
     update_shutdown_circuit_component(sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start);
     update_shutdown_circuit_component(feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock);
-    // update_shutdown_circuit_component(feedbacks_invc_lid_fb_index,
-    // primary_lv_feedback_sd_voltage_last_state->feedbacks_invc_lid_fb);
-    // update_shutdown_circuit_component(feedbacks_hvd_fb_index,
-    // primary_lv_feedback_sd_voltage_last_state->feedbacks_hvd_fb);
-    // update_shutdown_circuit_component(feedbacks_bspd_fb_index,
-    // primary_lv_feedback_sd_voltage_last_state->feedbacks_bspd_fb);
-    // update_shutdown_circuit_component(feedbacks_invc_interlock_fb_index,
-    // primary_lv_feedback_sd_voltage_last_state->feedbacks_invc_interlock_fb);
     update_shutdown_circuit_component(sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end);
+}
+
+void lv_feedback_ts_voltage_update() {
+    GET_LAST_STATE(primary, lv_feedback_ts_voltage, PRIMARY, LV_FEEDBACK_TS_VOLTAGE);
+
+    update_shutdown_circuit_component(feedbacks_hvd_fb_index, primary_lv_feedback_ts_voltage_last_state->hvd);
+    update_shutdown_circuit_component(feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd);
+    update_shutdown_circuit_component(feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock);
+}
+
+void lv_feedback_enclosure_voltage_update() {
+    GET_LAST_STATE(primary, lv_feedback_enclosure_voltage, PRIMARY, LV_FEEDBACK_ENCLOSURE_VOLTAGE);
+
+    update_shutdown_circuit_component(feedbacks_invc_lid_fb_index, primary_lv_feedback_enclosure_voltage_last_state->invc_lid);
 }
 
 extern primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed;
@@ -531,25 +534,6 @@ void lv_cells_temp_stats_update() {
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_cells_temp_stats_last_state->avg);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_avg);
-}
-
-void lv_feedbacks_update() {
-    // TODO RICKY
-    // GET_LAST_STATE(primary, lv_feedbacks, PRIMARY, LV_FEEDBACKS);
-    // update_shutdown_circuit_component(sd_start_index,
-    // primary_lv_feedbacks_last_state->sd_start);
-    // update_shutdown_circuit_component(feedbacks_interlock_fb_index,
-    // primary_lv_feedbacks_last_state->feedbacks_interlock_fb);
-    // update_shutdown_circuit_component(feedbacks_invc_lid_fb_index,
-    // primary_lv_feedbacks_last_state->feedbacks_invc_lid_fb);
-    // update_shutdown_circuit_component(feedbacks_hvd_fb_index,
-    // primary_lv_feedbacks_last_state->feedbacks_hvd_fb);
-    // update_shutdown_circuit_component(feedbacks_bspd_fb_index,
-    // primary_lv_feedbacks_last_state->feedbacks_bspd_fb);
-    // update_shutdown_circuit_component(feedbacks_invc_interlock_fb_index,
-    // primary_lv_feedbacks_last_state->feedbacks_invc_interlock_fb);
-    // update_shutdown_circuit_component(sd_end_index,
-    // primary_lv_feedbacks_last_state->sd_end);
 }
 
 void steer_angle_update() {

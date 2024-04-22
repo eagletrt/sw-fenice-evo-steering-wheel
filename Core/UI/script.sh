@@ -1,6 +1,6 @@
-# File da inserire nella build folder, per compilare ed eseguire il progetto
-# Vai alla directory superiore
-cd ..
+# Version: 1.0
+# File di script per la compilazione del progetto SteeringSimulator
+rm -r build
 
 # Configura il progetto con CMake
 cmake -S . -B build

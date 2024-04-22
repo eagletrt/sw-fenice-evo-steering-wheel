@@ -79,6 +79,8 @@ void debug_hv_feedbacks_status_update();
 void das_errors_update();
 
 void lv_feedback_sd_voltage_update();
+void lv_feedback_ts_voltage_update();
+void lv_feedback_enclosure_voltage_update();
 void lv_errors_update();
 void lv_currents_update();
 void lv_total_voltage_update();

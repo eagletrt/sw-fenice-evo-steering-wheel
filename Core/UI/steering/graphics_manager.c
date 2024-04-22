@@ -91,13 +91,16 @@ void update_graphics(lv_timer_t *t) {
                     debug_hv_feedbacks_status_update();
                     break;
                 }
-                // TODO RICKY
-                // case PRIMARY_LV_FEEDBACKS_FRAME_ID: {
-                // lv_feedbacks_update();
-                // break;
-                // }
                 case PRIMARY_LV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
                     lv_feedback_sd_voltage_update();
+                    break;
+                }
+                case PRIMARY_LV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
+                    lv_feedback_ts_voltage_update();
+                    break;
+                }
+                case PRIMARY_LV_FEEDBACK_ENCLOSURE_VOLTAGE_FRAME_ID: {
+                    lv_feedback_enclosure_voltage_update();
                     break;
                 }
                 case PRIMARY_LV_ERRORS_FRAME_ID: {

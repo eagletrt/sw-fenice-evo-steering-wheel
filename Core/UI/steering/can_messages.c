@@ -140,9 +140,16 @@ void handle_primary(can_message_t *msg) {
         // STEER_CAN_UNPACK(primary, PRIMARY, das_errors, DAS_ERRORS, is_pmsg_new);
         // break;
         // }
-        // TODO RICKY inserire tutti gli ID dello shutdown
         case PRIMARY_LV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_sd_voltage, LV_FEEDBACK_SD_VOLTAGE, is_pmsg_new);
+            break;
+        }
+        case PRIMARY_LV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_ts_voltage, LV_FEEDBACK_TS_VOLTAGE, is_pmsg_new);
+            break;
+        }
+        case PRIMARY_LV_FEEDBACK_ENCLOSURE_VOLTAGE_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_enclosure_voltage, LV_FEEDBACK_ENCLOSURE_VOLTAGE, is_pmsg_new);
             break;
         }
         case PRIMARY_LV_ERRORS_FRAME_ID: {
