@@ -40,7 +40,7 @@ void set_tab_track_test_dmt_steering_angle_target(float v) {
     lv_bar_set_range(tab_track_test_steering_angle_bar, v - STEERING_ANGLE_TARGET_LIMITS - 10.0f, v + STEERING_ANGLE_TARGET_LIMITS + 10.0f);
     char b[100];
     snprintf(b, 100, "%.1f", dmt_steering_angle_target);
-    update_sensors_extra_value(b, 1);
+    //update_sensors_extra_value(b, 1);
     lv_label_set_text(tab_track_test_lb_target, b);
     snprintf(b, 100, "new target at: %.2f", v);
     display_notification(b, 1000);
@@ -171,6 +171,4 @@ void tab_track_test_create(lv_obj_t *parent) {
 }
 
 void tab_track_test_resync(void) {
-    GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
-    set_tab_track_test_dmt_steering_angle_target(secondary_steer_angle_last_state->angle);
 }

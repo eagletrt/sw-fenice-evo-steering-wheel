@@ -1,5 +1,4 @@
 #include "tab_manager.h"
-
 #include "steering.h"
 
 lv_obj_t *tab_racing_ptr;
@@ -175,20 +174,19 @@ void load_current_racing_tab() {
             break;
 #endif
         case TAB_TRACK_TEST:
-            // tab_track_test_resync(); // Removed because this calls
-            // display_notification which calls the resync etc.
+            tab_track_test_resync();
             lv_scr_load(tab_track_test_ptr);
             break;
         case TAB_SENSORS:
-            // tab_sensor_resync();
+            tab_sensor_resync();
             lv_scr_load(tab_sensors_ptr);
             break;
         case TAB_HV:
-            // tab_hv_resync();
+            tab_hv_resync();
             lv_scr_load(tab_hv_ptr);
             break;
         case TAB_LV:
-            // tab_lv_resync();
+            tab_lv_resync();
             lv_scr_load(tab_lv_ptr);
             break;
         default:
