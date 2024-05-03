@@ -654,21 +654,17 @@ float convert_t_igbt(float val) {
 void inv_l_rcv_update(void) {
     GET_LAST_STATE(inverters, inv_l_rcv, INVERTERS, INV_L_RCV);
     l_motor_temp = convert_t_motor(inverters_inv_l_rcv_last_state->t_motor);
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", l_motor_temp);
-    fprintf(stdout, "left motor_temp=%s\n", snprintf_buffer);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", l_motor_temp);
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_left_motor_temp);
     if (r_motor_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", (l_motor_temp + r_motor_temp) / 2.0f);
-        fprintf(stdout, "mean motor_temp=%s\n", snprintf_buffer);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", (l_motor_temp + r_motor_temp) / 2.0f);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_mot_idx);
     }
     l_igbt_temp = convert_t_igbt(inverters_inv_l_rcv_last_state->t_igbt);
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", l_igbt_temp);
-    fprintf(stdout, "left igbt=%s\n", snprintf_buffer);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", l_igbt_temp);
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_left_inverter_temp);
     if (r_igbt_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", (l_igbt_temp + r_igbt_temp) / 2.0f);
-        fprintf(stdout, "mean igbt=%s\n", snprintf_buffer);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", (l_igbt_temp + r_igbt_temp) / 2.0f);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_inv_idx);
     }
 }
@@ -676,12 +672,10 @@ void inv_l_rcv_update(void) {
 void inv_r_rcv_update(void) {
     GET_LAST_STATE(inverters, inv_r_rcv, INVERTERS, INV_R_RCV);
     r_motor_temp = convert_t_motor(inverters_inv_r_rcv_last_state->t_motor);
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", r_motor_temp);
-    fprintf(stdout, "left igbt=%s\n", snprintf_buffer);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", r_motor_temp);
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_right_motor_temp);
     r_igbt_temp = convert_t_igbt(inverters_inv_r_rcv_last_state->t_igbt);
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", r_igbt_temp);
-    fprintf(stdout, "right igbt=%s\n", snprintf_buffer);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", r_igbt_temp);
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_right_inverter_temp);
 }
 

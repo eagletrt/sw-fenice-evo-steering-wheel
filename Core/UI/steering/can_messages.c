@@ -223,10 +223,10 @@ void handle_primary(can_message_t *msg) {
             inverters_inv_l_rcv_converted_t *last_state =
                 (inverters_inv_l_rcv_converted_t *)&inverters_messages_last_state[inverters_index_from_id(msg->id)][0];
             if (converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
-                last_state->t_motor = converted.t_motor;
+                last_state->t_motor                                                = converted.t_motor;
                 is_imsg_new[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)] = true;
             } else if (converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
-                last_state->t_igbt = converted.t_igbt;
+                last_state->t_igbt                                                 = converted.t_igbt;
                 is_imsg_new[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)] = true;
             }
             break;
@@ -241,10 +241,10 @@ void handle_primary(can_message_t *msg) {
             inverters_inv_r_rcv_converted_t *last_state =
                 (inverters_inv_r_rcv_converted_t *)&inverters_messages_last_state[inverters_index_from_id(msg->id)][0];
             if (converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
-                last_state->t_motor = converted.t_motor;
+                last_state->t_motor                                                = converted.t_motor;
                 is_imsg_new[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)] = true;
             } else if (converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
-                last_state->t_igbt = converted.t_igbt;
+                last_state->t_igbt                                                 = converted.t_igbt;
                 is_imsg_new[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)] = true;
             }
             break;
@@ -303,73 +303,70 @@ void handle_secondary(can_message_t *msg) {
     break;
   }
 #endif
-#if 0
-// TODO RICKY vedere se mettendo #if 1 va tutto o se c'e' qualche problema
-  case SECONDARY_IRTS_FL_0_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_0, IRTS_FL_0, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_FL_1_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_1, IRTS_FL_1, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_FL_2_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_2, IRTS_FL_2, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_FL_3_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_3, IRTS_FL_3, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_FR_0_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_0, IRTS_FR_0, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_FR_1_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_1, IRTS_FR_1, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_FR_2_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_2, IRTS_FR_2, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_FR_3_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_3, IRTS_FR_3, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_RL_0_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_0, IRTS_RL_0, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_RL_1_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_1, IRTS_RL_1, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_RL_2_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_2, IRTS_RL_2, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_RL_3_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_3, IRTS_RL_3, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_RR_0_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_0, IRTS_RR_0, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_RR_1_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_1, IRTS_RR_1, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_RR_2_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_2, IRTS_RR_2, is_smsg_new);
-    break;
-  }
-  case SECONDARY_IRTS_RR_3_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_3, IRTS_RR_3, is_smsg_new);
-    break;
-  }
-#endif
+        case SECONDARY_IRTS_FL_0_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_0, IRTS_FL_0, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_FL_1_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_1, IRTS_FL_1, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_FL_2_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_2, IRTS_FL_2, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_FL_3_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_3, IRTS_FL_3, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_FR_0_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_0, IRTS_FR_0, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_FR_1_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_1, IRTS_FR_1, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_FR_2_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_2, IRTS_FR_2, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_FR_3_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_fr_3, IRTS_FR_3, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_RL_0_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_0, IRTS_RL_0, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_RL_1_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_1, IRTS_RL_1, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_RL_2_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_2, IRTS_RL_2, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_RL_3_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_rl_3, IRTS_RL_3, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_RR_0_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_0, IRTS_RR_0, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_RR_1_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_1, IRTS_RR_1, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_RR_2_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_2, IRTS_RR_2, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IRTS_RR_3_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_3, IRTS_RR_3, is_smsg_new, true);
+            break;
+        }
         default:
             break;
     }
