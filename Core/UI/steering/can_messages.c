@@ -214,23 +214,39 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case INVERTERS_INV_L_RCV_FRAME_ID: {
-            STEER_CAN_UNPACK(
-                inverters,
-                INVERTERS,
-                inv_l_rcv,
-                INV_L_RCV,
-                is_imsg_new,
-                converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE || converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE);
+            inverters_watchdog_reset(&m_inverters_watchdog, inverters_index_from_id(msg->id), get_current_time_ms());
+            inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
+            inverters_inv_l_rcv_t raw;
+            inverters_inv_l_rcv_converted_t converted;
+            inverters_inv_l_rcv_unpack(&raw, msg->data, INVERTERS_INV_L_RCV_BYTE_SIZE);
+            inverters_inv_l_rcv_raw_to_conversion_struct(&converted, &raw);
+            inverters_inv_l_rcv_converted_t *last_state =
+                (inverters_inv_l_rcv_converted_t *)&inverters_messages_last_state[inverters_index_from_id(msg->id)][0];
+            if (converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
+                last_state->t_motor = converted.t_motor;
+                is_imsg_new[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)] = true;
+            } else if (converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
+                last_state->t_igbt = converted.t_igbt;
+                is_imsg_new[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)] = true;
+            }
             break;
         }
         case INVERTERS_INV_R_RCV_FRAME_ID: {
-            STEER_CAN_UNPACK(
-                inverters,
-                INVERTERS,
-                inv_r_rcv,
-                INV_R_RCV,
-                is_imsg_new,
-                converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE || converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE);
+            inverters_watchdog_reset(&m_inverters_watchdog, inverters_index_from_id(msg->id), get_current_time_ms());
+            inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
+            inverters_inv_r_rcv_t raw;
+            inverters_inv_r_rcv_converted_t converted;
+            inverters_inv_r_rcv_unpack(&raw, msg->data, INVERTERS_INV_R_RCV_BYTE_SIZE);
+            inverters_inv_r_rcv_raw_to_conversion_struct(&converted, &raw);
+            inverters_inv_r_rcv_converted_t *last_state =
+                (inverters_inv_r_rcv_converted_t *)&inverters_messages_last_state[inverters_index_from_id(msg->id)][0];
+            if (converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
+                last_state->t_motor = converted.t_motor;
+                is_imsg_new[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)] = true;
+            } else if (converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
+                last_state->t_igbt = converted.t_igbt;
+                is_imsg_new[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)] = true;
+            }
             break;
         }
         default:
