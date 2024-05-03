@@ -266,10 +266,12 @@ void buttons_pressed_actions(uint8_t button) {
     switch (button) {
         case PADDLE_TOP_RIGHT: {
             steering_change_tab(true);
+            all_leds_green();
             break;
         }
         case PADDLE_TOP_LEFT: {
             steering_change_tab(false);
+            all_leds_red();
             break;
         }
         case PADDLE_BOTTOM_RIGHT: {

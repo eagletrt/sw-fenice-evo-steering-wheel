@@ -124,8 +124,13 @@ int main(void) {
     HAL_Delay(100);
 
 #if 1
-    led_control_init();
-    led_control_set_all(&hi2c4, COLOR_BLUE);
+    //led_control_init_reset();
+    //led_control_init();
+    //led_control_read_value();
+    //led_control_set_all(&hi2c4, COLOR_YELLOW);
+    //led_mem_write();
+    try_led_last_time();
+    
 #endif
 
 #define I2C_TESTS 0
@@ -156,6 +161,10 @@ int main(void) {
     lv_timer_t *gtimer = lv_timer_create(update_graphics, 100, NULL);
     lv_timer_set_repeat_count(gtimer, -1);
     lv_timer_reset(gtimer);
+
+    lv_timer_t *gianni_timer = lv_timer_create(led_control_read_value, 100, NULL);
+    lv_timer_set_repeat_count(gianni_timer, -1);
+    lv_timer_reset(gianni_timer);
 
     if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
         enter_fatal_error_mode("Primary CAN fatal error");

@@ -22,7 +22,7 @@ void set_tab_track_test_lb_speed(const char *s) {
 void set_tab_track_test_steering_angle_bar(float v) {
     char b[100];
     snprintf(b, 100, "%.1f", v);
-    update_sensors_extra_value(b, 2);
+    //update_sensors_extra_value(b, 2);
     lv_label_set_text(tab_track_test_lb_steering_angle, b);
     v = fmax(v, dmt_steering_angle_target - STEERING_ANGLE_TARGET_LIMITS);
     v = fmin(v, dmt_steering_angle_target + STEERING_ANGLE_TARGET_LIMITS);
