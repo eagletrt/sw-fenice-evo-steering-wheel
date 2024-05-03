@@ -77,13 +77,15 @@ void update_primary_cansniffer_ui(lv_timer_t *unused_tim) {
             clear_primary_cansniffer_ui_item(iindex - (TAB_CANSNIFFER_N_MESSAGES_SHOWN * primary_cansniffer_start_index));
         } else {
             int index = (primary_cansniffer_ids[iindex]);
-            primary_message_name_from_id(primary_id_from_index(index), primary_cansniffer_id_name);
+            int res = primary_message_name_from_id(primary_id_from_index(index), primary_cansniffer_id_name);
+            if (res == 0) {
+                snprintf(primary_cansniffer_id_name, PRIMARY_CANSNIFFER_ID_NAME_SIZE, "unknown");
+            }
             for (size_t jindex = 0; jindex < primary_cansniffer_buffer[index].len; ++jindex) {
                 snprintf(
                     primary_cansniffer_data_string + jindex * 3, PRIMARY_CANSNIFFER_DATA_STRING_SIZE, "%02X ", primary_cansniffer_buffer[index].data[jindex]);
             }
             update_primary_cansniffer_value(iindex - (TAB_CANSNIFFER_N_MESSAGES_SHOWN * primary_cansniffer_start_index), index);
-            snprintf(primary_cansniffer_id_name, PRIMARY_CANSNIFFER_ID_NAME_SIZE, "unknown");
         }
     }
 }
@@ -105,7 +107,7 @@ void cansniffer_primary_new_message(can_message_t *msg) {
     if (index == -1) {
         return;
     }
-    // size_t old = primary_cansniffer_ids_size;
+    size_t old = primary_cansniffer_ids_size;
     if (primary_cansniffer_buffer[index].id == 0) {
         primary_cansniffer_ids[primary_cansniffer_ids_size] = (int)(index);
         primary_cansniffer_ids_size++;
@@ -116,10 +118,9 @@ void cansniffer_primary_new_message(can_message_t *msg) {
     primary_cansniffer_buffer[index].id        = msg->id;
     primary_cansniffer_buffer[index].len       = msg->size;
     memcpy(primary_cansniffer_buffer[index].data, msg->data, msg->size);
-    // TODO: fix sorting by id
-    // if (old != primary_cansniffer_ids_size)
-    // heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size,
-    // primary_id_from_index);
+    
+    if (old != primary_cansniffer_ids_size)
+        heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size, primary_id_from_index);
 }
 
 void primary_tab_cansniffer_create(lv_obj_t *parent) {

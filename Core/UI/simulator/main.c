@@ -320,15 +320,6 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
             //     change_errors_view(true);
             // #endif
             //     break;
-            //   case 'g': {
-            //     if (engineer_mode) {
-            // #if CANSNIFFER_ENABLED == 1
-            //       switch_cansniffer();
-            // #endif
-            //     } else {
-            //       turn_telemetry_on_off();
-            //     }
-            //     break;
             //   }
             //   case 'h': {
             // #if CANSNIFFER_ENABLED == 1
@@ -362,7 +353,30 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
             //     manettino_left_actions(1);
             //     break;
             //   }
-
+        case 'c': {
+            switch_mode();
+            break;
+        }
+        case 'g': {
+            if (engineer_mode) {
+#if CANSNIFFER_ENABLED == 1
+                switch_cansniffer();
+#endif
+            }
+            break;
+        }
+        case 'h': {
+#if CANSNIFFER_ENABLED == 1
+            change_cansniffer_index(true);
+#endif
+            break;
+        }
+        case 'j': {
+#if CANSNIFFER_ENABLED == 1
+            change_cansniffer_index(false);
+#endif
+            break;
+        }
         case 'q': {  // levetta sinistra alto
             switch (current_racing_tab) {
                 case TAB_HV: {
