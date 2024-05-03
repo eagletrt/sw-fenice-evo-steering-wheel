@@ -112,10 +112,10 @@ void tlm_status_update() {
     GET_LAST_STATE(primary, tlm_status, PRIMARY, TLM_STATUS);
     if (primary_tlm_status_last_state->status == primary_tlm_status_status_on) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "ON");
-        all_leds_green();
+        // all_leds_green();
     } else {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "OFF");
-        all_leds_red();
+        // all_leds_red();
     }
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_tlm_status);
 }

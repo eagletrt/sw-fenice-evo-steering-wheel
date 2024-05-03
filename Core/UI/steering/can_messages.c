@@ -72,7 +72,7 @@ void handle_primary(can_message_t *msg) {
             openblt_reset();
             break;
         case PRIMARY_ECU_STATUS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, ecu_status, ECU_STATUS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, ecu_status, ECU_STATUS, is_pmsg_new, true);
             break;
         }
 #if 0
@@ -84,56 +84,56 @@ void handle_primary(can_message_t *msg) {
   }
 #endif
         case PRIMARY_ECU_PTT_STATUS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, ecu_ptt_status, ECU_PTT_STATUS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, ecu_ptt_status, ECU_PTT_STATUS, is_pmsg_new, true);
             handle_ptt_message();
             break;
         }
         case PRIMARY_ECU_FEEDBACKS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, ecu_feedbacks, ECU_FEEDBACKS, is_pmsg_new)
+            STEER_CAN_UNPACK(primary, PRIMARY, ecu_feedbacks, ECU_FEEDBACKS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_DEBUG_SIGNALS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_debug_signals, HV_DEBUG_SIGNALS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_debug_signals, HV_DEBUG_SIGNALS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_CELLS_VOLTAGE_STATS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_voltage_stats, HV_CELLS_VOLTAGE_STATS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_voltage_stats, HV_CELLS_VOLTAGE_STATS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_STATUS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_status, HV_STATUS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_status, HV_STATUS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_TOTAL_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_total_voltage, HV_TOTAL_VOLTAGE, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_total_voltage, HV_TOTAL_VOLTAGE, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_CURRENT_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_current, HV_CURRENT, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_current, HV_CURRENT, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_CELLS_TEMP_STATS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_temp_stats, HV_CELLS_TEMP_STATS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_temp_stats, HV_CELLS_TEMP_STATS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_ERRORS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_errors, HV_ERRORS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_errors, HV_ERRORS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_BALANCING_STATUS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_balancing_status, HV_BALANCING_STATUS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_balancing_status, HV_BALANCING_STATUS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_FANS_STATUS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_status, HV_FANS_STATUS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_status, HV_FANS_STATUS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_status, HV_FEEDBACK_STATUS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_status, HV_FEEDBACK_STATUS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_TLM_STATUS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, tlm_status, TLM_STATUS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, tlm_status, TLM_STATUS, is_pmsg_new, true);
             break;
         }
         // case PRIMARY_DAS_ERRORS_FRAME_ID: {
@@ -141,39 +141,39 @@ void handle_primary(can_message_t *msg) {
         // break;
         // }
         case PRIMARY_LV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_sd_voltage, LV_FEEDBACK_SD_VOLTAGE, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_sd_voltage, LV_FEEDBACK_SD_VOLTAGE, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_ts_voltage, LV_FEEDBACK_TS_VOLTAGE, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_ts_voltage, LV_FEEDBACK_TS_VOLTAGE, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_FEEDBACK_ENCLOSURE_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_enclosure_voltage, LV_FEEDBACK_ENCLOSURE_VOLTAGE, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_enclosure_voltage, LV_FEEDBACK_ENCLOSURE_VOLTAGE, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_ERRORS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_errors, LV_ERRORS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_errors, LV_ERRORS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_RADIATOR_SPEED_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_radiator_speed, LV_RADIATOR_SPEED, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_radiator_speed, LV_RADIATOR_SPEED, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_PUMPS_SPEED_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_pumps_speed, LV_PUMPS_SPEED, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_pumps_speed, LV_PUMPS_SPEED, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_CURRENT_BATTERY_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_current_battery, LV_CURRENT_BATTERY, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_current_battery, LV_CURRENT_BATTERY, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_TOTAL_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_total_voltage, LV_TOTAL_VOLTAGE, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_total_voltage, LV_TOTAL_VOLTAGE, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_voltage, LV_CELLS_VOLTAGE, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_voltage, LV_CELLS_VOLTAGE, is_pmsg_new, true);
             switch (last_state->start_index) {
                 case 0:
                     memcpy(&lv_voltages_stock_1, last_state, sizeof(primary_lv_cells_voltage_converted_t));
@@ -187,11 +187,11 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case PRIMARY_LV_CELLS_VOLTAGE_STATS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_voltage_stats, LV_CELLS_VOLTAGE_STATS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_voltage_stats, LV_CELLS_VOLTAGE_STATS, is_pmsg_new, true);
             break;
         }
         case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp, LV_CELLS_TEMP, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp, LV_CELLS_TEMP, is_pmsg_new, true);
             switch (last_state->start_index) {
                 case 0:
                     memcpy(&lv_temps_stock_1, last_state, sizeof(primary_lv_cells_temp_converted_t));
@@ -205,20 +205,32 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case PRIMARY_LV_CELLS_TEMP_STATS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp_stats, LV_CELLS_TEMP_STATS, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp_stats, LV_CELLS_TEMP_STATS, is_pmsg_new, true);
             break;
         }
 
         case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT, is_pmsg_new);
+            STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT, is_pmsg_new, true);
             break;
         }
         case INVERTERS_INV_L_RCV_FRAME_ID: {
-            STEER_CAN_UNPACK(inverters, INVERTERS, inv_l_rcv, INV_L_RCV, is_imsg_new);
+            STEER_CAN_UNPACK(
+                inverters,
+                INVERTERS,
+                inv_l_rcv,
+                INV_L_RCV,
+                is_imsg_new,
+                converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE || converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE);
             break;
         }
         case INVERTERS_INV_R_RCV_FRAME_ID: {
-            STEER_CAN_UNPACK(inverters, INVERTERS, inv_r_rcv, INV_R_RCV, is_imsg_new);
+            STEER_CAN_UNPACK(
+                inverters,
+                INVERTERS,
+                inv_r_rcv,
+                INV_R_RCV,
+                is_imsg_new,
+                converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE || converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE);
             break;
         }
         default:
@@ -239,11 +251,11 @@ void handle_secondary(can_message_t *msg) {
     can_id_t id = msg->id;
     switch (id) {
         case SECONDARY_ANGULAR_VELOCITY_FRAME_ID: {
-            STEER_CAN_UNPACK(secondary, SECONDARY, angular_velocity, ANGULAR_VELOCITY, is_smsg_new);
+            STEER_CAN_UNPACK(secondary, SECONDARY, angular_velocity, ANGULAR_VELOCITY, is_smsg_new, true);
             break;
         }
         case SECONDARY_STEER_ANGLE_FRAME_ID: {
-            STEER_CAN_UNPACK(secondary, SECONDARY, steer_angle, STEER_ANGLE, is_smsg_new);
+            STEER_CAN_UNPACK(secondary, SECONDARY, steer_angle, STEER_ANGLE, is_smsg_new, true);
             break;
         }
         // case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {

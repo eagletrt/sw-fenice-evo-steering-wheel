@@ -9,6 +9,7 @@
 #define INC_LED_CONTROL_H_
 
 #include "i2c.h"
+
 #include <stdint.h>
 
 #define ledaddr1 (uint8_t)0xE8
@@ -20,13 +21,13 @@
 #define GREEN (uint8_t)3
 #define BLUE  (uint8_t)5
 
-#define LED_CONTROL_REGISTER 0x02
+#define LED_CONTROL_REGISTER                0x02
 #define PATTERN_GENERATION_CONTROL_REGISTER 0x0F
-#define PATTERN_GENERATION_FADE_REGISTER 0x10
-#define PATTERN_GENERATION_RGB_1 0X11
-#define PATTERN_GENERATION_RGB_2 0X12
-#define PATTERN_GENERATION_RGB_3 0X13
-#define PATTERN_GENERATION_RGB_4 0X14
+#define PATTERN_GENERATION_FADE_REGISTER    0x10
+#define PATTERN_GENERATION_RGB_1            0X11
+#define PATTERN_GENERATION_RGB_2            0X12
+#define PATTERN_GENERATION_RGB_3            0X13
+#define PATTERN_GENERATION_RGB_4            0X14
 /* Control register:
 
 Enable Mode and Reset
@@ -81,7 +82,6 @@ void led_control_read_value(void);
 void try_led_last_time(void);
 
 #endif /* INC_LED_CONTROL_H_ */
-
 
 /*
 What has been done about LEDs (long story short: a lot but little)
