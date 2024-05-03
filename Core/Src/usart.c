@@ -75,7 +75,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *uartHandle) {
         /* USER CODE END LPUART1_MspInit 0 */
 
         /** Initializes the peripherals clock
-     */
+  */
         PeriphClkInitStruct.PeriphClockSelection  = RCC_PERIPHCLK_LPUART1;
         PeriphClkInitStruct.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_CSI;
         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
@@ -140,7 +140,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *uart_handle) {
     }
 }
 
-#ifdef STEERING_LOG_ENABLED
 /* UART Trasmit */
 void print(const char *fmt, ...) {
     char buff[256];
@@ -150,6 +149,5 @@ void print(const char *fmt, ...) {
     va_end(args);
     HAL_UART_Transmit(&hlpuart1, (uint8_t *)buff, strlen(buff), 250);
 }
-#endif
 
 /* USER CODE END 1 */

@@ -53,9 +53,9 @@ void HAL_SDRAM_MspDeInit(SDRAM_HandleTypeDef *hsdram);
 #endif /*__FMC_H */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */

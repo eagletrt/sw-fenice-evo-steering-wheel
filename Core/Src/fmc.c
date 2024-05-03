@@ -39,7 +39,7 @@ void MX_FMC_Init(void) {
     /* USER CODE END FMC_Init 1 */
 
     /** Perform the SDRAM1 memory initialization sequence
-   */
+  */
     hsdram1.Instance = FMC_SDRAM_DEVICE;
     /* hsdram1.Init */
     hsdram1.Init.SDBank             = FMC_SDRAM_BANK1;
@@ -96,7 +96,7 @@ static void HAL_FMC_MspInit(void) {
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
     /** Initializes the peripherals clock
-   */
+  */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FMC;
     PeriphClkInitStruct.FmcClockSelection    = RCC_FMCCLKSOURCE_PLL;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
@@ -291,9 +291,9 @@ void HAL_SDRAM_MspDeInit(SDRAM_HandleTypeDef *sdramHandle) {
     /* USER CODE END SDRAM_MspDeInit 1 */
 }
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */

@@ -13,7 +13,7 @@ uint8_t manettini[MANETTINI_N] = {0};
 uint32_t manettini_last_change;
 bool manettini_initialized[MANETTINI_N] = {false};
 
-extern bool tson_button_pressed;
+bool tson_button_pressed;
 lv_timer_t *send_set_car_status_long_press_delay = NULL;
 
 int hv_fans_override_last_state = 0;
@@ -192,12 +192,13 @@ void changed_pin_fn(void) {
         current_state_tson_button = tson_pin_state;
         if (tson_pin_state == GPIO_PIN_SET) {
             tson_button_pressed = false;
+            lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
         } else {
             if (send_set_car_status_directly()) {
                 prepare_set_car_status();
             } else {
-                tson_button_pressed                  = true;
                 send_set_car_status_long_press_delay = lv_timer_create(send_set_car_status_check, 500, NULL);
+                tson_button_pressed                  = true;
                 lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
                 lv_timer_reset(send_set_car_status_long_press_delay);
             }
@@ -376,12 +377,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         case INT4_Pin:
             int_pins[RIGHT_MANETTINO_INTERRUPT_INDEX] = true;
             break;
+#endif
         case ExtraButton_Pin:
-            int_pins[EXTRA_BUTTON_INTERRUPT_INDEX] = true;
             break;
         default:
             break;
-#endif
     }
 }
 
@@ -408,9 +408,6 @@ void read_inputs(lv_timer_t *tim) {
         } else if (int_pins[RIGHT_MANETTINO_INTERRUPT_INDEX]) {
             int_pins[RIGHT_MANETTINO_INTERRUPT_INDEX] = false;
             read_manettino_right();
-        } else if (int_pins[EXTRA_BUTTON_INTERRUPT_INDEX]) {
-            int_pins[EXTRA_BUTTON_INTERRUPT_INDEX] = false;
-            changed_pin_fn();
         }
 #else
         read_buttons();

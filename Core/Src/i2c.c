@@ -49,13 +49,13 @@ void MX_I2C4_Init(void) {
     }
 
     /** Configure Analogue filter
-   */
+  */
     if (HAL_I2CEx_ConfigAnalogFilter(&hi2c4, I2C_ANALOGFILTER_ENABLE) != HAL_OK) {
         Error_Handler();
     }
 
     /** Configure Digital filter
-   */
+  */
     if (HAL_I2CEx_ConfigDigitalFilter(&hi2c4, 0) != HAL_OK) {
         Error_Handler();
     }
@@ -73,7 +73,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
         /* USER CODE END I2C4_MspInit 0 */
 
         /** Initializes the peripherals clock
-     */
+  */
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
         PeriphClkInitStruct.I2c4ClockSelection   = RCC_I2C4CLKSOURCE_HSI;
         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {

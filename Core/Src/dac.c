@@ -39,14 +39,14 @@ void MX_DAC1_Init(void) {
     /* USER CODE END DAC1_Init 1 */
 
     /** DAC Initialization
-   */
+  */
     hdac1.Instance = DAC1;
     if (HAL_DAC_Init(&hdac1) != HAL_OK) {
         Error_Handler();
     }
 
     /** DAC channel OUT1 config
-   */
+  */
     sConfig.DAC_SampleAndHold           = DAC_SAMPLEANDHOLD_DISABLE;
     sConfig.DAC_Trigger                 = DAC_TRIGGER_NONE;
     sConfig.DAC_OutputBuffer            = DAC_OUTPUTBUFFER_ENABLE;

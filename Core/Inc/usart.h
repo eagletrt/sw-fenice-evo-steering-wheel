@@ -43,9 +43,7 @@ void MX_LPUART1_UART_Init(void);
 /* USER CODE BEGIN Prototypes */
 void can_via_serial_init(void);
 void can_via_serial_routine(void);
-#ifdef STEERING_LOG_ENABLED
 void print(const char *fmt, ...);
-#endif
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

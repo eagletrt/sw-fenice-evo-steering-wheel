@@ -1,6 +1,5 @@
 #include "controls.h"
 
-bool tson_button_pressed = false;
 bool calibration_min_sent_request[CALBOX_N];
 bool calibration_max_sent_request[CALBOX_N];
 uint32_t calibration_min_request_timestamp[CALBOX_N];
