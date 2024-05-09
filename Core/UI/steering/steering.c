@@ -117,7 +117,6 @@ void tlm_status_update() {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "OFF");
         // all_leds_red();
     }
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_tlm_status);
 }
 
 void angular_velocity_update(void) {
@@ -162,7 +161,6 @@ void hv_cells_voltage_stats_update(void) {
     GET_LAST_STATE(primary, hv_cells_voltage_stats, PRIMARY, HV_CELLS_VOLTAGE_STATS);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_hv_cells_voltage_stats_last_state->min);
 
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_min_cell_voltage);
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_voltage_min);
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_hv_cells_voltage_stats_last_state->max);
@@ -177,7 +175,6 @@ void hv_cells_voltage_stats_update(void) {
   */
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)(primary_hv_cells_voltage_stats_last_state->delta * 1000.0f));
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_hv_delta);
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_voltage_delta);
 }
 
@@ -187,7 +184,6 @@ void hv_total_voltage_update(void) {
     precharge_bar_update((int32_t)primary_hv_total_voltage_last_state->bus);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_hv_total_voltage_last_state->pack);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_pack_voltage_idx);
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_pack_voltage);
     set_tab_racing_hv_pack_voltage_bar(primary_hv_total_voltage_last_state->pack);
 
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_pack_voltage);
@@ -196,7 +192,6 @@ void hv_total_voltage_update(void) {
 void hv_current_update() {
     GET_LAST_STATE(primary, hv_current, PRIMARY, HV_CURRENT);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_hv_current_last_state->current);
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_hv_current);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_curr_idx);
     set_tab_racing_hv_current_bar(primary_hv_current_last_state->current);
 }
@@ -206,7 +201,6 @@ void hv_cells_temp_stats_update() {
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->avg);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_avg_temp_idx);
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_average_temperature);
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_avg);
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->max);
@@ -453,14 +447,12 @@ void lv_radiator_speed_update(void) {
 void lv_currents_update() {
     GET_LAST_STATE(primary, lv_current_battery, PRIMARY, LV_CURRENT_BATTERY);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_current_battery_last_state->lv_current);
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_lv_current);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pack_voltage_2);
 }
 
 void lv_total_voltage_update() {
     GET_LAST_STATE(primary, lv_total_voltage, PRIMARY, LV_TOTAL_VOLTAGE);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_total_voltage_last_state->total);
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_voltage);
 }
 
 void lv_cells_voltage_update(void) {
@@ -483,7 +475,6 @@ void lv_cells_voltage_update(void) {
     float mean_voltage = (float)(sum / N_LV_CELLS);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", mean_voltage);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_temp_idx);
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_battery_temperature);
 
     // set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_);
 }
@@ -519,7 +510,6 @@ void lv_cells_temp_update() {
     float mean_temp = (float)(sum / N_LV_CELLS);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", mean_temp);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_temp_idx);
-    set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_battery_temperature);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_avg);
 }
 
@@ -743,15 +733,12 @@ void irts_rr_update() {
 void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
     switch (extra_value) {
         case 0: {
-            set_tab_sensors_label_text(buf, tab_sensors_extra_value0);
             break;
         }
         case 1: {
-            set_tab_sensors_label_text(buf, tab_sensors_extra_value1);
             break;
         }
         case 2: {
-            set_tab_sensors_label_text(buf, tab_sensors_extra_value2);
             break;
         }
         default: {

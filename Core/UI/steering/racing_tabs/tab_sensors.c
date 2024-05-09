@@ -16,20 +16,9 @@ lv_obj_t *tab_sensors_labels[tab_sensors_labels_n] = {
     [tab_sensors_lb_rr_press]            = NULL,
     [tab_sensors_lb_right_inverter_temp] = NULL,
     [tab_sensors_lb_right_motor_temp]    = NULL,
-    [tab_sensors_lb_average_temperature] = NULL,
     [tab_sensors_lb_left_inverter_temp]  = NULL,
     [tab_sensors_lb_left_motor_temp]     = NULL,
-    [tab_sensors_lb_pack_voltage]        = NULL,
-    [tab_sensors_lb_hv_current]          = NULL,
-    [tab_sensors_lb_min_cell_voltage]    = NULL,
-    [tab_sensors_lb_battery_temperature] = NULL,
-    [tab_sensors_lb_voltage]             = NULL,
-    [tab_sensors_lb_lv_current]          = NULL,
-    [tab_sensors_lb_hv_delta]            = NULL,
-    [tab_sensors_extra_value0]           = NULL,
-    [tab_sensors_extra_value1]           = NULL,
-    [tab_sensors_extra_value2]           = NULL,
-    [tab_sensors_lb_tlm_status]          = NULL};
+};
 
 void set_tab_sensors_label_text(const char *s, tab_sensors_labels_enum idx) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_SENSORS);
@@ -312,7 +301,7 @@ void tab_sensors_create(lv_obj_t *parent) {
     /*--- DATA PANEL: cell 0,1 ---*/
 
     static lv_coord_t rxd_panel_cols[] = {415 / 4, 415 / 4, 415 / 4, 415 / 4, LV_GRID_TEMPLATE_LAST};
-    static lv_coord_t rxd_panel_rows[] = {DATA_PANEL_HEIGHT / 4, DATA_PANEL_HEIGHT / 4, DATA_PANEL_HEIGHT / 4, DATA_PANEL_HEIGHT / 4, LV_GRID_TEMPLATE_LAST};
+    static lv_coord_t rxd_panel_rows[] = {DATA_PANEL_HEIGHT / 4, LV_GRID_TEMPLATE_LAST};
 
     lv_obj_t *right_data_panel = lv_obj_create(data_panel);
     lv_obj_set_layout(right_data_panel, LV_LAYOUT_GRID);
@@ -372,137 +361,6 @@ void tab_sensors_create(lv_obj_t *parent) {
         "MOTOR R",
         &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(motor_r_temp_lb, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-
-    /* 2nd row HV */
-
-    lv_obj_t *hv_temp_lb = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_lb_average_temperature],
-        "0",
-        &lv_font_inter_bold_30,
-        "°C",
-        &lv_font_inter_bold_22,
-        "HV",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(hv_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
-
-    lv_obj_t *hv_volt_lb = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_lb_pack_voltage],
-        "0",
-        &lv_font_inter_bold_30,
-        " V",
-        &lv_font_inter_bold_22,
-        "HV",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(hv_volt_lb, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 1, 1);
-
-    lv_obj_t *hv_curr_lb = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_lb_hv_current],
-        "0",
-        &lv_font_inter_bold_30,
-        " A",
-        &lv_font_inter_bold_22,
-        "HV",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(hv_curr_lb, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 1, 1);
-
-    lv_obj_t *hv_minCellV_lb = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_lb_min_cell_voltage],
-        "0",
-        &lv_font_inter_bold_30,
-        " V",
-        &lv_font_inter_bold_22,
-        "HV MIN",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(hv_minCellV_lb, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 1, 1);
-
-    /* 3rd row LV */
-
-    lv_obj_t *lv_temp_lb = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_lb_battery_temperature],
-        "X",
-        &lv_font_inter_bold_30,
-        "°C",
-        &lv_font_inter_bold_22,
-        "LV",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(lv_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-
-    lv_obj_t *lv_volt_lb = lv_triple_label(
-        right_data_panel, &tab_sensors_labels[tab_sensors_lb_voltage], "X", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "LV", &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(lv_volt_lb, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-
-    lv_obj_t *lv_curr_lb = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_lb_lv_current],
-        "X",
-        &lv_font_inter_bold_30,
-        " A",
-        &lv_font_inter_bold_22,
-        "LV",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(lv_curr_lb, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-
-    lv_obj_t *y2 = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_lb_hv_delta],
-        "-",
-        &lv_font_inter_bold_30,
-        " mV",
-        &lv_font_inter_bold_22,
-        "HV DELTA",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(y2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-/* 4th row */
-#if 1
-    lv_obj_t *cooling_rad_lb = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_extra_value0],
-        "NA",
-        &lv_font_inter_bold_30,
-        "-",
-        &lv_font_inter_bold_22,
-        "-",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(cooling_rad_lb, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-
-    lv_obj_t *cooling_pump_lb = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_extra_value1],
-        "NA",
-        &lv_font_inter_bold_30,
-        "deg",
-        &lv_font_inter_bold_22,
-        "GOAL",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(cooling_pump_lb, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-
-    lv_obj_t *y11 = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_extra_value2],
-        "NA",
-        &lv_font_inter_bold_30,
-        "deg",
-        &lv_font_inter_bold_22,
-        "ANGLE",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(y11, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-
-    lv_obj_t *y21 = lv_triple_label(
-        right_data_panel,
-        &tab_sensors_labels[tab_sensors_lb_tlm_status],
-        "TLM",
-        &lv_font_inter_bold_30,
-        "",
-        &lv_font_inter_bold_22,
-        "-",
-        &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(y21, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 3, 1);
-#endif
 
     /* --- BARS PANEL --- */
 

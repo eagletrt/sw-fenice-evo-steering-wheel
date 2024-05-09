@@ -125,20 +125,8 @@ typedef enum {
     tab_sensors_lb_rr_press,
     tab_sensors_lb_right_inverter_temp,
     tab_sensors_lb_right_motor_temp,
-    tab_sensors_lb_average_temperature,
     tab_sensors_lb_left_inverter_temp,
     tab_sensors_lb_left_motor_temp,
-    tab_sensors_lb_pack_voltage,
-    tab_sensors_lb_hv_current,
-    tab_sensors_lb_min_cell_voltage,
-    tab_sensors_lb_battery_temperature,
-    tab_sensors_lb_voltage,
-    tab_sensors_lb_lv_current,
-    tab_sensors_lb_hv_delta,
-    tab_sensors_extra_value0,
-    tab_sensors_extra_value1,
-    tab_sensors_extra_value2,
-    tab_sensors_lb_tlm_status,
     tab_sensors_labels_n
 } tab_sensors_labels_enum;
 
