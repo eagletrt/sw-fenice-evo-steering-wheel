@@ -73,7 +73,6 @@ void buttons_long_pressed_actions(uint8_t button);
 // float fmax(float x, float y);
 
 #if CANSNIFFER_ENABLED == 1
-void switch_cansniffer(void);
 void change_cansniffer_index(bool);
 #endif
 

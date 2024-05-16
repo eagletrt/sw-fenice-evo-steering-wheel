@@ -6,6 +6,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "primary/primary_network.h"
+#include "primary/primary_watchdog.h"
+#include "secondary/secondary_network.h"
+#include "secondary/secondary_watchdog.h"
+#include "inverters/inverters_network.h"
+#include "inverters/inverters_watchdog.h"
 
 #define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME, arr, update_cond)                                                                        \
     ntw##_watchdog_reset(&m_##ntw##_watchdog, ntw##_index_from_id(msg->id), get_current_time_ms());                                             \

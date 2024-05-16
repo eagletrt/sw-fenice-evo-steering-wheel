@@ -15,6 +15,7 @@ int left_manettino_selection = 0;
 #if CANSNIFFER_ENABLED == 1
 int primary_cansniffer_start_index   = 0;
 int secondary_cansniffer_start_index = 0;
+int inverters_cansniffer_start_index = 0;
 #endif
 
 #if STEER_TAB_CALIBRATION_ENABLED == 1
@@ -305,9 +306,6 @@ void buttons_pressed_actions(uint8_t button) {
         }
         case BUTTON_TOP_RIGHT:
             if (engineer_mode) {
-#if CANSNIFFER_ENABLED == 1
-                switch_cansniffer();
-#endif
             } else {
                 set_dmt_steering_angle_target();
             }
@@ -515,34 +513,34 @@ bool send_set_car_status_directly(void) {
 }
 
 #if CANSNIFFER_ENABLED == 1
-void switch_cansniffer(void) {
-    if (!engineer_mode)
-        return;
-    if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
-        switch_primary_cansniffer();
-    } else if (current_engineer_tab == TAB_SECONDARY_CANSNIFFER) {
-        switch_secondary_cansniffer();
-    }
-}
 
 void change_cansniffer_index(bool plus) {
     if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
         if (plus) {
             primary_cansniffer_start_index++;
-            update_primary_cansniffer_ui(NULL);
+            update_primary_cansniffer_ui();
         } else {
             primary_cansniffer_start_index--;
             primary_cansniffer_start_index = fmax(primary_cansniffer_start_index, 0);
-            update_primary_cansniffer_ui(NULL);
+            update_primary_cansniffer_ui();
         }
     } else if (current_engineer_tab == TAB_SECONDARY_CANSNIFFER) {
         if (plus) {
             secondary_cansniffer_start_index++;
-            update_secondary_cansniffer_ui(NULL);
+            update_secondary_cansniffer_ui();
         } else {
             secondary_cansniffer_start_index--;
             secondary_cansniffer_start_index = fmax(secondary_cansniffer_start_index, 0);
-            update_secondary_cansniffer_ui(NULL);
+            update_secondary_cansniffer_ui();
+        }
+    } else if (current_engineer_tab == TAB_INVERTERS_CANSNIFFER) {
+        if (plus) {
+            inverters_cansniffer_start_index++;
+            update_inverters_cansniffer_ui();
+        } else {
+            inverters_cansniffer_start_index--;
+            inverters_cansniffer_start_index = fmax(inverters_cansniffer_start_index, 0);
+            update_inverters_cansniffer_ui();
         }
     }
 }

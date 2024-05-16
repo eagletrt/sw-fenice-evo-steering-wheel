@@ -60,7 +60,11 @@ void handle_primary(can_message_t *msg) {
     if (!steering_initialized)
         return;
 #if CANSNIFFER_ENABLED == 1
-    cansniffer_primary_new_message(msg);
+    if (inverters_id_is_message(msg->id)) {
+        cansniffer_inverters_new_message(msg);
+    } else {
+        cansniffer_primary_new_message(msg);
+    }
 #endif  // CANSNIFFER_ENABLED
 #if CAN_LOG_ENABLED
     primary_message_name_from_id(msg->id, name_buffer);

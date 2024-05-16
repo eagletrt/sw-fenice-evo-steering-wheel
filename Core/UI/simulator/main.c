@@ -357,14 +357,6 @@ void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
             switch_mode();
             break;
         }
-        case 'g': {
-            if (engineer_mode) {
-#if CANSNIFFER_ENABLED == 1
-                switch_cansniffer();
-#endif
-            }
-            break;
-        }
         case 'h': {
 #if CANSNIFFER_ENABLED == 1
             change_cansniffer_index(true);

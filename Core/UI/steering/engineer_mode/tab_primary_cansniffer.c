@@ -2,22 +2,24 @@
 
 #if CANSNIFFER_ENABLED == 1
 
+#include "min-heap.h"
 #include "tab_primary_cansniffer.h"
 #define PRIMARY_CANSNIFFER_ID_NAME_SIZE     128
 #define PRIMARY_CANSNIFFER_DATA_STRING_SIZE 128
 
 lv_style_t primary_cansniffer_label_style;
 lv_timer_t *primary_cansniffer_update_task;
-bool listening_to_primary_cansniffer = false;
 
-int primary_cansniffer_ids[primary_MESSAGE_COUNT]                  = {0};
 cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT] = {0};
-size_t primary_cansniffer_ids_size                                 = 0;
 extern int primary_cansniffer_start_index;
+can_id_t primary_cansniffer_ordered_ids[primary_MESSAGE_COUNT];
 
 static_assert(sizeof(cansniffer_elem_t) == CANSNIFFER_ELEM_T_SIZE, "Please set CANSNIFFER_ELEM_T_SIZE accordingly to cansniffer_elem_t size");
 
+MinHeap(int, primary_MESSAGE_COUNT) primary_cansniffer_ids_heap;
+
 void init_primary_cansniffer_tab_styles() {
+    min_heap_init(&primary_cansniffer_ids_heap, int, primary_MESSAGE_COUNT, min_heap_compare_indexes);
     lv_style_init(&primary_cansniffer_label_style);
     lv_style_set_base_dir(&primary_cansniffer_label_style, LV_BASE_DIR_LTR);
     lv_style_set_bg_opa(&primary_cansniffer_label_style, LV_OPA_TRANSP);
@@ -56,8 +58,6 @@ void clear_primary_cansniffer_ui() {
 }
 
 void update_primary_cansniffer_value(size_t iindex, size_t id) {
-    if (!listening_to_primary_cansniffer)
-        return;
     if (iindex >= TAB_CANSNIFFER_N_MESSAGES_SHOWN)
         return;
     lv_label_set_text_fmt(primary_cansniffer_timestamp_labels[iindex], "%u", (unsigned int)primary_cansniffer_buffer[id].delta);
@@ -67,17 +67,18 @@ void update_primary_cansniffer_value(size_t iindex, size_t id) {
     lv_label_set_text_fmt(primary_cansniffer_data_labels[iindex], "%s", primary_cansniffer_data_string);
 }
 
-void update_primary_cansniffer_ui(lv_timer_t *unused_tim) {
-    if (TAB_CANSNIFFER_N_MESSAGES_SHOWN * primary_cansniffer_start_index > primary_cansniffer_ids_size && primary_cansniffer_ids_size > 1)
+void update_primary_cansniffer_ui() {
+    size_t n_msg = min_heap_size(&primary_cansniffer_ids_heap);
+    if (TAB_CANSNIFFER_N_MESSAGES_SHOWN * primary_cansniffer_start_index > n_msg && n_msg > 1)
         primary_cansniffer_start_index--;
     for (size_t iindex = TAB_CANSNIFFER_N_MESSAGES_SHOWN * primary_cansniffer_start_index;
          iindex < (TAB_CANSNIFFER_N_MESSAGES_SHOWN * (primary_cansniffer_start_index + 1));
          ++iindex) {
-        if (iindex >= primary_cansniffer_ids_size) {
+        if (iindex >= n_msg) {
             clear_primary_cansniffer_ui_item(iindex - (TAB_CANSNIFFER_N_MESSAGES_SHOWN * primary_cansniffer_start_index));
         } else {
-            int index = (primary_cansniffer_ids[iindex]);
-            int res = primary_message_name_from_id(primary_id_from_index(index), primary_cansniffer_id_name);
+            int index = (primary_cansniffer_ordered_ids[iindex]);
+            int res   = primary_message_name_from_id(primary_id_from_index(index), primary_cansniffer_id_name);
             if (res == 0) {
                 snprintf(primary_cansniffer_id_name, PRIMARY_CANSNIFFER_ID_NAME_SIZE, "unknown");
             }
@@ -90,27 +91,15 @@ void update_primary_cansniffer_ui(lv_timer_t *unused_tim) {
     }
 }
 
-void switch_primary_cansniffer() {
-    if (listening_to_primary_cansniffer) {
-        clear_primary_cansniffer_ui();
-        lv_timer_set_repeat_count(primary_cansniffer_update_task, 0);
-    } else {
-        primary_cansniffer_update_task = lv_timer_create(update_primary_cansniffer_ui, 200, NULL);
-        lv_timer_set_repeat_count(primary_cansniffer_update_task, -1);
-        lv_timer_reset(primary_cansniffer_update_task);
-    }
-    listening_to_primary_cansniffer = !listening_to_primary_cansniffer;
-}
-
 void cansniffer_primary_new_message(can_message_t *msg) {
-    int index = primary_index_from_id(msg->id);
+    int index                        = primary_index_from_id(msg->id);
+    bool has_this_msg_ever_been_seen = true;
     if (index == -1) {
         return;
     }
-    size_t old = primary_cansniffer_ids_size;
-    if (primary_cansniffer_buffer[index].id == 0) {
-        primary_cansniffer_ids[primary_cansniffer_ids_size] = (int)(index);
-        primary_cansniffer_ids_size++;
+    if (primary_cansniffer_buffer[index].id == 0) {  // TODO use another bool to indicate if it is used or not
+        min_heap_insert(&primary_cansniffer_ids_heap, &index);
+        has_this_msg_ever_been_seen = false;
     }
     uint32_t current_time                      = get_current_time_ms();
     primary_cansniffer_buffer[index].delta     = current_time - primary_cansniffer_buffer[index].timestamp;
@@ -118,9 +107,19 @@ void cansniffer_primary_new_message(can_message_t *msg) {
     primary_cansniffer_buffer[index].id        = msg->id;
     primary_cansniffer_buffer[index].len       = msg->size;
     memcpy(primary_cansniffer_buffer[index].data, msg->data, msg->size);
-    
-    if (old != primary_cansniffer_ids_size)
-        heap_sort(primary_cansniffer_ids, primary_cansniffer_ids_size, primary_id_from_index);
+
+    CHECK_CURRENT_TAB(!engineer_mode, engineer, TAB_PRIMARY_CANSNIFFER);
+    if (!has_this_msg_ever_been_seen) {
+        MinHeap(int, primary_MESSAGE_COUNT) primary_heap_copy_because_toni_is_sbored = min_heap_new(int, primary_MESSAGE_COUNT, min_heap_compare_indexes);
+        memcpy(&primary_heap_copy_because_toni_is_sbored, &primary_cansniffer_ids_heap, sizeof(MinHeap(int, primary_MESSAGE_COUNT)));
+        int cindex = 0, i = 0;
+        while (!min_heap_is_empty(&primary_heap_copy_because_toni_is_sbored)) {
+            min_heap_remove(&primary_heap_copy_because_toni_is_sbored, 0, &cindex);
+            primary_cansniffer_ordered_ids[i] = cindex;
+            i++;
+        }
+        update_primary_cansniffer_ui();
+    }
 }
 
 void primary_tab_cansniffer_create(lv_obj_t *parent) {

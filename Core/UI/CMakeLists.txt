@@ -5,6 +5,7 @@ PROJECT(SteeringSimulator)
 
 ADD_COMPILE_DEFINITIONS(SIMULATOR_CAN)
 
+file(GLOB_RECURSE MIN_HEAP_SOURCES ../Lib/micro-libs/min-heap/src/min-heap.c)
 file(GLOB_RECURSE LVGL_SOURCES ../Lib/lvgl-linux/lvgl/**/*.c)
 file(GLOB_RECURSE LVDRIVERS_SOURCES ../Lib/lvgl-linux/lv-drivers/**/*.c)
 file(GLOB_RECURSE CANLIB_SOURCES ../Lib/can/lib/**/*.c)
@@ -29,10 +30,12 @@ add_executable(SteeringSimulator
     steering/maxheap.c
     steering/engineer_mode/tab_primary_cansniffer.c
     steering/engineer_mode/tab_secondary_cansniffer.c
+    steering/engineer_mode/tab_inverters_cansniffer.c
     steering/utils.c
     steering/controls.c
     steering/shutdown.c
     steering/can_messages.c
+    steering/cansniffer.c
     steering/fonts/lv_font_inter_bold_14.c
     steering/fonts/lv_font_inter_bold_18.c
     steering/fonts/lv_font_inter_bold_20.c
@@ -48,11 +51,13 @@ add_executable(SteeringSimulator
     ${LVGL_SOURCES}
     ${LVDRIVERS_SOURCES}
     ${CANLIB_SOURCES}
+    ${MIN_HEAP_SOURCES}
     steering/graphics_manager.c
 )
 
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE)
 
+TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/micro-libs/min-heap/inc)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/can/lib)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/lvgl-linux/lvgl)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/lvgl-linux)

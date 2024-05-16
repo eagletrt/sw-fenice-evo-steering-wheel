@@ -8,6 +8,7 @@
 #include "lvgl.h"
 #include "maxheap.h"
 #include "messages.h"
+#include "min-heap.h"
 
 #define CANSNIFFER_ELEM_T_SIZE 20
 
@@ -25,11 +26,12 @@ typedef struct {
 } cansniffer_elem_t;
 
 void cansniffer_secondary_new_message(can_message_t *msg);
-void switch_secondary_cansniffer();
-void update_secondary_cansniffer_ui(lv_timer_t *unused_tim);
+void update_primary_cansniffer_ui(void);
 void cansniffer_primary_new_message(can_message_t *msg);
-void switch_primary_cansniffer();
-void update_primary_cansniffer_ui(lv_timer_t *unused_tim);
+void update_secondary_cansniffer_ui(void);
+void cansniffer_inverters_new_message(can_message_t *msg);
+void update_inverters_cansniffer_ui(void);
+int8_t min_heap_compare_indexes(void * a, void * b);
 
 #endif  // CANSNIFFER_H
 

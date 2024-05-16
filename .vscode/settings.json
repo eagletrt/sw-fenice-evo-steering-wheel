@@ -85,7 +85,8 @@
         "tab_track_test.h": "c",
         "time.h": "c",
         "serial_to_can.h": "c",
-        "secondary_watchdog.h": "c"
+        "secondary_watchdog.h": "c",
+        "min-heap.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

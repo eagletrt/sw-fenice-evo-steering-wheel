@@ -157,9 +157,13 @@ int main(void) {
     init_graphics_manager();
     init_periodic_can_messages_timers();
 
-    lv_timer_t *gtimer = lv_timer_create(update_graphics, 100, NULL);
-    lv_timer_set_repeat_count(gtimer, -1);
-    lv_timer_reset(gtimer);
+    lv_timer_t *graphics_updater_task = lv_timer_create(update_graphics, 100, NULL);
+    lv_timer_set_repeat_count(graphics_updater_task, -1);
+    lv_timer_reset(graphics_updater_task);
+
+    lv_timer_t *ptt_checker_task = lv_timer_create(ptt_tasks_fn, 100, NULL);
+    lv_timer_set_repeat_count(ptt_checker_task, -1);
+    lv_timer_reset(ptt_checker_task);
 
     // lv_timer_t *gianni_timer = lv_timer_create(led_control_read_value, 100, NULL);
     // lv_timer_set_repeat_count(gianni_timer, -1);

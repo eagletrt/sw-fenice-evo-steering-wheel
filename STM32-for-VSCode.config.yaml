@@ -84,6 +84,7 @@ includeDirectories:
   - Core/Lib/lvgl-stm32/lvgl
   - Core/UI/steering
   - Core/Lib/can/lib
+  - Core/Lib/micro-libs/min-heap/inc
 
 
 # Files that should be included in the compilation.
@@ -140,6 +141,7 @@ sourceFiles:
   - Core/UI/steering/**/*.c
   - Core/Lib/can/lib/**/*_network.c
   - Core/Lib/can/lib/**/*_watchdog.c
+  - Core/Lib/micro-libs/min-heap/src/*.c
 
 
 # When no makefile is present it will show a warning pop-up.

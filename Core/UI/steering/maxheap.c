@@ -1,26 +1,5 @@
 #include "maxheap.h"
 
-/*
-#define TEST_HEAPTREE_SIZE 10
-int TEST_HEAPTREE[TEST_HEAPTREE_SIZE] = {249, 185, 381, 366, 184, 203, 72, 72,
-280};
-
-int test() {
-  for (int i = 0; i < TEST_HEAPTREE_SIZE; ++i) {
-    printf("%d ", TEST_HEAPTREE[i]);
-  }
-  printf("\n");
-
-  heap_sort(TEST_HEAPTREE, TEST_HEAPTREE_SIZE);
-
-  for (int i = 0; i < TEST_HEAPTREE_SIZE; ++i) {
-    printf("%d ", TEST_HEAPTREE[i]);
-  }
-  printf("\n");
-  return 0;
-}
-*/
-
 int parent_index(int i) {
     return (i - 1) / 2;
 }

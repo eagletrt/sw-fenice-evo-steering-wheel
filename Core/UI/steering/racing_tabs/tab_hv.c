@@ -80,12 +80,12 @@ bool debug_signal_error_status[DEBUG_SIGNAL_ERROR_SIZE] = {false};
 void custom_balancing_column(lv_obj_t *bar, bool balancing);
 
 void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx) {
-    CHECK_CURRENT_TAB(engineer, TAB_HV);
+    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_HV);
     lv_label_set_text(tab_hv_labels[idx], s);
 }
 
 void set_balancing_column(bool balancing, uint8_t idx) {
-    CHECK_CURRENT_TAB(engineer, TAB_HV);
+    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_HV);
 
     if (balancing_status[idx] != balancing) {
         balancing_status[idx] = balancing;
@@ -114,7 +114,7 @@ void tab_hv_set_error_status(debug_signal_error_t error, bool status) {
 }
 
 void tab_hv_update_error_label() {
-    CHECK_CURRENT_TAB(engineer, TAB_HV);
+    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_HV);
     uint8_t last_error_index = -1;
     uint8_t error_count      = 0;
     for (uint8_t i = 0; i < DEBUG_SIGNAL_ERROR_SIZE; i++) {
@@ -138,14 +138,14 @@ void tab_hv_update_error_label() {
 }
 
 void precharge_bar_update(int32_t val) {
-    CHECK_CURRENT_TAB(engineer, TAB_HV);
+    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_HV);
     if (precharge_panel != NULL) {
         lv_bar_set_value(tab_hv_precharge_bar, val, LV_ANIM_OFF);
     }
 }
 
 void precharge_bar_insert(bool precharge) {
-    CHECK_CURRENT_TAB(engineer, TAB_HV);
+    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_HV);
     if (precharge && precharge_panel == NULL) {
         static lv_coord_t precharge_panel_cols[] = {DATA_PANEL_WIDTH, LV_GRID_TEMPLATE_LAST};
         static lv_coord_t precharge_panel_rows[] = {150, LV_GRID_TEMPLATE_LAST};

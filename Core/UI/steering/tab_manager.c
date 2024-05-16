@@ -1,7 +1,5 @@
 #include "tab_manager.h"
 
-#include "steering.h"
-
 lv_obj_t *tab_racing_ptr;
 lv_obj_t *tab_sensors_ptr;
 lv_obj_t *tab_hv_ptr;
@@ -23,6 +21,7 @@ lv_obj_t *tab_fatal_error_ptr;
 #if CANSNIFFER_ENABLED == 1
 lv_obj_t *tab_primary_cansniffer_ptr;
 lv_obj_t *tab_secondary_cansniffer_ptr;
+lv_obj_t *tab_inverters_cansniffer_ptr;
 #endif
 
 lv_obj_t *tab_terminal_ptr;
@@ -58,6 +57,7 @@ void tab_manager(void) {
 #if CANSNIFFER_ENABLED == 1
     tab_primary_cansniffer_ptr   = lv_obj_create(NULL);
     tab_secondary_cansniffer_ptr = lv_obj_create(NULL);
+    tab_inverters_cansniffer_ptr = lv_obj_create(NULL);
 #endif
     tab_terminal_ptr         = lv_obj_create(NULL);
     tab_fatal_error_ptr      = lv_obj_create(NULL);
@@ -82,6 +82,7 @@ void tab_manager(void) {
 #if CANSNIFFER_ENABLED == 1
     lv_group_add_obj(g, tab_primary_cansniffer_ptr);
     lv_group_add_obj(g, tab_secondary_cansniffer_ptr);
+    lv_group_add_obj(g, tab_inverters_cansniffer_ptr);
 #endif
     lv_group_add_obj(g, tab_terminal_ptr);
     lv_group_add_obj(g, tab_fatal_error_ptr);
@@ -106,6 +107,7 @@ void tab_manager(void) {
 #if CANSNIFFER_ENABLED == 1
     primary_tab_cansniffer_create(tab_primary_cansniffer_ptr);
     secondary_tab_cansniffer_create(tab_secondary_cansniffer_ptr);
+    inverters_tab_cansniffer_create(tab_inverters_cansniffer_ptr);
 #endif
     tab_terminal_create(tab_terminal_ptr);
     tab_fatal_error_create(tab_fatal_error_ptr);
@@ -141,7 +143,35 @@ void remove_engineer_mode_screen(void) {
     load_current_racing_tab();
 }
 
+void actions_on_changed_tab(void) {
+    if (engineer_mode) {
+        switch (current_engineer_tab) {
+            case TAB_TERMINAL:
+                break;
+            case TAB_BALANCING_STATUS:
+                break;
+#if CANSNIFFER_ENABLED == 1
+            case TAB_PRIMARY_CANSNIFFER:
+                break;
+            case TAB_INVERTERS_CANSNIFFER:
+                break;
+            case TAB_SECONDARY_CANSNIFFER:
+                break;
+#endif
+#if STEER_TAB_DEBUG_ENABLED == 1
+            case TAB_DEBUG:
+                break;
+#endif
+            case NUM_ENGINEER_TABS:
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 void switch_mode(void) {
+    actions_on_changed_tab();
     if (engineer_mode) {
         engineer_mode = false;
         remove_engineer_mode_screen();
@@ -204,6 +234,9 @@ void load_current_engineering_tab() {
         case TAB_PRIMARY_CANSNIFFER:
             lv_scr_load(tab_primary_cansniffer_ptr);
             break;
+        case TAB_INVERTERS_CANSNIFFER:
+            lv_scr_load(tab_inverters_cansniffer_ptr);
+            break;
 #endif
         case TAB_TERMINAL:
             lv_scr_load(tab_terminal_ptr);
@@ -237,6 +270,7 @@ void change_engineer_tab(bool forward) {
 }
 
 void steering_change_tab(bool forward) {
+    actions_on_changed_tab();
     if (!engineer_mode) {
         change_racing_tab(forward);
     } else {

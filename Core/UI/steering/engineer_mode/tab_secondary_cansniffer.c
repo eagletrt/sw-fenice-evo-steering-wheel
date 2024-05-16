@@ -8,7 +8,6 @@
 
 lv_style_t secondary_cansniffer_label_style;
 lv_timer_t *secondary_cansniffer_update_task;
-bool listening_to_secondary_cansniffer = false;
 
 int secondary_cansniffer_ids[secondary_MESSAGE_COUNT]                  = {0};
 cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT] = {0};
@@ -63,9 +62,7 @@ void update_secondary_cansniffer_value(size_t iindex, size_t id) {
     lv_label_set_text_fmt(secondary_cansniffer_data_labels[iindex], "%s", secondary_cansniffer_data_string);
 }
 
-void update_secondary_cansniffer_ui(lv_timer_t *unused_tim) {
-    if (!listening_to_secondary_cansniffer)
-        return;
+void update_secondary_cansniffer_ui() {
     if (TAB_CANSNIFFER_N_MESSAGES_SHOWN * secondary_cansniffer_start_index > secondary_cansniffer_ids_size && secondary_cansniffer_ids_size > 1)
         secondary_cansniffer_start_index--;
     for (size_t iindex = TAB_CANSNIFFER_N_MESSAGES_SHOWN * secondary_cansniffer_start_index;
@@ -75,7 +72,7 @@ void update_secondary_cansniffer_ui(lv_timer_t *unused_tim) {
             clear_secondary_cansniffer_ui_item(iindex - (TAB_CANSNIFFER_N_MESSAGES_SHOWN * secondary_cansniffer_start_index));
         } else {
             int index = secondary_cansniffer_ids[iindex];
-            int res = secondary_message_name_from_id(secondary_id_from_index(index), secondary_cansniffer_id_name);
+            int res   = secondary_message_name_from_id(secondary_id_from_index(index), secondary_cansniffer_id_name);
             if (res == 0) {
                 snprintf(secondary_cansniffer_id_name, SECONDARY_CANSNIFFER_ID_NAME_SIZE, "unknown");
             }
@@ -87,21 +84,8 @@ void update_secondary_cansniffer_ui(lv_timer_t *unused_tim) {
                     secondary_cansniffer_buffer[index].data[jindex]);
             }
             update_secondary_cansniffer_value(iindex - (TAB_CANSNIFFER_N_MESSAGES_SHOWN * secondary_cansniffer_start_index), index);
-            
         }
     }
-}
-
-void switch_secondary_cansniffer() {
-    if (listening_to_secondary_cansniffer) {
-        clear_secondary_cansniffer_ui();
-        lv_timer_set_repeat_count(secondary_cansniffer_update_task, 0);
-    } else {
-        secondary_cansniffer_update_task = lv_timer_create(update_secondary_cansniffer_ui, 200, NULL);
-        lv_timer_set_repeat_count(secondary_cansniffer_update_task, -1);
-        lv_timer_reset(secondary_cansniffer_update_task);
-    }
-    listening_to_secondary_cansniffer = !listening_to_secondary_cansniffer;
 }
 
 void cansniffer_secondary_new_message(can_message_t *msg) {
@@ -120,9 +104,12 @@ void cansniffer_secondary_new_message(can_message_t *msg) {
     secondary_cansniffer_buffer[index].id        = msg->id;
     secondary_cansniffer_buffer[index].len       = msg->size;
     memcpy(secondary_cansniffer_buffer[index].data, msg->data, msg->size);
-    
-    if (old != secondary_cansniffer_ids_size)
+
+    CHECK_CURRENT_TAB(!engineer_mode, engineer, TAB_SECONDARY_CANSNIFFER);
+    if (old != secondary_cansniffer_ids_size) {
         heap_sort(secondary_cansniffer_ids, secondary_cansniffer_ids_size, secondary_id_from_index);
+        update_secondary_cansniffer_ui();
+    }
 }
 
 void secondary_tab_cansniffer_create(lv_obj_t *parent) {

@@ -2,14 +2,8 @@
 #define CAN_MESSAGES_H
 
 #include "cansniffer.h"
-#include "inverters/inverters_network.h"
-#include "inverters/inverters_watchdog.h"
 #include "lvgl.h"
 #include "messages.h"
-#include "primary/primary_network.h"
-#include "primary/primary_watchdog.h"
-#include "secondary/secondary_network.h"
-#include "secondary/secondary_watchdog.h"
 #include "steering.h"
 
 #include <stdbool.h>

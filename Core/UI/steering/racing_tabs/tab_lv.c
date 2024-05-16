@@ -32,7 +32,7 @@ lv_obj_t *tab_lv_labels[tab_lv_labels_n] = {
 };
 
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx) {
-    CHECK_CURRENT_TAB(engineer, TAB_LV);
+    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_LV);
     lv_label_set_text(tab_lv_labels[idx], s);
 }
 
