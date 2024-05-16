@@ -69,23 +69,23 @@ void manettino_right_actions(int dsteps) {
         switch (current_racing_tab) {
             case NOT_SCREEN:
                 break;
-            case TAB_RACING:
+            case STEERING_WHEEL_TAB_RACING:
                 torque_vectoring_last_state += dsteps * 10;
                 torque_vectoring_last_state = fminf(torque_vectoring_last_state, TORQUE_VECTORING_MAX);
                 torque_vectoring_last_state = fmaxf(torque_vectoring_last_state, TORQUE_VECTORING_MIN);
                 manettino_send_torque_vectoring((float)torque_vectoring_last_state / 100.0f);
                 break;
-            case TAB_TRACK_TEST:
+            case STEERING_WHEEL_TAB_TRACK_TEST:
                 break;
-            case TAB_SENSORS:
+            case STEERING_WHEEL_TAB_SENSORS:
                 break;
-            case TAB_HV:
+            case STEERING_WHEEL_TAB_HV:
                 pork_fans_status_last_state += dsteps * 10;
                 pork_fans_status_last_state = fminf(pork_fans_status_last_state, PORK_HIGH_FANS_SPEED);
                 pork_fans_status_last_state = fmaxf(pork_fans_status_last_state, PORK_LOW_FANS_SPEED);
                 send_pork_fans_status((float)pork_fans_status_last_state / 100.0f);
                 break;
-            case TAB_LV: {
+            case STEERING_WHEEL_TAB_LV: {
                 steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SET;
                 float new_radspeed_val                             = steering_wheel_state_radiator_speed.radiator_speed + ((float)dsteps / 10.0f);
                 new_radspeed_val                                   = fminf(new_radspeed_val, SET_RADIATORS_MAX);
@@ -116,15 +116,15 @@ void manettino_center_actions(int dsteps) {
         switch (current_racing_tab) {
             case NOT_SCREEN:
                 break;
-            case TAB_RACING:
+            case STEERING_WHEEL_TAB_RACING:
                 break;
-            case TAB_TRACK_TEST:
+            case STEERING_WHEEL_TAB_TRACK_TEST:
                 break;
-            case TAB_SENSORS:
+            case STEERING_WHEEL_TAB_SENSORS:
                 break;
-            case TAB_HV:
+            case STEERING_WHEEL_TAB_HV:
                 break;
-            case TAB_LV:
+            case STEERING_WHEEL_TAB_LV:
                 break;
             default:
                 break;
@@ -144,34 +144,21 @@ void manettino_left_actions(int dsteps) {
         switch (current_racing_tab) {
             case NOT_SCREEN:
                 break;
-            case TAB_RACING:
+            case STEERING_WHEEL_TAB_RACING:
                 slip_control_last_state += dsteps * 10;
                 slip_control_last_state = fminf(slip_control_last_state, SLIP_CONTROL_MAX);
                 slip_control_last_state = fmaxf(slip_control_last_state, SLIP_CONTROL_MIN);
                 manettino_send_slip_control((float)slip_control_last_state / 100.0f);
-                //      if (ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f >
-                //      0.0f
-                //      && ecu_set_power_maps_last_state.map_sc + (float)dsteps / 10.0f
-                //      < 1.0f)
-                //      {
-                //        manettino_send_slip_control(ecu_set_power_maps_last_state.map_sc
-                //        + (float)dsteps / 10.0f);
-                //      }else if (ecu_set_power_maps_last_state.map_sc + (float)dsteps
-                //      / 10.0f < 0.0f) {
-                //        manettino_send_slip_control(0.0f);
-                //      }else {
-                //          manettino_send_slip_control(1.0f);
-                //      }
                 break;
-            case TAB_TRACK_TEST:
+            case STEERING_WHEEL_TAB_TRACK_TEST:
                 break;
-            case TAB_SENSORS:
+            case STEERING_WHEEL_TAB_SENSORS:
                 break;
-            case TAB_HV:
+            case STEERING_WHEEL_TAB_HV:
                 // TODO: implement Balancing threshold as defined by the new steering
                 // wheel map (see images)
                 break;
-            case TAB_LV: {
+            case STEERING_WHEEL_TAB_LV: {
                 steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SET;
                 float new_pumps_speed_val                    = steering_wheel_state_pumps_speed.pumps_speed + ((float)dsteps / 10.0f);
                 new_pumps_speed_val                          = fminf(new_pumps_speed_val, SET_PUMP_SPEED_MAX);
@@ -265,23 +252,8 @@ void set_cooling_auto_mode() {
 void buttons_pressed_actions(uint8_t button) {
     switch (button) {
         case PADDLE_TOP_RIGHT: {
-            steering_change_tab(true);
-            // all_leds_green();
-            break;
-        }
-        case PADDLE_TOP_LEFT: {
-            steering_change_tab(false);
-            // all_leds_red();
-            break;
-        }
-        case PADDLE_BOTTOM_RIGHT: {
-            if (!engineer_mode) {
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-                shift_box_focus(true);
-#endif
-#if STEER_TAB_DEBUG_ENABLED == 1
-                change_errors_view(false);
-#endif
+            if (engineer_mode) {
+                set_ptt_button_pressed(true);
             } else {
 #if CANSNIFFER_ENABLED == 1
                 change_cansniffer_index(true);
@@ -289,14 +261,9 @@ void buttons_pressed_actions(uint8_t button) {
             }
             break;
         }
-        case PADDLE_BOTTOM_LEFT: {
-            if (!engineer_mode) {
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-                shift_box_focus(false);
-#endif
-#if STEER_TAB_DEBUG_ENABLED == 1
-                change_errors_view(true);
-#endif
+        case PADDLE_TOP_LEFT: {
+            if (engineer_mode) {
+                set_ptt_button_pressed(true);
             } else {
 #if CANSNIFFER_ENABLED == 1
                 change_cansniffer_index(false);
@@ -304,41 +271,57 @@ void buttons_pressed_actions(uint8_t button) {
             }
             break;
         }
+        case PADDLE_BOTTOM_RIGHT: {
+            steering_change_tab(true);
+            break;
+        }
+        case PADDLE_BOTTOM_LEFT: {
+            steering_change_tab(false);
+            break;
+        }
         case BUTTON_TOP_RIGHT:
             if (engineer_mode) {
             } else {
-                set_dmt_steering_angle_target();
+                switch (current_racing_tab) {
+                    case STEERING_WHEEL_TAB_HV:
+                        send_bal(true);
+                        display_notification("BAL ON", 500);
+                        break;
+                    default:
+                        break;
+                }
             }
             break;
         case BUTTON_TOP_LEFT:
             if (engineer_mode) {
+                // already activated
             } else {
-                set_ptt_button_pressed(true);
-            }
-            break;
-        case BUTTON_BOTTOM_RIGHT: {
-            if (engineer_mode) {
-                send_bal(true);
-                display_notification("BAL ON", 500);
-            } else {
-                if (current_racing_tab == TAB_HV) {
-                    send_bal(true);
-                    display_notification("BAL ON", 500);
+                switch (current_racing_tab) {
+                    case STEERING_WHEEL_TAB_RACING:
+                        // long pressed // turn_telemetry_on_off();
+                        break;
+                    case STEERING_WHEEL_TAB_TRACK_TEST:
+                        set_dmt_steering_angle_target();
+                        break;
+                    case STEERING_WHEEL_TAB_SENSORS:
+                        break;
+                    case STEERING_WHEEL_TAB_HV:
+                        send_bal(false);
+                        display_notification("BAL OFF", 500);
+                        break;
+                    case STEERING_WHEEL_TAB_LV:
+                        break;
+                    default:
+                        break;
                 }
             }
             break;
-        }
+        case BUTTON_BOTTOM_RIGHT:
+            break;
         case BUTTON_BOTTOM_LEFT: {
-            if (engineer_mode) {
-                send_bal(false);
-                display_notification("BAL OFF", 500);
-            } else {
-                if (current_racing_tab == TAB_HV) {
-                    send_bal(false);
-                    display_notification("BAL OFF", 500);
-                }
-
-                if (current_racing_tab == TAB_RACING) {
+            // help();
+#if 0
+                if (current_racing_tab == STEERING_WHEEL_TAB_RACING) {
                     switch (left_manettino_selection) {
                         case LEFT_MANETTINO_SLIP_OPTION: {
                             left_manettino_selection = LEFT_MANETTINO_POWER_MAP_OPTION;
@@ -355,10 +338,10 @@ void buttons_pressed_actions(uint8_t button) {
                         default:
                             break;
                     }
-                } else if (current_racing_tab == TAB_LV) {
+                } else if (current_racing_tab == STEERING_WHEEL_TAB_LV) {
                     set_cooling_auto_mode();
                 }
-            }
+#endif
             break;
         }
 
@@ -399,15 +382,15 @@ void buttons_long_pressed_actions(uint8_t button) {
             break;
         case PADDLE_BOTTOM_LEFT:
             break;
-        case BUTTON_TOP_RIGHT: {
+        case BUTTON_TOP_RIGHT:
+            break;
+        case BUTTON_TOP_LEFT: {
             if (engineer_mode) {
             } else {
                 turn_telemetry_on_off();
             }
             break;
         }
-        case BUTTON_TOP_LEFT:
-            break;
         case BUTTON_BOTTOM_RIGHT:
             break;
         case BUTTON_BOTTOM_LEFT:
@@ -434,17 +417,6 @@ void send_pork_fans_status(float val) {
     } else {
         tab_hv_set_pork_speed_bar((int32_t)(val * 100), auto_mode);
     }
-
-#if 0
-  int map_val = (int)(hv_fans_override_settings.fans_speed * 100.0f);
-  if (hv_fans_override_settings.fans_override ==
-      primary_hv_fans_override_fans_override_OFF) {
-    snprintf(sprintf_buffer_controls, BUFSIZ, "FANS AUTO");
-  } else {
-    snprintf(sprintf_buffer_controls, BUFSIZ, "FANS %d", map_val);
-  }
-  display_notification(sprintf_buffer_controls, 750);
-#endif
 }
 
 void send_set_car_status(primary_ecu_set_status_status val) {
@@ -515,7 +487,7 @@ bool send_set_car_status_directly(void) {
 #if CANSNIFFER_ENABLED == 1
 
 void change_cansniffer_index(bool plus) {
-    if (current_engineer_tab == TAB_PRIMARY_CANSNIFFER) {
+    if (current_engineer_tab == STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER) {
         if (plus) {
             primary_cansniffer_start_index++;
             update_primary_cansniffer_ui();
@@ -524,7 +496,7 @@ void change_cansniffer_index(bool plus) {
             primary_cansniffer_start_index = fmax(primary_cansniffer_start_index, 0);
             update_primary_cansniffer_ui();
         }
-    } else if (current_engineer_tab == TAB_SECONDARY_CANSNIFFER) {
+    } else if (current_engineer_tab == STEERING_WHEEL_TAB_SECONDARY_CANSNIFFER) {
         if (plus) {
             secondary_cansniffer_start_index++;
             update_secondary_cansniffer_ui();
@@ -533,7 +505,7 @@ void change_cansniffer_index(bool plus) {
             secondary_cansniffer_start_index = fmax(secondary_cansniffer_start_index, 0);
             update_secondary_cansniffer_ui();
         }
-    } else if (current_engineer_tab == TAB_INVERTERS_CANSNIFFER) {
+    } else if (current_engineer_tab == STEERING_WHEEL_TAB_INVERTERS_CANSNIFFER) {
         if (plus) {
             inverters_cansniffer_start_index++;
             update_inverters_cansniffer_ui();

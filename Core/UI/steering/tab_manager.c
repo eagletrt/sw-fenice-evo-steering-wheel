@@ -114,8 +114,8 @@ void tab_manager(void) {
     tab_balancing_status_screen_create(tab_balancing_status_ptr);
 
     lv_scr_load(tab_racing_ptr);
-    current_racing_tab   = TAB_RACING;
-    current_engineer_tab = TAB_TERMINAL;
+    current_racing_tab   = STEERING_WHEEL_TAB_RACING;
+    current_engineer_tab = STEERING_WHEEL_TAB_TERMINAL;
     steering_initialized = true;
 }
 
@@ -146,16 +146,16 @@ void remove_engineer_mode_screen(void) {
 void actions_on_changed_tab(void) {
     if (engineer_mode) {
         switch (current_engineer_tab) {
-            case TAB_TERMINAL:
+            case STEERING_WHEEL_TAB_TERMINAL:
                 break;
-            case TAB_BALANCING_STATUS:
+            case STEERING_WHEEL_TAB_BALANCING_STATUS:
                 break;
 #if CANSNIFFER_ENABLED == 1
-            case TAB_PRIMARY_CANSNIFFER:
+            case STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER:
                 break;
-            case TAB_INVERTERS_CANSNIFFER:
+            case STEERING_WHEEL_TAB_INVERTERS_CANSNIFFER:
                 break;
-            case TAB_SECONDARY_CANSNIFFER:
+            case STEERING_WHEEL_TAB_SECONDARY_CANSNIFFER:
                 break;
 #endif
 #if STEER_TAB_DEBUG_ENABLED == 1
@@ -190,7 +190,7 @@ void switch_mode(void) {
  */
 void load_current_racing_tab() {
     switch (current_racing_tab) {
-        case TAB_RACING:
+        case STEERING_WHEEL_TAB_RACING:
             tab_racing_resync();
             lv_scr_load(tab_racing_ptr);
             break;
@@ -204,19 +204,19 @@ void load_current_racing_tab() {
             lv_scr_load(tab_debug_ptr);
             break;
 #endif
-        case TAB_TRACK_TEST:
+        case STEERING_WHEEL_TAB_TRACK_TEST:
             tab_track_test_resync();
             lv_scr_load(tab_track_test_ptr);
             break;
-        case TAB_SENSORS:
+        case STEERING_WHEEL_TAB_SENSORS:
             tab_sensor_resync();
             lv_scr_load(tab_sensors_ptr);
             break;
-        case TAB_HV:
+        case STEERING_WHEEL_TAB_HV:
             tab_hv_resync();
             lv_scr_load(tab_hv_ptr);
             break;
-        case TAB_LV:
+        case STEERING_WHEEL_TAB_LV:
             tab_lv_resync();
             lv_scr_load(tab_lv_ptr);
             break;
@@ -228,23 +228,23 @@ void load_current_racing_tab() {
 void load_current_engineering_tab() {
     switch (current_engineer_tab) {
 #if CANSNIFFER_ENABLED == 1
-        case TAB_SECONDARY_CANSNIFFER:
+        case STEERING_WHEEL_TAB_SECONDARY_CANSNIFFER:
             update_secondary_cansniffer_ui();
             lv_scr_load(tab_secondary_cansniffer_ptr);
             break;
-        case TAB_PRIMARY_CANSNIFFER:
+        case STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER:
             update_primary_cansniffer_ui();
             lv_scr_load(tab_primary_cansniffer_ptr);
             break;
-        case TAB_INVERTERS_CANSNIFFER:
+        case STEERING_WHEEL_TAB_INVERTERS_CANSNIFFER:
             update_inverters_cansniffer_ui();
             lv_scr_load(tab_inverters_cansniffer_ptr);
             break;
 #endif
-        case TAB_TERMINAL:
+        case STEERING_WHEEL_TAB_TERMINAL:
             lv_scr_load(tab_terminal_ptr);
             break;
-        case TAB_BALANCING_STATUS:
+        case STEERING_WHEEL_TAB_BALANCING_STATUS:
             lv_scr_load(tab_balancing_status_ptr);
             break;
         default:

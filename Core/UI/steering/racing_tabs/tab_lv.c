@@ -32,7 +32,7 @@ lv_obj_t *tab_lv_labels[tab_lv_labels_n] = {
 };
 
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx) {
-    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_LV);
+    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_LV);
     lv_label_set_text(tab_lv_labels[idx], s);
 }
 
@@ -93,7 +93,7 @@ void tab_lv_create(lv_obj_t *parent) {
 
     /*--- inserting TOP NOTCH ---*/
 
-    lv_obj_t *notch = create_notch(main_panel, TAB_LV);
+    lv_obj_t *notch = create_notch(main_panel, STEERING_WHEEL_TAB_LV);
     lv_obj_align(lv_obj_get_child(notch, 0), LV_ALIGN_TOP_MID, 0, 10);
     lv_obj_set_grid_cell(notch, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 

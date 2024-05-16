@@ -31,17 +31,17 @@ lv_style_t bar_back_style;
 lv_obj_t *bottom_bar;
 
 void set_tab_racing_hv_current_bar(float v) {
-    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_RACING);
+    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
     lv_bar_set_value(tab_racing_hv_current_bar, v, LV_ANIM_OFF);
 }
 
 void set_tab_racing_hv_pack_voltage_bar(float v) {
-    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_RACING);
+    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
     lv_bar_set_value(tab_racing_hv_pack_voltage_bar, (int32_t)fabsf(v), LV_ANIM_OFF);
 }
 
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx) {
-    CHECK_CURRENT_TAB(engineer_mode, racing, TAB_RACING);
+    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
     lv_label_set_text(tab_racing_labels[idx], s);
 }
 
@@ -148,7 +148,7 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_set_grid_dsc_array(central_panel, cpanel_cols, cpanel_rows);
 
     // NOTCH
-    lv_obj_t *notch = create_notch(central_panel, TAB_RACING);
+    lv_obj_t *notch = create_notch(central_panel, STEERING_WHEEL_TAB_RACING);
     lv_obj_align(lv_obj_get_child(notch, 0), LV_ALIGN_TOP_MID, 0, 10);
     lv_obj_set_grid_cell(notch, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 0, 2);
 
