@@ -116,8 +116,6 @@ void cansniffer_inverters_new_message(can_message_t *msg) {
             inverters_cansniffer_ordered_ids[i] = cindex;
             i++;
         }
-        CHECK_CURRENT_TAB(!engineer_mode, engineer, TAB_INVERTERS_CANSNIFFER);
-        update_inverters_cansniffer_ui();
     }
 }
 

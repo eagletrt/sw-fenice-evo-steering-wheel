@@ -28,6 +28,25 @@ void refresh_graphics(void) {
 }
 
 void update_graphics(lv_timer_t *t) {
+    if (engineer_mode) {
+        switch (current_engineer_tab)
+        {
+        case TAB_PRIMARY_CANSNIFFER:
+            update_primary_cansniffer_ui();
+            break;
+        case TAB_SECONDARY_CANSNIFFER:
+            update_secondary_cansniffer_ui();
+            break;
+        case TAB_INVERTERS_CANSNIFFER:
+            update_inverters_cansniffer_ui();
+            break;
+        default:
+            break;
+        }        
+    }
+    
+    
+    update_primary_cansniffer_ui();
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {
         if (is_pmsg_new[iindex]) {
             is_pmsg_new[iindex] = false;

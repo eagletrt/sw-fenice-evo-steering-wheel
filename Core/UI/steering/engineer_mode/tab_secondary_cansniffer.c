@@ -116,8 +116,6 @@ void cansniffer_secondary_new_message(can_message_t *msg) {
             secondary_cansniffer_ordered_ids[i] = cindex;
             i++;
         }
-        CHECK_CURRENT_TAB(!engineer_mode, engineer, TAB_SECONDARY_CANSNIFFER);
-        update_secondary_cansniffer_ui();
     }
 }
 
