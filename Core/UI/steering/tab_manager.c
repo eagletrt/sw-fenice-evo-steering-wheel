@@ -229,12 +229,15 @@ void load_current_engineering_tab() {
     switch (current_engineer_tab) {
 #if CANSNIFFER_ENABLED == 1
         case TAB_SECONDARY_CANSNIFFER:
+            update_secondary_cansniffer_ui();
             lv_scr_load(tab_secondary_cansniffer_ptr);
             break;
         case TAB_PRIMARY_CANSNIFFER:
+            update_primary_cansniffer_ui();
             lv_scr_load(tab_primary_cansniffer_ptr);
             break;
         case TAB_INVERTERS_CANSNIFFER:
+            update_inverters_cansniffer_ui();
             lv_scr_load(tab_inverters_cansniffer_ptr);
             break;
 #endif

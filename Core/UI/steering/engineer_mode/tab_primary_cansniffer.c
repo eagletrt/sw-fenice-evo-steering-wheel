@@ -2,7 +2,6 @@
 
 #if CANSNIFFER_ENABLED == 1
 
-#include "min-heap.h"
 #include "tab_primary_cansniffer.h"
 #define PRIMARY_CANSNIFFER_ID_NAME_SIZE     128
 #define PRIMARY_CANSNIFFER_DATA_STRING_SIZE 128
@@ -13,10 +12,9 @@ lv_timer_t *primary_cansniffer_update_task;
 cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT] = {0};
 extern int primary_cansniffer_start_index;
 can_id_t primary_cansniffer_ordered_ids[primary_MESSAGE_COUNT];
+MinHeap(int, primary_MESSAGE_COUNT) primary_cansniffer_ids_heap;
 
 static_assert(sizeof(cansniffer_elem_t) == CANSNIFFER_ELEM_T_SIZE, "Please set CANSNIFFER_ELEM_T_SIZE accordingly to cansniffer_elem_t size");
-
-MinHeap(int, primary_MESSAGE_COUNT) primary_cansniffer_ids_heap;
 
 void init_primary_cansniffer_tab_styles() {
     min_heap_init(&primary_cansniffer_ids_heap, int, primary_MESSAGE_COUNT, min_heap_compare_indexes);
@@ -108,7 +106,6 @@ void cansniffer_primary_new_message(can_message_t *msg) {
     primary_cansniffer_buffer[index].len       = msg->size;
     memcpy(primary_cansniffer_buffer[index].data, msg->data, msg->size);
 
-    CHECK_CURRENT_TAB(!engineer_mode, engineer, TAB_PRIMARY_CANSNIFFER);
     if (!has_this_msg_ever_been_seen) {
         MinHeap(int, primary_MESSAGE_COUNT) primary_heap_copy_because_toni_is_sbored = min_heap_new(int, primary_MESSAGE_COUNT, min_heap_compare_indexes);
         memcpy(&primary_heap_copy_because_toni_is_sbored, &primary_cansniffer_ids_heap, sizeof(MinHeap(int, primary_MESSAGE_COUNT)));
@@ -118,6 +115,7 @@ void cansniffer_primary_new_message(can_message_t *msg) {
             primary_cansniffer_ordered_ids[i] = cindex;
             i++;
         }
+        CHECK_CURRENT_TAB(!engineer_mode, engineer, TAB_PRIMARY_CANSNIFFER);
         update_primary_cansniffer_ui();
     }
 }

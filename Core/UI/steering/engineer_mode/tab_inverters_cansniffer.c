@@ -10,12 +10,13 @@
 lv_style_t inverters_cansniffer_label_style;
 lv_timer_t *inverters_cansniffer_update_task;
 
-int inverters_cansniffer_ids[inverters_MESSAGE_COUNT]                  = {0};
 cansniffer_elem_t inverters_cansniffer_buffer[inverters_MESSAGE_COUNT] = {0};
-size_t inverters_cansniffer_ids_size                                   = 0;
 extern int inverters_cansniffer_start_index;
+can_id_t inverters_cansniffer_ordered_ids[inverters_MESSAGE_COUNT];
+MinHeap(int, inverters_MESSAGE_COUNT) inverters_cansniffer_ids_heap;
 
 void init_inverters_cansniffer_tab_styles() {
+    min_heap_init(&inverters_cansniffer_ids_heap, int, inverters_MESSAGE_COUNT, min_heap_compare_indexes);
     lv_style_init(&inverters_cansniffer_label_style);
     lv_style_set_base_dir(&inverters_cansniffer_label_style, LV_BASE_DIR_LTR);
     lv_style_set_bg_opa(&inverters_cansniffer_label_style, LV_OPA_TRANSP);
@@ -62,17 +63,17 @@ void update_inverters_cansniffer_value(size_t iindex, size_t id) {
     lv_label_set_text_fmt(inverters_cansniffer_len_labels[iindex], "%u", (unsigned int)inverters_cansniffer_buffer[id].len);
     lv_label_set_text_fmt(inverters_cansniffer_data_labels[iindex], "%s", inverters_cansniffer_data_string);
 }
-
 void update_inverters_cansniffer_ui() {
-    if (TAB_CANSNIFFER_N_MESSAGES_SHOWN * inverters_cansniffer_start_index > inverters_cansniffer_ids_size && inverters_cansniffer_ids_size > 1)
+    size_t n_msg = min_heap_size(&inverters_cansniffer_ids_heap);
+    if (TAB_CANSNIFFER_N_MESSAGES_SHOWN * inverters_cansniffer_start_index > n_msg && n_msg > 1)
         inverters_cansniffer_start_index--;
     for (size_t iindex = TAB_CANSNIFFER_N_MESSAGES_SHOWN * inverters_cansniffer_start_index;
          iindex < (TAB_CANSNIFFER_N_MESSAGES_SHOWN * (inverters_cansniffer_start_index + 1));
          ++iindex) {
-        if (iindex >= inverters_cansniffer_ids_size) {
+        if (iindex >= n_msg) {
             clear_inverters_cansniffer_ui_item(iindex - (TAB_CANSNIFFER_N_MESSAGES_SHOWN * inverters_cansniffer_start_index));
         } else {
-            int index = inverters_cansniffer_ids[iindex];
+            int index = (inverters_cansniffer_ordered_ids[iindex]);
             int res   = inverters_message_name_from_id(inverters_id_from_index(index), inverters_cansniffer_id_name);
             if (res == 0) {
                 snprintf(inverters_cansniffer_id_name, INVERTERS_CANSNIFFER_ID_NAME_SIZE, "unknown");
@@ -90,14 +91,14 @@ void update_inverters_cansniffer_ui() {
 }
 
 void cansniffer_inverters_new_message(can_message_t *msg) {
-    int index = inverters_index_from_id(msg->id);
+    int index                        = inverters_index_from_id(msg->id);
+    bool has_this_msg_ever_been_seen = true;
     if (index == -1) {
         return;
     }
-    size_t old = inverters_cansniffer_ids_size;
-    if (inverters_cansniffer_buffer[index].id == 0) {
-        inverters_cansniffer_ids[inverters_cansniffer_ids_size] = (int)(index);
-        inverters_cansniffer_ids_size++;
+    if (inverters_cansniffer_buffer[index].id == 0) {  // TODO use another bool to indicate if it is used or not
+        min_heap_insert(&inverters_cansniffer_ids_heap, &index);
+        has_this_msg_ever_been_seen = false;
     }
     uint32_t current_time                        = get_current_time_ms();
     inverters_cansniffer_buffer[index].delta     = current_time - inverters_cansniffer_buffer[index].timestamp;
@@ -106,9 +107,16 @@ void cansniffer_inverters_new_message(can_message_t *msg) {
     inverters_cansniffer_buffer[index].len       = msg->size;
     memcpy(inverters_cansniffer_buffer[index].data, msg->data, msg->size);
 
-    CHECK_CURRENT_TAB(!engineer_mode, engineer, TAB_INVERTERS_CANSNIFFER);
-    if (old != inverters_cansniffer_ids_size) {
-        heap_sort(inverters_cansniffer_ids, inverters_cansniffer_ids_size, inverters_id_from_index);
+    if (!has_this_msg_ever_been_seen) {
+        MinHeap(int, inverters_MESSAGE_COUNT) inverters_heap_copy_because_toni_is_sbored = min_heap_new(int, inverters_MESSAGE_COUNT, min_heap_compare_indexes);
+        memcpy(&inverters_heap_copy_because_toni_is_sbored, &inverters_cansniffer_ids_heap, sizeof(MinHeap(int, inverters_MESSAGE_COUNT)));
+        int cindex = 0, i = 0;
+        while (!min_heap_is_empty(&inverters_heap_copy_because_toni_is_sbored)) {
+            min_heap_remove(&inverters_heap_copy_because_toni_is_sbored, 0, &cindex);
+            inverters_cansniffer_ordered_ids[i] = cindex;
+            i++;
+        }
+        CHECK_CURRENT_TAB(!engineer_mode, engineer, TAB_INVERTERS_CANSNIFFER);
         update_inverters_cansniffer_ui();
     }
 }
