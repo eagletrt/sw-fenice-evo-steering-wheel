@@ -129,7 +129,7 @@ int main(void) {
     //led_control_read_value();
     //led_control_set_all(&hi2c4, COLOR_YELLOW);
     //led_mem_write();
-    try_led_last_time();
+    //try_led_last_time();
     
 #endif
 

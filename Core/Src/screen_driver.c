@@ -13,8 +13,8 @@ an array of 16 bits but the transfers are 32 bits. */
 extern LTDC_HandleTypeDef hltdc;
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 extern DMA2D_HandleTypeDef hdma2d;
-extern lv_color_t *framebuffer_1;
-extern lv_color_t *framebuffer_2;
+extern lv_color_t *framebuffer_1; //Declared in graphics manager
+extern lv_color_t *framebuffer_2; //Declared in graphics manager
 
 lv_disp_drv_t lv_display_driver;
 
@@ -22,7 +22,7 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *
 void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer);
 
 void screen_driver_init() {
-    static lv_disp_draw_buf_t draw_buf;
+    static lv_disp_draw_buf_t draw_buf; //internal graphic buffer(s) called draw buffer(s)
     lv_disp_draw_buf_init(&draw_buf, framebuffer_1, framebuffer_2, FRAMEBUFFER_SIZE);
     lv_disp_drv_init(&lv_display_driver);
     lv_display_driver.direct_mode = true;

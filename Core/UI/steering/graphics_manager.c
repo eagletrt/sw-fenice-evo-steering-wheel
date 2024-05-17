@@ -1,7 +1,7 @@
 #include "graphics_manager.h"
 
-lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
-lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
+lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR; //framebuffer of the screen
+lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR; //framebuffer of the screen
 
 bool is_pmsg_new[primary_MESSAGE_COUNT];
 bool is_smsg_new[secondary_MESSAGE_COUNT];
