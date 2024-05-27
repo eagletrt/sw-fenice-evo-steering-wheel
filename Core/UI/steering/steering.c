@@ -453,6 +453,7 @@ void lv_currents_update() {
 void lv_total_voltage_update() {
     GET_LAST_STATE(primary, lv_total_voltage, PRIMARY, LV_TOTAL_VOLTAGE);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_total_voltage_last_state->total);
+    set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pack_voltage);
 }
 
 void lv_cells_voltage_update(void) {
@@ -474,9 +475,6 @@ void lv_cells_voltage_update(void) {
 
     float mean_voltage = (float)(sum / N_LV_CELLS);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", mean_voltage);
-    set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_temp_idx);
-
-    // set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_);
 }
 
 void lv_cells_voltage_stats_update() {
@@ -487,7 +485,7 @@ void lv_cells_voltage_stats_update() {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_cells_voltage_stats_last_state->min);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_voltage_min);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_cells_voltage_stats_last_state->delta);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_lv_cells_voltage_stats_last_state->delta * 1000);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_voltage_delta);
 }
 
@@ -509,20 +507,20 @@ void lv_cells_temp_update() {
 
     float mean_temp = (float)(sum / N_LV_CELLS);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", mean_temp);
-    set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_temp_idx);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_avg);
 }
 
 void lv_cells_temp_stats_update() {
     GET_LAST_STATE(primary, lv_cells_temp_stats, PRIMARY, LV_CELLS_TEMP_STATS);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_cells_temp_stats_last_state->max);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_lv_cells_temp_stats_last_state->max);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_max);
+    set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_temp_idx);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_cells_temp_stats_last_state->min);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_lv_cells_temp_stats_last_state->min);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_min);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_lv_cells_temp_stats_last_state->avg);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_lv_cells_temp_stats_last_state->avg);
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_avg);
 }
 

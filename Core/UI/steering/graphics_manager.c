@@ -44,7 +44,6 @@ void update_graphics(lv_timer_t *t) {
         }
     }
 
-    update_primary_cansniffer_ui();
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {
         if (is_pmsg_new[iindex]) {
             is_pmsg_new[iindex] = false;

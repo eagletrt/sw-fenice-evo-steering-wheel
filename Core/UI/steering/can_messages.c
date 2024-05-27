@@ -79,14 +79,6 @@ void handle_primary(can_message_t *msg) {
             STEER_CAN_UNPACK(primary, PRIMARY, ecu_status, ECU_STATUS, is_pmsg_new, true);
             break;
         }
-#if 0
-  case PRIMARY_PEDAL_CALIBRATION_ACK_FRAME_ID: {
-    STEER_CAN_UNPACK(primary, PRIMARY, pedal_calibration_ack,
-                     PEDAL_CALIBRATION_ACK, is_pmsg_new);
-    pedal_calibration_ack();
-    break;
-  }
-#endif
         case PRIMARY_ECU_PTT_STATUS_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, ecu_ptt_status, ECU_PTT_STATUS, is_pmsg_new, true);
             handle_ptt_message();
@@ -278,10 +270,6 @@ void handle_secondary(can_message_t *msg) {
             STEER_CAN_UNPACK(secondary, SECONDARY, steer_angle, STEER_ANGLE, is_smsg_new, true);
             break;
         }
-        // case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
-        // STEER_CAN_UNPACK(secondary, SECONDARY, pedals_output, PEDALS_OUTPUT,
-        // is_smsg_new); break;
-        // }
 #if 0
   case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION,
