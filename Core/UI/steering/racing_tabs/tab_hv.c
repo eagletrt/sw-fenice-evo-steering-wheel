@@ -554,4 +554,10 @@ void tab_hv_resync(void) {
     hv_feedbacks_status_update();
     // Sets the text about the speed of the fans and the bar
     hv_fans_override_status_update();
+
+    hv_cells_voltage_stats_update();
+    hv_total_voltage_update();
+    hv_cells_temp_stats_update();
+    hv_status_update();
+    hv_fans_override_status_update();
 }

@@ -349,4 +349,12 @@ void tab_lv_create(lv_obj_t *parent) {
 }
 
 void tab_lv_resync(void) {
+    lv_pumps_speed_update();
+    lv_radiator_speed_update();
+    lv_currents_update();
+    lv_total_voltage_update();
+    lv_cells_voltage_update();
+    lv_cells_voltage_stats_update();
+    lv_cells_temp_update();
+    lv_cells_temp_stats_update();
 }

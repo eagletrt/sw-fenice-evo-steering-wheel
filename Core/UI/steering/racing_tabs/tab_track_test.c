@@ -172,4 +172,6 @@ void tab_track_test_create(lv_obj_t *parent) {
 }
 
 void tab_track_test_resync(void) {
+    car_status_update();
+    angular_velocity_update();
 }

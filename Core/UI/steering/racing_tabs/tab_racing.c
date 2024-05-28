@@ -474,4 +474,13 @@ void tab_racing_resync(void) {
     float map_tv = (float)(ecu_set_power_maps_last_state.map_tv * 100.0f);
     snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_tv);
     set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_torque_idx);
+
+    car_status_update();
+    angular_velocity_update();
+    hv_total_voltage_update();
+    hv_current_update();
+    hv_cells_temp_stats_update();
+    lv_cells_temp_stats_update();
+    // lap_count_update();
+    inv_l_rcv_update();
 }
