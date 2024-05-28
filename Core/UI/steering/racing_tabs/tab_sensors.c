@@ -443,4 +443,10 @@ void tab_sensors_create(lv_obj_t *parent) {
 }
 
 void tab_sensor_resync(void) {
+    inv_l_rcv_update();
+    inv_r_rcv_update();
+    irts_fl_update();
+    irts_fr_update();
+    irts_rl_update();
+    irts_rr_update();
 }
