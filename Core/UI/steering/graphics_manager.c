@@ -21,11 +21,13 @@ void refresh_graphics(void) {
     lv_timer_handler();
 #else
     uint32_t ctick = HAL_GetTick();
-    lv_tick_inc(ctick - *ptick);
+    lv_tick_inc(HAL_GetTick);
     *ptick = ctick;
 #endif
 #endif
 }
+
+
 
 void update_graphics(lv_timer_t *t) {
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {

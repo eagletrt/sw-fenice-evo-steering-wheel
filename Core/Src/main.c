@@ -158,13 +158,15 @@ int main(void) {
     init_graphics_manager();
     init_periodic_can_messages_timers();
 
-    lv_timer_t *gtimer = lv_timer_create(update_graphics, 100, NULL);
-    lv_timer_set_repeat_count(gtimer, -1);
-    lv_timer_reset(gtimer);
+    
 
-    lv_timer_t *gianni_timer = lv_timer_create(led_control_read_value, 100, NULL);
-    lv_timer_set_repeat_count(gianni_timer, -1);
-    lv_timer_reset(gianni_timer);
+    // lv_timer_t *gtimer = lv_timer_create(update_graphics, 100, NULL);
+    // lv_timer_set_repeat_count(gtimer, -1);
+    // lv_timer_reset(gtimer);
+
+    // lv_timer_t *gianni_timer = lv_timer_create(led_control_read_value, 100, NULL);
+    // lv_timer_set_repeat_count(gianni_timer, -1);
+    // lv_timer_reset(gianni_timer);
 
     if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
         enter_fatal_error_mode("Primary CAN fatal error");
@@ -175,9 +177,9 @@ int main(void) {
         Error_Handler();
     }
 #if WATCHDOG_ENABLED == 1
-    init_watchdog();
+    //init_watchdog();
 #endif
-    init_input_polling();
+    //init_input_polling();
 #if CAN_OVER_SERIAL_ENABLED == 1
     can_over_serial_init();
 #endif

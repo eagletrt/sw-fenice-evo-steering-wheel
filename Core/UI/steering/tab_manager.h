@@ -23,7 +23,7 @@
 #include "lv-drivers/indev/keyboard.h"
 #endif
 
-extern lv_group_t *g;
+extern lv_group_t *steering_group;
 
 void tab_manager(void);
 

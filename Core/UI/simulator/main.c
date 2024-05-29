@@ -258,8 +258,8 @@ static void hal_init(void) {
     lv_theme_t *th = lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
     lv_disp_set_theme(disp, th);
 
-    g = lv_group_create();
-    lv_group_set_default(g);
+    steering_group = lv_group_create();
+    lv_group_set_default(steering_group);
 
     keyboard_init();
     static lv_indev_drv_t indev_drv_2;
@@ -268,7 +268,7 @@ static void hal_init(void) {
     indev_drv_2.read_cb     = keyboard_read;
     indev_drv_2.feedback_cb = keyboard_fn;
     lv_indev_t *kb_indev    = lv_indev_drv_register(&indev_drv_2);
-    lv_indev_set_group(kb_indev, g);
+    lv_indev_set_group(kb_indev, steering_group);
 }
 
 /**
