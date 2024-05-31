@@ -119,19 +119,19 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(frame_1, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
     lv_obj_t *front_lx_temp =
-        lv_horizontal_pair_label(frame_1, &tab_sensors_labels[tab_sensors_lb_fl_temp], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(frame_1, &tab_sensors_labels[tab_sensors_lb_fl_temp], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
     lv_obj_align(front_lx_temp, LV_ALIGN_CENTER, -60, -70);
 
     lv_obj_t *front_rx_temp =
-        lv_horizontal_pair_label(frame_1, &tab_sensors_labels[tab_sensors_lb_fr_temp], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(frame_1, &tab_sensors_labels[tab_sensors_lb_fr_temp], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
     lv_obj_align(front_rx_temp, LV_ALIGN_CENTER, 60, -70);
 
     lv_obj_t *rear_lx_temp =
-        lv_horizontal_pair_label(frame_1, &tab_sensors_labels[tab_sensors_lb_rl_temp], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(frame_1, &tab_sensors_labels[tab_sensors_lb_rl_temp], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
     lv_obj_align(rear_lx_temp, LV_ALIGN_CENTER, -60, 70);
 
     lv_obj_t *rear_rx_temp =
-        lv_horizontal_pair_label(frame_1, &tab_sensors_labels[tab_sensors_lb_rr_temp], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(frame_1, &tab_sensors_labels[tab_sensors_lb_rr_temp], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22);
     lv_obj_align(rear_rx_temp, LV_ALIGN_CENTER, 60, 70);
 
     lv_obj_t *body_1 = lv_obj_create(frame_1);
@@ -211,19 +211,19 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(frame_2, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 
     lv_obj_t *front_lx_press =
-        lv_horizontal_pair_label(frame_2, &tab_sensors_labels[tab_sensors_lb_fl_press], "X", &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(frame_2, &tab_sensors_labels[tab_sensors_lb_fl_press], "NA", &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
     lv_obj_align(front_lx_press, LV_ALIGN_CENTER, -60, -70);
 
     lv_obj_t *front_rx_press =
-        lv_horizontal_pair_label(frame_2, &tab_sensors_labels[tab_sensors_lb_fr_press], "X", &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(frame_2, &tab_sensors_labels[tab_sensors_lb_fr_press], "NA", &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
     lv_obj_align(front_rx_press, LV_ALIGN_CENTER, 60, -70);
 
     lv_obj_t *rear_lx_press =
-        lv_horizontal_pair_label(frame_2, &tab_sensors_labels[tab_sensors_lb_rl_press], "X", &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(frame_2, &tab_sensors_labels[tab_sensors_lb_rl_press], "NA", &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
     lv_obj_align(rear_lx_press, LV_ALIGN_CENTER, -60, 70);
 
     lv_obj_t *rear_rx_press =
-        lv_horizontal_pair_label(frame_2, &tab_sensors_labels[tab_sensors_lb_rr_press], "X", &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(frame_2, &tab_sensors_labels[tab_sensors_lb_rr_press], "NA", &lv_font_inter_bold_30, " bar", &lv_font_inter_bold_22);
     lv_obj_align(rear_rx_press, LV_ALIGN_CENTER, 60, 70);
 
     lv_obj_t *body_2 = lv_obj_create(frame_2);
@@ -321,7 +321,7 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_obj_t *inv_l_temp_lb = lv_triple_label(
         right_data_panel,
         &tab_sensors_labels[tab_sensors_lb_left_inverter_temp],
-        "X",
+        "NA",
         &lv_font_inter_bold_30,
         "°C",
         &lv_font_inter_bold_22,
@@ -332,7 +332,7 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_obj_t *inv_r_temp_lb = lv_triple_label(
         right_data_panel,
         &tab_sensors_labels[tab_sensors_lb_right_inverter_temp],
-        "X",
+        "NA",
         &lv_font_inter_bold_30,
         "°C",
         &lv_font_inter_bold_22,
@@ -343,7 +343,7 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_obj_t *motor_l_temp_lb = lv_triple_label(
         right_data_panel,
         &tab_sensors_labels[tab_sensors_lb_left_motor_temp],
-        "X",
+        "NA",
         &lv_font_inter_bold_30,
         "°C",
         &lv_font_inter_bold_22,
@@ -354,7 +354,7 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_obj_t *motor_r_temp_lb = lv_triple_label(
         right_data_panel,
         &tab_sensors_labels[tab_sensors_lb_right_motor_temp],
-        "X",
+        "NA",
         &lv_font_inter_bold_30,
         "°C",
         &lv_font_inter_bold_22,

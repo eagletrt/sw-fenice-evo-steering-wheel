@@ -15,7 +15,8 @@ lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
     [tab_rac_pow_idx]           = NULL,
     [tab_rac_status_idx]        = NULL,
     [tab_rac_bottom_status_idx] = NULL,
-    [tab_rac_lap_count_idx]     = NULL,
+    [tab_rac_ptt_status_idx]    = NULL,
+    [tab_rac_km_counter_idx]    = NULL,
 };
 
 lv_obj_t *tab_racing_hv_current_bar;
@@ -79,7 +80,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
     // lv percentage
     lv_obj_t *lv_perc =
-        lv_horizontal_pair_label(bar_panel_lv, &tab_racing_labels[tab_rac_pack_voltage_idx], "0", &lv_font_inter_bold_30, "V", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(bar_panel_lv, &tab_racing_labels[tab_rac_pack_voltage_idx], "NA", &lv_font_inter_bold_30, "V", &lv_font_inter_bold_20);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5);  // change "%" position
     lv_obj_set_grid_cell(lv_perc, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
@@ -112,7 +113,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
     // hv percentage
     lv_obj_t *hv_perc =
-        lv_horizontal_pair_label(bar_panel_hv, &tab_racing_labels[tab_rac_hv_curr_idx], "0", &lv_font_inter_bold_30, "A", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(bar_panel_hv, &tab_racing_labels[tab_rac_hv_curr_idx], "NA", &lv_font_inter_bold_30, "A", &lv_font_inter_bold_20);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(hv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5);  // change "%" position
     lv_obj_set_grid_cell(hv_perc, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
@@ -224,11 +225,11 @@ void tab_racing_create(lv_obj_t *parent) {
 
     /*inserting data into data right panel*/
     lv_obj_t *trq =
-        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_lap_count_idx], "NA", &lv_font_inter_bold_38, "unused", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_km_counter_idx], "NA", &lv_font_inter_bold_38, "km counter", &lv_font_inter_bold_14);
     lv_obj_set_grid_cell(trq, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *slip =
-        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_lap_count_idx], "NA", &lv_font_inter_bold_38, "unused", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_ptt_status_idx], "NA", &lv_font_inter_bold_38, "ptt", &lv_font_inter_bold_14);
     lv_obj_set_grid_cell(slip, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     // adding separation line for right data panel
@@ -240,26 +241,26 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(sep_line, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_START, 1, 1);
 
     lv_obj_t *inverter_temp = lv_triple_label(
-        right_data_panel, &tab_racing_labels[tab_rac_inv_idx], "0", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV", &lv_font_inter_bold_20);
+        right_data_panel, &tab_racing_labels[tab_rac_inv_idx], "NA", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "INV", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(inverter_temp, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
     lv_obj_t *motor_temp = lv_triple_label(
-        right_data_panel, &tab_racing_labels[tab_rac_mot_idx], "0", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR", &lv_font_inter_bold_20);
+        right_data_panel, &tab_racing_labels[tab_rac_mot_idx], "NA", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "MOTOR", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(motor_temp, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
     lv_obj_t *lv_temp = lv_triple_label(
-        right_data_panel, &tab_racing_labels[tab_rac_lv_temp_idx], "0", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "LV", &lv_font_inter_bold_20);
+        right_data_panel, &tab_racing_labels[tab_rac_lv_temp_idx], "NA", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "LV", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(lv_temp, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
     lv_obj_t *hv_temp = lv_triple_label(
-        right_data_panel, &tab_racing_labels[tab_rac_hv_avg_temp_idx], "0", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "HV", &lv_font_inter_bold_20);
+        right_data_panel, &tab_racing_labels[tab_rac_hv_avg_temp_idx], "NA", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "HV", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(hv_temp, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
     // DATA CENTER
 
     // power
     lv_obj_t *power =
-        lv_horizontal_pair_label(central_panel, &tab_racing_labels[tab_rac_pow_idx], "0", &lv_font_inter_bold_38, " POWER", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(central_panel, &tab_racing_labels[tab_rac_pow_idx], "NA", &lv_font_inter_bold_38, " POWER", &lv_font_inter_bold_22);
 
     lv_obj_set_grid_cell(lv_obj_get_child(power, 1), LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0,
                          1);  // center the label "POWER"
@@ -308,7 +309,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
   // ???
   lv_obj_t *km_counter = lv_vertical_pair_label(
-      data_panel, &tab_racing_labels[tab_rac_lap_count_idx], "0",
+      data_panel, &tab_racing_labels[tab_rac_lap_count_idx], "NA",
       &lv_font_inter_bold_38, "KM", &lv_font_inter_bold_22);
   lv_obj_set_grid_cell(km_counter, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_END,
                        0, 1);
@@ -316,14 +317,14 @@ void tab_racing_create(lv_obj_t *parent) {
   lv_obj_set_style_pad_right(km_counter, 40, 0);
 #else
     lv_obj_t *slip_robo_del_coso =
-        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_slip_idx], "0", &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_slip_idx], "NA", &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(slip_robo_del_coso, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_END, 0, 1);
     lv_obj_set_style_pad_bottom(slip_robo_del_coso, 5, 0);
     lv_obj_set_style_pad_left(slip_robo_del_coso, 40, 0);
 
     // ???
     lv_obj_t *torque_robo_del_coso =
-        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_torque_idx], "0", &lv_font_inter_bold_38, "TORQUE", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_torque_idx], "NA", &lv_font_inter_bold_38, "TORQUE", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(torque_robo_del_coso, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_END, 0, 1);
     lv_obj_set_style_pad_bottom(torque_robo_del_coso, 5, 0);
     lv_obj_set_style_pad_right(torque_robo_del_coso, 40, 0);

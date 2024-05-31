@@ -110,7 +110,8 @@ typedef enum {
     tab_rac_pow_idx,
     tab_rac_status_idx,
     tab_rac_bottom_status_idx,
-    tab_rac_lap_count_idx,
+    tab_rac_ptt_status_idx,
+    tab_rac_km_counter_idx,
     tab_rac_labels_n
 } tab_racing_labels_enum;
 

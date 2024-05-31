@@ -311,36 +311,36 @@ void tab_hv_create(lv_obj_t *parent) {
 
     /* TEMP */
     lv_obj_t *inv_l_temp_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_temp_max], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MAX", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_lb_temp_max], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MAX", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(inv_l_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *inv_r_temp_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_temp_min], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MIN", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_lb_temp_min], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MIN", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(inv_r_temp_lb, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *motor_l_temp_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_temp_avg], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "AVG", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_lb_temp_avg], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "AVG", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(motor_l_temp_lb, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     /* VOLT */
     lv_obj_t *motor_r_temp_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_voltage_max], "X", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "MAX", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_lb_voltage_max], "NA", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "MAX", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(motor_r_temp_lb, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *hv_temp_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_voltage_min], "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "MIN", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_lb_voltage_min], "NA", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "MIN", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(hv_temp_lb, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *hv_volt_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_voltage_delta], "0", &lv_font_inter_bold_30, " mV", &lv_font_inter_bold_22, "DELTA", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_lb_voltage_delta], "NA", &lv_font_inter_bold_30, " mV", &lv_font_inter_bold_22, "DELTA", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(hv_volt_lb, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *hv_curr_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_pack_voltage], "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "TOT", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_lb_pack_voltage], "NA", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "TOT", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(hv_curr_lb, LV_GRID_ALIGN_CENTER, 6, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *hv_minCellV_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_pack_voltage_2], "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "SUM", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_lb_pack_voltage_2], "NA", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "SUM", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(hv_minCellV_lb, LV_GRID_ALIGN_CENTER, 7, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     /* 2nd row HV */
@@ -364,11 +364,11 @@ void tab_hv_create(lv_obj_t *parent) {
 
     /* 1st row */
     lv_obj_t *status_lb = lv_triple_label(
-        center_data_panel, &tab_hv_labels[tab_hv_lb_current_state], "X", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22, "STATUS", &lv_font_inter_bold_20);
+        center_data_panel, &tab_hv_labels[tab_hv_lb_current_state], "NA", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22, "STATUS", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(status_lb, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *error_lb = lv_triple_label(
-        center_data_panel, &tab_hv_labels[tab_hv_lb_last_error], "X", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22, "ERRORS", &lv_font_inter_bold_20);
+        center_data_panel, &tab_hv_labels[tab_hv_lb_last_error], "NA", &lv_font_inter_bold_30, "", &lv_font_inter_bold_22, "ERRORS", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(error_lb, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     /*--- creating BOTTOM PANEL ---*/

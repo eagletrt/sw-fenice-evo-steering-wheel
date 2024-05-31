@@ -154,36 +154,36 @@ void tab_lv_create(lv_obj_t *parent) {
 
     /* TEMP */
     lv_obj_t *inv_l_temp_lb = lv_triple_label(
-        top_data_panel, &tab_lv_labels[tab_lv_lb_temp_max], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MAX", &lv_font_inter_bold_20);
+        top_data_panel, &tab_lv_labels[tab_lv_lb_temp_max], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MAX", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(inv_l_temp_lb, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *inv_r_temp_lb = lv_triple_label(
-        top_data_panel, &tab_lv_labels[tab_lv_lb_temp_min], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MIN", &lv_font_inter_bold_20);
+        top_data_panel, &tab_lv_labels[tab_lv_lb_temp_min], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "MIN", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(inv_r_temp_lb, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *motor_l_temp_lb = lv_triple_label(
-        top_data_panel, &tab_lv_labels[tab_lv_lb_temp_avg], "X", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "AVG", &lv_font_inter_bold_20);
+        top_data_panel, &tab_lv_labels[tab_lv_lb_temp_avg], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "AVG", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(motor_l_temp_lb, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     /* VOLT */
     lv_obj_t *motor_r_temp_lb = lv_triple_label(
-        top_data_panel, &tab_lv_labels[tab_lv_lb_voltage_max], "X", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "MAX", &lv_font_inter_bold_20);
+        top_data_panel, &tab_lv_labels[tab_lv_lb_voltage_max], "NA", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "MAX", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(motor_r_temp_lb, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *lv_temp_lb = lv_triple_label(
-        top_data_panel, &tab_lv_labels[tab_lv_lb_voltage_min], "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "MIN", &lv_font_inter_bold_20);
+        top_data_panel, &tab_lv_labels[tab_lv_lb_voltage_min], "NA", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "MIN", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(lv_temp_lb, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *lv_volt_lb = lv_triple_label(
-        top_data_panel, &tab_lv_labels[tab_lv_lb_voltage_delta], "0", &lv_font_inter_bold_30, " mV", &lv_font_inter_bold_22, "DELTA", &lv_font_inter_bold_20);
+        top_data_panel, &tab_lv_labels[tab_lv_lb_voltage_delta], "NA", &lv_font_inter_bold_30, " mV", &lv_font_inter_bold_22, "DELTA", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(lv_volt_lb, LV_GRID_ALIGN_CENTER, 5, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *lv_curr_lb = lv_triple_label(
-        top_data_panel, &tab_lv_labels[tab_lv_lb_pack_voltage], "0", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "PACK", &lv_font_inter_bold_20);
+        top_data_panel, &tab_lv_labels[tab_lv_lb_pack_voltage], "NA", &lv_font_inter_bold_30, " V", &lv_font_inter_bold_22, "PACK", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(lv_curr_lb, LV_GRID_ALIGN_CENTER, 6, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *lv_minCellV_lb = lv_triple_label(
-        top_data_panel, &tab_lv_labels[tab_lv_lb_pack_voltage_2], "0", &lv_font_inter_bold_30, " A", &lv_font_inter_bold_22, "CURR", &lv_font_inter_bold_20);
+        top_data_panel, &tab_lv_labels[tab_lv_lb_pack_voltage_2], "NA", &lv_font_inter_bold_30, " A", &lv_font_inter_bold_22, "CURR", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(lv_minCellV_lb, LV_GRID_ALIGN_CENTER, 7, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     /* 2nd row LV */
@@ -245,7 +245,7 @@ void tab_lv_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(pumps_bar_panel, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 
     lv_obj_t *pumps_actual_value =
-        lv_horizontal_pair_label(pumps_bar_panel, &tab_lv_labels[tab_lv_lb_pumps_actual], "0", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(pumps_bar_panel, &tab_lv_labels[tab_lv_lb_pumps_actual], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(pumps_actual_value, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
     tab_lv_pumps_speed_bar = lv_bar_create(pumps_bar_panel);
@@ -259,7 +259,7 @@ void tab_lv_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(tab_lv_pumps_speed_bar, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *pumps_local_value =
-        lv_horizontal_pair_label(pumps_bar_panel, &tab_lv_labels[tab_lv_lb_pumps_local], "0", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(pumps_bar_panel, &tab_lv_labels[tab_lv_lb_pumps_local], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(pumps_local_value, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
 
     /* STATUS PANEL */
@@ -330,7 +330,7 @@ void tab_lv_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(radiators_bar_panel, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 
     lv_obj_t *radiators_actual_value =
-        lv_horizontal_pair_label(radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_actual], "0", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_actual], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(radiators_actual_value, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
     tab_lv_radiators_speed_bar = lv_bar_create(radiators_bar_panel);
@@ -344,7 +344,7 @@ void tab_lv_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(tab_lv_radiators_speed_bar, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *radiators_local_value =
-        lv_horizontal_pair_label(radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_local], "0", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_local], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(radiators_local_value, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
 }
 
