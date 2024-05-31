@@ -86,7 +86,9 @@
         "time.h": "c",
         "serial_to_can.h": "c",
         "secondary_watchdog.h": "c",
-        "min-heap.h": "c"
+        "min-heap.h": "c",
+        "win_drv.h": "c",
+        "lv_drv_conf.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

@@ -21,8 +21,8 @@ lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
 lv_obj_t *tab_racing_hv_current_bar;
 lv_obj_t *tab_racing_hv_pack_voltage_bar;
 lv_obj_t *tab_racing_custom_meter;
-lv_meter_indicator_t *tab_racing_indicator_blue;
-lv_meter_indicator_t *tab_racing_indicator_white;
+// lv_meter_indicator_t *tab_racing_indicator_blue;
+// lv_meter_indicator_t *tab_racing_indicator_white;
 
 lv_style_t bar_hv_style;
 lv_style_t bar_lv_style;
@@ -283,17 +283,17 @@ void tab_racing_create(lv_obj_t *parent) {
         &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(speed, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    lv_obj_t *meter_container = lv_obj_create(data_panel);
-    lv_obj_remove_style_all(meter_container);
-    lv_obj_set_height(meter_container, LV_SIZE_CONTENT);
+    // lv_obj_t *meter_container = lv_obj_create(data_panel);
+    // lv_obj_remove_style_all(meter_container);
+    // lv_obj_set_height(meter_container, LV_SIZE_CONTENT);
 
-    tab_racing_custom_meter = lv_meter_create(meter_container);
+    // tab_racing_custom_meter = lv_meter_create(meter_container);
 
     // TODO fix this warning!!!
-    lv_custom_meter(&tab_racing_custom_meter, &tab_racing_indicator_blue, &tab_racing_indicator_white);
-    lv_obj_align(tab_racing_custom_meter, LV_ALIGN_CENTER, 0, 0);
+    // lv_custom_meter(&tab_racing_custom_meter, &tab_racing_indicator_blue, &tab_racing_indicator_white);
+    // lv_obj_align(tab_racing_custom_meter, LV_ALIGN_CENTER, 0, 0);
 
-    lv_obj_set_grid_cell(meter_container, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+    // lv_obj_set_grid_cell(meter_container, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     // lap counter
 
@@ -364,6 +364,7 @@ void init_racing_style(void) {
     lv_style_set_bg_color(&bar_back_style, lv_color_hex(COLOR_SECONDARY_HEX));
 }
 
+#if 0 
 // shadow ? of custom meter and indicator blue and white
 void lv_custom_meter(lv_obj_t **custom_meter, lv_meter_indicator_t **indicator_blue, lv_meter_indicator_t **indicator_white) {
     /*Remove the circle from the middle*/
@@ -412,6 +413,7 @@ void lv_custom_meter(lv_obj_t **custom_meter, lv_meter_indicator_t **indicator_b
 
     // return custom_meter;
 }
+#endif
 
 void custom_side_bar(lv_obj_t *bar) {
     lv_obj_remove_style_all(bar);

@@ -16,6 +16,10 @@ extern DMA2D_HandleTypeDef hdma2d;
 extern lv_color_t *framebuffer_1;
 extern lv_color_t *framebuffer_2;
 
+
+void screen_driver_init() {}
+
+#if 0
 lv_disp_drv_t lv_display_driver;
 
 void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p);
@@ -91,3 +95,5 @@ void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
     HAL_DMA2D_Start(&hdma2d, src_buffer + start_offset, dst_buffer + start_offset, area_width, area_height);  // Start transfer
     HAL_DMA2D_PollForTransfer(&hdma2d, 10);                                                                   // Wait for transfer to be over
 }
+
+#endif
