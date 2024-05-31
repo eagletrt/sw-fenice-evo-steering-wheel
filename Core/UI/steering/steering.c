@@ -2,10 +2,6 @@
 
 #include "steering_config.h"
 
-lv_obj_t *lb_estimated_velocity;
-lv_obj_t *lb_apps;
-lv_obj_t *lb_bse;
-
 extern bool steering_initialized;
 
 #define SNPRINTF_BUFFER_SIZE (64u)
@@ -28,18 +24,6 @@ primary_lv_cells_temp_converted_t lv_temps_stock_1       = {0};
 primary_lv_cells_temp_converted_t lv_temps_stock_2       = {0};
 
 uint32_t timestamp_start_lap = 0;
-
-void set_lb_estimated_velocity(const char *s) {
-    lv_label_set_text(lb_estimated_velocity, s);
-}
-
-void set_lb_apps(const char *s) {
-    lv_label_set_text(lb_apps, s);
-}
-
-void set_lb_bse(const char *s) {
-    lv_label_set_text(lb_bse, s);
-}
 
 void car_status_update() {
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
@@ -237,14 +221,20 @@ void hv_cell_balancing_status_update() {
     // TODO: if bal is off, write bal off on the screen
 }
 
+void hv_feedback_ts_voltage_update(void) {
+    // GET_LAST_STATE(primary, hv_feedback_ts_voltage, PRIMARY, HV_FEEDBACK_TS_VOLTAGE);
+    // primary_hv_feedback_ts_voltage_last_state.
+}
+
 void hv_feedbacks_status_update() {
     GET_LAST_STATE(primary, hv_feedback_status, PRIMARY, HV_FEEDBACK_STATUS);
-    update_shutdown_circuit_component(feedbacks_status_feedback_sd_in_index, primary_hv_feedback_status_last_state->feedback_sd_in);
-    update_shutdown_circuit_component(feedbacks_status_feedback_sd_out_index, primary_hv_feedback_status_last_state->feedback_sd_out);
-    update_shutdown_circuit_component(feedbacks_status_feedback_sd_end_index, primary_hv_feedback_status_last_state->feedback_sd_end);
-    update_shutdown_circuit_component(feedbacks_status_feedback_precharge_status_index, primary_hv_feedback_status_last_state->feedback_precharge_status);
-    update_shutdown_circuit_component(feedbacks_status_feedback_airp_gate_index, primary_hv_feedback_status_last_state->feedback_airp_status);
-    update_shutdown_circuit_component(feedbacks_status_feedback_airn_gate_index, primary_hv_feedback_status_last_state->feedback_airn_status);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_status_last_state->feedback_sd_in);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_status_last_state->feedback_sd_out);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_status_last_state->feedback_sd_end);
+    update_shutdown_circuit_component(
+        shutdown_circuit_feedbacks_status_feedback_precharge_status_index, primary_hv_feedback_status_last_state->feedback_precharge_status);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_airp_gate_index, primary_hv_feedback_status_last_state->feedback_airp_status);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_airn_gate_index, primary_hv_feedback_status_last_state->feedback_airn_status);
 }
 
 primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
@@ -252,10 +242,10 @@ primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
 void ecu_feedbacks_update(void) {
     GET_LAST_STATE(primary, ecu_feedbacks, PRIMARY, ECU_FEEDBACKS);
 
-    update_shutdown_circuit_component(ecu_feedbacks_sd_in_index, primary_ecu_feedbacks_last_state->feedbacks_sd_in);
-    update_shutdown_circuit_component(ecu_feedbacks_sd_cock_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_cock_fb);
-    update_shutdown_circuit_component(ecu_feedbacks_sd_interial_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_interial_fb);
-    update_shutdown_circuit_component(ecu_feedbacks_sd_bots_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_bots_fb);
+    update_shutdown_circuit_component(shutdown_circuit_ecu_feedbacks_sd_in_index, primary_ecu_feedbacks_last_state->feedbacks_sd_in);
+    update_shutdown_circuit_component(shutdown_circuit_ecu_feedbacks_sd_cock_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_cock_fb);
+    update_shutdown_circuit_component(shutdown_circuit_ecu_feedbacks_sd_interial_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_interial_fb);
+    update_shutdown_circuit_component(shutdown_circuit_ecu_feedbacks_sd_bots_fb_index, primary_ecu_feedbacks_last_state->feedbacks_sd_bots_fb);
 }
 
 void hv_status_update() {
@@ -313,23 +303,23 @@ void hv_fans_override_status_update() {
 void lv_feedback_sd_voltage_update() {
     GET_LAST_STATE(primary, lv_feedback_sd_voltage, PRIMARY, LV_FEEDBACK_SD_VOLTAGE);
 
-    update_shutdown_circuit_component(sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start);
-    update_shutdown_circuit_component(feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock);
-    update_shutdown_circuit_component(sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end);
+    update_shutdown_circuit_component(shutdown_circuit_sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock);
+    update_shutdown_circuit_component(shutdown_circuit_sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end);
 }
 
 void lv_feedback_ts_voltage_update() {
     GET_LAST_STATE(primary, lv_feedback_ts_voltage, PRIMARY, LV_FEEDBACK_TS_VOLTAGE);
 
-    update_shutdown_circuit_component(feedbacks_hvd_fb_index, primary_lv_feedback_ts_voltage_last_state->hvd);
-    update_shutdown_circuit_component(feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd);
-    update_shutdown_circuit_component(feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_hvd_fb_index, primary_lv_feedback_ts_voltage_last_state->hvd);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock);
 }
 
 void lv_feedback_enclosure_voltage_update() {
     GET_LAST_STATE(primary, lv_feedback_enclosure_voltage, PRIMARY, LV_FEEDBACK_ENCLOSURE_VOLTAGE);
 
-    update_shutdown_circuit_component(feedbacks_invc_lid_fb_index, primary_lv_feedback_enclosure_voltage_last_state->invc_lid);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_lid_fb_index, primary_lv_feedback_enclosure_voltage_last_state->invc_lid);
 }
 
 extern primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed;
@@ -528,19 +518,6 @@ void steer_angle_update() {
     GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", secondary_steer_angle_last_state->angle);
     set_tab_track_test_steering_angle_bar(secondary_steer_angle_last_state->angle);
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-    set_tab_calibration_lb_steering_angle(snprintf_buffer);
-    calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
-    if (*curr_focus == STEER) {
-        lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_SYMMETRICAL);
-        lv_slider_set_range(
-            get_tab_calibration_slider(),
-            STEERING_ANGLE_RANGE_LOW,
-            STEERING_ANGLE_RANGE_HIGH);  // se range 45 e max value 180 ->
-                                         // set_value ( 0.25 * gradi_inclinazione )
-        lv_slider_set_value(get_tab_calibration_slider(), secondary_steering_angle_last_state.angle, LV_ANIM_OFF);
-    }
-#endif
 }
 
 void pedals_output_update() {

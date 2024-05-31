@@ -132,6 +132,10 @@ void handle_primary(can_message_t *msg) {
             STEER_CAN_UNPACK(primary, PRIMARY, tlm_status, TLM_STATUS, is_pmsg_new, true);
             break;
         }
+        case PRIMARY_HV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_ts_voltage, HV_FEEDBACK_TS_VOLTAGE, is_pmsg_new, true);
+            break;
+        }
         // case PRIMARY_DAS_ERRORS_FRAME_ID: {
         // STEER_CAN_UNPACK(primary, PRIMARY, das_errors, DAS_ERRORS, is_pmsg_new);
         // break;

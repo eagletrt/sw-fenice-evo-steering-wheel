@@ -5,7 +5,6 @@
 #include "lvgl.h"
 #include "primary/primary_network.h"
 #include "secondary/secondary_network.h"
-#include "shutdown.h"
 #include "steering_config.h"
 #include "utils.h"
 
@@ -117,15 +116,7 @@ void all_leds_green(void);
 void all_leds_red(void);
 void tab_terminal_new_message(const char *message);
 void tab_terminal_clear(void);
-void tab_shutdown_update_shutdown_circuit(shutdown_component_state_t *);
 void set_ptt_button_pressed(bool);
-
-void set_lb_estimated_velocity(const char *s);
-void set_lb_apps(const char *s);
-void set_lb_bse(const char *s);
-
-void set_tab_calibration_lb_steering_angle(const char *s);
-void tab_calibration_lb_steering_angle_invalidate();
 
 /***
  * Tab racing
@@ -179,7 +170,7 @@ void set_balancing_column(bool balancing, uint8_t idx);
 void tab_hv_set_pork_speed_bar(int32_t, bool);
 void tab_hv_pork_speed_bar_invalidate();
 
-void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, float shutdown_circuit_state);
+void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close);
 
 /***
  * Tab lv

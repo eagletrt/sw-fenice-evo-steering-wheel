@@ -96,6 +96,31 @@ extern engineer_tab_t current_engineer_tab;
 extern bool engineer_mode;
 
 typedef enum {
+    shutdown_circuit_no_element_index = -1,
+    shutdown_circuit_sd_start_index,
+    shutdown_circuit_feedbacks_status_feedback_sd_in_index,
+    shutdown_circuit_feedbacks_status_feedback_sd_out_index,
+    shutdown_circuit_feedbacks_interlock_fb_index,
+    shutdown_circuit_ecu_feedbacks_sd_in_index,
+    shutdown_circuit_ecu_feedbacks_sd_cock_fb_index,
+    shutdown_circuit_ecu_feedbacks_sd_interial_fb_index,
+    shutdown_circuit_ecu_feedbacks_sd_bots_fb_index,
+    shutdown_circuit_feedbacks_invc_lid_fb_index,
+    shutdown_circuit_feedbacks_hvd_fb_index,
+    shutdown_circuit_feedbacks_bspd_fb_index,
+    shutdown_circuit_feedbacks_invc_interlock_fb_index,
+    shutdown_circuit_sd_end_index,
+    shutdown_circuit_feedbacks_status_feedback_sd_end_index,
+    shutdown_circuit_feedbacks_status_feedback_precharge_status_index,
+    shutdown_circuit_feedbacks_status_feedback_airp_gate_index,
+    shutdown_circuit_feedbacks_status_feedback_airn_gate_index,
+    //
+    SHUTDOWN_COMPONENT_SIZE
+} shutdown_circuit_indexes_t;
+
+typedef enum { SC_UNKNOWN, SC_OPEN, SC_CLOSE } shutdown_component_state_t;
+
+typedef enum {
     tab_rac_pack_voltage_idx,
     tab_rac_hv_curr_idx,
     tab_rac_best_time_idx,

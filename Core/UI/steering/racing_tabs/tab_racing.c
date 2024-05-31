@@ -224,8 +224,8 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(right_data_panel, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     /*inserting data into data right panel*/
-    lv_obj_t *trq =
-        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_km_counter_idx], "NA", &lv_font_inter_bold_38, "km counter", &lv_font_inter_bold_14);
+    lv_obj_t *trq = lv_vertical_pair_label(
+        right_data_panel, &tab_racing_labels[tab_rac_km_counter_idx], "NA", &lv_font_inter_bold_38, "km counter", &lv_font_inter_bold_14);
     lv_obj_set_grid_cell(trq, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *slip =
@@ -253,7 +253,14 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(lv_temp, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
     lv_obj_t *hv_temp = lv_triple_label(
-        right_data_panel, &tab_racing_labels[tab_rac_hv_avg_temp_idx], "NA", &lv_font_inter_bold_38, "°C", &lv_font_inter_bold_22, "HV", &lv_font_inter_bold_20);
+        right_data_panel,
+        &tab_racing_labels[tab_rac_hv_avg_temp_idx],
+        "NA",
+        &lv_font_inter_bold_38,
+        "°C",
+        &lv_font_inter_bold_22,
+        "HV",
+        &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(hv_temp, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
     // DATA CENTER

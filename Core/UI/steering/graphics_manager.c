@@ -90,6 +90,10 @@ void update_graphics(lv_timer_t *t) {
                     hv_errors_update();
                     break;
                 }
+                // case PRIMARY_HV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
+                // hv_feedback_ts_voltage_update();
+                // break;
+                // }
                 case PRIMARY_HV_BALANCING_STATUS_FRAME_ID: {
                     hv_cell_balancing_status_update();
                     break;

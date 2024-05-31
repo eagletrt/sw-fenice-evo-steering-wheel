@@ -55,6 +55,27 @@ lv_obj_t *balancing_columns[N_PORK_CELLBOARD] = {
     [5] = NULL,
 };
 
+static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][20] = {
+    "SD start",
+    "SD in",
+    "SD out",
+    "TSAC interlock",
+    "Mushroom L+R",
+    "Mushroom cock",
+    "Inertial switch",
+    "BOTS",
+    "INVC Lid",
+    "HVD",
+    "BSPD",
+    "INVC motos interlock",
+    "TSMS[LV]",
+    "TSMS[HV]",
+    "Precharge",
+    "AIR P",
+    "AIR N"};
+
+static shutdown_component_state_t shutdown_status_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
+
 const char *debug_signal_error_labels[] = {
     "cell low voltage",
     "cell under voltage",
@@ -177,6 +198,38 @@ void precharge_bar_insert(bool precharge) {
     } else {
         return;
     }
+}
+
+shutdown_circuit_indexes_t last_open_shutdown_circuit(void) {
+    for (int sdi = 0; sdi < SHUTDOWN_COMPONENT_SIZE; sdi++) {
+        if (shutdown_status_array[sdi] == SC_OPEN)
+            return sdi;
+    }
+    return shutdown_circuit_no_element_index;
+}
+
+shutdown_circuit_indexes_t last_shutdown_element_unknown(void) {
+    for (int sdi = 0; sdi < SHUTDOWN_COMPONENT_SIZE; sdi++) {
+        if (shutdown_status_array[sdi] == SC_UNKNOWN)
+            return sdi;
+    }
+    return shutdown_circuit_no_element_index;
+}
+
+void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close) {
+    shutdown_status_array[idx] = is_close;
+    shutdown_circuit_indexes_t last_opend_index;
+    if ((last_opend_index = last_shutdown_element_unknown()) != shutdown_circuit_no_element_index) {
+        char buf[64];
+        snprintf(buf, 64, "unknown %s", shutdown_labels[last_opend_index]);
+        set_tab_hv_label_text(buf, shutdown_status);
+        return;
+    }
+    if ((last_opend_index = last_open_shutdown_circuit()) != shutdown_circuit_no_element_index) {
+        set_tab_hv_label_text(shutdown_labels[last_opend_index], shutdown_status);
+        return;
+    }
+    set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status);
 }
 
 void init_hv_styles(void) {

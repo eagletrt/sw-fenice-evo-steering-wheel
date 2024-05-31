@@ -17,7 +17,7 @@ Then use the [stm32 vscode extension](https://marketplace.visualstudio.com/items
 
 ## Contributors
 
-[Giacomo Mazzucchi](https://github.com/tzarjakob)
+[Giacomo Mazzucchi](https://github.com/gmazzucchi)
 
 ## Licence
 
