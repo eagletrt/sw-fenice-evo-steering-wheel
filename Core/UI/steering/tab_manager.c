@@ -2,6 +2,8 @@
 #include "src/core/lv_disp.h"
 #include "src/core/lv_group.h"
 #include "src/core/lv_obj.h"
+#include "src/core/lv_obj_pos.h"
+#include "src/widgets/lv_label.h"
 #include "steering.h"
 
 lv_obj_t *tab_racing_ptr;
@@ -51,38 +53,34 @@ void load_current_racing_tab();
 void load_current_engineering_tab();
 
 void tab_manager(void) {
-    init_custom_styles();    
+    //init_custom_styles();    
 
     //tab_racing_ptr  = lv_obj_create(NULL);
 
-    tab_test_ptr = lv_obj_create(NULL);
+//    tab_test_ptr = lv_obj_create(NULL);
 
     /*Create a Tab view object*/
-    lv_obj_t *tabview;
-    tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 50);
+    // lv_obj_t *tabview;
+    // tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 50);
 
-    /*Add 3 tabs (the tabs are page (lv_page) and can be scrolled*/
-    lv_obj_t *tab1 = lv_tabview_add_tab(tabview, "Tab 1");
-    lv_obj_t *tab2 = lv_tabview_add_tab(tabview, "Tab 2");
-    lv_obj_t *tab3 = lv_tabview_add_tab(tabview, "Tab 3");
+    // /*Add 3 tabs (the tabs are page (lv_page) and can be scrolled*/
+    // lv_obj_t *tab1 = lv_tabview_add_tab(tabview, "Tab 1");
+    // lv_obj_t *tab2 = lv_tabview_add_tab(tabview, "Tab 2");
+    // lv_obj_t *tab3 = lv_tabview_add_tab(tabview, "Tab 3");
 
     /*Add content to the tabs*/
-    lv_obj_t * label = lv_label_create(tab1);
-    lv_label_set_text(label, "This the first tab\n\n"
-                             "If the content\n"
-                             "of a tab\n"
-                             "becomes too\n"
-                             "longer\n"
-                             "than the\n"
-                             "container\n"
-                             "then it\n"
-                             "automatically\n"
-                             "becomes\n"
-                             "scrollable.\n"
-                             "\n"
-                             "\n"
-                             "\n"
-                             "Can you see it?");
+    // lv_obj_t * label = lv_label_create(tabview);
+    
+    // lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+    // lv_obj_set_width(label, 50);
+
+    // lv_label_set_text(label, "This the first tab. C'era una volta la vacca vittoria, muore la vacca finisce la storia. DAJE ROMA DAJE FORZA LUPI FORZA RAGAZZI DAJE");
+    
+    lv_obj_t * label2 = lv_label_create(lv_scr_act());
+    lv_label_set_long_mode(label2, LV_LABEL_LONG_SCROLL_CIRCULAR);     /*Circular scroll*/
+    lv_obj_set_width(label2, 150);
+    lv_label_set_text(label2, "It is a circularly scrolling text. ");
+    lv_obj_align(label2, LV_ALIGN_CENTER, 0, 200);
 
     /*Create a spinner*/
     // lv_obj_t * spinner = lv_spinner_create(tab1, 1000,60);
@@ -140,52 +138,52 @@ void tab_manager(void) {
     // lv_anim_start(&a);
     
 
-    meter = lv_meter_create(lv_scr_act());
-    lv_obj_center(meter);
-    lv_obj_set_size(meter, 200, 200);
+    // meter = lv_meter_create(lv_scr_act());
+    // lv_obj_center(meter);
+    // lv_obj_set_size(meter, 200, 200);
 
-    /*Add a scale first*/
-    lv_meter_scale_t * scale = lv_meter_add_scale(meter);
-    lv_meter_set_scale_ticks(meter, scale, 41, 2, 10, lv_palette_main(LV_PALETTE_GREY));
-    lv_meter_set_scale_major_ticks(meter, scale, 8, 4, 15, lv_color_black(), 10);
+    // /*Add a scale first*/
+    // lv_meter_scale_t * scale = lv_meter_add_scale(meter);
+    // lv_meter_set_scale_ticks(meter, scale, 41, 2, 10, lv_palette_main(LV_PALETTE_GREY));
+    // lv_meter_set_scale_major_ticks(meter, scale, 8, 4, 15, lv_color_black(), 10);
 
-    lv_meter_indicator_t * indic;
+    // lv_meter_indicator_t * indic;
 
-    /*Add a blue arc to the start*/
-    indic = lv_meter_add_arc(meter, scale, 3, lv_palette_main(LV_PALETTE_BLUE), 0);
-    lv_meter_set_indicator_start_value(meter, indic, 0);
-    lv_meter_set_indicator_end_value(meter, indic, 20);
+    // /*Add a blue arc to the start*/
+    // indic = lv_meter_add_arc(meter, scale, 3, lv_palette_main(LV_PALETTE_BLUE), 0);
+    // lv_meter_set_indicator_start_value(meter, indic, 0);
+    // lv_meter_set_indicator_end_value(meter, indic, 20);
 
-    /*Make the tick lines blue at the start of the scale*/
-    indic = lv_meter_add_scale_lines(meter, scale, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_BLUE), false, 0);
-    lv_meter_set_indicator_start_value(meter, indic, 0);
-    lv_meter_set_indicator_end_value(meter, indic, 20);
+    // /*Make the tick lines blue at the start of the scale*/
+    // indic = lv_meter_add_scale_lines(meter, scale, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_BLUE), false, 0);
+    // lv_meter_set_indicator_start_value(meter, indic, 0);
+    // lv_meter_set_indicator_end_value(meter, indic, 20);
 
-    /*Add a red arc to the end*/
-    indic = lv_meter_add_arc(meter, scale, 3, lv_palette_main(LV_PALETTE_RED), 0);
-    lv_meter_set_indicator_start_value(meter, indic, 80);
-    lv_meter_set_indicator_end_value(meter, indic, 100);
+    // /*Add a red arc to the end*/
+    // indic = lv_meter_add_arc(meter, scale, 3, lv_palette_main(LV_PALETTE_RED), 0);
+    // lv_meter_set_indicator_start_value(meter, indic, 80);
+    // lv_meter_set_indicator_end_value(meter, indic, 100);
 
-    /*Make the tick lines red at the end of the scale*/
-    indic = lv_meter_add_scale_lines(meter, scale, lv_palette_main(LV_PALETTE_RED), lv_palette_main(LV_PALETTE_RED), false, 0);
-    lv_meter_set_indicator_start_value(meter, indic, 80);
-    lv_meter_set_indicator_end_value(meter, indic, 100);
+    // /*Make the tick lines red at the end of the scale*/
+    // indic = lv_meter_add_scale_lines(meter, scale, lv_palette_main(LV_PALETTE_RED), lv_palette_main(LV_PALETTE_RED), false, 0);
+    // lv_meter_set_indicator_start_value(meter, indic, 80);
+    // lv_meter_set_indicator_end_value(meter, indic, 100);
 
-    /*Add a needle line indicator*/
-    indic = lv_meter_add_needle_line(meter, scale, 4, lv_palette_main(LV_PALETTE_GREY), -10);
+    // /*Add a needle line indicator*/
+    // indic = lv_meter_add_needle_line(meter, scale, 4, lv_palette_main(LV_PALETTE_GREY), -10);
 
-    /*Create an animation to set the value*/
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_exec_cb(&a, set_value);
-    lv_anim_set_var(&a, indic);
-    lv_anim_set_values(&a, 0, 100);
-    lv_anim_set_time(&a, 2000);
-    lv_anim_set_repeat_delay(&a, 100);
-    lv_anim_set_playback_time(&a, 500);
-    lv_anim_set_playback_delay(&a, 100);
-    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&a);
+    // /*Create an animation to set the value*/
+    // lv_anim_t a;
+    // lv_anim_init(&a);
+    // lv_anim_set_exec_cb(&a, set_value);
+    // lv_anim_set_var(&a, indic);
+    // lv_anim_set_values(&a, 0, 100);
+    // lv_anim_set_time(&a, 2000);
+    // lv_anim_set_repeat_delay(&a, 100);
+    // lv_anim_set_playback_time(&a, 500);
+    // lv_anim_set_playback_delay(&a, 100);
+    // lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+    // lv_anim_start(&a);
 
 
 
