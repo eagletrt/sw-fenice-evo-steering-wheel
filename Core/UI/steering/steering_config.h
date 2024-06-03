@@ -19,9 +19,9 @@
  * Should not be a problem with watchdog enabled
  */
 #define STRICT_RELOAD_ALL_ENABLED 0
+
 /***
  * Activate candump in the engineering tabs
- * To date, it is very memory inefficient, so use only if strictly necessary
  */
 #define CANSNIFFER_ENABLED      1
 #define CAN_LOG_ENABLED         0

@@ -6,10 +6,6 @@ inverters_watchdog m_inverters_watchdog = {0};
 
 lv_timer_t *watchdog_task;
 
-can_id_t primary_watchdog_monitored_ids[primary_MESSAGE_COUNT];
-can_id_t secondary_watchdog_monitored_ids[secondary_MESSAGE_COUNT];
-can_id_t inverter_watchdog_monitored_ids[inverters_MESSAGE_COUNT];
-
 void init_watchdog(void) {
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; ++iindex) {
         CANLIB_BITSET_ARRAY(m_primary_watchdog.activated, iindex);
@@ -47,7 +43,7 @@ void watchdog_task_fn(lv_timer_t *tim) {
                     break;
                 }
                 default:
-                    memset(&primary_messages_last_state[primary_index_from_id(id)][0], 0, primary_MAX_STRUCT_SIZE_CONVERSION);
+                    memset(&primary_messages_last_state[iindex][0], 0, primary_MAX_STRUCT_SIZE_CONVERSION);
                     break;
             }
         }

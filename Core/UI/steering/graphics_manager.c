@@ -3,6 +3,10 @@
 lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
 lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
+// extern primary_watchdog m_primary_watchdog;
+// extern secondary_watchdog m_secondary_watchdog;
+// extern inverters_watchdog m_inverters_watchdog;
+
 bool is_pmsg_new[primary_MESSAGE_COUNT];
 bool is_smsg_new[secondary_MESSAGE_COUNT];
 bool is_imsg_new[inverters_MESSAGE_COUNT];
@@ -46,6 +50,7 @@ void update_graphics(lv_timer_t *t) {
 
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {
         if (is_pmsg_new[iindex]) {
+            // primary_watchdog_reset(&m_primary_watchdog, primary_id_from_index(iindex), get_current_time_ms());
             is_pmsg_new[iindex] = false;
             can_id_t id         = primary_id_from_index(iindex);
             switch (id) {

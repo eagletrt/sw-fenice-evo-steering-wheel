@@ -191,7 +191,7 @@ void switch_mode(void) {
 void load_current_racing_tab() {
     switch (current_racing_tab) {
         case STEERING_WHEEL_TAB_RACING:
-            tab_racing_resync();
+            // tab_racing_resync();
             lv_scr_load(tab_racing_ptr);
             break;
 #if STEER_TAB_CALIBRATION_ENABLED == 1
@@ -205,19 +205,19 @@ void load_current_racing_tab() {
             break;
 #endif
         case STEERING_WHEEL_TAB_TRACK_TEST:
-            tab_track_test_resync();
+            // tab_track_test_resync();
             lv_scr_load(tab_track_test_ptr);
             break;
         case STEERING_WHEEL_TAB_SENSORS:
-            tab_sensor_resync();
+            // tab_sensor_resync();
             lv_scr_load(tab_sensors_ptr);
             break;
         case STEERING_WHEEL_TAB_HV:
-            tab_hv_resync();
+            // tab_hv_resync();
             lv_scr_load(tab_hv_ptr);
             break;
         case STEERING_WHEEL_TAB_LV:
-            tab_lv_resync();
+            // tab_lv_resync();
             lv_scr_load(tab_lv_ptr);
             break;
         default:

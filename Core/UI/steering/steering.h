@@ -53,9 +53,12 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 #define STEER_ERROR_INVALIDATE(device, error_name, aindex) \
     lv_obj_set_style_bg_color(steering.device[aindex], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
 
-#define CHECK_CURRENT_TAB(condition, mod, curr)                  \
-    if ((condition) || (current_##mod##_tab != curr)) \
-    return
+
+// #define CHECK_CURRENT_TAB(condition, mod, curr)                  \
+    // if ((condition) || (current_##mod##_tab != curr)) \
+    // return
+
+#define CHECK_CURRENT_TAB(condition, mod, curr) (void) 0;
 
 /*
  * UPDATE

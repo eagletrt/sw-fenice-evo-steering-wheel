@@ -70,6 +70,7 @@ void handle_primary(can_message_t *msg) {
     primary_message_name_from_id(msg->id, name_buffer);
     print("Primary network - message id %s\n", name_buffer);
 #endif
+    
     can_id_t id = msg->id;
     switch (id) {
         case PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID:
