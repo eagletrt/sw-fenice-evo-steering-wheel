@@ -136,6 +136,19 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32H723xx
 
+CUSTOM_INCLUDES = \
+$(addprefix -I,$(shell find Inc -type d)) \
+$(addprefix -I,$(shell find Core\Src -type d)) \
+$(addprefix -I,$(shell find Core\Inc -type d)) \
+$(addprefix -I,$(shell find Src -type d)) \
+$(addprefix -I,$(shell find Drivers/STM32H7xx_HAL_Driver/Inc -type d)) \
+$(addprefix -I,$(shell find Drivers/STM32H7xx_HAL_Driver/Inc/Legacy -type d)) \
+$(addprefix -I,$(shell find Drivers/CMSIS/Device/ST/STM32H7xx/Include -type d)) \
+$(addprefix -I,$(shell find Drivers/CMSIS/Include -type d)) \
+$(addprefix -I,$(shell find Core/Lib/lvgl-stm32/lvgl -type d)) \
+$(addprefix -I,$(shell find Core/UI/steering -type d)) \
+$(addprefix -I,$(shell find Core/Lib/can/lib -type d)) \
+$(addprefix -I,$(shell find Core/Lib/micro-libs/min-heap/inc -type d))
 
 # AS includes
 AS_INCLUDES = 
@@ -152,7 +165,7 @@ C_INCLUDES =  \
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(CUSTOM_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -212,6 +225,19 @@ $(BUILD_DIR):
 #######################################
 clean:
 	-rm -fR $(BUILD_DIR)
+
+#######################################
+# flash
+#######################################
+flash: $(BUILD_DIR)/$(TARGET).elf
+	openocd -f ./openocd.cfg -c "program $< verify reset exit"
+
+#######################################
+# Debug
+#######################################
+debug: $(BUILD_DIR)/$(TARGET).elf
+	$(PREFIX)gdb --eval-command="target extended-remote :3333" $<
+    
   
 #######################################
 # dependencies

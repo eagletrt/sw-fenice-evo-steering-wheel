@@ -1,5 +1,8 @@
 #include "graphics_manager.h"
 
+#include "src/core/lv_obj.h"
+#include "src/core/lv_obj_pos.h"
+
 lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
 lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
@@ -17,17 +20,19 @@ void init_graphics_manager(void) {
     screen_driver_init();
 #endif
     tab_manager();
+
+    // lv_obj_t * label1 = lv_label_create(NULL);
+    // lv_label_set_long_mode(label1, LV_LABEL_LONG_WRAP);     /*Break the long lines*/
+    // lv_label_set_text(label1, "Recolor is not supported for v9 now.");
+    // lv_obj_set_width(label1, 150);  /*Set smaller width to make the lines wrap*/
+    // lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
+    // lv_obj_align(label1, LV_ALIGN_CENTER, 0, -40);
+    // lv_scr_load(label1);
 }
 
 void refresh_graphics(void) {
 #ifdef STM32H723xx
-#if LV_TICK_CUSTOM == 1
     lv_timer_handler();
-#else
-    uint32_t ctick = HAL_GetTick();
-    lv_tick_inc(ctick - *ptick);
-    *ptick = ctick;
-#endif
 #endif
 }
 

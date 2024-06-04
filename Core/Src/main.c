@@ -159,6 +159,7 @@ int main(void) {
 
     init_graphics_manager();
     init_periodic_can_messages_timers();
+    lv_tick_set_cb(HAL_GetTick);
 
     lv_timer_t *graphics_updater_task = lv_timer_create(update_graphics, 100, NULL);
     lv_timer_set_repeat_count(graphics_updater_task, -1);
