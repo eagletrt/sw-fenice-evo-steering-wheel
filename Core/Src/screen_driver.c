@@ -13,6 +13,8 @@ an array of 16 bits but the transfers are 32 bits. */
 extern LTDC_HandleTypeDef hltdc;
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 extern DMA2D_HandleTypeDef hdma2d;
+
+//Frame buffers
 extern lv_color_t *framebuffer_1;
 extern lv_color_t *framebuffer_2;
 
