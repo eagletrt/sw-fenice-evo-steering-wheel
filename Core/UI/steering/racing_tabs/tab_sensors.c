@@ -18,6 +18,10 @@ lv_obj_t *tab_sensors_labels[tab_sensors_labels_n] = {
     [tab_sensors_lb_right_motor_temp]    = NULL,
     [tab_sensors_lb_left_inverter_temp]  = NULL,
     [tab_sensors_lb_left_motor_temp]     = NULL,
+    [tab_sensors_lb_tlm_ntw_interface_0] = NULL,
+    [tab_sensors_lb_tlm_ntw_interface_1] = NULL,
+    [tab_sensors_lb_tlm_ntw_interface_2] = NULL,
+    [tab_sensors_lb_tlm_ntw_interface_3] = NULL,
 };
 
 void set_tab_sensors_label_text(const char *s, tab_sensors_labels_enum idx) {
@@ -301,7 +305,7 @@ void tab_sensors_create(lv_obj_t *parent) {
     /*--- DATA PANEL: cell 0,1 ---*/
 
     static lv_coord_t rxd_panel_cols[] = {415 / 4, 415 / 4, 415 / 4, 415 / 4, LV_GRID_TEMPLATE_LAST};
-    static lv_coord_t rxd_panel_rows[] = {DATA_PANEL_HEIGHT / 4, LV_GRID_TEMPLATE_LAST};
+    static lv_coord_t rxd_panel_rows[] = {DATA_PANEL_HEIGHT / 4, DATA_PANEL_HEIGHT / 4, DATA_PANEL_HEIGHT / 4, DATA_PANEL_HEIGHT / 4, LV_GRID_TEMPLATE_LAST};
 
     lv_obj_t *right_data_panel = lv_obj_create(data_panel);
     lv_obj_set_layout(right_data_panel, LV_LAYOUT_GRID);
@@ -361,6 +365,78 @@ void tab_sensors_create(lv_obj_t *parent) {
         "MOTOR R",
         &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(motor_r_temp_lb, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+
+    /* 2nd row */
+
+    lv_obj_t *tlm_ntw_intf0 = lv_triple_label(
+        right_data_panel,
+        &tab_sensors_labels[tab_sensors_lb_tlm_ntw_interface_0],
+        "NA",
+        &lv_font_inter_bold_20,
+        "",
+        &lv_font_inter_bold_22,
+        "INTERFACE 1",
+        &lv_font_inter_bold_20);
+    lv_obj_set_grid_cell(tlm_ntw_intf0, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 1, 1);
+
+    lv_obj_t *tlm_ntw_intf1 = lv_triple_label(
+        right_data_panel,
+        &tab_sensors_labels[tab_sensors_lb_tlm_ntw_interface_1],
+        "NA",
+        &lv_font_inter_bold_20,
+        "",
+        &lv_font_inter_bold_22,
+        "INTERFACE 2",
+        &lv_font_inter_bold_20);
+    lv_obj_set_grid_cell(tlm_ntw_intf1, LV_GRID_ALIGN_CENTER, 2, 2, LV_GRID_ALIGN_CENTER, 1, 1);
+
+    /* 3rd row */
+
+    lv_obj_t *tlm_ntw_intf2 = lv_triple_label(
+        right_data_panel,
+        &tab_sensors_labels[tab_sensors_lb_tlm_ntw_interface_2],
+        "NA",
+        &lv_font_inter_bold_20,
+        "",
+        &lv_font_inter_bold_22,
+        "INTERFACE 3",
+        &lv_font_inter_bold_20);
+    lv_obj_set_grid_cell(tlm_ntw_intf2, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 2, 1);
+
+    lv_obj_t *tlm_ntw_intf3 = lv_triple_label(
+        right_data_panel,
+        &tab_sensors_labels[tab_sensors_lb_tlm_ntw_interface_3],
+        "NA",
+        &lv_font_inter_bold_20,
+        "",
+        &lv_font_inter_bold_22,
+        "INTERFACE 4",
+        &lv_font_inter_bold_20);
+    lv_obj_set_grid_cell(tlm_ntw_intf3, LV_GRID_ALIGN_CENTER, 2, 2, LV_GRID_ALIGN_CENTER, 2, 1);
+
+    /* 4th row */
+
+    lv_obj_t *tlm_ntw_intf4 = lv_triple_label(
+        right_data_panel,
+        &tab_sensors_labels[tab_sensors_lb_tlm_ntw_interface_4],
+        "NA",
+        &lv_font_inter_bold_20,
+        "",
+        &lv_font_inter_bold_22,
+        "INTERFACE 5",
+        &lv_font_inter_bold_20);
+    lv_obj_set_grid_cell(tlm_ntw_intf4, LV_GRID_ALIGN_CENTER, 0, 2, LV_GRID_ALIGN_CENTER, 3, 1);
+
+    lv_obj_t *tlm_ntw_intf5 = lv_triple_label(
+        right_data_panel,
+        &tab_sensors_labels[tab_sensors_lb_tlm_ntw_interface_5],
+        "NA",
+        &lv_font_inter_bold_20,
+        "",
+        &lv_font_inter_bold_22,
+        "INTERFACE 6",
+        &lv_font_inter_bold_20);
+    lv_obj_set_grid_cell(tlm_ntw_intf5, LV_GRID_ALIGN_CENTER, 2, 2, LV_GRID_ALIGN_CENTER, 3, 1);
 
     /* --- BARS PANEL --- */
 

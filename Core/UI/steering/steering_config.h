@@ -46,7 +46,11 @@
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 480
 
+/***
+ * General configurations 
+*/
 #define HV_BUS_VOLTAGE_LIMIT (450U)
+#define TLM_NTW_INTERFACE_MAX_N (6U)
 
 /**
  * 0 = INT1 -> buttons <br>
@@ -153,6 +157,12 @@ typedef enum {
     tab_sensors_lb_right_motor_temp,
     tab_sensors_lb_left_inverter_temp,
     tab_sensors_lb_left_motor_temp,
+    tab_sensors_lb_tlm_ntw_interface_0,
+    tab_sensors_lb_tlm_ntw_interface_1,
+    tab_sensors_lb_tlm_ntw_interface_2,
+    tab_sensors_lb_tlm_ntw_interface_3,
+    tab_sensors_lb_tlm_ntw_interface_4,
+    tab_sensors_lb_tlm_ntw_interface_5,
     tab_sensors_labels_n
 } tab_sensors_labels_enum;
 

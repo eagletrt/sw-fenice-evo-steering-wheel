@@ -122,6 +122,9 @@ SDL_Thread *thread_id_1;
  **********************/
 
 #ifdef SIMULATOR_CAN
+/***
+ * TODO: FIX: here every can messages is parsed both from primary and secondary network, please somebody fixes that
+*/
 void canread(thread_data_t *thread_data) {
     struct can_frame frame;
     can_message_t msg;

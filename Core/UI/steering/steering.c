@@ -23,6 +23,10 @@ primary_lv_cells_voltage_converted_t lv_voltages_stock_2 = {0};
 primary_lv_cells_temp_converted_t lv_temps_stock_1       = {0};
 primary_lv_cells_temp_converted_t lv_temps_stock_2       = {0};
 
+size_t tlm_ntw_interfaces_current_size               = 0;
+uint32_t tlm_ntw_interfaces[TLM_NTW_INTERFACE_MAX_N] = {0};
+uint32_t tlm_ntw_ips[TLM_NTW_INTERFACE_MAX_N]        = {0};
+
 uint32_t timestamp_start_lap = 0;
 
 void car_status_update() {
@@ -538,6 +542,25 @@ void pedals_output_update() {
         lv_slider_set_value(get_tab_calibration_slider(), secondary_pedals_output_last_state->bse_front, LV_ANIM_OFF);
     }
 #endif
+}
+
+void tlm_network_interface_update(void) {
+    for (size_t i = 0; i < tlm_ntw_interfaces_current_size; i++) {
+        size_t to_send = snprintf(
+            snprintf_buffer,
+            SNPRINTF_BUFFER_SIZE,
+            "%c%c%c%c %hhu %hhu %hhu %hhu",
+            (char)(tlm_ntw_interfaces[i] >> 24),
+            (char)(tlm_ntw_interfaces[i] >> 16),
+            (char)(tlm_ntw_interfaces[i] >> 8),
+            (char)(tlm_ntw_interfaces[i]),
+            (tlm_ntw_ips[i] >> 24),
+            (tlm_ntw_ips[i] >> 16),
+            (tlm_ntw_ips[i] >> 8),
+            (tlm_ntw_ips[i]));
+        size_t index_to_update = LV_MIN(tab_sensors_lb_tlm_ntw_interface_0 + TLM_NTW_INTERFACE_MAX_N - 1, tab_sensors_lb_tlm_ntw_interface_0 + i);
+        set_tab_sensors_label_text(snprintf_buffer, index_to_update);
+    }
 }
 
 void imu_acceleration_update() {

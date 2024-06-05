@@ -18,11 +18,14 @@ extern primary_lv_cells_voltage_converted_t lv_voltages_stock_2;
 extern primary_lv_cells_temp_converted_t lv_temps_stock_1;
 extern primary_lv_cells_temp_converted_t lv_temps_stock_2;
 
+extern size_t tlm_ntw_interfaces_current_size;
+extern uint32_t tlm_ntw_interfaces[TLM_NTW_INTERFACE_MAX_N];
+extern uint32_t tlm_ntw_ips[TLM_NTW_INTERFACE_MAX_N];
+
 bool can_send(can_message_t *msg, bool to_primary_network);
 
 void send_steer_version(lv_timer_t *);
 void send_steer_status(lv_timer_t *);
-void pedal_calibration_ack();
 void handle_ptt_message();
 void send_bal(bool on);
 

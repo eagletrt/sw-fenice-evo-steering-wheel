@@ -139,8 +139,12 @@ sourceFiles:
   - Core/Src/**
   - Core/Lib/lvgl-stm32/lvgl/src/**/*.c
   - Core/UI/steering/**/*.c
-  - Core/Lib/can/lib/**/*_network.c
-  - Core/Lib/can/lib/**/*_watchdog.c
+  - Core/Lib/can/lib/primary/primary_network.c
+  # - Core/Lib/can/lib/primary/primary_watchdog.c
+  - Core/Lib/can/lib/secondary/secondary_network.c
+  # - Core/Lib/can/lib/secondary/secondary_watchdog.c
+  - Core/Lib/can/lib/inverters/inverters_network.c
+  # - Core/Lib/can/lib/inverters/inverters_watchdog.c
   - Core/Lib/micro-libs/min-heap/src/*.c
 
 

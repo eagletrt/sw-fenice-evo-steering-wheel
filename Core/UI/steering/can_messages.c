@@ -5,9 +5,11 @@
 extern bool steering_initialized;
 extern primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state;
 
+#if WATCHDOG_ENABLED == 1
 extern primary_watchdog m_primary_watchdog;
 extern secondary_watchdog m_secondary_watchdog;
 extern inverters_watchdog m_inverters_watchdog;
+#endif
 
 extern bool is_pmsg_new[primary_MESSAGE_COUNT];
 extern bool is_smsg_new[secondary_MESSAGE_COUNT];
@@ -70,7 +72,7 @@ void handle_primary(can_message_t *msg) {
     primary_message_name_from_id(msg->id, name_buffer);
     print("Primary network - message id %s\n", name_buffer);
 #endif
-    
+
     can_id_t id = msg->id;
     switch (id) {
         case PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID:
@@ -215,8 +217,10 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case INVERTERS_INV_L_RCV_FRAME_ID: {
+#if WATCHDOG_ENABLED == 1
             inverters_watchdog_reset(&m_inverters_watchdog, inverters_index_from_id(msg->id), get_current_time_ms());
             inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
+#endif
             inverters_inv_l_rcv_t raw;
             inverters_inv_l_rcv_converted_t converted;
             inverters_inv_l_rcv_unpack(&raw, msg->data, INVERTERS_INV_L_RCV_BYTE_SIZE);
@@ -233,8 +237,10 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case INVERTERS_INV_R_RCV_FRAME_ID: {
+#if WATCHDOG_ENABLED == 1
             inverters_watchdog_reset(&m_inverters_watchdog, inverters_index_from_id(msg->id), get_current_time_ms());
             inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
+#endif
             inverters_inv_r_rcv_t raw;
             inverters_inv_r_rcv_converted_t converted;
             inverters_inv_r_rcv_unpack(&raw, msg->data, INVERTERS_INV_R_RCV_BYTE_SIZE);
@@ -362,6 +368,29 @@ void handle_secondary(can_message_t *msg) {
         }
         case SECONDARY_IRTS_RR_3_FRAME_ID: {
             STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_3, IRTS_RR_3, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_TLM_NETWORK_INTERFACE_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, tlm_network_interface, TLM_NETWORK_INTERFACE, is_smsg_new, true);
+            uint32_t interface_name = converted.iname_3;
+            interface_name |= ((uint32_t)converted.iname_2) << 8;
+            interface_name |= ((uint32_t)converted.iname_1) << 16;
+            interface_name |= ((uint32_t)converted.iname_0) << 24;
+            int tlm_ntw_index = -1;
+            for (size_t i = 0; i < tlm_ntw_interfaces_current_size; i++) {
+                if (tlm_ntw_interfaces[i] == interface_name) {
+                    tlm_ntw_index = i;
+                    break;
+                }
+            }
+            if (tlm_ntw_index == -1) {
+                if (tlm_ntw_interfaces_current_size == TLM_NTW_INTERFACE_MAX_N)
+                    return;
+                tlm_ntw_index = tlm_ntw_interfaces_current_size;
+                tlm_ntw_interfaces_current_size++;
+            }
+            tlm_ntw_interfaces[tlm_ntw_index] = interface_name;
+            tlm_ntw_ips[tlm_ntw_index]        = converted.ip_address;
             break;
         }
         default:

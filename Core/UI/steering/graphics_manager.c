@@ -50,7 +50,6 @@ void update_graphics(lv_timer_t *t) {
 
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {
         if (is_pmsg_new[iindex]) {
-            // primary_watchdog_reset(&m_primary_watchdog, primary_id_from_index(iindex), get_current_time_ms());
             is_pmsg_new[iindex] = false;
             can_id_t id         = primary_id_from_index(iindex);
             switch (id) {
@@ -167,13 +166,13 @@ void update_graphics(lv_timer_t *t) {
                 default:
                     break;
             }
-            is_pmsg_new[iindex] = false;
         }
     }
 
     for (uint16_t iindex = 0; iindex < inverters_MESSAGE_COUNT; iindex++) {
         if (is_imsg_new[iindex]) {
-            can_id_t id = inverters_id_from_index(iindex);
+            is_imsg_new[iindex] = false;
+            can_id_t id         = inverters_id_from_index(iindex);
             switch (id) {
                 case INVERTERS_INV_L_RCV_FRAME_ID:
                     inv_l_rcv_update();
@@ -184,13 +183,13 @@ void update_graphics(lv_timer_t *t) {
                 default:
                     break;
             }
-            is_pmsg_new[iindex] = false;
         }
     }
 
     for (uint16_t iindex = 0; iindex < secondary_MESSAGE_COUNT; iindex++) {
         if (is_smsg_new[iindex]) {
-            can_id_t id = secondary_id_from_index(iindex);
+            is_smsg_new[iindex] = false;
+            can_id_t id         = secondary_id_from_index(iindex);
             switch (id) {
                 case SECONDARY_ANGULAR_VELOCITY_FRAME_ID: {
                     angular_velocity_update();
@@ -206,6 +205,10 @@ void update_graphics(lv_timer_t *t) {
                 // }
                 case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
                     imu_acceleration_update();
+                    break;
+                }
+                case SECONDARY_TLM_NETWORK_INTERFACE_FRAME_ID: {
+                    tlm_network_interface_update();
                     break;
                 }
                 // TODO RICKY
@@ -249,7 +252,6 @@ void update_graphics(lv_timer_t *t) {
                 default:
                     break;
             }
-            is_pmsg_new[iindex] = false;
         }
     }
 }
