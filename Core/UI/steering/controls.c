@@ -57,6 +57,58 @@ void turn_telemetry_on_off(void) {
     can_send(&msg, true);
 }
 
+
+void help(void) {
+    if (engineer_mode) {
+    } else {
+        switch (current_racing_tab) {
+            case STEERING_WHEEL_TAB_RACING: {
+                display_notification(
+                    "telemetry | -\n"
+                    "help      | -\n"
+                    "torque | tson | slip",
+                    4000);
+                break;
+            }
+            case STEERING_WHEEL_TAB_TRACK_TEST: {
+                display_notification(
+                    "  set target  | -\n"
+                    "         help | -\n\n"
+                    "       - | - | -",
+                    4000);
+                break;
+            }
+            case STEERING_WHEEL_TAB_SENSORS: {
+                display_notification(
+                    "  -  | -\n"
+                    "  help | -\n\n"
+                    "- | - | -",
+                    4000);
+                break;
+            }
+            case STEERING_WHEEL_TAB_HV: {
+                display_notification(
+                    "balancing | -\n"
+                    "   help   | -\n\n"
+                    "bal thres  | - | slip",
+                    4000);
+                break;
+            }
+            case STEERING_WHEEL_TAB_LV: {
+                display_notification(
+                    "     - | -\n"
+                    "     - | -\n\n"
+                    "pumps | - | radiators",
+                    4000);
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+}
+
 void manettino_right_actions(int dsteps) {
     if (dsteps == 0) {
         return;
@@ -252,23 +304,11 @@ void set_cooling_auto_mode() {
 void buttons_pressed_actions(uint8_t button) {
     switch (button) {
         case PADDLE_TOP_RIGHT: {
-            if (engineer_mode) {
-                set_ptt_button_pressed(true);
-            } else {
-#if CANSNIFFER_ENABLED == 1
-                change_cansniffer_index(true);
-#endif
-            }
+            set_ptt_button_pressed(true);
             break;
         }
         case PADDLE_TOP_LEFT: {
-            if (engineer_mode) {
-                set_ptt_button_pressed(true);
-            } else {
-#if CANSNIFFER_ENABLED == 1
-                change_cansniffer_index(false);
-#endif
-            }
+            set_ptt_button_pressed(true);
             break;
         }
         case PADDLE_BOTTOM_RIGHT: {
@@ -319,7 +359,7 @@ void buttons_pressed_actions(uint8_t button) {
         case BUTTON_BOTTOM_RIGHT:
             break;
         case BUTTON_BOTTOM_LEFT: {
-            // help();
+            help();
 #if 0
                 if (current_racing_tab == STEERING_WHEEL_TAB_RACING) {
                     switch (left_manettino_selection) {
@@ -352,8 +392,10 @@ void buttons_pressed_actions(uint8_t button) {
 void buttons_released_actions(uint8_t button) {
     switch (button) {
         case PADDLE_TOP_RIGHT:
+            set_ptt_button_pressed(false);
             break;
         case PADDLE_TOP_LEFT:
+            set_ptt_button_pressed(false);
             break;
         case PADDLE_BOTTOM_RIGHT:
             break;
@@ -362,7 +404,6 @@ void buttons_released_actions(uint8_t button) {
         case BUTTON_TOP_RIGHT:
             break;
         case BUTTON_TOP_LEFT:
-            set_ptt_button_pressed(false);
             break;
         case BUTTON_BOTTOM_RIGHT:
             break;
@@ -374,13 +415,14 @@ void buttons_released_actions(uint8_t button) {
 void buttons_long_pressed_actions(uint8_t button) {
     switch (button) {
         case PADDLE_TOP_RIGHT:
-            switch_mode();
             break;
         case PADDLE_TOP_LEFT:
             break;
         case PADDLE_BOTTOM_RIGHT:
+            switch_mode();
             break;
         case PADDLE_BOTTOM_LEFT:
+            switch_mode();
             break;
         case BUTTON_TOP_RIGHT:
             break;
