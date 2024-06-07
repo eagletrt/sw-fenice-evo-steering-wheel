@@ -478,29 +478,6 @@ void set_label_color_hv_errors(int label, int i) {
 #endif
 }
 
-void hv_errors_update() {
-#if STEER_TAB_DEBUG_ENABLED == 1
-    // could be used enum_to_string but same outcome with still same number of
-    // lines
-    set_label_color_hv_errors(hv_errors_last_state.errors_cell_low_voltage, 0);
-    set_label_color_hv_errors(hv_errors_last_state.errors_cell_under_voltage, 1);
-    set_label_color_hv_errors(hv_errors_last_state.errors_cell_over_voltage, 2);
-    set_label_color_hv_errors(hv_errors_last_state.errors_cell_high_temperature, 3);
-    set_label_color_hv_errors(hv_errors_last_state.errors_cell_over_temperature, 4);
-    set_label_color_hv_errors(hv_errors_last_state.errors_over_current, 5);
-    set_label_color_hv_errors(hv_errors_last_state.errors_can, 6);
-    set_label_color_hv_errors(hv_errors_last_state.errors_int_voltage_mismatch, 7);
-    set_label_color_hv_errors(hv_errors_last_state.errors_cellboard_comm, 8);
-    set_label_color_hv_errors(hv_errors_last_state.errors_cellboard_internal, 9);
-    set_label_color_hv_errors(hv_errors_last_state.errors_connector_disconnected, 10);
-    set_label_color_hv_errors(hv_errors_last_state.errors_fans_disconnected, 11);
-    set_label_color_hv_errors(hv_errors_last_state.errors_feedback, 12);
-    set_label_color_hv_errors(hv_errors_last_state.errors_feedback_circuitry, 13);
-    set_label_color_hv_errors(hv_errors_last_state.errors_eeprom_comm, 14);
-    set_label_color_hv_errors(hv_errors_last_state.errors_eeprom_write, 15);
-#endif
-}
-
 void set_label_color_das_errors(bool label, int i) {
 #if STEER_TAB_DEBUG_ENABLED == 1
     if (label) {

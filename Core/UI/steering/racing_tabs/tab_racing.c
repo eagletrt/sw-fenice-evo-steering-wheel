@@ -224,12 +224,12 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(right_data_panel, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     /*inserting data into data right panel*/
-    lv_obj_t *trq = lv_vertical_pair_label(
-        right_data_panel, &tab_racing_labels[tab_rac_km_counter_idx], "NA", &lv_font_inter_bold_38, "km counter", &lv_font_inter_bold_14);
+    lv_obj_t *trq =
+        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_km_counter_idx], "NA", &lv_font_inter_bold_38, "unused", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(trq, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *slip =
-        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_ptt_status_idx], "NA", &lv_font_inter_bold_38, "ptt", &lv_font_inter_bold_14);
+        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_ptt_status_idx], "NA", &lv_font_inter_bold_38, "PTT", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(slip, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     // adding separation line for right data panel

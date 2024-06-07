@@ -217,6 +217,8 @@ shutdown_circuit_indexes_t last_shutdown_element_unknown(void) {
 }
 
 void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close) {
+    set_tab_hv_label_text("SHUTDOWN TO BE IMPLEMENTED", shutdown_status);
+    return;
     shutdown_status_array[idx] = is_close;
     shutdown_circuit_indexes_t last_opend_index;
     if ((last_opend_index = last_shutdown_element_unknown()) != shutdown_circuit_no_element_index) {
@@ -229,7 +231,6 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
         set_tab_hv_label_text(shutdown_labels[last_opend_index], shutdown_status);
         return;
     }
-    set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status);
 }
 
 void init_hv_styles(void) {

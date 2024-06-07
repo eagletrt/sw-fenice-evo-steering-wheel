@@ -120,6 +120,44 @@ void angular_velocity_update(void) {
     set_tab_track_test_lb_speed(snprintf_buffer);
 }
 
+#define ERROR_COUNTER_CHECKER(error_def, error_def_string)                                                                                   \
+    if (primary_hv_errors_last_state->error_def != 0) {                                                                                      \
+        if (error_counter == 3) {                                                                                                            \
+            hv_errors_buffer_size += snprintf(hv_errors_buffer + hv_errors_buffer_size, BUFSIZ - hv_errors_buffer_size, "and others");       \
+            goto display_notification_jmp;                                                                                                             \
+        }                                                                                                                                    \
+        error_counter++;                                                                                                                     \
+        hv_errors_buffer_size += snprintf(hv_errors_buffer + hv_errors_buffer_size, BUFSIZ - hv_errors_buffer_size, error_def_string " \n"); \
+    }
+
+void hv_errors_update() {
+    GET_LAST_STATE(primary, hv_errors, PRIMARY, HV_ERRORS);
+    uint8_t cmp_stuff[sizeof(primary_hv_errors_converted_t)] = {0};
+    if (memcmp(primary_hv_errors_last_state, cmp_stuff, sizeof(primary_hv_errors_converted_t))) {
+        size_t error_counter          = 0;
+        char hv_errors_buffer[BUFSIZ] = {0};
+        size_t hv_errors_buffer_size  = 0;
+        hv_errors_buffer_size += snprintf(hv_errors_buffer + hv_errors_buffer_size, BUFSIZ - hv_errors_buffer_size, "HV BMS ERRORS: \n");
+        ERROR_COUNTER_CHECKER(errors_cell_under_voltage, "errors_cell_under_voltage");
+        ERROR_COUNTER_CHECKER(errors_cell_over_voltage, "errors_cell_over_voltage");
+        ERROR_COUNTER_CHECKER(errors_cell_under_temperature, "errors_cell_under_temperature");
+        ERROR_COUNTER_CHECKER(errors_cell_over_temperature, "errors_cell_over_temperature");
+        ERROR_COUNTER_CHECKER(errors_over_current, "errors_over_current");
+        ERROR_COUNTER_CHECKER(errors_can, "errors_can");
+        ERROR_COUNTER_CHECKER(errors_int_voltage_mismatch, "errors_int_voltage_mismatch");
+        ERROR_COUNTER_CHECKER(errors_cellboard_comm, "errors_cellboard_comm");
+        ERROR_COUNTER_CHECKER(errors_cellboard_internal, "errors_cellboard_internal");
+        ERROR_COUNTER_CHECKER(errors_connector_disconnected, "errors_connector_disconnected");
+        ERROR_COUNTER_CHECKER(errors_fans_disconnected, "errors_fans_disconnected");
+        ERROR_COUNTER_CHECKER(errors_feedback, "errors_feedback");
+        ERROR_COUNTER_CHECKER(errors_feedback_circuitry, "errors_feedback_circuitry");
+        ERROR_COUNTER_CHECKER(errors_eeprom_comm, "errors_eeprom_comm");
+        ERROR_COUNTER_CHECKER(errors_eeprom_write, "errors_eeprom_write");
+    display_notification_jmp:
+        display_notification(hv_errors_buffer, 2500);
+    }
+}
+
 void hv_debug_signals_update(void) {
     GET_LAST_STATE(primary, hv_debug_signals, PRIMARY, HV_DEBUG_SIGNALS);
     // primary_hv_debug_signals_last_state
@@ -546,10 +584,10 @@ void pedals_output_update() {
 
 void tlm_network_interface_update(void) {
     for (size_t i = 0; i < tlm_ntw_interfaces_current_size; i++) {
-        size_t to_send = snprintf(
+        snprintf(
             snprintf_buffer,
             SNPRINTF_BUFFER_SIZE,
-            "%c%c%c%c %hhu %hhu %hhu %hhu",
+            "%c%c%c%c %lu %lu %lu %lu",
             (char)(tlm_ntw_interfaces[i] >> 24),
             (char)(tlm_ntw_interfaces[i] >> 16),
             (char)(tlm_ntw_interfaces[i] >> 8),
@@ -778,18 +816,22 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         ptt_status = ptt_status_SET_ON;
         send_ptt_status_message(true);
         update_sensors_extra_value("SO", 0);
+        set_tab_racing_label_text("SO", tab_rac_ptt_status_idx);
     } else if (ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_SET_OFF;
         send_ptt_status_message(false);
         update_sensors_extra_value("SOF", 0);
+        set_tab_racing_label_text("SOF", tab_rac_ptt_status_idx);
     } else if (ecu_ack && ptt_button_pressed) {
         ptt_status = ptt_status_ON;
         send_ptt_status_message(true);
         update_sensors_extra_value("ON", 0);
+        set_tab_racing_label_text("ON", tab_rac_ptt_status_idx);
     } else if (!ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_OFF;
         send_ptt_status_message(false);
         update_sensors_extra_value("OFF", 0);
+        set_tab_racing_label_text("OFF", tab_rac_ptt_status_idx);
     }
 }
 
