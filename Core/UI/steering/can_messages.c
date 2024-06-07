@@ -370,6 +370,10 @@ void handle_secondary(can_message_t *msg) {
             STEER_CAN_UNPACK(secondary, SECONDARY, irts_rr_3, IRTS_RR_3, is_smsg_new, true);
             break;
         }
+        case SECONDARY_ODOMETER_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, odometer, ODOMETER, is_smsg_new, true);
+            break;
+        }
         case SECONDARY_TLM_NETWORK_INTERFACE_FRAME_ID: {
             STEER_CAN_UNPACK(secondary, SECONDARY, tlm_network_interface, TLM_NETWORK_INTERFACE, is_smsg_new, true);
             uint32_t interface_name = converted.iname_3;

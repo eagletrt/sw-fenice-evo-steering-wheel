@@ -248,7 +248,10 @@ void update_graphics(lv_timer_t *t) {
                     irts_rr_update();
                     break;
                 }
-
+                case SECONDARY_ODOMETER_FRAME_ID: {
+                    odometer_update();
+                    break;
+                }
                 default:
                     break;
             }

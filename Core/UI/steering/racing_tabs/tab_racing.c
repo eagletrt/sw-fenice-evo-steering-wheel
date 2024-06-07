@@ -16,7 +16,7 @@ lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
     [tab_rac_status_idx]        = NULL,
     [tab_rac_bottom_status_idx] = NULL,
     [tab_rac_ptt_status_idx]    = NULL,
-    [tab_rac_km_counter_idx]    = NULL,
+    [tab_rac_odometer_idx]    = NULL,
 };
 
 lv_obj_t *tab_racing_hv_current_bar;
@@ -225,7 +225,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
     /*inserting data into data right panel*/
     lv_obj_t *trq =
-        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_km_counter_idx], "NA", &lv_font_inter_bold_38, "unused", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_odometer_idx], "NA", &lv_font_inter_bold_30, "km", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(trq, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *slip =

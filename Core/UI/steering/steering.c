@@ -783,6 +783,12 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
     }
 }
 
+void odometer_update(void) {
+    GET_LAST_STATE(secondary, odometer, SECONDARY, ODOMETER);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", secondary_odometer_last_state->kilometers);
+    set_tab_racing_label_text(snprintf_buffer, tab_rac_odometer_idx);
+}
+
 /***
  * PTT
  */

@@ -92,6 +92,7 @@ void hv_status_update();
 void hv_fans_override_status_update();
 void tlm_status_update();
 
+void odometer_update();
 void steer_angle_update();
 void pedals_output_update();
 void tlm_network_interface_update(void);
