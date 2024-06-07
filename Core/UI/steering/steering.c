@@ -1,6 +1,7 @@
 #include "steering.h"
 
 #include "steering_config.h"
+#include "gameboy/peanut_gb.h"
 
 extern bool steering_initialized;
 
