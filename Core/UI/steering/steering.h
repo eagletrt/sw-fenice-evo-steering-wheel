@@ -77,6 +77,10 @@ void hv_feedbacks_status_update();
 void debug_hv_feedbacks_status_update();
 void das_errors_update();
 
+void hv_feedback_ts_voltage_update(void);
+void hv_feedback_misc_voltage_update(void);
+void hv_feedback_sd_voltage_update(void);
+
 void lv_feedback_sd_voltage_update();
 void lv_feedback_ts_voltage_update();
 void lv_feedback_enclosure_voltage_update();
@@ -94,7 +98,6 @@ void tlm_status_update();
 
 void odometer_update();
 void steer_angle_update();
-void pedals_output_update();
 void tlm_network_interface_update(void);
 void imu_acceleration_update();
 void lap_count_update();
@@ -106,6 +109,12 @@ void irts_fl_update(void);
 void irts_fr_update(void);
 void irts_rl_update(void);
 void irts_rr_update(void);
+void pedal_throttle_update(void);
+void pedal_brakes_pressure_update(void);
+void set_tab_sensors_value_brake_f(float value_in_bar);
+void set_tab_sensors_value_brake_r (float value_in_bar);
+void set_tab_sensors_value_apps(int32_t value_0_to_100);
+
 
 void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);

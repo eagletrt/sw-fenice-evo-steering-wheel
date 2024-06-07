@@ -94,10 +94,18 @@ void update_graphics(lv_timer_t *t) {
                     hv_errors_update();
                     break;
                 }
-                // case PRIMARY_HV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
-                // hv_feedback_ts_voltage_update();
-                // break;
-                // }
+                case PRIMARY_HV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
+                    hv_feedback_ts_voltage_update();
+                    break;
+                }
+                case PRIMARY_HV_FEEDBACK_MISC_VOLTAGE_FRAME_ID: {
+                    hv_feedback_misc_voltage_update();
+                    break;
+                }
+                case PRIMARY_HV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
+                    hv_feedback_sd_voltage_update();
+                    break;
+                }
                 case PRIMARY_HV_BALANCING_STATUS_FRAME_ID: {
                     hv_cell_balancing_status_update();
                     break;
@@ -199,10 +207,14 @@ void update_graphics(lv_timer_t *t) {
                     steer_angle_update();
                     break;
                 }
-                // case SECONDARY_PEDALS_OUTPUT_FRAME_ID: {
-                // pedals_output_update();
-                // break;
-                // }
+                case SECONDARY_PEDAL_THROTTLE_FRAME_ID: {
+                    pedal_throttle_update();
+                    break;
+                }
+                case SECONDARY_PEDAL_BRAKES_PRESSURE_FRAME_ID: {
+                    pedal_brakes_pressure_update();
+                    break;
+                }
                 case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
                     imu_acceleration_update();
                     break;

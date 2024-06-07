@@ -43,7 +43,7 @@ lv_obj_t *tab_hv_labels[tab_hv_labels_n] = {
     [tab_hv_lb_current_state]  = NULL,
     [tab_hv_lb_last_error]     = NULL,
     [tab_hv_pork_speed_value]  = NULL,
-    [shutdown_status]          = NULL,
+    [shutdown_status_lb]       = NULL,
 };
 
 lv_obj_t *balancing_columns[N_PORK_CELLBOARD] = {
@@ -74,7 +74,7 @@ static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][20] = {
     "AIR P",
     "AIR N"};
 
-static shutdown_component_state_t shutdown_status_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
+static shutdown_component_state_t shutdown_status_lb_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
 
 const char *debug_signal_error_labels[] = {
     "cell low voltage",
@@ -202,7 +202,7 @@ void precharge_bar_insert(bool precharge) {
 
 shutdown_circuit_indexes_t last_open_shutdown_circuit(void) {
     for (int sdi = 0; sdi < SHUTDOWN_COMPONENT_SIZE; sdi++) {
-        if (shutdown_status_array[sdi] == SC_OPEN)
+        if (shutdown_status_lb_array[sdi] == SC_OPEN)
             return sdi;
     }
     return shutdown_circuit_no_element_index;
@@ -210,25 +210,23 @@ shutdown_circuit_indexes_t last_open_shutdown_circuit(void) {
 
 shutdown_circuit_indexes_t last_shutdown_element_unknown(void) {
     for (int sdi = 0; sdi < SHUTDOWN_COMPONENT_SIZE; sdi++) {
-        if (shutdown_status_array[sdi] == SC_UNKNOWN)
+        if (shutdown_status_lb_array[sdi] == SC_UNKNOWN)
             return sdi;
     }
     return shutdown_circuit_no_element_index;
 }
 
 void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close) {
-    set_tab_hv_label_text("SHUTDOWN TO BE IMPLEMENTED", shutdown_status);
-    return;
-    shutdown_status_array[idx] = is_close;
+    shutdown_status_lb_array[idx] = is_close;
     shutdown_circuit_indexes_t last_opend_index;
     if ((last_opend_index = last_shutdown_element_unknown()) != shutdown_circuit_no_element_index) {
         char buf[64];
         snprintf(buf, 64, "unknown %s", shutdown_labels[last_opend_index]);
-        set_tab_hv_label_text(buf, shutdown_status);
+        set_tab_hv_label_text(buf, shutdown_status_lb);
         return;
     }
     if ((last_opend_index = last_open_shutdown_circuit()) != shutdown_circuit_no_element_index) {
-        set_tab_hv_label_text(shutdown_labels[last_opend_index], shutdown_status);
+        set_tab_hv_label_text(shutdown_labels[last_opend_index], shutdown_status_lb);
         return;
     }
 }
@@ -486,11 +484,11 @@ void tab_hv_create(lv_obj_t *parent) {
 
     lv_obj_set_grid_cell(pork_panel, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
-    tab_hv_labels[shutdown_status] = lv_label_create(pork_panel);
-    lv_obj_add_style(tab_hv_labels[shutdown_status], &label_custom_style, LV_PART_MAIN);
-    lv_obj_set_style_text_font(tab_hv_labels[shutdown_status], &lv_font_inter_bold_30, LV_STATE_DEFAULT);
-    lv_label_set_text(tab_hv_labels[shutdown_status], "SHUTDOWN X");
-    lv_obj_set_grid_cell(tab_hv_labels[shutdown_status], LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 0, 1);
+    tab_hv_labels[shutdown_status_lb] = lv_label_create(pork_panel);
+    lv_obj_add_style(tab_hv_labels[shutdown_status_lb], &label_custom_style, LV_PART_MAIN);
+    lv_obj_set_style_text_font(tab_hv_labels[shutdown_status_lb], &lv_font_inter_bold_30, LV_STATE_DEFAULT);
+    lv_label_set_text(tab_hv_labels[shutdown_status_lb], "SHUTDOWN NA");
+    lv_obj_set_grid_cell(tab_hv_labels[shutdown_status_lb], LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
     static lv_coord_t pork_label_cols[] = {(SCREEN_WIDTH / 4), (SCREEN_WIDTH / 4), LV_GRID_TEMPLATE_LAST};
     static lv_coord_t pork_label_row[]  = {(B_COLUMN_HEIGHT) / 3, LV_GRID_TEMPLATE_LAST};

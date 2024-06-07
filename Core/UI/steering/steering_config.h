@@ -179,7 +179,7 @@ typedef enum {
     tab_hv_lb_current_state,
     tab_hv_lb_last_error,
     tab_hv_pork_speed_value,
-    shutdown_status,
+    shutdown_status_lb,
     tab_hv_labels_n
 } tab_hv_labels_enum;
 

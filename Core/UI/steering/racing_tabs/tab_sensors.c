@@ -5,6 +5,11 @@
 #define CELL_HEIGHT 200
 #define CELL_WIDTH  180
 
+lv_obj_t *throttle_bar1;
+// lv_obj_t *throttle_bar2;
+lv_obj_t *break_rear_bar;
+lv_obj_t *brake_front_bar;
+
 lv_obj_t *tab_sensors_labels[tab_sensors_labels_n] = {
     [tab_sensors_lb_fl_temp]             = NULL,
     [tab_sensors_lb_fr_temp]             = NULL,
@@ -29,24 +34,53 @@ void set_tab_sensors_label_text(const char *s, tab_sensors_labels_enum idx) {
     lv_label_set_text(tab_sensors_labels[idx], s);
 }
 
-lv_style_t bar_brake_style;
-lv_style_t bar_accel_style;
-lv_style_t bar_calib_back_style;
+void set_tab_sensors_value_brake_f(float value_in_bar) {
+    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_SENSORS);
+    // assuming that maximum 15 bars are reached
+    lv_bar_set_value(brake_front_bar, (int32_t)(value_in_bar * 6.66f), LV_ANIM_OFF);
+}
+
+void set_tab_sensors_value_brake_r(float value_in_bar) {
+    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_SENSORS);
+    // assuming that maximum 15 bars are reached
+    lv_bar_set_value(break_rear_bar, (int32_t)(value_in_bar * 6.66f), LV_ANIM_OFF);
+}
+
+void set_tab_sensors_value_apps(int32_t value_0_to_100) {
+    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_SENSORS);
+    lv_bar_set_value(throttle_bar1, (int32_t)value_0_to_100, LV_ANIM_OFF);
+    // lv_bar_set_value(throttle_bar2, (int32_t) value_0_to_100, LV_ANIM_OFF);
+}
+
+lv_style_t throttle_bar_style;
+lv_style_t brake_bar_style;
+lv_style_t throttle_bar_background_style;
+lv_style_t brake_bar_background_style;
 
 void init_sensors_styles(void) {
-    lv_style_init(&bar_brake_style);
-    lv_style_set_bg_opa(&bar_brake_style, LV_OPA_COVER);
-    lv_style_set_bg_color(&bar_brake_style, lv_color_hex(COLOR_RED_STATUS_HEX));
+    lv_style_init(&throttle_bar_style);
+    lv_style_set_bg_opa(&throttle_bar_style, LV_OPA_COVER);
+    lv_style_set_bg_color(&throttle_bar_style, lv_color_hex(COLOR_GREEN_STATUS_HEX));
+    lv_style_set_width(&throttle_bar_style, 50);
+    lv_style_set_height(&throttle_bar_style, 405);
 
-    lv_style_init(&bar_accel_style);
-    lv_style_set_bg_opa(&bar_accel_style, LV_OPA_COVER);
-    lv_style_set_bg_color(&bar_accel_style, lv_color_hex(COLOR_GREEN_STATUS_HEX));
+    lv_style_init(&brake_bar_style);
+    lv_style_set_bg_opa(&brake_bar_style, LV_OPA_COVER);
+    lv_style_set_bg_color(&brake_bar_style, lv_color_hex(COLOR_RED_STATUS_HEX));
+    lv_style_set_width(&brake_bar_style, 25);
+    lv_style_set_height(&brake_bar_style, 405);
 
-    lv_style_init(&bar_calib_back_style);
-    lv_style_set_bg_opa(&bar_calib_back_style, LV_OPA_COVER);
-    lv_style_set_bg_color(&bar_calib_back_style, lv_color_hex(COLOR_SECONDARY_HEX));
-    lv_style_set_width(&bar_calib_back_style, 25);
-    lv_style_set_height(&bar_calib_back_style, 405);
+    lv_style_init(&throttle_bar_background_style);
+    lv_style_set_bg_opa(&throttle_bar_background_style, LV_OPA_COVER);
+    lv_style_set_bg_color(&throttle_bar_background_style, lv_color_hex(COLOR_SECONDARY_HEX));
+    lv_style_set_width(&throttle_bar_background_style, 25);
+    lv_style_set_height(&throttle_bar_background_style, 405);
+
+    lv_style_init(&brake_bar_background_style);
+    lv_style_set_bg_opa(&brake_bar_background_style, LV_OPA_COVER);
+    lv_style_set_bg_color(&brake_bar_background_style, lv_color_hex(COLOR_SECONDARY_HEX));
+    lv_style_set_width(&brake_bar_background_style, 25);
+    lv_style_set_height(&brake_bar_background_style, 405);
 }
 
 void tab_sensors_create(lv_obj_t *parent) {
@@ -454,68 +488,71 @@ void tab_sensors_create(lv_obj_t *parent) {
 
     lv_obj_set_grid_cell(bars_data_panel, LV_GRID_ALIGN_STRETCH, 2, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
-    lv_obj_t *apps_1 = lv_label_create(bars_data_panel);
-    lv_obj_remove_style_all(apps_1);
-    lv_obj_align(apps_1, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_add_style(apps_1, &label_style, LV_PART_MAIN);
-    lv_label_set_text(apps_1, "F");
-    lv_obj_set_style_text_font(apps_1, &lv_font_inter_bold_20, LV_PART_MAIN);
-    lv_obj_set_grid_cell(apps_1, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
+    lv_obj_t *break_rear_container = lv_label_create(bars_data_panel);
+    lv_obj_remove_style_all(break_rear_container);
+    lv_obj_align(break_rear_container, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_add_style(break_rear_container, &label_style, LV_PART_MAIN);
+    lv_label_set_text(break_rear_container, "F");
+    lv_obj_set_style_text_font(break_rear_container, &lv_font_inter_bold_20, LV_PART_MAIN);
+    lv_obj_set_grid_cell(break_rear_container, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
-    lv_obj_t *apps_1_bar = lv_bar_create(bars_data_panel);
-    lv_obj_remove_style_all(apps_1_bar);
-    lv_obj_add_style(apps_1_bar, &bar_accel_style, LV_PART_INDICATOR);
-    lv_obj_add_style(apps_1_bar, &bar_calib_back_style, LV_PART_MAIN);
-    lv_bar_set_range(apps_1_bar, 0, 100);
-    lv_bar_set_value(apps_1_bar, 0, LV_ANIM_OFF);
+    break_rear_bar = lv_bar_create(bars_data_panel);
+    lv_obj_remove_style_all(break_rear_bar);
+    lv_obj_add_style(break_rear_bar, &brake_bar_style, LV_PART_INDICATOR);
 
-    lv_obj_set_grid_cell(apps_1_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+    lv_obj_add_style(break_rear_bar, &brake_bar_background_style, LV_PART_MAIN);
+    lv_bar_set_range(break_rear_bar, 0, 100);
+    lv_bar_set_value(break_rear_bar, 0, LV_ANIM_OFF);
 
-    lv_obj_t *apps_2 = lv_label_create(bars_data_panel);
-    lv_obj_remove_style_all(apps_2);
-    lv_obj_add_style(apps_2, &label_style, LV_PART_MAIN);
-    lv_label_set_text(apps_2, "R");
-    lv_obj_set_style_text_font(apps_2, &lv_font_inter_bold_20, LV_PART_MAIN);
-    lv_obj_set_grid_cell(apps_2, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 1, 1);
+    lv_obj_set_grid_cell(break_rear_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    lv_obj_t *apps_2_bar = lv_bar_create(bars_data_panel);
-    lv_obj_remove_style_all(apps_2_bar);
-    lv_obj_add_style(apps_2_bar, &bar_accel_style, LV_PART_INDICATOR);
-    lv_obj_add_style(apps_2_bar, &bar_calib_back_style, LV_PART_MAIN);
-    lv_bar_set_range(apps_2_bar, 0, 100);
-    lv_bar_set_value(apps_2_bar, 0, LV_ANIM_OFF);
-    lv_obj_set_grid_cell(apps_2_bar, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+    lv_obj_t *break_front_container = lv_label_create(bars_data_panel);
+    lv_obj_remove_style_all(break_front_container);
+    lv_obj_add_style(break_front_container, &label_style, LV_PART_MAIN);
+    lv_label_set_text(break_front_container, "R");
+    lv_obj_set_style_text_font(break_front_container, &lv_font_inter_bold_20, LV_PART_MAIN);
+    lv_obj_set_grid_cell(break_front_container, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
-    lv_obj_t *brake_f = lv_label_create(bars_data_panel);
-    lv_obj_remove_style_all(brake_f);
-    lv_obj_add_style(brake_f, &label_style, LV_PART_MAIN);
-    lv_label_set_text(brake_f, "F");
-    lv_obj_set_style_text_font(brake_f, &lv_font_inter_bold_20, LV_PART_MAIN);
-    lv_obj_set_grid_cell(brake_f, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 1, 1);
+    brake_front_bar = lv_bar_create(bars_data_panel);
+    lv_obj_remove_style_all(brake_front_bar);
+    lv_obj_add_style(brake_front_bar, &brake_bar_style, LV_PART_INDICATOR);
+    lv_style_set_width(&brake_bar_background_style, 25);
+    lv_obj_add_style(brake_front_bar, &brake_bar_background_style, LV_PART_MAIN);
+    lv_bar_set_range(brake_front_bar, 0, 100);
+    lv_bar_set_value(brake_front_bar, 0, LV_ANIM_OFF);
+    lv_obj_set_grid_cell(brake_front_bar, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    lv_obj_t *brake_f_bar = lv_bar_create(bars_data_panel);
-    lv_obj_remove_style_all(brake_f_bar);
-    lv_obj_add_style(brake_f_bar, &bar_brake_style, LV_PART_INDICATOR);
-    lv_obj_add_style(brake_f_bar, &bar_calib_back_style, LV_PART_MAIN);
-    lv_bar_set_range(brake_f_bar, 0, 100);
-    lv_bar_set_value(brake_f_bar, 0, LV_ANIM_OFF);
-    lv_obj_set_grid_cell(brake_f_bar, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+    lv_obj_t *throttle_1_container = lv_label_create(bars_data_panel);
+    lv_obj_remove_style_all(throttle_1_container);
+    lv_obj_add_style(throttle_1_container, &label_style, LV_PART_MAIN);
+    lv_label_set_text(throttle_1_container, "THR");
+    lv_obj_set_style_text_font(throttle_1_container, &lv_font_inter_bold_20, LV_PART_MAIN);
+    lv_obj_set_grid_cell(throttle_1_container, LV_GRID_ALIGN_CENTER, 2, 2, LV_GRID_ALIGN_CENTER, 1, 1);
 
-    lv_obj_t *brake_r = lv_label_create(bars_data_panel);
-    lv_obj_remove_style_all(brake_r);
-    lv_obj_add_style(brake_r, &label_style, LV_PART_MAIN);
-    lv_label_set_text(brake_r, "R");
-    lv_obj_set_style_text_font(brake_r, &lv_font_inter_bold_20, LV_PART_MAIN);
+    throttle_bar1 = lv_bar_create(bars_data_panel);
+    lv_obj_remove_style_all(throttle_bar1);
+    lv_obj_add_style(throttle_bar1, &throttle_bar_style, LV_PART_INDICATOR);
+    lv_style_set_width(&throttle_bar_background_style, 50);
+    lv_obj_add_style(throttle_bar1, &throttle_bar_background_style, LV_PART_MAIN);
+    lv_bar_set_range(throttle_bar1, 0, 100);
+    lv_bar_set_value(throttle_bar1, 0, LV_ANIM_OFF);
+    lv_obj_set_grid_cell(throttle_bar1, LV_GRID_ALIGN_CENTER, 2, 2, LV_GRID_ALIGN_CENTER, 0, 1);
+    /* 
+    lv_obj_t* throttle_2_container = lv_label_create(bars_data_panel);
+    lv_obj_remove_style_all(throttle_2_container);
+    lv_obj_add_style(throttle_2_container, &label_style, LV_PART_MAIN);
+    lv_label_set_text(throttle_2_container, "R");
+    lv_obj_set_style_text_font(throttle_2_container, &lv_font_inter_bold_20, LV_PART_MAIN);
 
-    lv_obj_set_grid_cell(brake_r, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 1, 1);
+    lv_obj_set_grid_cell(throttle_2_container, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
-    lv_obj_t *brake_r_bar = lv_bar_create(bars_data_panel);
-    lv_obj_remove_style_all(brake_r_bar);
-    lv_obj_add_style(brake_r_bar, &bar_brake_style, LV_PART_INDICATOR);
-    lv_obj_add_style(brake_r_bar, &bar_calib_back_style, LV_PART_MAIN);
-    lv_bar_set_range(brake_r_bar, 0, 100);
-    lv_bar_set_value(brake_r_bar, 0, LV_ANIM_OFF);
-    lv_obj_set_grid_cell(brake_r_bar, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+    throttle_bar2 = lv_bar_create(bars_data_panel);
+    lv_obj_remove_style_all(throttle_bar2);
+    lv_obj_add_style(throttle_bar2, &throttle_bar_style, LV_PART_INDICATOR);
+    lv_obj_add_style(throttle_bar2, &bar_calib_back_style, LV_PART_MAIN);
+    lv_bar_set_range(throttle_bar2, 0, 100);
+    lv_bar_set_value(throttle_bar2, 0, LV_ANIM_OFF);
+    lv_obj_set_grid_cell(throttle_bar2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1); */
 }
 
 void tab_sensor_resync(void) {

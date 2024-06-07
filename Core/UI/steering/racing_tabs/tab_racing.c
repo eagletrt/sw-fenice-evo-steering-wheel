@@ -16,7 +16,7 @@ lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
     [tab_rac_status_idx]        = NULL,
     [tab_rac_bottom_status_idx] = NULL,
     [tab_rac_ptt_status_idx]    = NULL,
-    [tab_rac_odometer_idx]    = NULL,
+    [tab_rac_odometer_idx]      = NULL,
 };
 
 lv_obj_t *tab_racing_hv_current_bar;

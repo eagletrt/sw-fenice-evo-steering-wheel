@@ -124,7 +124,7 @@ void angular_velocity_update(void) {
     if (primary_hv_errors_last_state->error_def != 0) {                                                                                      \
         if (error_counter == 3) {                                                                                                            \
             hv_errors_buffer_size += snprintf(hv_errors_buffer + hv_errors_buffer_size, BUFSIZ - hv_errors_buffer_size, "and others");       \
-            goto display_notification_jmp;                                                                                                             \
+            goto display_notification_jmp;                                                                                                   \
         }                                                                                                                                    \
         error_counter++;                                                                                                                     \
         hv_errors_buffer_size += snprintf(hv_errors_buffer + hv_errors_buffer_size, BUFSIZ - hv_errors_buffer_size, error_def_string " \n"); \
@@ -264,22 +264,46 @@ void hv_cell_balancing_status_update() {
 }
 
 void hv_feedback_ts_voltage_update(void) {
-    // GET_LAST_STATE(primary, hv_feedback_ts_voltage, PRIMARY, HV_FEEDBACK_TS_VOLTAGE);
-    // primary_hv_feedback_ts_voltage_last_state.
+    GET_LAST_STATE(primary, hv_feedback_ts_voltage, PRIMARY, HV_FEEDBACK_TS_VOLTAGE);
+    update_shutdown_circuit_component(
+        shutdown_circuit_feedbacks_status_feedback_precharge_status_index, primary_hv_feedback_ts_voltage_last_state->precharge_status > 3.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_airp_gate_index, primary_hv_feedback_ts_voltage_last_state->airp_gate > 3.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_airn_gate_index, primary_hv_feedback_ts_voltage_last_state->airn_gate > 3.0f);
+}
+
+void hv_feedback_misc_voltage_update(void) {
+    // GET_LAST_STATE(primary, hv_feedback_misc_voltage, PRIMARY, HV_FEEDBACK_MISC_VOLTAGE);
+    // primary_hv_feedback_misc_voltage_last_state
+}
+
+void hv_feedback_sd_voltage_update(void) {
+    GET_LAST_STATE(primary, hv_feedback_sd_voltage, PRIMARY, HV_FEEDBACK_SD_VOLTAGE);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_sd_voltage_last_state->sd_in > 3.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_sd_voltage_last_state->sd_end > 3.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_sd_voltage_last_state->sd_out > 3.0f);
 }
 
 void hv_feedbacks_status_update() {
-    GET_LAST_STATE(primary, hv_feedback_status, PRIMARY, HV_FEEDBACK_STATUS);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_status_last_state->feedback_sd_in);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_status_last_state->feedback_sd_out);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_status_last_state->feedback_sd_end);
-    update_shutdown_circuit_component(
-        shutdown_circuit_feedbacks_status_feedback_precharge_status_index, primary_hv_feedback_status_last_state->feedback_precharge_status);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_airp_gate_index, primary_hv_feedback_status_last_state->feedback_airp_status);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_airn_gate_index, primary_hv_feedback_status_last_state->feedback_airn_status);
+    // GET_LAST_STATE(primary, hv_feedback_status, PRIMARY, HV_FEEDBACK_STATUS);
+    // update_shutdown_circuit_component(
+    //     shutdown_circuit_feedbacks_status_feedback_sd_in_index,
+    //     primary_hv_feedback_status_last_state->feedback_sd_in == primary_hv_feedback_status_feedback_sd_in_feedback_state_high);
+    // update_shutdown_circuit_component(
+    //     shutdown_circuit_feedbacks_status_feedback_sd_out_index,
+    //     primary_hv_feedback_status_last_state->feedback_sd_out == primary_hv_feedback_status_feedback_sd_out_feedback_state_high);
+    // update_shutdown_circuit_component(
+    //     shutdown_circuit_feedbacks_status_feedback_sd_end_index,
+    //     primary_hv_feedback_status_last_state->feedback_sd_end == primary_hv_feedback_status_feedback_sd_end_feedback_state_high);
+    // update_shutdown_circuit_component(
+    //     shutdown_circuit_feedbacks_status_feedback_precharge_status_index,
+    //     primary_hv_feedback_status_last_state->feedback_precharge_status == primary_hv_feedback_status_feedback_precharge_status_feedback_state_high);
+    // update_shutdown_circuit_component(
+    //     shutdown_circuit_feedbacks_status_feedback_airp_gate_index,
+    //     primary_hv_feedback_status_last_state->feedback_airp_status == primary_hv_feedback_status_feedback_airp_gate_feedback_state_high);
+    // update_shutdown_circuit_component(
+    //     shutdown_circuit_feedbacks_status_feedback_airn_gate_index,
+    //     primary_hv_feedback_status_last_state->feedback_airn_status == primary_hv_feedback_status_feedback_airn_gate_feedback_state_high);
 }
-
-primary_ecu_feedbacks_converted_t ecu_feedbacks_last_state = {0};
 
 void ecu_feedbacks_update(void) {
     GET_LAST_STATE(primary, ecu_feedbacks, PRIMARY, ECU_FEEDBACKS);
@@ -345,23 +369,23 @@ void hv_fans_override_status_update() {
 void lv_feedback_sd_voltage_update() {
     GET_LAST_STATE(primary, lv_feedback_sd_voltage, PRIMARY, LV_FEEDBACK_SD_VOLTAGE);
 
-    update_shutdown_circuit_component(shutdown_circuit_sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock);
-    update_shutdown_circuit_component(shutdown_circuit_sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end);
+    update_shutdown_circuit_component(shutdown_circuit_sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start > 12.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock > 12.0f);
+    update_shutdown_circuit_component(shutdown_circuit_sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end > 12.0f);
 }
 
 void lv_feedback_ts_voltage_update() {
     GET_LAST_STATE(primary, lv_feedback_ts_voltage, PRIMARY, LV_FEEDBACK_TS_VOLTAGE);
 
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_hvd_fb_index, primary_lv_feedback_ts_voltage_last_state->hvd);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_hvd_fb_index, primary_lv_feedback_ts_voltage_last_state->hvd > 12.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd > 12.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock > 12.0f);
 }
 
 void lv_feedback_enclosure_voltage_update() {
     GET_LAST_STATE(primary, lv_feedback_enclosure_voltage, PRIMARY, LV_FEEDBACK_ENCLOSURE_VOLTAGE);
 
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_lid_fb_index, primary_lv_feedback_enclosure_voltage_last_state->invc_lid);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_lid_fb_index, primary_lv_feedback_enclosure_voltage_last_state->invc_lid > 12.0f);
 }
 
 extern primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed;
@@ -562,26 +586,6 @@ void steer_angle_update() {
     set_tab_track_test_steering_angle_bar(secondary_steer_angle_last_state->angle);
 }
 
-void pedals_output_update() {
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-    GET_LAST_STATE(secondary, pedals_output, SECONDARY, PEDALS_OUTPUT);
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)secondary_pedals_output_last_state->apps);
-    calibration_box_t *curr_focus = get_tab_calibration_curr_focus();
-
-    if (*curr_focus == APPS) {
-        lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
-        lv_slider_set_range(get_tab_calibration_slider(), APPS_RANGE_LOW, APPS_RANGE_HIGH);
-        lv_slider_set_value(get_tab_calibration_slider(), secondary_pedals_output_last_state->apps, LV_ANIM_OFF);
-    }
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", secondary_pedals_output_last_state->bse_front);
-    if (*curr_focus == BSE) {
-        lv_slider_set_mode(get_tab_calibration_slider(), LV_BAR_MODE_RANGE);
-        lv_slider_set_range(get_tab_calibration_slider(), BRAKE_RANGE_LOW, BRAKE_RANGE_HIGH);
-        lv_slider_set_value(get_tab_calibration_slider(), secondary_pedals_output_last_state->bse_front, LV_ANIM_OFF);
-    }
-#endif
-}
-
 void tlm_network_interface_update(void) {
     for (size_t i = 0; i < tlm_ntw_interfaces_current_size; i++) {
         snprintf(
@@ -599,6 +603,17 @@ void tlm_network_interface_update(void) {
         size_t index_to_update = LV_MIN(tab_sensors_lb_tlm_ntw_interface_0 + TLM_NTW_INTERFACE_MAX_N - 1, tab_sensors_lb_tlm_ntw_interface_0 + i);
         set_tab_sensors_label_text(snprintf_buffer, index_to_update);
     }
+}
+
+void pedal_throttle_update(void) {
+    GET_LAST_STATE(secondary, pedal_throttle, SECONDARY, PEDAL_THROTTLE);
+    set_tab_sensors_value_apps((int32_t)(secondary_pedal_throttle_last_state->throttle * 100.0f));
+}
+
+void pedal_brakes_pressure_update(void) {
+    GET_LAST_STATE(secondary, pedal_brakes_pressure, SECONDARY, PEDAL_BRAKES_PRESSURE);
+    set_tab_sensors_value_brake_f(secondary_pedal_brakes_pressure_last_state->front);
+    set_tab_sensors_value_brake_r(secondary_pedal_brakes_pressure_last_state->rear);
 }
 
 void imu_acceleration_update() {

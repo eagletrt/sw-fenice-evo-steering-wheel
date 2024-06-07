@@ -139,10 +139,14 @@ void handle_primary(can_message_t *msg) {
             STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_ts_voltage, HV_FEEDBACK_TS_VOLTAGE, is_pmsg_new, true);
             break;
         }
-        // case PRIMARY_DAS_ERRORS_FRAME_ID: {
-        // STEER_CAN_UNPACK(primary, PRIMARY, das_errors, DAS_ERRORS, is_pmsg_new);
-        // break;
-        // }
+        case PRIMARY_HV_FEEDBACK_MISC_VOLTAGE_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_misc_voltage, HV_FEEDBACK_MISC_VOLTAGE, is_pmsg_new, true);
+            break;
+        }
+        case PRIMARY_HV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_sd_voltage, HV_FEEDBACK_SD_VOLTAGE, is_pmsg_new, true);
+            break;
+        }
         case PRIMARY_LV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_sd_voltage, LV_FEEDBACK_SD_VOLTAGE, is_pmsg_new, true);
             break;
@@ -273,6 +277,14 @@ void handle_secondary(can_message_t *msg) {
 #endif
     can_id_t id = msg->id;
     switch (id) {
+        case SECONDARY_PEDAL_THROTTLE_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, pedal_throttle, PEDAL_THROTTLE, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_PEDAL_BRAKES_PRESSURE_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, pedal_brakes_pressure, PEDAL_BRAKES_PRESSURE, is_smsg_new, true);
+            break;
+        }
         case SECONDARY_ANGULAR_VELOCITY_FRAME_ID: {
             STEER_CAN_UNPACK(secondary, SECONDARY, angular_velocity, ANGULAR_VELOCITY, is_smsg_new, true);
             break;
