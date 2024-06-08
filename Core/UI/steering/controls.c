@@ -60,10 +60,15 @@ void turn_telemetry_on_off(void) {
 #define HELP_NOTIFICATION_SCREEN_BACKGROUND (0xf1ff73U)
 
 void help(void) {
+    if (is_on_help_animation()) {
+        restore_previous_screen(NULL);
+        return;
+    }
     if (engineer_mode) {
     } else {
         switch (current_racing_tab) {
             case STEERING_WHEEL_TAB_RACING: {
+                set_on_help_animation();
                 display_notification(
                     "telemetry | -\n"
                     "help      | -\n"
@@ -74,6 +79,7 @@ void help(void) {
                 break;
             }
             case STEERING_WHEEL_TAB_TRACK_TEST: {
+                set_on_help_animation();
                 display_notification(
                     "  set target  | -\n"
                     "         help | -\n\n"
@@ -84,6 +90,7 @@ void help(void) {
                 break;
             }
             case STEERING_WHEEL_TAB_SENSORS: {
+                set_on_help_animation();
                 display_notification(
                     "  -  | -\n"
                     "  help | -\n\n"
@@ -94,6 +101,7 @@ void help(void) {
                 break;
             }
             case STEERING_WHEEL_TAB_HV: {
+                set_on_help_animation();
                 display_notification(
                     "balancing | -\n"
                     "   help   | -\n\n"
@@ -104,6 +112,7 @@ void help(void) {
                 break;
             }
             case STEERING_WHEEL_TAB_LV: {
+                set_on_help_animation();
                 display_notification(
                     "     - | -\n"
                     "     - | -\n\n"

@@ -33,12 +33,12 @@ lv_obj_t *bottom_bar;
 
 void set_tab_racing_hv_current_bar(float v) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
-    lv_bar_set_value(tab_racing_hv_current_bar, v, LV_ANIM_OFF);
+    lv_bar_set_value(tab_racing_hv_current_bar, (int32_t)fabs(v), LV_ANIM_OFF);
 }
 
 void set_tab_racing_hv_pack_voltage_bar(float v) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
-    lv_bar_set_value(tab_racing_hv_pack_voltage_bar, (int32_t)fabsf(v), LV_ANIM_OFF);
+    lv_bar_set_value(tab_racing_hv_pack_voltage_bar, (int32_t)v, LV_ANIM_OFF);
 }
 
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx) {
@@ -127,7 +127,7 @@ void tab_racing_create(lv_obj_t *parent) {
     // hv state of charge bar
     tab_racing_hv_current_bar = lv_bar_create(bar_panel_hv);
     custom_side_bar(tab_racing_hv_current_bar);
-    lv_bar_set_range(tab_racing_hv_current_bar, 0, 40);
+    lv_bar_set_range(tab_racing_hv_current_bar, 0, 200);
     lv_bar_set_value(tab_racing_hv_current_bar, 0, LV_ANIM_OFF);
     lv_obj_set_style_bg_color(tab_racing_hv_current_bar, lv_color_hex(COLOR_ORANGE_STATUS_HEX), LV_PART_INDICATOR);
     lv_obj_set_grid_cell(tab_racing_hv_current_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);

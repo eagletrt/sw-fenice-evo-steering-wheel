@@ -651,8 +651,8 @@ void tlm_laps_stats_update(void) {
     set_tab_racing_label_text(snprintf_buffer, tab_rac_best_time_idx);
 }
 
-#define INVERTER_MESSAGE_UNINITIALIZED     -100.0f
-#define INVERTER_TEMP_CONVERSION(raw_temp) -43.23745 + 0.01073427 * raw_temp - 5.523417e-7 * pow(raw_temp, 2) + 1.330787e-11 * pow(raw_temp, 3);
+#define INVERTER_MESSAGE_UNINITIALIZED     (-100.0f)
+#define INVERTER_TEMP_CONVERSION(raw_temp) (-43.23745 + 0.01073427 * raw_temp - 5.523417e-7 * pow(raw_temp, 2) + 1.330787e-11 * pow(raw_temp, 3));
 float l_motor_temp = INVERTER_MESSAGE_UNINITIALIZED;
 float l_igbt_temp  = INVERTER_MESSAGE_UNINITIALIZED;
 float r_motor_temp = INVERTER_MESSAGE_UNINITIALIZED;

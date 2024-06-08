@@ -295,6 +295,15 @@ void enter_fatal_error_mode(const char *message) {
  */
 
 bool on_animation = false;
+bool help_animation = false;
+
+void set_on_help_animation(void) {
+    help_animation = true;
+}
+
+bool is_on_help_animation(void) {
+    return help_animation;
+}
 
 void display_notification(const char *label_content, uint32_t timeout_ms, uint32_t background_color_hex, uint32_t label_color_hex) {
     if (on_animation) {
@@ -319,6 +328,7 @@ void restore_previous_screen(lv_timer_t *timer) {
     tab_notification_set_bg_color(COLOR_SECONDARY_HEX);
     tab_notification_set_label_color(COLOR_PRIMARY_HEX);
     on_animation = false;
+    help_animation = false;
 }
 
 /***

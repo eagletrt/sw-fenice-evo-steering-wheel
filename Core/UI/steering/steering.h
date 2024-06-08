@@ -122,6 +122,8 @@ void remove_keep_lap_counter(lv_timer_t *timer);
 void display_notification(const char *label_content, uint32_t timeout_ms, uint32_t background_color_hex, uint32_t label_color_hex);
 void enter_fatal_error_mode(const char *);
 void restore_previous_screen(lv_timer_t *timer);
+bool is_on_help_animation(void);
+void set_on_help_animation(void);
 void update_sensors_extra_value(const char *, uint8_t);
 void all_leds_green(void);
 void all_leds_red(void);
