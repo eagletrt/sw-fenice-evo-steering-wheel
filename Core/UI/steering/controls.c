@@ -47,16 +47,17 @@ void turn_telemetry_on_off(void) {
     GET_LAST_STATE(primary, tlm_status, PRIMARY, TLM_STATUS);
     primary_tlm_set_status_converted_t converted = {0};
     if (primary_tlm_status_last_state->status == primary_tlm_status_status_on) {
-        display_notification("Sending Telemetry OFF", 800);
+        display_notification("Sending Telemetry OFF", 800, 0xff9245U, COLOR_PRIMARY_HEX);
         converted.status = primary_tlm_set_status_status_off;
     } else {
-        display_notification("Sending Telemetry ON", 800);
+        display_notification("Sending Telemetry ON", 800, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
         converted.status = primary_tlm_set_status_status_on;
     }
     STEER_CAN_PACK(primary, PRIMARY, tlm_set_status, TLM_SET_STATUS);
     can_send(&msg, true);
 }
 
+#define HELP_NOTIFICATION_SCREEN_BACKGROUND (0xf1ff73U)
 
 void help(void) {
     if (engineer_mode) {
@@ -66,8 +67,10 @@ void help(void) {
                 display_notification(
                     "telemetry | -\n"
                     "help      | -\n"
-                    "torque | tson | slip",
-                    4000);
+                    "torque | power | slip",
+                    4000,
+                    HELP_NOTIFICATION_SCREEN_BACKGROUND,
+                    COLOR_PRIMARY_HEX);
                 break;
             }
             case STEERING_WHEEL_TAB_TRACK_TEST: {
@@ -75,7 +78,9 @@ void help(void) {
                     "  set target  | -\n"
                     "         help | -\n\n"
                     "       - | - | -",
-                    4000);
+                    4000,
+                    HELP_NOTIFICATION_SCREEN_BACKGROUND,
+                    COLOR_PRIMARY_HEX);
                 break;
             }
             case STEERING_WHEEL_TAB_SENSORS: {
@@ -83,7 +88,9 @@ void help(void) {
                     "  -  | -\n"
                     "  help | -\n\n"
                     "- | - | -",
-                    4000);
+                    4000,
+                    HELP_NOTIFICATION_SCREEN_BACKGROUND,
+                    COLOR_PRIMARY_HEX);
                 break;
             }
             case STEERING_WHEEL_TAB_HV: {
@@ -91,7 +98,9 @@ void help(void) {
                     "balancing | -\n"
                     "   help   | -\n\n"
                     "bal thres  | - | slip",
-                    4000);
+                    4000,
+                    HELP_NOTIFICATION_SCREEN_BACKGROUND,
+                    COLOR_PRIMARY_HEX);
                 break;
             }
             case STEERING_WHEEL_TAB_LV: {
@@ -99,7 +108,9 @@ void help(void) {
                     "     - | -\n"
                     "     - | -\n\n"
                     "pumps | - | radiators",
-                    4000);
+                    4000,
+                    HELP_NOTIFICATION_SCREEN_BACKGROUND,
+                    COLOR_PRIMARY_HEX);
                 break;
             }
             default: {
@@ -325,7 +336,7 @@ void buttons_pressed_actions(uint8_t button) {
                 switch (current_racing_tab) {
                     case STEERING_WHEEL_TAB_HV:
                         send_bal(true);
-                        display_notification("BAL ON", 500);
+                        display_notification("BAL ON", 500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
                         break;
                     default:
                         break;
@@ -347,7 +358,7 @@ void buttons_pressed_actions(uint8_t button) {
                         break;
                     case STEERING_WHEEL_TAB_HV:
                         send_bal(false);
-                        display_notification("BAL OFF", 500);
+                        display_notification("BAL OFF", 500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
                         break;
                     case STEERING_WHEEL_TAB_LV:
                         break;
@@ -476,22 +487,22 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_enable_inv_updates:
         case primary_ecu_status_status_check_inv_settings: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("ECU not in IDLE yet, sending IDLE anyway", 1500);
+            display_notification("ECU not in IDLE yet, sending IDLE anyway", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_idle: {
             send_set_car_status(primary_ecu_set_status_status_ready);
-            display_notification("TSON", 1500);
+            display_notification("TSON", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_start_ts_precharge:
         case primary_ecu_status_status_wait_ts_precharge: {
-            display_notification("Precharge not finished yet", 1500);
+            display_notification("Precharge not finished yet", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_wait_driver: {
             send_set_car_status(primary_ecu_set_status_status_drive);
-            display_notification("DRIVE", 1500);
+            display_notification("DRIVE", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_enable_inv_drive:
@@ -500,12 +511,12 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_start_ts_discharge:
         case primary_ecu_status_status_wait_ts_discharge: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("IDLE", 1500);
+            display_notification("IDLE", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_fatal_error: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("ECU in FATAL ERROR, sending IDLE anyway", 1500);
+            display_notification("ECU in FATAL ERROR, sending IDLE anyway", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
     }

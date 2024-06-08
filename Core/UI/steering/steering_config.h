@@ -118,7 +118,7 @@ typedef enum {
     SHUTDOWN_COMPONENT_SIZE
 } shutdown_circuit_indexes_t;
 
-typedef enum { SC_UNKNOWN, SC_OPEN, SC_CLOSE } shutdown_component_state_t;
+typedef enum { SC_UNKNOWN, SC_OPEN, SC_CLOSE } shutdown_circuit_component_state_t;
 
 typedef enum {
     tab_rac_pack_voltage_idx,

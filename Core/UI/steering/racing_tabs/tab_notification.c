@@ -8,6 +8,16 @@ void set_notification_screen_label(const char *s) {
     lv_label_set_text(notification_screen_label, s);
 }
 
+lv_obj_t *notification_background;
+
+void tab_notification_set_bg_color(uint32_t hex_color) {
+    lv_obj_set_style_bg_color(notification_background, lv_color_hex(hex_color), LV_PART_MAIN);
+}
+
+void tab_notification_set_label_color(uint32_t hex_color) {
+    lv_style_set_text_color(&notif_label_style, lv_color_hex(hex_color));
+}
+
 void init_notification_tab_styles() {
     lv_style_init(&notif_label_style);
     lv_style_set_base_dir(&notif_label_style, LV_BASE_DIR_LTR);
@@ -20,7 +30,7 @@ void init_notification_tab_styles() {
 void tab_notification_screen_create(lv_obj_t *notification_screen) {
     init_notification_tab_styles();
 
-    lv_obj_t *notification_background = lv_obj_create(notification_screen);
+    notification_background = lv_obj_create(notification_screen);
     lv_obj_set_size(notification_background, SCREEN_WIDTH, SCREEN_HEIGHT);
     lv_obj_set_style_bg_color(notification_background, lv_color_hex(COLOR_SECONDARY_HEX), LV_PART_MAIN);
 

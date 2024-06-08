@@ -154,7 +154,7 @@ void hv_errors_update() {
         ERROR_COUNTER_CHECKER(errors_eeprom_comm, "errors_eeprom_comm");
         ERROR_COUNTER_CHECKER(errors_eeprom_write, "errors_eeprom_write");
     display_notification_jmp:
-        display_notification(hv_errors_buffer, 2500);
+        display_notification(hv_errors_buffer, 2500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
     }
 }
 
@@ -434,7 +434,7 @@ void lv_pumps_speed_update(void) {
             if ((!IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.pumps_speed, actual_speed)) &&
                 !IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.status, actual_status) &&
                 ((get_current_time_ms() - steering_wheel_lv_pumps_speed_sent_timestamp) > COOLING_STATE_SYNC_TIMEOUT)) {
-                display_notification("Porket does not respond on pumps settings", 500);
+                display_notification("Porket does not respond on pumps settings", 500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
                 steering_wheel_state_pumps_speed.pumps_speed = actual_speed;
                 steering_wheel_state_pumps_speed.status      = actual_status;
                 steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -482,7 +482,7 @@ void lv_radiator_speed_update(void) {
             if (!IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.radiator_speed, actual_speed) &&
                 !IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.status, actual_status) &&
                 ((get_current_time_ms() - steering_wheel_lv_radiators_speed_sent_timestamp) > COOLING_STATE_SYNC_TIMEOUT)) {
-                display_notification("Porket does not respond on radiator settings", 500);
+                display_notification("Porket does not respond on radiator settings", 500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
                 steering_wheel_state_radiator_speed.radiator_speed = actual_speed;
                 steering_wheel_state_radiator_speed.status         = actual_status;
                 steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SYNC;

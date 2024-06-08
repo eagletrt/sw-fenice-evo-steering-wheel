@@ -296,13 +296,15 @@ void enter_fatal_error_mode(const char *message) {
 
 bool on_animation = false;
 
-void display_notification(const char *label_content, uint32_t timeout_ms) {
+void display_notification(const char *label_content, uint32_t timeout_ms, uint32_t background_color_hex, uint32_t label_color_hex) {
     if (on_animation) {
         lv_timer_set_repeat_count(notification_timer, 0);
     }
     on_animation       = true;
     notification_timer = lv_timer_create(restore_previous_screen, timeout_ms, NULL);
     lv_timer_set_repeat_count(notification_timer, 1);
+    tab_notification_set_bg_color(background_color_hex);
+    tab_notification_set_label_color(label_color_hex);
     set_notification_screen_label(label_content);
     lv_scr_load(notif_screen);
     lv_timer_reset(notification_timer);
@@ -314,6 +316,8 @@ void restore_previous_screen(lv_timer_t *timer) {
     } else {
         load_current_racing_tab();
     }
+    tab_notification_set_bg_color(COLOR_SECONDARY_HEX);
+    tab_notification_set_label_color(COLOR_PRIMARY_HEX);
     on_animation = false;
 }
 

@@ -119,7 +119,7 @@ void set_tab_sensors_value_apps(int32_t value_0_to_100);
 void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);
 
-void display_notification(const char *, uint32_t);
+void display_notification(const char *label_content, uint32_t timeout_ms, uint32_t background_color_hex, uint32_t label_color_hex);
 void enter_fatal_error_mode(const char *);
 void restore_previous_screen(lv_timer_t *timer);
 void update_sensors_extra_value(const char *, uint8_t);

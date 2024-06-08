@@ -43,7 +43,7 @@ void set_tab_track_test_dmt_steering_angle_target(float v) {
     //update_sensors_extra_value(b, 1);
     lv_label_set_text(tab_track_test_lb_target, b);
     snprintf(b, 100, "new target at: %.2f", v);
-    display_notification(b, 1000);
+    display_notification(b, 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
 }
 
 void tab_track_test_lb_steering_angle_invalidate() {
