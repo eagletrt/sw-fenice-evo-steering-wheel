@@ -3,9 +3,9 @@
 lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
     [tab_rac_pack_voltage_idx]  = NULL,
     [tab_rac_hv_curr_idx]       = NULL,
-    [tab_rac_best_time_idx]     = NULL,
+    [tab_rac_curr_time_idx]     = NULL,
     [tab_rac_last_time_idx]     = NULL,
-    [tab_rac_dtime_idx]         = NULL,
+    [tab_rac_best_time_idx]         = NULL,
     [tab_rac_torque_idx]        = NULL,
     [tab_rac_slip_idx]          = NULL,
     [tab_rac_inv_idx]           = NULL,
@@ -186,19 +186,19 @@ void tab_racing_create(lv_obj_t *parent) {
 
     /* inserting data into data left panel */
     lv_obj_t *best_time = lv_vertical_pair_label(
-        left_data_panel, &tab_racing_labels[tab_rac_best_time_idx], "0:00:00", &lv_font_inter_bold_38, "BEST TIME", &lv_font_inter_bold_22);
+        left_data_panel, &tab_racing_labels[tab_rac_curr_time_idx], "0:NA:0", &lv_font_inter_bold_38, "CURR TIME", &lv_font_inter_bold_22);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(best_time, 1), 0), LV_ALIGN_LEFT_MID, 10, 0);  // change bottom label position
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(best_time, 0), 0), LV_ALIGN_LEFT_MID, 5, 0);   // change bottom label position
     lv_obj_set_grid_cell(best_time, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *last_time = lv_vertical_pair_label(
-        left_data_panel, &tab_racing_labels[tab_rac_last_time_idx], "0:00:00", &lv_font_inter_bold_38, "LAST TIME", &lv_font_inter_bold_22);
+        left_data_panel, &tab_racing_labels[tab_rac_last_time_idx], "0:NA:0", &lv_font_inter_bold_38, "LAST TIME", &lv_font_inter_bold_22);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(last_time, 1), 0), LV_ALIGN_LEFT_MID, 10, 0);  // change bottom label position
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(last_time, 0), 0), LV_ALIGN_LEFT_MID, 5, 0);   // change bottom label position
     lv_obj_set_grid_cell(last_time, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
     lv_obj_t *delta =
-        lv_vertical_pair_label(left_data_panel, &tab_racing_labels[tab_rac_dtime_idx], "NA", &lv_font_inter_bold_38, "DELTA", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(left_data_panel, &tab_racing_labels[tab_rac_best_time_idx], "0:NA:0", &lv_font_inter_bold_38, "BEST TIME", &lv_font_inter_bold_22);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(delta, 0), 0), LV_ALIGN_LEFT_MID, 10, 0);  // change upper label position
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(delta, 1), 0), LV_ALIGN_LEFT_MID, 10, 0);  // change bottom label position
     lv_obj_set_grid_cell(delta, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);

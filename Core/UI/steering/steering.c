@@ -619,60 +619,37 @@ void pedal_brakes_pressure_update(void) {
 void imu_acceleration_update() {
 }
 
-void lap_count_update() {
-    // TODO RICKY
-    /* GET_LAST_STATE(secondary, lap_count, SECONDARY, LAP_COUNT);
-  GET_LAST_STATE(secondary, lc_status, SECONDARY, LC_STATUS);
-  keep_lap_counter_value(2000);
-  timestamp_start_lap = get_current_time_ms();
-  float last_time_seconds = secondary_lap_count_last_state->lap_time;
-  int minutes = (int)(last_time_seconds / 60.0f);
-  int seconds = (int)(last_time_seconds - minutes * 60.0f);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes,
-           seconds);
-
-  set_tab_racing_label_text(snprintf_buffer, tab_rac_last_time_idx);
-
-  float delta = last_time_seconds - secondary_lc_status_last_state->best_time;
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%+.2f", delta);
-
-  set_tab_racing_label_text(snprintf_buffer, tab_rac_dtime_idx); */
+void tlm_lap_time_update(void) {
+    GET_LAST_STATE(secondary, tlm_lap_time, SECONDARY, TLM_LAP_TIME);
+    // secondary_tlm_lap_time_last_state->lap_count;
+    // secondary_tlm_lap_time_last_state->lap_time;
+    
+    int minutes = (int)(secondary_tlm_lap_time_last_state->lap_time / 60.0f);
+    int seconds = (int)(secondary_tlm_lap_time_last_state->lap_time - minutes * 60.0f);
+    double seconds_dec = 0.0f;
+    int milliseconds = (int)(modf(secondary_tlm_lap_time_last_state->lap_time, &seconds_dec) * 1000.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%01d:%02d:%01d", minutes, seconds, milliseconds);
+    set_tab_racing_label_text(snprintf_buffer, tab_rac_curr_time_idx);
 }
 
-extern bool on_lap_keep;
+void tlm_laps_stats_update(void) {
+    GET_LAST_STATE(secondary, tlm_laps_stats, SECONDARY, TLM_LAPS_STATS);
+    // secondary_tlm_laps_stats_last_state->best_time;
+    // secondary_tlm_laps_stats_last_state->last_time;
+    // secondary_tlm_laps_stats_last_state->lap_number;
+    int minutes = (int)(secondary_tlm_laps_stats_last_state->last_time / 60.0f);
+    int seconds = (int)(secondary_tlm_laps_stats_last_state->last_time - minutes * 60.0f);
+    double seconds_dec = 0.0f;
+    int milliseconds = (int)(modf(secondary_tlm_laps_stats_last_state->last_time, &seconds_dec) * 1000.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%01d:%02d:%01d", minutes, seconds, milliseconds);
+    set_tab_racing_label_text(snprintf_buffer, tab_rac_last_time_idx);
 
-// void lc_status_update(secondary_lc_status_converted_t *data) {
-// TODO RICKY
-/* GET_LAST_STATE(secondary, lc_status, SECONDARY, LC_STATUS);
-int minutes = (int)(secondary_lc_status_last_state->best_time / 60.0f);
-int seconds =
-    (int)(secondary_lc_status_last_state->best_time - minutes * 60.0f);
-snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes,
-         seconds);
-
-set_tab_racing_label_text(snprintf_buffer, tab_rac_best_time_idx);
-
-float delta = secondary_lc_status_last_state->last_time -
-              secondary_lc_status_last_state->best_time;
-snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%+.2f", delta);
-set_tab_racing_label_text(snprintf_buffer, tab_rac_dtime_idx);
-
-if (secondary_lc_status_last_state->last_time !=
-        secondary_lc_status_last_state->last_time &&
-    !on_lap_keep) {
-  float last_time_seconds = secondary_lc_status_last_state->last_time;
-  secondary_lc_status_last_state->last_time = last_time_seconds;
-  int minutes = (int)(last_time_seconds / 60);
-  int seconds = (int)(last_time_seconds - minutes * 60);
-  snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%02d:%02d", minutes,
-           seconds);
-
-  set_tab_racing_label_text(snprintf_buffer, tab_rac_last_time_idx);
+    minutes = (int)(secondary_tlm_laps_stats_last_state->best_time / 60.0f);
+    seconds = (int)(secondary_tlm_laps_stats_last_state->best_time - minutes * 60.0f);
+    milliseconds = (int)(modf(secondary_tlm_laps_stats_last_state->best_time, &seconds_dec) * 1000.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%01d:%02d:%01d", minutes, seconds, milliseconds);
+    set_tab_racing_label_text(snprintf_buffer, tab_rac_best_time_idx);
 }
-snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d",
-         (int)secondary_lc_status_last_state->lap_number);
-set_tab_racing_label_text(snprintf_buffer, tab_rac_lap_count_idx); */
-// }
 
 #define INVERTER_MESSAGE_UNINITIALIZED     -100.0f
 #define INVERTER_TEMP_CONVERSION(raw_temp) -43.23745 + 0.01073427 * raw_temp - 5.523417e-7 * pow(raw_temp, 2) + 1.330787e-11 * pow(raw_temp, 3);

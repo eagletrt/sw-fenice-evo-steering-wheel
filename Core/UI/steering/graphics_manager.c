@@ -264,6 +264,14 @@ void update_graphics(lv_timer_t *t) {
                     odometer_update();
                     break;
                 }
+                case SECONDARY_TLM_LAP_TIME_FRAME_ID: {
+                    tlm_lap_time_update();
+                    break;
+                }
+                case SECONDARY_TLM_LAPS_STATS_FRAME_ID: {
+                    tlm_laps_stats_update();
+                    break;
+                }
                 default:
                     break;
             }

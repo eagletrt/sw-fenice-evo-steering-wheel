@@ -100,8 +100,8 @@ void odometer_update();
 void steer_angle_update();
 void tlm_network_interface_update(void);
 void imu_acceleration_update();
-void lap_count_update();
-void lc_status_update();
+void tlm_lap_time_update(void);
+void tlm_laps_stats_update(void);
 void inv_l_rcv_update(void);
 void inv_r_rcv_update(void);
 

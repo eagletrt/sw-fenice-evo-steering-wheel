@@ -293,6 +293,14 @@ void handle_secondary(can_message_t *msg) {
             STEER_CAN_UNPACK(secondary, SECONDARY, steer_angle, STEER_ANGLE, is_smsg_new, true);
             break;
         }
+        case SECONDARY_TLM_LAP_TIME_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, tlm_lap_time, TLM_LAP_TIME, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_TLM_LAPS_STATS_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, tlm_laps_stats, TLM_LAPS_STATS, is_smsg_new, true);
+            break;
+        }
 #if 0
   case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION,
