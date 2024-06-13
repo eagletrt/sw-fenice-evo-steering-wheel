@@ -301,6 +301,10 @@ void handle_secondary(can_message_t *msg) {
             STEER_CAN_UNPACK(secondary, SECONDARY, tlm_laps_stats, TLM_LAPS_STATS, is_smsg_new, true);
             break;
         }
+        case SECONDARY_HV_SOC_ESTIMATION_STATE_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, hv_soc_estimation_state, HV_SOC_ESTIMATION_STATE, is_smsg_new, true);
+            break;
+        }
 #if 0
   case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
     STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION,

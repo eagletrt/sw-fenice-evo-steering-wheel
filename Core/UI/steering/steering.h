@@ -14,16 +14,15 @@
 #include <time.h>
 #include <unistd.h>
 
-#define INV_MAX_SPEED 6500.f  // MOT_RPM_LIMIT_REAL
+#define INV_MAX_SPEED (6500.f)  // MOT_RPM_LIMIT_REAL
 
-#define STEERING_ANGLE_RANGE_LOW  -150
-#define STEERING_ANGLE_RANGE_HIGH 150
-#define APPS_RANGE_LOW            0
-#define APPS_RANGE_HIGH           130
-#define BRAKE_RANGE_LOW           0
-#define BRAKE_RANGE_HIGH          180
-
-#define N_PORK_CELLBOARD 6
+#define STEERING_ANGLE_RANGE_LOW  (-150)
+#define STEERING_ANGLE_RANGE_HIGH (150u)
+#define APPS_RANGE_LOW            (0u)
+#define APPS_RANGE_HIGH           (130u)
+#define BRAKE_RANGE_LOW           (0u)
+#define BRAKE_RANGE_HIGH          (180u)
+#define N_PORK_CELLBOARD          (6u)
 
 typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
@@ -70,6 +69,7 @@ void hv_debug_signals_update();
 void hv_cells_voltage_stats_update();
 void hv_total_voltage_update();
 void hv_current_update();
+void hv_soc_estimation_update();
 void hv_cells_temp_stats_update();
 void hv_errors_update();
 void hv_cell_balancing_status_update();
@@ -190,7 +190,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
  */
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx);
 void lv_set_pumps_speed_bar(int32_t);
-void lv_set_radiators_speed_bar(int32_t);
+void lv_set_radiators_speed_bar(int32_t val, bool auto_mode);
 
 void lv_radiator_speed_update(void);
 void lv_pumps_speed_update(void);

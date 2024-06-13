@@ -135,8 +135,11 @@ void canread(thread_data_t *thread_data) {
         msg.size = frame.len;
         memcpy(msg.data, frame.data, frame.len);
         SDL_mutexP(mtx);
-        handle_primary(&msg);
-        handle_secondary(&msg);
+        if (thread_data->can_id == NETWORK_PRIMARY) {
+            handle_primary(&msg);
+        } else {
+            handle_secondary(&msg);
+        }
         SDL_mutexV(mtx);
     }
 }
@@ -189,7 +192,7 @@ int main(int argc, char **argv) {
     lv_timer_set_repeat_count(ugt, -1);
     lv_timer_reset(ugt);
 
-    init_watchdog();
+    // init_watchdog();
 
     while (1) {
 #if SIMULATOR_CAN

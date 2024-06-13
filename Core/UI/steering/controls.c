@@ -28,7 +28,6 @@ primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state = {.map_pw 
 
 primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed = {.radiator_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
 primary_lv_pumps_speed_converted_t steering_wheel_state_pumps_speed       = {.pumps_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
-primary_hv_fans_status_converted_t hv_fans_override_settings              = {.fans_override = primary_hv_fans_status_fans_override_off, .fans_speed = 0.0f};
 
 uint32_t steering_wheel_lv_pumps_speed_sent_timestamp                  = 0;
 uint32_t steering_wheel_lv_radiators_speed_sent_timestamp              = 0;
@@ -60,6 +59,8 @@ void turn_telemetry_on_off(void) {
 #define HELP_NOTIFICATION_SCREEN_BACKGROUND (0xf1ff73U)
 
 void help(void) {
+    // TODO: try the lvgl messagebox instead of a full screen popup or use a full screen popup with references to steering wheel
+    // lv_msgbox_t msgbox;
     if (is_on_help_animation()) {
         restore_previous_screen(NULL);
         return;
@@ -84,7 +85,7 @@ void help(void) {
                     "  set target  | -\n"
                     "         help | -\n\n"
                     "       - | - | -",
-                    4000,
+                    2000,
                     HELP_NOTIFICATION_SCREEN_BACKGROUND,
                     COLOR_PRIMARY_HEX);
                 break;
@@ -95,7 +96,7 @@ void help(void) {
                     "  -  | -\n"
                     "  help | -\n\n"
                     "- | - | -",
-                    4000,
+                    1000,
                     HELP_NOTIFICATION_SCREEN_BACKGROUND,
                     COLOR_PRIMARY_HEX);
                 break;
@@ -105,7 +106,7 @@ void help(void) {
                 display_notification(
                     "balancing | -\n"
                     "   help   | -\n\n"
-                    "bal thres  | - | slip",
+                    "bal thres  | - | pork fans",
                     4000,
                     HELP_NOTIFICATION_SCREEN_BACKGROUND,
                     COLOR_PRIMARY_HEX);
@@ -117,7 +118,7 @@ void help(void) {
                     "     - | -\n"
                     "     - | -\n\n"
                     "pumps | - | radiators",
-                    4000,
+                    1000,
                     HELP_NOTIFICATION_SCREEN_BACKGROUND,
                     COLOR_PRIMARY_HEX);
                 break;
@@ -153,8 +154,7 @@ void manettino_right_actions(int dsteps) {
                 break;
             case STEERING_WHEEL_TAB_HV:
                 pork_fans_status_last_state += dsteps * 10;
-                pork_fans_status_last_state = fminf(pork_fans_status_last_state, PORK_HIGH_FANS_SPEED);
-                pork_fans_status_last_state = fmaxf(pork_fans_status_last_state, PORK_LOW_FANS_SPEED);
+                pork_fans_status_last_state = LV_CLAMP(PORK_LOW_FANS_SPEED, pork_fans_status_last_state, PORK_HIGH_FANS_SPEED);
                 send_pork_fans_status((float)pork_fans_status_last_state / 100.0f);
                 break;
             case STEERING_WHEEL_TAB_LV: {
@@ -279,12 +279,12 @@ void manettino_set_radiators_speed(void) {
     steering_wheel_state_radiator_speed.status       = primary_lv_radiator_speed_status_manual;
 
     if (steering_wheel_state_radiator_speed.radiator_speed < 0.0f) {
-        steering_wheel_state_radiator_speed.radiator_speed = 0.0f;
-        snprintf(sprintf_buffer_controls, BUFSIZ, "zero");
+        snprintf(sprintf_buffer_controls, BUFSIZ, "SET\nAUTO");
     } else {
-        snprintf(sprintf_buffer_controls, BUFSIZ, "%0.1f", steering_wheel_state_radiator_speed.radiator_speed);
+        snprintf(sprintf_buffer_controls, BUFSIZ, "SET\n%0.1f", steering_wheel_state_radiator_speed.radiator_speed);
     }
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_local);
+    // lv_set_radiators_speed_bar((int32_t)(steering_wheel_state_radiator_speed.radiator_speed * 100.0f));
     manettino_send_radiators_speed();
 }
 
@@ -324,11 +324,17 @@ void set_cooling_auto_mode() {
 void buttons_pressed_actions(uint8_t button) {
     switch (button) {
         case PADDLE_TOP_RIGHT: {
-            set_ptt_button_pressed(true);
+            if (engineer_mode)
+                change_cansniffer_index(true);
+            else
+                set_ptt_button_pressed(true);
             break;
         }
         case PADDLE_TOP_LEFT: {
-            set_ptt_button_pressed(true);
+            if (engineer_mode)
+                change_cansniffer_index(false);
+            else
+                set_ptt_button_pressed(true);
             break;
         }
         case PADDLE_BOTTOM_RIGHT: {
@@ -461,11 +467,13 @@ void buttons_long_pressed_actions(uint8_t button) {
 }
 
 void send_pork_fans_status(float val) {
+    primary_hv_fans_status_converted_t hv_fans_override_settings = {.fans_override = primary_hv_fans_status_fans_override_off, .fans_speed = 0.0f};
     if (val < 0.0f) {
         hv_fans_override_settings.fans_override = primary_hv_fans_status_fans_override_off;
+        hv_fans_override_settings.fans_speed    = 0.0f;  // ignored
     } else {
         hv_fans_override_settings.fans_override = primary_hv_fans_status_fans_override_on;
-        hv_fans_override_settings.fans_speed    = fmax(0.0f, fmin(1.0f, val));
+        hv_fans_override_settings.fans_speed    = val;  // fmax(0.0f, fmin(1.0f, val));
     }
     primary_hv_set_fans_status_converted_t converted = {0};
     converted.fans_override                          = hv_fans_override_settings.fans_override;
@@ -473,12 +481,12 @@ void send_pork_fans_status(float val) {
     STEER_CAN_PACK(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
     can_send(&msg, true);
 
-    bool auto_mode = hv_fans_override_settings.fans_override == primary_hv_fans_status_fans_override_off;
-
-    if (val < 0.0f) {  // TODO: move outside of cansend
+    if (hv_fans_override_settings.fans_override == primary_hv_fans_status_fans_override_off) {
+        snprintf(sprintf_buffer_controls, BUFSIZ, "AUTO SET");
     } else {
-        tab_hv_set_pork_speed_bar((int32_t)(val * 100), auto_mode);
+        snprintf(sprintf_buffer_controls, BUFSIZ, "%0.1f SET", hv_fans_override_settings.fans_speed);
     }
+    set_tab_hv_label_text(sprintf_buffer_controls, tab_hv_pork_speed_value);
 }
 
 void send_set_car_status(primary_ecu_set_status_status val) {

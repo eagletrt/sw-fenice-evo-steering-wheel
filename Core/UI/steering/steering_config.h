@@ -103,7 +103,7 @@ typedef enum {
     shutdown_circuit_feedbacks_interlock_fb_index,
     shutdown_circuit_ecu_feedbacks_sd_in_index,
     shutdown_circuit_ecu_feedbacks_sd_cock_fb_index,
-    shutdown_circuit_ecu_feedbacks_sd_interial_fb_index,
+    shutdown_circuit_ecu_feedbacks_sd_inertial_fb_index,
     shutdown_circuit_ecu_feedbacks_sd_bots_fb_index,
     shutdown_circuit_feedbacks_invc_lid_fb_index,
     shutdown_circuit_feedbacks_hvd_fb_index,
@@ -111,9 +111,9 @@ typedef enum {
     shutdown_circuit_feedbacks_invc_interlock_fb_index,
     shutdown_circuit_sd_end_index,
     shutdown_circuit_feedbacks_status_feedback_sd_end_index,
-    shutdown_circuit_feedbacks_status_feedback_precharge_status_index,
-    shutdown_circuit_feedbacks_status_feedback_airp_gate_index,
-    shutdown_circuit_feedbacks_status_feedback_airn_gate_index,
+    // shutdown_circuit_feedbacks_status_feedback_precharge_status_index,
+    // shutdown_circuit_feedbacks_status_feedback_airp_gate_index,
+    // shutdown_circuit_feedbacks_status_feedback_airn_gate_index,
     //
     SHUTDOWN_COMPONENT_SIZE
 } shutdown_circuit_indexes_t;
@@ -121,7 +121,7 @@ typedef enum {
 typedef enum { SC_UNKNOWN, SC_OPEN, SC_CLOSE } shutdown_circuit_component_state_t;
 
 typedef enum {
-    tab_rac_pack_voltage_idx,
+    tab_rac_hv_soc_idx,
     tab_rac_hv_curr_idx,
     tab_rac_curr_time_idx,
     tab_rac_last_time_idx,
@@ -211,9 +211,9 @@ typedef enum {
     tab_lv_lb_bus_voltage,
     tab_lv_lb_current_state,
     tab_lv_lb_last_error,
-    tab_lv_lb_pumps_actual,
+    // tab_lv_lb_pumps_actual,
     tab_lv_lb_pumps_local,
-    tab_lv_lb_radiators_actual,
+    // tab_lv_lb_radiators_actual,
     tab_lv_lb_radiators_local,
     tab_lv_lb_state,
     tab_lv_labels_n
@@ -222,7 +222,7 @@ typedef enum {
 /***
  * Cooling
  */
-#define COOLING_STATE_SYNC_TIMEOUT 1000  // in ms
+#define COOLING_STATE_SYNC_TIMEOUT 200  // in ms
 
 typedef enum {
     STEERING_WHEEL_COOLING_STATUS_SYNC,

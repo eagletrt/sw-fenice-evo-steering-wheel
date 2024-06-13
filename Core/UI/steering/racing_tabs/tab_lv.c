@@ -13,22 +13,22 @@ lv_style_t tab_lv_style_back_indic;
 char tab_lv_new_label_buffer[10];
 
 lv_obj_t *tab_lv_labels[tab_lv_labels_n] = {
-    [tab_lv_lb_temp_max]         = NULL,
-    [tab_lv_lb_temp_min]         = NULL,
-    [tab_lv_lb_temp_avg]         = NULL,
-    [tab_lv_lb_voltage_max]      = NULL,
-    [tab_lv_lb_voltage_min]      = NULL,
-    [tab_lv_lb_voltage_delta]    = NULL,
-    [tab_lv_lb_pack_voltage]     = NULL,
-    [tab_lv_lb_pack_voltage_2]   = NULL,
-    [tab_lv_lb_bus_voltage]      = NULL,
-    [tab_lv_lb_current_state]    = NULL,
-    [tab_lv_lb_last_error]       = NULL,
-    [tab_lv_lb_state]            = NULL,
-    [tab_lv_lb_pumps_actual]     = NULL,
-    [tab_lv_lb_pumps_local]      = NULL,
-    [tab_lv_lb_radiators_actual] = NULL,
-    [tab_lv_lb_radiators_local]  = NULL,
+    [tab_lv_lb_temp_max]       = NULL,
+    [tab_lv_lb_temp_min]       = NULL,
+    [tab_lv_lb_temp_avg]       = NULL,
+    [tab_lv_lb_voltage_max]    = NULL,
+    [tab_lv_lb_voltage_min]    = NULL,
+    [tab_lv_lb_voltage_delta]  = NULL,
+    [tab_lv_lb_pack_voltage]   = NULL,
+    [tab_lv_lb_pack_voltage_2] = NULL,
+    [tab_lv_lb_bus_voltage]    = NULL,
+    [tab_lv_lb_current_state]  = NULL,
+    [tab_lv_lb_last_error]     = NULL,
+    [tab_lv_lb_state]          = NULL,
+    // [tab_lv_lb_pumps_actual]     = NULL,
+    [tab_lv_lb_pumps_local] = NULL,
+    // [tab_lv_lb_radiators_actual] = NULL,
+    [tab_lv_lb_radiators_local] = NULL,
 };
 
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx) {
@@ -40,22 +40,10 @@ void lv_set_pumps_speed_bar(int32_t val) {
     lv_bar_set_value(tab_lv_pumps_speed_bar, val, LV_ANIM_OFF);
 }
 
-void lv_pumps_speed_bar_invalidate() {
-    lv_bar_set_value(tab_lv_pumps_speed_bar, 0, LV_ANIM_OFF);
-    //   lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_RED));
-    //   lv_obj_add_style(tab_lv_pumps_speed_bar, &style_indic,
-    //   LV_PART_INDICATOR);
-}
-
-void lv_set_radiators_speed_bar(int32_t val) {
+void lv_set_radiators_speed_bar(int32_t val, bool auto_mode) {
+    // auto_mode ? lv_style_set_bg_color(&tab_lv_style_indic, lv_palette_main(LV_PALETTE_BLUE))
+    //   : lv_style_set_bg_color(&tab_lv_style_indic, lv_palette_main(LV_PALETTE_GREEN));
     lv_bar_set_value(tab_lv_radiators_speed_bar, val, LV_ANIM_OFF);
-}
-
-void lv_radiators_speed_bar_invalidate() {
-    lv_bar_set_value(tab_lv_radiators_speed_bar, 0, LV_ANIM_OFF);
-    //   lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_RED));
-    //   lv_obj_add_style(tab_lv_radiators_speed_bar, &style_indic,
-    //   LV_PART_INDICATOR);
 }
 
 void init_lv_styles(void) {
@@ -244,9 +232,9 @@ void tab_lv_create(lv_obj_t *parent) {
 
     lv_obj_set_grid_cell(pumps_bar_panel, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 
-    lv_obj_t *pumps_actual_value =
-        lv_horizontal_pair_label(pumps_bar_panel, &tab_lv_labels[tab_lv_lb_pumps_actual], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(pumps_actual_value, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_START, 0, 1);
+    // lv_obj_t *pumps_actual_value =
+    // lv_horizontal_pair_label(pumps_bar_panel, &tab_lv_labels[tab_lv_lb_pumps_actual], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+    // lv_obj_set_grid_cell(pumps_actual_value, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
     tab_lv_pumps_speed_bar = lv_bar_create(pumps_bar_panel);
     lv_obj_remove_style_all(tab_lv_pumps_speed_bar);
@@ -329,9 +317,9 @@ void tab_lv_create(lv_obj_t *parent) {
 
     lv_obj_set_grid_cell(radiators_bar_panel, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
 
-    lv_obj_t *radiators_actual_value =
-        lv_horizontal_pair_label(radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_actual], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
-    lv_obj_set_grid_cell(radiators_actual_value, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_START, 0, 1);
+    // lv_obj_t *radiators_actual_value =
+    // lv_horizontal_pair_label(radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_actual], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+    // lv_obj_set_grid_cell(radiators_actual_value, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
     tab_lv_radiators_speed_bar = lv_bar_create(radiators_bar_panel);
     lv_obj_remove_style_all(tab_lv_radiators_speed_bar);

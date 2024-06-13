@@ -272,6 +272,10 @@ void update_graphics(lv_timer_t *t) {
                     tlm_laps_stats_update();
                     break;
                 }
+                case SECONDARY_HV_SOC_ESTIMATION_STATE_FRAME_ID: {
+                    hv_soc_estimation_update();
+                    break;
+                }
                 default:
                     break;
             }

@@ -55,7 +55,7 @@ lv_obj_t *balancing_columns[N_PORK_CELLBOARD] = {
     [5] = NULL,
 };
 
-static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][20] = {
+static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][21] = {
     "SD start",
     "SD in",
     "SD out",
@@ -64,15 +64,16 @@ static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][20] = {
     "Mushroom cock",
     "Inertial switch",
     "BOTS",
-    "INVC Lid",
-    "HVD",
+    "INVC Lid (N/A)",
+    "HVD (N/A)",
     "BSPD",
-    "INVC motos interlock",
+    "INVC motors interlock",
     "TSMS[LV]",
     "TSMS[HV]",
-    "Precharge",
-    "AIR P",
-    "AIR N"};
+    // "Precharge",
+    // "AIR P",
+    // "AIR N"
+};
 
 static shutdown_circuit_component_state_t shutdown_status_lb_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
 
@@ -117,17 +118,7 @@ void set_balancing_column(bool balancing, uint8_t idx) {
 void tab_hv_set_pork_speed_bar(int32_t val, bool auto_mode) {
     auto_mode ? lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_BLUE))
               : lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_GREEN));
-
-    snprintf(tab_hv_new_label_buffer, 10, "%ld", val);
-    lv_label_set_text(tab_hv_labels[tab_hv_pork_speed_value], tab_hv_new_label_buffer);
-
     lv_bar_set_value(tab_hv_pork_speed_bar, val, LV_ANIM_OFF);
-}
-
-void tab_hv_pork_speed_bar_invalidate() {
-    lv_bar_set_value(tab_hv_pork_speed_bar, 0, LV_ANIM_OFF);
-    lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_RED));
-    lv_obj_add_style(tab_hv_pork_speed_bar, &tab_hv_style_indic, LV_PART_INDICATOR);
 }
 
 void tab_hv_set_error_status(debug_signal_error_t error, bool status) {
@@ -158,16 +149,18 @@ void tab_hv_update_error_label() {
     return;
 }
 
+bool precharge_bar_active = false;
+
 void precharge_bar_update(int32_t val) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_HV);
-    if (precharge_panel != NULL) {
+    if (precharge_bar_active) {
         lv_bar_set_value(tab_hv_precharge_bar, val, LV_ANIM_OFF);
     }
 }
 
 void precharge_bar_insert(bool precharge) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_HV);
-    if (precharge && precharge_panel == NULL) {
+    if (precharge && !precharge_bar_active) {
         static lv_coord_t precharge_panel_cols[] = {DATA_PANEL_WIDTH, LV_GRID_TEMPLATE_LAST};
         static lv_coord_t precharge_panel_rows[] = {150, LV_GRID_TEMPLATE_LAST};
 
@@ -192,12 +185,11 @@ void precharge_bar_insert(bool precharge) {
         lv_bar_set_value(tab_hv_precharge_bar, 0, LV_ANIM_OFF);
 
         lv_obj_set_grid_cell(tab_hv_precharge_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
-    } else if (!precharge && precharge_panel != NULL) {
+    } else if (!precharge && precharge_bar_active) {
         lv_obj_del(precharge_panel);
         precharge_panel = NULL;
-    } else {
-        return;
     }
+    precharge_bar_active = precharge;
 }
 
 shutdown_circuit_component_state_t global_shutdown_status = SC_UNKNOWN;
@@ -219,7 +211,7 @@ shutdown_circuit_indexes_t last_shutdown_element_unknown(void) {
 }
 
 void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close) {
-    shutdown_status_lb_array[idx] = is_close;
+    shutdown_status_lb_array[idx] = is_close ? SC_CLOSE : SC_OPEN;
     shutdown_circuit_indexes_t last_opend_index;
     if ((last_opend_index = last_shutdown_element_unknown()) != shutdown_circuit_no_element_index) {
         char buf[64];
@@ -330,11 +322,7 @@ void tab_hv_create(lv_obj_t *parent) {
     lv_obj_remove_style_all(data_panel);
     // lv_obj_set_layout(data_panel, LV_LAYOUT_GRID);
     lv_obj_clear_flag(data_panel, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(
-        data_panel,
-        SCREEN_WIDTH,
-        DATA_PANEL_HEIGHT);  // non andrebbe tolto il 20 per farlo
-                             // simmetrico(forse qualche errore)
+    lv_obj_set_size(data_panel, SCREEN_WIDTH, DATA_PANEL_HEIGHT);  // TODO non andrebbe tolto il 20 per farlo simmetrico(forse qualche errore)
 
     lv_obj_add_style(data_panel, &grid_style, 0);
     lv_obj_center(data_panel);

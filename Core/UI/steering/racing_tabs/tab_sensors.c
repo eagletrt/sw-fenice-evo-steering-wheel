@@ -492,7 +492,7 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_obj_remove_style_all(break_rear_container);
     lv_obj_align(break_rear_container, LV_ALIGN_CENTER, 0, 0);
     lv_obj_add_style(break_rear_container, &label_style, LV_PART_MAIN);
-    lv_label_set_text(break_rear_container, "F");
+    lv_label_set_text(break_rear_container, "R");
     lv_obj_set_style_text_font(break_rear_container, &lv_font_inter_bold_20, LV_PART_MAIN);
     lv_obj_set_grid_cell(break_rear_container, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
@@ -509,7 +509,7 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_obj_t *break_front_container = lv_label_create(bars_data_panel);
     lv_obj_remove_style_all(break_front_container);
     lv_obj_add_style(break_front_container, &label_style, LV_PART_MAIN);
-    lv_label_set_text(break_front_container, "R");
+    lv_label_set_text(break_front_container, "F");
     lv_obj_set_style_text_font(break_front_container, &lv_font_inter_bold_20, LV_PART_MAIN);
     lv_obj_set_grid_cell(break_front_container, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
@@ -537,22 +537,6 @@ void tab_sensors_create(lv_obj_t *parent) {
     lv_bar_set_range(throttle_bar1, 0, 100);
     lv_bar_set_value(throttle_bar1, 0, LV_ANIM_OFF);
     lv_obj_set_grid_cell(throttle_bar1, LV_GRID_ALIGN_CENTER, 2, 2, LV_GRID_ALIGN_CENTER, 0, 1);
-    /* 
-    lv_obj_t* throttle_2_container = lv_label_create(bars_data_panel);
-    lv_obj_remove_style_all(throttle_2_container);
-    lv_obj_add_style(throttle_2_container, &label_style, LV_PART_MAIN);
-    lv_label_set_text(throttle_2_container, "R");
-    lv_obj_set_style_text_font(throttle_2_container, &lv_font_inter_bold_20, LV_PART_MAIN);
-
-    lv_obj_set_grid_cell(throttle_2_container, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 1, 1);
-
-    throttle_bar2 = lv_bar_create(bars_data_panel);
-    lv_obj_remove_style_all(throttle_bar2);
-    lv_obj_add_style(throttle_bar2, &throttle_bar_style, LV_PART_INDICATOR);
-    lv_obj_add_style(throttle_bar2, &bar_calib_back_style, LV_PART_MAIN);
-    lv_bar_set_range(throttle_bar2, 0, 100);
-    lv_bar_set_value(throttle_bar2, 0, LV_ANIM_OFF);
-    lv_obj_set_grid_cell(throttle_bar2, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1); */
 }
 
 void tab_sensor_resync(void) {
