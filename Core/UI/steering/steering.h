@@ -63,6 +63,7 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 void car_status_update();
 void tlm_status_update();
 void angular_velocity_update();
+void vehicle_speed_update();
 void ecu_feedbacks_update();
 
 void hv_debug_signals_update();
@@ -115,6 +116,13 @@ void set_tab_sensors_value_brake_f(float value_in_bar);
 void set_tab_sensors_value_brake_r (float value_in_bar);
 void set_tab_sensors_value_apps(int32_t value_0_to_100);
 
+void ecu_version_update(void);
+void lv_version_update(void);
+void hv_cellboard_version_update(void);
+void hv_mainboard_version_update(void);
+void tlm_version_update(void);
+
+void ptt_tasks_fn(lv_timer_t *tim);
 
 void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);
@@ -137,6 +145,8 @@ void set_ptt_button_pressed(bool);
 void set_tab_racing_hv_current_bar(int32_t v);
 void set_tab_racing_hv_soc_bar(int32_t v);
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx);
+void set_tab_racing_ptt_label_color(bool active);
+void set_tab_racing_speedometer_indicator(int32_t value);
 
 /***
  * Tab sensors

@@ -27,7 +27,7 @@
 #define LV_VER_RES_MAX 480
 
 /*Color depth: 1 (1 byte per pixel), 8 (RGB332), 16 (RGB565), 32 (ARGB8888)*/
-#define LV_COLOR_DEPTH     32
+#define LV_COLOR_DEPTH     16
 
 /*Swap the 2 bytes of RGB565 color. Useful if the display has an 8-bit interface (e.g. SPI)*/
 #define LV_COLOR_16_SWAP   0
@@ -81,10 +81,10 @@
  *====================*/
 
 /*Default display refresh period. LVG will redraw changed areas with this period time*/
-#define LV_DISP_DEF_REFR_PERIOD     100      /*[ms]*/
+#define LV_DISP_DEF_REFR_PERIOD     5      /*[ms]*/
 
 /*Input device read period in milliseconds*/
-#define LV_INDEV_DEF_READ_PERIOD    30      /*[ms]*/
+#define LV_INDEV_DEF_READ_PERIOD    1000     /*[ms]*/
 
 /*Use a custom tick source that tells the elapsed time in milliseconds.
  *It removes the need to manually update the tick with `lv_tick_inc()`)*/
@@ -161,7 +161,7 @@
  *-----------*/
 
 /*Use STM32's DMA2D (aka Chrom Art) GPU*/
-#define LV_USE_GPU_STM32_DMA2D  1
+#define LV_USE_GPU_STM32_DMA2D  0
 #if LV_USE_GPU_STM32_DMA2D
 /*Must be defined to include path of CMSIS header of target processor
 e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
@@ -233,13 +233,13 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
  *If LV_USE_LOG is enabled an error message will be printed on failure*/
 #define LV_USE_ASSERT_NULL          1   /*Check if the parameter is NULL. (Very fast, recommended)*/
 #define LV_USE_ASSERT_MALLOC        1   /*Checks is the memory is successfully allocated or no. (Very fast, recommended)*/
-#define LV_USE_ASSERT_STYLE         0   /*Check if the styles are properly initialized. (Very fast, recommended)*/
+#define LV_USE_ASSERT_STYLE         1   /*Check if the styles are properly initialized. (Very fast, recommended)*/
 #define LV_USE_ASSERT_MEM_INTEGRITY 0   /*Check the integrity of `lv_mem` after critical operations. (Slow)*/
 #define LV_USE_ASSERT_OBJ           0   /*Check the object's type and existence (e.g. not deleted). (Slow)*/
 
 /*Add a custom handler when assert happens e.g. to restart the MCU*/
-#define LV_ASSERT_HANDLER_INCLUDE   <stdint.h>
-#define LV_ASSERT_HANDLER   while(1);   /*Halt by default*/
+#define LV_ASSERT_HANDLER_INCLUDE   "stm32h7xx_hal.h" // <stdint.h>
+#define LV_ASSERT_HANDLER   HAL_NVIC_SystemReset(); // while(1);   /*Halt by default*/
 
 /*-------------
  * Others
@@ -499,33 +499,19 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 #endif  /*LV_USE_CALENDAR*/
 
 #define LV_USE_CHART        1
-
 #define LV_USE_COLORWHEEL   1
-
 #define LV_USE_IMGBTN       1
-
 #define LV_USE_KEYBOARD     1
-
 #define LV_USE_LED          1
-
 #define LV_USE_LIST         1
-
-#define LV_USE_MENU       1
-
+#define LV_USE_MENU         1
 #define LV_USE_METER        1
-
 #define LV_USE_MSGBOX       1
-
 #define LV_USE_SPINBOX      1
-
 #define LV_USE_SPINNER      1
-
 #define LV_USE_TABVIEW      1
-
 #define LV_USE_TILEVIEW     1
-
 #define LV_USE_WIN          1
-
 #define LV_USE_SPAN         1
 #if LV_USE_SPAN
 /*A line text can contain maximum num of span descriptor */

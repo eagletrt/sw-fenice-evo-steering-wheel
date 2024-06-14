@@ -66,9 +66,11 @@ void MX_FMC_Init(void) {
     }
 
     /* USER CODE BEGIN FMC_Init 2 */
+
+    // TODO capire bene bene questi parametri qua
     MICRON_STEER_Context_t MICRON_STEER;
     MICRON_STEER.TargetBank     = FMC_SDRAM_CMD_TARGET_BANK1;
-    MICRON_STEER.RefreshMode    = MICRON_STEER_AUTOREFRESH_MODE_CMD;
+    MICRON_STEER.RefreshMode    = MICRON_STEER_AUTOREFRESH_MODE_CMD; // todo try MICRON_STEER_SELFREFRESH_MODE_CMD
     MICRON_STEER.RefreshRate    = REFRESH_COUNT;
     MICRON_STEER.BurstLength    = MICRON_STEER_BURST_LENGTH_1;
     MICRON_STEER.BurstType      = MICRON_STEER_BURST_TYPE_SEQUENTIAL;
@@ -98,7 +100,15 @@ static void HAL_FMC_MspInit(void) {
     /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FMC;
-    PeriphClkInitStruct.FmcClockSelection    = RCC_FMCCLKSOURCE_PLL;
+    PeriphClkInitStruct.PLL2.PLL2M           = 8;
+    PeriphClkInitStruct.PLL2.PLL2N           = 110;
+    PeriphClkInitStruct.PLL2.PLL2P           = 2;
+    PeriphClkInitStruct.PLL2.PLL2Q           = 2;
+    PeriphClkInitStruct.PLL2.PLL2R           = 2;
+    PeriphClkInitStruct.PLL2.PLL2RGE         = RCC_PLL2VCIRANGE_1;
+    PeriphClkInitStruct.PLL2.PLL2VCOSEL      = RCC_PLL2VCOWIDE;
+    PeriphClkInitStruct.PLL2.PLL2FRACN       = 0;
+    PeriphClkInitStruct.FmcClockSelection    = RCC_FMCCLKSOURCE_PLL2;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         Error_Handler();
     }

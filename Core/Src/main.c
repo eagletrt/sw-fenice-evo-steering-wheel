@@ -68,7 +68,6 @@ extern bool secondary_can_fatal_error;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void watchdog_task_fn(lv_timer_t *);
-void ptt_tasks_fn(lv_timer_t *tim);
 
 /* USER CODE END PFP */
 

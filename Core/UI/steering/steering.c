@@ -107,17 +107,22 @@ void tlm_status_update() {
     }
 }
 
-void angular_velocity_update(void) {
-    GET_LAST_STATE(secondary, angular_velocity, SECONDARY, ANGULAR_VELOCITY);
+void vehicle_speed_update() {
+    GET_LAST_STATE(secondary, vehicle_speed, SECONDARY, VEHICLE_SPEED);
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
     if (primary_ecu_status_last_state->status != primary_ecu_status_status_drive) {
         return;
     }
-    float speed = fabs((secondary_angular_velocity_last_state->fl + secondary_angular_velocity_last_state->fr) / 2.0f) * 3.6f * 0.203f;
+    // float speed = fabs((secondary_angular_velocity_last_state->fl + secondary_angular_velocity_last_state->fr) / 2.0f) * 3.6f * 0.203f;
+    float speed = secondary_vehicle_speed_last_state->u * 3.6f;
     set_tab_racing_label_text("KM/H", tab_rac_bottom_status_idx);
+    set_tab_racing_speedometer_indicator((int32_t)(speed));
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", speed);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_status_idx);
     set_tab_track_test_lb_speed(snprintf_buffer);
+}
+
+void angular_velocity_update(void) {
 }
 
 #define ERROR_COUNTER_CHECKER(error_def, error_def_string)                                                                                   \
@@ -390,8 +395,12 @@ void lv_pumps_speed_update(void) {
                 break;
             if ((!IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.pumps_speed, actual_speed)) &&
                 !IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.status, actual_status)) {
-                display_notification("BMS LV does not respond\n"
-                "on pumps settings", 2000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+                display_notification(
+                    "BMS LV does not respond\n"
+                    "on pumps settings",
+                    2000,
+                    COLOR_RED_STATUS_HEX,
+                    COLOR_PRIMARY_HEX);
                 steering_wheel_state_pumps_speed.pumps_speed = actual_speed;
                 steering_wheel_state_pumps_speed.status      = actual_status;
                 steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -432,8 +441,12 @@ void lv_radiator_speed_update(void) {
                 break;
             if (!IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.radiator_speed, actual_speed) &&
                 !IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.status, actual_status)) {
-                display_notification("BMS LV does not respond\n"
-                    "on radiator settings", 2000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+                display_notification(
+                    "BMS LV does not respond\n"
+                    "on radiator settings",
+                    2000,
+                    COLOR_RED_STATUS_HEX,
+                    COLOR_PRIMARY_HEX);
                 steering_wheel_state_radiator_speed.radiator_speed = actual_speed;
                 steering_wheel_state_radiator_speed.status         = actual_status;
                 steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -526,6 +539,43 @@ void lv_cells_temp_stats_update() {
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_avg);
 }
 
+void canlib_versions_mismatch_checker() {
+    static uint32_t last_popup_on_canlib_versions_mismatch = 0;
+    GET_LAST_STATE(primary, ecu_version, PRIMARY, ECU_VERSION);
+    GET_LAST_STATE(primary, lv_version, PRIMARY, LV_VERSION);
+    GET_LAST_STATE(primary, hv_cellboard_version, PRIMARY, HV_CELLBOARD_VERSION);
+    GET_LAST_STATE(primary, hv_mainboard_version, PRIMARY, HV_MAINBOARD_VERSION);
+    GET_LAST_STATE(primary, tlm_version, PRIMARY, TLM_VERSION);
+    if ((get_current_time_ms() - last_popup_on_canlib_versions_mismatch) > 6500 &&
+        (CANLIB_BUILD_TIME != primary_ecu_version_last_state->canlib_build_time || CANLIB_BUILD_TIME != primary_lv_version_last_state->canlib_build_time ||
+         CANLIB_BUILD_TIME != primary_hv_mainboard_version_last_state->canlib_build_time ||
+         CANLIB_BUILD_TIME != primary_hv_cellboard_version_last_state->canlib_build_time ||
+         CANLIB_BUILD_TIME != primary_tlm_version_last_state->canlib_build_time)) {
+        last_popup_on_canlib_versions_mismatch = get_current_time_ms();
+        display_notification("CANLIB VERSIONS MISMATCH", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+    }
+}
+
+void ecu_version_update(void) {
+    canlib_versions_mismatch_checker();
+}
+
+void lv_version_update(void) {
+    canlib_versions_mismatch_checker();
+}
+
+void hv_cellboard_version_update(void) {
+    canlib_versions_mismatch_checker();
+}
+
+void hv_mainboard_version_update(void) {
+    canlib_versions_mismatch_checker();
+}
+
+void tlm_version_update(void) {
+    canlib_versions_mismatch_checker();
+}
+
 void steer_angle_update() {
     GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", secondary_steer_angle_last_state->angle);
@@ -534,7 +584,7 @@ void steer_angle_update() {
 
 void tlm_network_interface_update(void) {
     for (size_t i = 0; i < tlm_ntw_interfaces_current_size; i++) {
-        int f = 'A' - 'a';
+        int f   = 'A' - 'a';
         char a1 = (char)((tlm_ntw_interfaces[i] & 0xFF000000) >> 24);
         char a2 = (char)((tlm_ntw_interfaces[i] & 0x00FF0000) >> 16);
         char a3 = (char)((tlm_ntw_interfaces[i] & 0x0000FF00) >> 8);
@@ -543,14 +593,14 @@ void tlm_network_interface_update(void) {
             snprintf_buffer,
             SNPRINTF_BUFFER_SIZE,
             "%c%c%c%c %lu %lu %lu %lu",
-            (char) (a1 == '-' ? ' ' : a1 + f),
-            (char) (a2 == '-' ? ' ' : a2 + f),
-            (char) (a3 == '-' ? ' ' : a3 + f),
-            (char) (a4 == '-' ? ' ' : a4 + f),
-            ((tlm_ntw_ips[i]& 0xFF000000) >> 24),
-            ((tlm_ntw_ips[i]& 0x00FF0000) >> 16),
-            ((tlm_ntw_ips[i]& 0x0000FF00) >> 8),
-            ((tlm_ntw_ips[i]& 0x000000FF)));
+            (char)(a1 == '-' ? ' ' : a1 + f),
+            (char)(a2 == '-' ? ' ' : a2 + f),
+            (char)(a3 == '-' ? ' ' : a3 + f),
+            (char)(a4 == '-' ? ' ' : a4 + f),
+            ((tlm_ntw_ips[i] & 0xFF000000) >> 24),
+            ((tlm_ntw_ips[i] & 0x00FF0000) >> 16),
+            ((tlm_ntw_ips[i] & 0x0000FF00) >> 8),
+            ((tlm_ntw_ips[i] & 0x000000FF)));
         size_t index_to_update = LV_MIN(tab_sensors_lb_tlm_ntw_interface_0 + TLM_NTW_INTERFACE_MAX_N - 1, tab_sensors_lb_tlm_ntw_interface_0 + i);
         set_tab_sensors_label_text(snprintf_buffer, index_to_update);
     }
@@ -764,23 +814,27 @@ void ptt_tasks_fn(lv_timer_t *timer) {
     if (!ecu_ack && ptt_button_pressed) {
         ptt_status = ptt_status_SET_ON;
         send_ptt_status_message(true);
-        update_sensors_extra_value("X", 0);
-        set_tab_racing_label_text("X", tab_rac_ptt_status_idx);
+        update_sensors_extra_value("SON", 0);
+        set_tab_racing_label_text("SON", tab_rac_ptt_status_idx);
+        set_tab_racing_ptt_label_color(true);
     } else if (ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_SET_OFF;
         send_ptt_status_message(false);
-        update_sensors_extra_value("X", 0);
-        set_tab_racing_label_text("X", tab_rac_ptt_status_idx);
+        update_sensors_extra_value("SOF", 0);
+        set_tab_racing_label_text("SOF", tab_rac_ptt_status_idx);
+        set_tab_racing_ptt_label_color(false);
     } else if (ecu_ack && ptt_button_pressed) {
         ptt_status = ptt_status_ON;
         send_ptt_status_message(true);
         update_sensors_extra_value("ON", 0);
         set_tab_racing_label_text("ON", tab_rac_ptt_status_idx);
+        set_tab_racing_ptt_label_color(true);
     } else if (!ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_OFF;
         send_ptt_status_message(false);
         update_sensors_extra_value("OFF", 0);
         set_tab_racing_label_text("OFF", tab_rac_ptt_status_idx);
+        set_tab_racing_ptt_label_color(false);
     }
 }
 

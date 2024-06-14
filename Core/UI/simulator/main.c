@@ -192,6 +192,10 @@ int main(int argc, char **argv) {
     lv_timer_set_repeat_count(ugt, -1);
     lv_timer_reset(ugt);
 
+    lv_timer_t *ptt_checker_task = lv_timer_create(ptt_tasks_fn, 100, NULL);
+    lv_timer_set_repeat_count(ptt_checker_task, -1);
+    lv_timer_reset(ptt_checker_task);
+
     // init_watchdog();
 
     while (1) {

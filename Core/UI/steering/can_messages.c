@@ -215,11 +215,32 @@ void handle_primary(can_message_t *msg) {
             STEER_CAN_UNPACK(primary, PRIMARY, lv_cells_temp_stats, LV_CELLS_TEMP_STATS, is_pmsg_new, true);
             break;
         }
-
         case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT, is_pmsg_new, true);
             break;
         }
+        case PRIMARY_ECU_VERSION_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, ecu_version, ECU_VERSION, is_pmsg_new, true);
+            break;
+        }
+        case PRIMARY_LV_VERSION_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_version, LV_VERSION, is_pmsg_new, true);
+            break;
+        }
+        case PRIMARY_HV_CELLBOARD_VERSION_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_cellboard_version, HV_CELLBOARD_VERSION, is_pmsg_new, true);
+            break;
+        }
+        case PRIMARY_HV_MAINBOARD_VERSION_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_mainboard_version, HV_MAINBOARD_VERSION, is_pmsg_new, true);
+            break;
+        }
+        case PRIMARY_TLM_VERSION_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, tlm_version, TLM_VERSION, is_pmsg_new, true);
+            break;
+        }
+
+        // INVERTERS
         case INVERTERS_INV_L_RCV_FRAME_ID: {
 #if WATCHDOG_ENABLED == 1
             inverters_watchdog_reset(&m_inverters_watchdog, inverters_index_from_id(msg->id), get_current_time_ms());
@@ -283,6 +304,10 @@ void handle_secondary(can_message_t *msg) {
         }
         case SECONDARY_PEDAL_BRAKES_PRESSURE_FRAME_ID: {
             STEER_CAN_UNPACK(secondary, SECONDARY, pedal_brakes_pressure, PEDAL_BRAKES_PRESSURE, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_VEHICLE_SPEED_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, vehicle_speed, VEHICLE_SPEED, is_smsg_new, true);
             break;
         }
         case SECONDARY_ANGULAR_VELOCITY_FRAME_ID: {

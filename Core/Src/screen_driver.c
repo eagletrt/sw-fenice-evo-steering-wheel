@@ -4,7 +4,7 @@
 
 #define LCD_SCREEN_WIDTH  SCREEN_WIDTH
 #define LCD_SCREEN_HEIGHT SCREEN_HEIGHT
-#define FRAMEBUFFER_SIZE  (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH * 4)
+#define FRAMEBUFFER_SIZE  (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH * COLOR_RESOLUTION)
 
 /* We need half as many transfers because the buffer is
 an array of 16 bits but the transfers are 32 bits. */
@@ -36,58 +36,54 @@ void screen_driver_init() {
 }
 
 uint32_t last_tick = 0;
+extern bool dma2d_transfer_completed;
 
 void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p) {
-    lv_disp_t *disp = _lv_refr_get_disp_refreshing();
-    uint16_t *dma_xfer_src, *dma_xfer_dst;
-    if (!lv_disp_flush_is_last(disp_drv)) {
-        // lv_disp_flush_ready(disp_drv); //  TODO: check
-
-#if 0
-    uint32_t hal_tick = HAL_GetTick();
-    print("Flush time: %u\n", (unsigned int) (hal_tick - last_tick));
-    last_tick = hal_tick;
-#endif
-
+    // if (!dma2d_transfer_completed) {
         // return;
-    }
+    // }
+    lv_disp_t *disp = _lv_refr_get_disp_refreshing();
+    lv_color_t *dma_xfer_src, *dma_xfer_dst;
 
-    // Swap the buffer for the one to display and reload the screen at the next
-    // vertical blanking
-    HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING);  // VSYNC
+    HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING);
 
-    // Determine source and destination of transfer
-    dma_xfer_src = (uint16_t *)color_p;
+    dma_xfer_src = color_p;
     if (color_p == framebuffer_1) {
-        dma_xfer_dst = (uint16_t *)framebuffer_2;
+        dma_xfer_dst = framebuffer_2;
     } else {
-        dma_xfer_dst = (uint16_t *)framebuffer_1;
+        dma_xfer_dst = framebuffer_1;
     }
 
     for (size_t i = 0; i < disp->inv_p; i++) {
+        // TODO: check these dirty areas... maybe it is possible to copy all the framebuffer directly and then perform the swap
         dma2d_copy_area(disp->inv_areas[i], (uint32_t)dma_xfer_src, (uint32_t)dma_xfer_dst);
     }
     lv_disp_flush_ready(disp_drv);
 }
 
 void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
-    size_t start_offset  = (LCD_SCREEN_WIDTH * (area.y1) + (area.x1)) * 4;  // address offset (not pixel offset so it is multiplied by 2)
+    size_t start_offset  = (LCD_SCREEN_WIDTH * (area.y1) + (area.x1)) * COLOR_RESOLUTION;
     size_t area_width    = 1 + area.x2 - area.x1;
     size_t area_height   = 1 + area.y2 - area.y1;
     size_t in_out_offset = LCD_SCREEN_WIDTH - area_width;
 
     // Set up DMA2D to transfer parts of picture to part of picture
-    hdma2d.Init.Mode         = DMA2D_M2M;  // plain memory to memory
-    hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
-    hdma2d.Init.OutputOffset = in_out_offset;  // nb pixels in buffer between end of area line and start
-                                               // of next area line
-    hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputColorMode = DMA2D_INPUT_ARGB8888;
+    hdma2d.Init.Mode                                       = DMA2D_M2M;  // plain memory to memory
+    hdma2d.Init.ColorMode                                  = DMA2D_OUTPUT_RGB565;
+    hdma2d.Init.OutputOffset                               = in_out_offset;
+    hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputColorMode = DMA2D_INPUT_RGB565;
     hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputOffset    = in_out_offset;
     hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].AlphaMode      = DMA2D_REPLACE_ALPHA;
     hdma2d.LayerCfg[DMA2D_FOREGROUND_LAYER].InputAlpha     = 0;
 
     HAL_DMA2D_Init(&hdma2d);
     HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_FOREGROUND_LAYER);
-    HAL_DMA2D_Start(&hdma2d, src_buffer + start_offset, dst_buffer + start_offset, area_width, area_height);  // Start transfer
-    HAL_DMA2D_PollForTransfer(&hdma2d, 10);                                                                   // Wait for transfer to be over
+    HAL_DMA2D_Start(&hdma2d, src_buffer + start_offset, dst_buffer + start_offset, area_width, area_height);
+    HAL_DMA2D_PollForTransfer(&hdma2d, 10); // TODO: use the callback once checked that they work
+    /***
+     * maybe this should improve graphics because:
+     * now: update -> does not end to update -> another update occurs
+     * then: update -> does not end to update -> waits for update completion
+     */
+    // dma2d_transfer_completed = false;
 }

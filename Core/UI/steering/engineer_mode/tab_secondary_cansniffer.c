@@ -19,6 +19,7 @@ void init_secondary_cansniffer_tab_styles() {
     lv_style_init(&secondary_cansniffer_label_style);
     lv_style_set_base_dir(&secondary_cansniffer_label_style, LV_BASE_DIR_LTR);
     lv_style_set_bg_opa(&secondary_cansniffer_label_style, LV_OPA_TRANSP);
+    lv_style_set_text_font(&secondary_cansniffer_label_style, &lv_font_inter_bold_14);
     lv_style_set_text_color(&secondary_cansniffer_label_style, lv_color_hex(COLOR_SECONDARY_HEX));
     lv_style_set_text_align(&secondary_cansniffer_label_style, LV_TEXT_ALIGN_CENTER);
     lv_style_set_align(&secondary_cansniffer_label_style, LV_ALIGN_CENTER);

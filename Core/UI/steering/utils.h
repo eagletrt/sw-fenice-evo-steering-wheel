@@ -8,26 +8,26 @@
 #include <stdio.h>
 #include <string.h>
 
-#define SCREEN_WIDTH  800
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH  (800u)
+#define SCREEN_HEIGHT (480u)
 
-#define NOTCH_HEIGHT 40
-#define NOTCH_WIDTH  498
+#define NOTCH_HEIGHT (40u)
+#define NOTCH_WIDTH  (498u)
 
 #define NOTCH_BAR_WIDTH_S  35  // smaller items
 #define NOTCH_BAR_HEIGHT_S 6
 #define NOTCH_BAR_WIDTH_L  90  // large item
 #define NOTCH_BAR_HEIGHT_L 10
 
-#define COLOR_PRIMARY_HEX       0x000000  // black background
-#define COLOR_SECONDARY_HEX     0xF2F3F5
-#define COLOR_TERTIARY_HEX      0xF2F3F5  // white
-#define COLOR_YELLOW_STATUS_HEX 0xFFFA14
-#define COLOR_BLUE_STATUS_HEX   0x0000FF
-#define COLOR_GREEN_STATUS_HEX  0x39D103
-#define COLOR_ORANGE_STATUS_HEX 0xE78A00
-#define COLOR_RED_STATUS_HEX    0xCE0000
-#define COLOR_CAR_HEX           0X78797A
+#define COLOR_PRIMARY_HEX       (0x000000u)  // black background
+#define COLOR_SECONDARY_HEX     (0xF2F3F5u)
+#define COLOR_TERTIARY_HEX      (0xF2F3F5u)  // white
+#define COLOR_YELLOW_STATUS_HEX (0xFFFA14u)
+#define COLOR_BLUE_STATUS_HEX   (0x0000FFu)
+#define COLOR_GREEN_STATUS_HEX  (0x39D103u)
+#define COLOR_ORANGE_STATUS_HEX (0xE78A00u)
+#define COLOR_RED_STATUS_HEX    (0xCE0000u)
+#define COLOR_CAR_HEX           (0X78797Au)
 
 LV_FONT_DECLARE(lv_font_inter_bold_14);
 LV_FONT_DECLARE(lv_font_inter_bold_20);

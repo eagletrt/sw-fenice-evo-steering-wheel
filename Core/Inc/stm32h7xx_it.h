@@ -63,6 +63,7 @@ void FDCAN2_IT0_IRQHandler(void);
 void EXTI9_5_IRQHandler(void);
 void TIM4_IRQHandler(void);
 void TIM7_IRQHandler(void);
+void DMA2D_IRQHandler(void);
 void LPUART1_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 

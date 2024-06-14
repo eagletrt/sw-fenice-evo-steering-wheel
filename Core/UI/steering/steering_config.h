@@ -20,6 +20,8 @@
  */
 #define STRICT_RELOAD_ALL_ENABLED 0
 
+#define COLOR_RESOLUTION (2U)
+
 /***
  * Activate candump in the engineering tabs
  */

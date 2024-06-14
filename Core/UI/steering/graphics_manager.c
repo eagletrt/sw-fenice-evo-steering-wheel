@@ -166,8 +166,29 @@ void update_graphics(lv_timer_t *t) {
                     lv_cells_temp_stats_update();
                     break;
                 }
-                default:
+                case PRIMARY_ECU_VERSION_FRAME_ID: {
+                    ecu_version_update();
                     break;
+                }
+                case PRIMARY_LV_VERSION_FRAME_ID: {
+                    lv_version_update();
+                    break;
+                }
+                case PRIMARY_HV_CELLBOARD_VERSION_FRAME_ID: {
+                    hv_cellboard_version_update();
+                    break;
+                }
+                case PRIMARY_HV_MAINBOARD_VERSION_FRAME_ID: {
+                    hv_mainboard_version_update();
+                    break;
+                }
+                case PRIMARY_TLM_VERSION_FRAME_ID: {
+                    tlm_version_update();
+                    break;
+                }
+                default: {
+                    break;
+                }
             }
         }
     }
@@ -200,6 +221,10 @@ void update_graphics(lv_timer_t *t) {
                 }
                 case SECONDARY_STEER_ANGLE_FRAME_ID: {
                     steer_angle_update();
+                    break;
+                }
+                case SECONDARY_VEHICLE_SPEED_FRAME_ID: {
+                    vehicle_speed_update();
                     break;
                 }
                 case SECONDARY_PEDAL_THROTTLE_FRAME_ID: {

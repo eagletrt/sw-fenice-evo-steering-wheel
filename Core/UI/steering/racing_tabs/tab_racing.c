@@ -48,6 +48,18 @@ void set_tab_racing_hv_soc_bar(int32_t v) {
     lv_bar_set_value(tab_racing_hv_soc_bar, (int32_t)v, LV_ANIM_OFF);
 }
 
+void set_tab_racing_ptt_label_color(bool active) {
+    if (active) {
+        // lv_style_set_text_color(&label_style, lv_color_hex(COLOR_GREEN_STATUS_HEX));
+    } else {
+        // lv_style_set_text_color(&label_style, lv_color_hex(COLOR_SECONDARY_HEX));
+    }
+}
+
+void set_tab_racing_speedometer_indicator(int32_t value) {
+    lv_meter_set_indicator_end_value(tab_racing_custom_meter, tab_racing_indicator_blue, value);
+}
+
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
     lv_label_set_text(tab_racing_labels[idx], s);
@@ -85,8 +97,9 @@ void tab_racing_create(lv_obj_t *parent) {
 
     lv_obj_set_grid_cell(bar_panel_lv, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
-    lv_obj_t *lv_perc = lv_horizontal_pair_label(bar_panel_lv, &tab_racing_labels[tab_rac_hv_soc_idx], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
-    lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5); // change "%" position
+    lv_obj_t *lv_perc =
+        lv_horizontal_pair_label(bar_panel_lv, &tab_racing_labels[tab_rac_hv_soc_idx], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+    lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5);  // change "%" position
     lv_obj_set_grid_cell(lv_perc, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     tab_racing_hv_soc_bar = lv_bar_create(bar_panel_lv);
@@ -296,7 +309,6 @@ void tab_racing_create(lv_obj_t *parent) {
 
     tab_racing_custom_meter = lv_meter_create(meter_container);
 
-    // TODO fix this warning!!!
     lv_custom_meter(&tab_racing_custom_meter, &tab_racing_indicator_blue, &tab_racing_indicator_white);
     lv_obj_align(tab_racing_custom_meter, LV_ALIGN_CENTER, 0, 0);
 
