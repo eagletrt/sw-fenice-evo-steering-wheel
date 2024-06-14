@@ -57,3 +57,4 @@ void init_can_device(device_t *);
 #endif
 
 #endif /* __FDCAN_H__ */
+

@@ -380,7 +380,7 @@ void lv_custom_meter(lv_obj_t **custom_meter) {
 
     lv_scale_set_total_tick_count(*custom_meter, 0);
     lv_scale_set_major_tick_every(*custom_meter, 100);
-    lv_scale_set_range(scale_line, 0, 100);
+    lv_scale_set_range(*custom_meter, 0, 100);
 
     lv_obj_set_style_length(*custom_meter, 5, LV_PART_ITEMS);
     lv_obj_set_style_length(*custom_meter, 10, LV_PART_INDICATOR);
