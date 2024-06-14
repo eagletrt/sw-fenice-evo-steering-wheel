@@ -363,10 +363,10 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 /*Optionally declare custom fonts here.
  *You can use these fonts as default font too and they will be available globally.
  *E.g. #define LV_FONT_CUSTOM_DECLARE   LV_FONT_DECLARE(my_font_1) LV_FONT_DECLARE(my_font_2)*/
-#define LV_FONT_CUSTOM_DECLARE LV_FONT_DECLARE(lv_font_inter_bold_22)
+#define LV_FONT_CUSTOM_DECLARE LV_FONT_DECLARE(lv_font_inter_bold_14)
 
 /*Always set a default font*/
-#define LV_FONT_DEFAULT (&lv_font_inter_bold_22)
+#define LV_FONT_DEFAULT (&lv_font_inter_bold_14)
 
 /*Enable handling large font and/or fonts with a lot of characters.
  *The limit depends on the font size, font face and bpp.

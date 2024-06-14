@@ -266,6 +266,10 @@ void manettino_send_power_map(float val) {
     set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);
 }
 
+/***
+ * RADIATORS
+ */
+
 void manettino_send_radiators_speed(void) {
     primary_lv_set_radiator_speed_converted_t converted = {0};
     converted.status                                    = steering_wheel_state_radiator_speed.status;
@@ -283,10 +287,14 @@ void manettino_set_radiators_speed(void) {
     } else {
         snprintf(sprintf_buffer_controls, BUFSIZ, "SET\n%0.1f", steering_wheel_state_radiator_speed.radiator_speed);
     }
-    set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_local);
+    set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_value);
     // lv_set_radiators_speed_bar((int32_t)(steering_wheel_state_radiator_speed.radiator_speed * 100.0f));
     manettino_send_radiators_speed();
 }
+
+/***
+ * PUMPS
+ */
 
 void manettino_send_pumps_speed(void) {
     primary_lv_set_pumps_speed_converted_t converted = {0};
@@ -306,9 +314,13 @@ void manettino_set_pumps_speed(void) {
     } else {
         snprintf(sprintf_buffer_controls, BUFSIZ, "%0.1f", steering_wheel_state_pumps_speed.pumps_speed);
     }
-    set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_local);
+    set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_value);
     manettino_send_pumps_speed();
 }
+
+/***
+ * AUTO COOLING
+ */
 
 void set_cooling_auto_mode() {
     steering_wheel_state_pumps_speed.status      = primary_lv_pumps_speed_status_auto;

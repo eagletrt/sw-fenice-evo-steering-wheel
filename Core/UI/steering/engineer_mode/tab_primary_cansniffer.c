@@ -19,6 +19,7 @@ static_assert(sizeof(cansniffer_elem_t) == CANSNIFFER_ELEM_T_SIZE, "Please set C
 void init_primary_cansniffer_tab_styles() {
     min_heap_init(&primary_cansniffer_ids_heap, int, primary_MESSAGE_COUNT, min_heap_compare_indexes);
     lv_style_init(&primary_cansniffer_label_style);
+    lv_style_set_text_font(&primary_cansniffer_label_style, &lv_font_inter_bold_14);
     lv_style_set_base_dir(&primary_cansniffer_label_style, LV_BASE_DIR_LTR);
     lv_style_set_bg_opa(&primary_cansniffer_label_style, LV_OPA_TRANSP);
     lv_style_set_text_color(&primary_cansniffer_label_style, lv_color_hex(COLOR_SECONDARY_HEX));

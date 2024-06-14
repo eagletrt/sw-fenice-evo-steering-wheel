@@ -211,7 +211,7 @@ void hv_soc_estimation_update() {
     GET_LAST_STATE(secondary, hv_soc_estimation_state, SECONDARY, HV_SOC_ESTIMATION_STATE);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", secondary_hv_soc_estimation_state_last_state->soc * 100.0f);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_soc_idx);
-    set_tab_racing_hv_pack_voltage_bar((int32_t)(secondary_hv_soc_estimation_state_last_state->soc * 100.0f));
+    set_tab_racing_hv_soc_bar((int32_t)(secondary_hv_soc_estimation_state_last_state->soc * 100.0f));
 }
 
 void hv_cells_temp_stats_update() {
@@ -362,10 +362,10 @@ extern steering_wheel_cooling_status_t steering_wheel_lv_radiator_speed_state;
 void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg) {
     if (msg->status == primary_lv_pumps_speed_status_off || msg->status == primary_lv_pumps_speed_status_auto) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
-        set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_local);
+        set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_value);
     } else {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->pumps_speed);
-        set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_local);
+        set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_value);
     }
     lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f));
 }
@@ -390,7 +390,8 @@ void lv_pumps_speed_update(void) {
                 break;
             if ((!IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.pumps_speed, actual_speed)) &&
                 !IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.status, actual_status)) {
-                display_notification("BMS LV does not respond on pumps settings", 500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+                display_notification("BMS LV does not respond\n"
+                "on pumps settings", 2000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
                 steering_wheel_state_pumps_speed.pumps_speed = actual_speed;
                 steering_wheel_state_pumps_speed.status      = actual_status;
                 steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -410,7 +411,7 @@ void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t
     } else {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->radiator_speed);
     }
-    set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_local);
+    set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_value);
     lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), msg->status == primary_lv_radiator_speed_status_auto);
 }
 
@@ -431,7 +432,8 @@ void lv_radiator_speed_update(void) {
                 break;
             if (!IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.radiator_speed, actual_speed) &&
                 !IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.status, actual_status)) {
-                display_notification("BMS LV does not respond on radiator settings", 500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+                display_notification("BMS LV does not respond\n"
+                    "on radiator settings", 2000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
                 steering_wheel_state_radiator_speed.radiator_speed = actual_speed;
                 steering_wheel_state_radiator_speed.status         = actual_status;
                 steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -532,18 +534,23 @@ void steer_angle_update() {
 
 void tlm_network_interface_update(void) {
     for (size_t i = 0; i < tlm_ntw_interfaces_current_size; i++) {
+        int f = 'A' - 'a';
+        char a1 = (char)((tlm_ntw_interfaces[i] & 0xFF000000) >> 24);
+        char a2 = (char)((tlm_ntw_interfaces[i] & 0x00FF0000) >> 16);
+        char a3 = (char)((tlm_ntw_interfaces[i] & 0x0000FF00) >> 8);
+        char a4 = (char)((tlm_ntw_interfaces[i] & 0x000000FF));
         snprintf(
             snprintf_buffer,
             SNPRINTF_BUFFER_SIZE,
             "%c%c%c%c %lu %lu %lu %lu",
-            (char)(tlm_ntw_interfaces[i] >> 24),
-            (char)(tlm_ntw_interfaces[i] >> 16),
-            (char)(tlm_ntw_interfaces[i] >> 8),
-            (char)(tlm_ntw_interfaces[i]),
-            (tlm_ntw_ips[i] >> 24),
-            (tlm_ntw_ips[i] >> 16),
-            (tlm_ntw_ips[i] >> 8),
-            (tlm_ntw_ips[i]));
+            (char) (a1 == '-' ? ' ' : a1 + f),
+            (char) (a2 == '-' ? ' ' : a2 + f),
+            (char) (a3 == '-' ? ' ' : a3 + f),
+            (char) (a4 == '-' ? ' ' : a4 + f),
+            ((tlm_ntw_ips[i]& 0xFF000000) >> 24),
+            ((tlm_ntw_ips[i]& 0x00FF0000) >> 16),
+            ((tlm_ntw_ips[i]& 0x0000FF00) >> 8),
+            ((tlm_ntw_ips[i]& 0x000000FF)));
         size_t index_to_update = LV_MIN(tab_sensors_lb_tlm_ntw_interface_0 + TLM_NTW_INTERFACE_MAX_N - 1, tab_sensors_lb_tlm_ntw_interface_0 + i);
         set_tab_sensors_label_text(snprintf_buffer, index_to_update);
     }

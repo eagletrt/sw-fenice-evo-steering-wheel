@@ -20,7 +20,7 @@ lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
 };
 
 lv_obj_t *tab_racing_hv_current_bar;
-lv_obj_t *tab_racing_hv_pack_voltage_bar;
+lv_obj_t *tab_racing_hv_soc_bar;
 lv_obj_t *tab_racing_custom_meter;
 lv_meter_indicator_t *tab_racing_indicator_blue;
 lv_meter_indicator_t *tab_racing_indicator_white;
@@ -31,14 +31,21 @@ lv_style_t bar_back_style;
 
 lv_obj_t *bottom_bar;
 
-void set_tab_racing_hv_current_bar(float v) {
+void set_tab_racing_hv_current_bar(int32_t v) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
     lv_bar_set_value(tab_racing_hv_current_bar, (int32_t)fabs(v), LV_ANIM_OFF);
 }
 
-void set_tab_racing_hv_pack_voltage_bar(float v) {
+void set_tab_racing_hv_soc_bar(int32_t v) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
-    lv_bar_set_value(tab_racing_hv_pack_voltage_bar, (int32_t)v, LV_ANIM_OFF);
+    if (v > 75) {
+        lv_obj_set_style_bg_color(tab_racing_hv_soc_bar, lv_color_hex(COLOR_GREEN_STATUS_HEX), LV_PART_INDICATOR);
+    } else if (v > 40) {
+        lv_obj_set_style_bg_color(tab_racing_hv_soc_bar, lv_color_hex(COLOR_ORANGE_STATUS_HEX), LV_PART_INDICATOR);
+    } else {
+        lv_obj_set_style_bg_color(tab_racing_hv_soc_bar, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_INDICATOR);
+    }
+    lv_bar_set_value(tab_racing_hv_soc_bar, (int32_t)v, LV_ANIM_OFF);
 }
 
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx) {
@@ -78,20 +85,16 @@ void tab_racing_create(lv_obj_t *parent) {
 
     lv_obj_set_grid_cell(bar_panel_lv, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
-    // lv percentage
-    lv_obj_t *lv_perc =
-        lv_horizontal_pair_label(bar_panel_lv, &tab_racing_labels[tab_rac_hv_soc_idx], "NA", &lv_font_inter_bold_30, "-", &lv_font_inter_bold_20);
-    lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5);  // change "%" position
+    lv_obj_t *lv_perc = lv_horizontal_pair_label(bar_panel_lv, &tab_racing_labels[tab_rac_hv_soc_idx], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+    lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5); // change "%" position
     lv_obj_set_grid_cell(lv_perc, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    // lv state of charge bar
-    tab_racing_hv_pack_voltage_bar = lv_bar_create(bar_panel_lv);
-    custom_side_bar(tab_racing_hv_pack_voltage_bar);
-    lv_bar_set_range(tab_racing_hv_pack_voltage_bar, 0, 100);
-    lv_bar_set_value(tab_racing_hv_pack_voltage_bar, 0, LV_ANIM_OFF);
-    lv_obj_set_grid_cell(tab_racing_hv_pack_voltage_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_END, 1, 1);
-
-    // lv label
+    tab_racing_hv_soc_bar = lv_bar_create(bar_panel_lv);
+    custom_side_bar(tab_racing_hv_soc_bar);
+    lv_bar_set_range(tab_racing_hv_soc_bar, 0, 100);
+    lv_bar_set_value(tab_racing_hv_soc_bar, 0, LV_ANIM_OFF);
+    lv_obj_set_style_bg_color(tab_racing_hv_soc_bar, lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_INDICATOR);
+    lv_obj_set_grid_cell(tab_racing_hv_soc_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_END, 1, 1);
 
     lv_obj_t *label_lv = lv_label_create(bar_panel_lv);
     lv_obj_add_style(label_lv, &label_style, LV_PART_MAIN);
@@ -107,29 +110,25 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_add_style(bar_panel_hv, &grid_style, 0);
     lv_obj_set_size(bar_panel_hv, RACING_TAB_SIDE_BAR_WIDTH, SCREEN_HEIGHT);
     lv_obj_clear_flag(bar_panel_hv, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_grid_dsc_array(bar_panel_hv, bar_panel_cols,
-                              bar_panel_rows);  // same as LEFT BAR
+    lv_obj_set_grid_dsc_array(bar_panel_hv, bar_panel_cols, bar_panel_rows);  // same as LEFT BAR
     lv_obj_set_grid_cell(bar_panel_hv, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    // hv percentage
     lv_obj_t *hv_perc =
         lv_horizontal_pair_label(bar_panel_hv, &tab_racing_labels[tab_rac_hv_curr_idx], "NA", &lv_font_inter_bold_30, "A", &lv_font_inter_bold_20);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(hv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5);  // change "%" position
     lv_obj_set_grid_cell(hv_perc, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    // hv label
     lv_obj_t *label_hv = lv_label_create(bar_panel_hv);
     lv_obj_add_style(label_hv, &label_style, LV_PART_MAIN);
     lv_obj_set_style_text_font(label_hv, &lv_font_inter_bold_22, LV_STATE_DEFAULT);
     lv_label_set_text(label_hv, "HV-A");
     lv_obj_set_grid_cell(label_hv, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
-    // hv state of charge bar
     tab_racing_hv_current_bar = lv_bar_create(bar_panel_hv);
     custom_side_bar(tab_racing_hv_current_bar);
     lv_bar_set_range(tab_racing_hv_current_bar, 0, 200);
     lv_bar_set_value(tab_racing_hv_current_bar, 0, LV_ANIM_OFF);
-    lv_obj_set_style_bg_color(tab_racing_hv_current_bar, lv_color_hex(COLOR_ORANGE_STATUS_HEX), LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(tab_racing_hv_current_bar, lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_INDICATOR);
     lv_obj_set_grid_cell(tab_racing_hv_current_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
     /*-------------------------------------*/
@@ -343,7 +342,6 @@ void tab_racing_create(lv_obj_t *parent) {
     // BOTTOM BAR
     bottom_bar = lv_bar_create(central_panel);
     lv_obj_remove_style_all(bottom_bar);
-    // lv_obj_add_style(bottom_bar, &bar_lv_style, LV_PART_INDICATOR);
     lv_obj_add_style(bottom_bar, &bar_back_style, LV_PART_MAIN);
     lv_obj_set_size(bottom_bar, 600, RACING_TAB_BOTTOM_BAR_HEIGHT - 15);
     lv_obj_center(bottom_bar);

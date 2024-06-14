@@ -134,8 +134,8 @@ void set_ptt_button_pressed(bool);
 /***
  * Tab racing
  */
-void set_tab_racing_hv_current_bar(float v);
-void set_tab_racing_hv_pack_voltage_bar(float v);
+void set_tab_racing_hv_current_bar(int32_t v);
+void set_tab_racing_hv_soc_bar(int32_t v);
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx);
 
 /***
@@ -199,4 +199,4 @@ extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT][primary_MAX_ST
 extern uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT][secondary_MAX_STRUCT_SIZE_CONVERSION];
 extern uint8_t inverters_messages_last_state[inverters_MESSAGE_COUNT][inverters_MAX_STRUCT_SIZE_CONVERSION];
 
-#endif /* STEERING_H */
+#endif // STEERING_H

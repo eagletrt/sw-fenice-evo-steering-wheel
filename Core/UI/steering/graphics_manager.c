@@ -65,11 +65,6 @@ void update_graphics(lv_timer_t *t) {
                     tlm_status_update();
                     break;
                 }
-                // TODO
-                // case PRIMARY_DAS_ERRORS_FRAME_ID: {
-                // das_errors_update();
-                // break;
-                // }
                 case PRIMARY_HV_STATUS_FRAME_ID: {
                     hv_status_update();
                     break;
@@ -223,15 +218,6 @@ void update_graphics(lv_timer_t *t) {
                     tlm_network_interface_update();
                     break;
                 }
-                // TODO RICKY
-                // case SECONDARY_LAP_COUNT_FRAME_ID: {
-                // lap_count_update();
-                // break;
-                // }
-                // case SECONDARY_LC_STATUS_FRAME_ID: {
-                // lc_status_update();
-                // break;
-                // }
                 case SECONDARY_IRTS_FL_0_FRAME_ID:
                 case SECONDARY_IRTS_FL_1_FRAME_ID:
                 case SECONDARY_IRTS_FL_2_FRAME_ID:
@@ -276,8 +262,9 @@ void update_graphics(lv_timer_t *t) {
                     hv_soc_estimation_update();
                     break;
                 }
-                default:
+                default: {
                     break;
+                }
             }
         }
     }

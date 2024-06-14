@@ -211,10 +211,10 @@ typedef enum {
     tab_lv_lb_bus_voltage,
     tab_lv_lb_current_state,
     tab_lv_lb_last_error,
-    // tab_lv_lb_pumps_actual,
-    tab_lv_lb_pumps_local,
-    // tab_lv_lb_radiators_actual,
-    tab_lv_lb_radiators_local,
+    tab_lv_lb_pumps_name,
+    tab_lv_lb_pumps_value,
+    tab_lv_lb_radiators_name,
+    tab_lv_lb_radiators_value,
     tab_lv_lb_state,
     tab_lv_labels_n
 } tab_lv_labels_enum;

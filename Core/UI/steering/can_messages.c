@@ -305,31 +305,18 @@ void handle_secondary(can_message_t *msg) {
             STEER_CAN_UNPACK(secondary, SECONDARY, hv_soc_estimation_state, HV_SOC_ESTIMATION_STATE, is_smsg_new, true);
             break;
         }
-#if 0
-  case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION,
-                     is_smsg_new);
-    break;
-  }
-#endif
-#if 0
-  case SECONDARY_LAP_COUNT_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, lap_count, LAP_COUNT, is_smsg_new);
-    break;
-  }
-#endif
-#if 0
-  case SECONDARY_LC_STATUS_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, lc_status, LC_STATUS, is_smsg_new);
-    break;
-  }
-#endif
-#if 0
-  case SECONDARY_TIMESTAMP_FRAME_ID: {
-    STEER_CAN_UNPACK(secondary, SECONDARY, timestamp, TIMESTAMP, is_smsg_new);
-    break;
-  }
-#endif
+        case SECONDARY_IMU_ACCELERATION_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, imu_acceleration, IMU_ACCELERATION, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_IMU_ANGULAR_RATE_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, imu_angular_rate, IMU_ANGULAR_RATE, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_TLM_UNIX_TIMESTAMP_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, tlm_unix_timestamp, TLM_UNIX_TIMESTAMP, is_smsg_new, true);
+            break;
+        }
         case SECONDARY_IRTS_FL_0_FRAME_ID: {
             STEER_CAN_UNPACK(secondary, SECONDARY, irts_fl_0, IRTS_FL_0, is_smsg_new, true);
             break;
@@ -425,9 +412,6 @@ void handle_secondary(can_message_t *msg) {
             break;
     }
 }
-
-#define SERIAL_TO_CAN_INTERFACE_PRIMARY   0
-#define SERIAL_TO_CAN_INTERFACE_SECONDARY 1
 
 void message_parser(uint8_t *msg, size_t msg_siz) {
     msg[msg_siz]  = 0;
