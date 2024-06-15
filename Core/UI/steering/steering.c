@@ -539,6 +539,12 @@ void lv_cells_temp_stats_update() {
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_avg);
 }
 
+bool was_received_ecu_version          = false;
+bool was_received_lv_version           = false;
+bool was_received_hv_mainboard_version = false;
+bool was_received_hv_cellboard_version = false;
+bool was_received_tlm_version          = false;
+
 void canlib_versions_mismatch_checker() {
     static uint32_t last_popup_on_canlib_versions_mismatch = 0;
     GET_LAST_STATE(primary, ecu_version, PRIMARY, ECU_VERSION);
@@ -547,32 +553,38 @@ void canlib_versions_mismatch_checker() {
     GET_LAST_STATE(primary, hv_mainboard_version, PRIMARY, HV_MAINBOARD_VERSION);
     GET_LAST_STATE(primary, tlm_version, PRIMARY, TLM_VERSION);
     if ((get_current_time_ms() - last_popup_on_canlib_versions_mismatch) > 6500 &&
-        (CANLIB_BUILD_TIME != primary_ecu_version_last_state->canlib_build_time || CANLIB_BUILD_TIME != primary_lv_version_last_state->canlib_build_time ||
-         CANLIB_BUILD_TIME != primary_hv_mainboard_version_last_state->canlib_build_time ||
-         CANLIB_BUILD_TIME != primary_hv_cellboard_version_last_state->canlib_build_time ||
-         CANLIB_BUILD_TIME != primary_tlm_version_last_state->canlib_build_time)) {
+        ((was_received_ecu_version && CANLIB_BUILD_TIME != primary_ecu_version_last_state->canlib_build_time) ||
+         (was_received_lv_version && CANLIB_BUILD_TIME != primary_lv_version_last_state->canlib_build_time) ||
+         (was_received_hv_mainboard_version && CANLIB_BUILD_TIME != primary_hv_mainboard_version_last_state->canlib_build_time) ||
+         (was_received_hv_cellboard_version && CANLIB_BUILD_TIME != primary_hv_cellboard_version_last_state->canlib_build_time) ||
+         (was_received_tlm_version && CANLIB_BUILD_TIME != primary_tlm_version_last_state->canlib_build_time))) {
         last_popup_on_canlib_versions_mismatch = get_current_time_ms();
         display_notification("CANLIB VERSIONS MISMATCH", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
     }
 }
 
 void ecu_version_update(void) {
+    was_received_ecu_version = true;
     canlib_versions_mismatch_checker();
 }
 
 void lv_version_update(void) {
+    was_received_lv_version = true;
     canlib_versions_mismatch_checker();
 }
 
 void hv_cellboard_version_update(void) {
+    was_received_hv_cellboard_version = true;
     canlib_versions_mismatch_checker();
 }
 
 void hv_mainboard_version_update(void) {
+    was_received_hv_mainboard_version = true;
     canlib_versions_mismatch_checker();
 }
 
 void tlm_version_update(void) {
+    was_received_tlm_version = true;
     canlib_versions_mismatch_checker();
 }
 

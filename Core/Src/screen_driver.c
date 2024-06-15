@@ -1,14 +1,10 @@
 #include <screen_driver.h>
 
+#include "steering_config.h"
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#define LCD_SCREEN_WIDTH  SCREEN_WIDTH
-#define LCD_SCREEN_HEIGHT SCREEN_HEIGHT
-#define FRAMEBUFFER_SIZE  (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH * COLOR_RESOLUTION)
-
-/* We need half as many transfers because the buffer is
-an array of 16 bits but the transfers are 32 bits. */
-#define DMA_XFERS_NEEDED FRAMEBUFFER_SIZE
+#define FRAMEBUFFER_SIZE  (uint32_t)(SCREEN_HEIGHT * SCREEN_WIDTH) 
 
 extern LTDC_HandleTypeDef hltdc;
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
@@ -62,10 +58,10 @@ void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *
 }
 
 void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
-    size_t start_offset  = (LCD_SCREEN_WIDTH * (area.y1) + (area.x1)) * COLOR_RESOLUTION;
+    size_t start_offset  = (SCREEN_WIDTH * (area.y1) + (area.x1)) * COLOR_RESOLUTION;
     size_t area_width    = 1 + area.x2 - area.x1;
     size_t area_height   = 1 + area.y2 - area.y1;
-    size_t in_out_offset = LCD_SCREEN_WIDTH - area_width;
+    size_t in_out_offset = SCREEN_WIDTH - area_width;
 
     // Set up DMA2D to transfer parts of picture to part of picture
     hdma2d.Init.Mode                                       = DMA2D_M2M;  // plain memory to memory
@@ -79,7 +75,7 @@ void dma2d_copy_area(lv_area_t area, uint32_t src_buffer, uint32_t dst_buffer) {
     HAL_DMA2D_Init(&hdma2d);
     HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_FOREGROUND_LAYER);
     HAL_DMA2D_Start(&hdma2d, src_buffer + start_offset, dst_buffer + start_offset, area_width, area_height);
-    HAL_DMA2D_PollForTransfer(&hdma2d, 10); // TODO: use the callback once checked that they work
+    HAL_DMA2D_PollForTransfer(&hdma2d, 10);  // TODO: use the callback once checked that they work
     /***
      * maybe this should improve graphics because:
      * now: update -> does not end to update -> another update occurs

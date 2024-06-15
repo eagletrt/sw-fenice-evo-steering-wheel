@@ -52,21 +52,21 @@
 #define LV_MEM_CUSTOM      0
 #if LV_MEM_CUSTOM == 0
 /*Size of the memory available for `lv_mem_alloc()` in bytes (>= 2kB)*/
-#  define LV_MEM_SIZE    2097152       /*[bytes]*/
+#define LV_MEM_SIZE    2097152       /*[bytes]*/
 
 /*Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too.*/
-#  define LV_MEM_ADR          0xC0400000   /*0: unused*/
+#define LV_MEM_ADR  (0xC0400000)   /*0: unused*/
     /*Instead of an address give a memory allocator that will be called to get a memory pool for LVGL. E.g. my_malloc*/
     #if LV_MEM_ADR == 0
-        //#define LV_MEM_POOL_INCLUDE your_alloc_library  /* Uncomment if using an external allocator*/
-        //#define LV_MEM_POOL_ALLOC   your_alloc          /* Uncomment if using an external allocator*/
+        #define LV_MEM_POOL_INCLUDE "custom_memory_pool.h"  /* Uncomment if using an external allocator*/
+        #define LV_MEM_POOL_ALLOC   steering_malloc          /* Uncomment if using an external allocator*/
     #endif
 
 #else       /*LV_MEM_CUSTOM*/
-#  define LV_MEM_CUSTOM_INCLUDE "lvgl_port/custom_memory_alloc.h"   /*Header for the dynamic memory function*/
-#  define LV_MEM_CUSTOM_ALLOC     steering_malloc
-#  define LV_MEM_CUSTOM_FREE      steering_free
-#  define LV_MEM_CUSTOM_REALLOC   steering_realloc
+    #define LV_MEM_CUSTOM_INCLUDE "custom_memory_pool.h"   /*Header for the dynamic memory function*/
+    #define LV_MEM_CUSTOM_ALLOC     steering_malloc
+    #define LV_MEM_CUSTOM_FREE      steering_free
+    #define LV_MEM_CUSTOM_REALLOC   steering_realloc
 #endif     /*LV_MEM_CUSTOM*/
 
 /*Number of the intermediate memory buffer used during rendering and other internal processing mechanisms.

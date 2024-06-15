@@ -45,8 +45,8 @@
 #define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS ((0xC0600000) + ((CANSNIFFER_ELEM_T_SIZE) * CAN_POSSIBLE_IDS))
 #endif
 
-#define SCREEN_WIDTH  800
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH  (800u)
+#define SCREEN_HEIGHT (480u)
 
 /***
  * General configurations 

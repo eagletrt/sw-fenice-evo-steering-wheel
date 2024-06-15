@@ -22,7 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 
-volatile bool dma2d_transfer_completed = false;
+volatile bool dma2d_transfer_completed = true;
 
 void dma2dtransfer_completed(DMA2D_HandleTypeDef *hdma2d) {
     dma2d_transfer_completed = true;

@@ -8,16 +8,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#define SCREEN_WIDTH  (800u)
-#define SCREEN_HEIGHT (480u)
-
 #define NOTCH_HEIGHT (40u)
 #define NOTCH_WIDTH  (498u)
 
-#define NOTCH_BAR_WIDTH_S  35  // smaller items
-#define NOTCH_BAR_HEIGHT_S 6
-#define NOTCH_BAR_WIDTH_L  90  // large item
-#define NOTCH_BAR_HEIGHT_L 10
+#define NOTCH_BAR_WIDTH_S  (35)
+#define NOTCH_BAR_HEIGHT_S (6)
+#define NOTCH_BAR_WIDTH_L  (90)
+#define NOTCH_BAR_HEIGHT_L (10)
 
 #define COLOR_PRIMARY_HEX       (0x000000u)  // black background
 #define COLOR_SECONDARY_HEX     (0xF2F3F5u)
