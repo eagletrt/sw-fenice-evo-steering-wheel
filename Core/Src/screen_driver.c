@@ -1,10 +1,13 @@
 #include <screen_driver.h>
+#include <string.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+#define BYTE_DIMENSION 4
+
 #define LCD_SCREEN_WIDTH  SCREEN_WIDTH
 #define LCD_SCREEN_HEIGHT SCREEN_HEIGHT
-#define FRAMEBUFFER_SIZE  (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH * 4)
+#define FRAMEBUFFER_SIZE  (uint32_t)(LCD_SCREEN_HEIGHT * LCD_SCREEN_WIDTH * BYTE_DIMENSION)
 
 /* We need half as many transfers because the buffer is
 an array of 16 bits but the transfers are 32 bits. */
@@ -28,11 +31,11 @@ void screen_driver_init() {
 
     lv_display_t * disp = lv_display_create(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT); /*Basic initialization with horizontal and vertical resolution in pixels*/
     lv_display_set_flush_cb(disp, stm32_flush_cb); /*Set a flush callback to draw to the display*/
-    lv_display_set_buffers(disp, framebuffer_1, framebuffer_2, sizeof(framebuffer_1), LV_DISPLAY_RENDER_MODE_PARTIAL); /*Set an initialized buffer*/
+    lv_display_set_buffers(disp, framebuffer_1, framebuffer_2, FRAMEBUFFER_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL); /*Set an initialized buffer*/
 
 
-    // static lv_disp_draw_buf_t draw_buf;
-    // lv_disp_draw_buf_init(&draw_buf, framebuffer_1, framebuffer_2, FRAMEBUFFER_SIZE);
+    // static lv_disp_draw_buf_t draw_buf; //OLD 8.0
+    //lv_disp_draw_buf_init(&draw_buf, framebuffer_1, framebuffer_2, FRAMEBUFFER_SIZE);
     // lv_disp_drv_init(&lv_display_driver);
     // lv_display_driver.direct_mode = true;
     // lv_display_driver.hor_res     = SCREEN_WIDTH;
@@ -61,6 +64,21 @@ void stm32_flush_cb(lv_display_t * disp_drv, const lv_area_t * area, lv_color_t 
         // return;
     }
 
+    // int32_t x,y;
+    // for (y = area->y1; y <= area->y2; y++) {
+    //     for (x = area->x1; x <= area->x2; x++) {
+    //         uint32_t lcd_fb_address;
+    //         if (color_p == framebuffer_1) {
+    //             dma_xfer_dst = (uint32_t *)framebuffer_2;
+    //         } else {
+    //             dma_xfer_dst = (uint16_t *)framebuffer_1;
+    //         }
+    //         lv_color_t *fb_ptr = (lv_color_t *)(lcd_fb_address);
+    //         fb_ptr[y * LCD_SCREEN_WIDTH + x] = *color_p;
+    //         color_p++;
+    //     }
+    // }
+
     // Swap the buffer for the one to display and reload the screen at the next
     // vertical blanking
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING);  // VSYNC
@@ -76,6 +94,10 @@ void stm32_flush_cb(lv_display_t * disp_drv, const lv_area_t * area, lv_color_t 
     // for (size_t i = 0; i < disp->inv_p; i++) {
     //     dma2d_copy_area(disp->inv_areas[i], (uint32_t)dma_xfer_src, (uint32_t)dma_xfer_dst);
     // }
+
+    memcpy(dma_xfer_dst, dma_xfer_src, 800*480*4);
+
+    
     lv_disp_flush_ready(disp_drv);
 }
 

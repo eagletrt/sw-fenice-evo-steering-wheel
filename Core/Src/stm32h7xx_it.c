@@ -191,7 +191,6 @@ void SysTick_Handler(void)
     STM32CubeMX
   */
   HAL_SYSTICK_IRQHandler();
-  HAL_IncTick();
   lv_tick_inc(1);
 
   /* USER CODE END SysTick_IRQn 0 */
