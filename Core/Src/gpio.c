@@ -54,13 +54,41 @@ void MX_GPIO_Init(void) {
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(IMUX_C3_GPIO_Port, IMUX_C3_Pin, GPIO_PIN_RESET);
+
+    /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_RESET);
 
-    /*Configure GPIO pins : PEPin PEPin */
-    GPIO_InitStruct.Pin  = INT1_Pin | INT3_Pin;
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(IMUX_C1_GPIO_Port, IMUX_C1_Pin, GPIO_PIN_RESET);
+
+    /*Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(IMUX_C2_GPIO_Port, IMUX_C2_Pin, GPIO_PIN_RESET);
+
+    /*Configure GPIO pin : PtPin */
+    GPIO_InitStruct.Pin  = PADDLE_TOP_LEFT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(PADDLE_TOP_LEFT_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : PtPin */
+    GPIO_InitStruct.Pin   = IMUX_C3_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(IMUX_C3_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pins : PCPin PCPin */
+    GPIO_InitStruct.Pin  = GREEN_BUTTON_RIGHT_Pin | GREEN_BUTTON_LEFT_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    /*Configure GPIO pins : PDPin PDPin PDPin */
+    GPIO_InitStruct.Pin  = PAD_BOTTOM_RIGHT_Pin | PAD_BOTTOM_LEFT_Pin | PAD_TOP_RIGHT_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
     /*Configure GPIO pin : PtPin */
     GPIO_InitStruct.Pin   = LCD_BL_EN_Pin;
@@ -69,22 +97,39 @@ void MX_GPIO_Init(void) {
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LCD_BL_EN_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : PBPin PBPin PBPin */
-    GPIO_InitStruct.Pin  = INT4_Pin | INT2_Pin | ExtraButton_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+    /*Configure GPIO pin : PtPin */
+    GPIO_InitStruct.Pin   = IMUX_C1_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(IMUX_C1_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pins : PGPin PGPin PGPin */
+    GPIO_InitStruct.Pin  = IMUX_S4_Pin | IMUX_S3_Pin | IMUX_S2_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : PtPin */
+    GPIO_InitStruct.Pin  = IMUX_S1_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    HAL_GPIO_Init(IMUX_S1_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : PtPin */
+    GPIO_InitStruct.Pin   = IMUX_C2_Pin;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(IMUX_C2_GPIO_Port, &GPIO_InitStruct);
+
+    /*Configure GPIO pin : PtPin */
+    GPIO_InitStruct.Pin  = TSON_BUTTON_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_Init(TSON_BUTTON_GPIO_Port, &GPIO_InitStruct);
 
     /* EXTI interrupt init*/
-    HAL_NVIC_SetPriority(EXTI2_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(EXTI2_IRQn);
-
-    HAL_NVIC_SetPriority(EXTI3_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(EXTI3_IRQn);
-
-    HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(EXTI4_IRQn);
-
     HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }

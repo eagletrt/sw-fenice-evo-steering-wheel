@@ -3,7 +3,7 @@
 #define MEMORY_POOL_SIZE (2097152U)
 #define N_MAX_ALLOCATIONS_ALLOWED
 
-uint8_t *memory_pool = (uint8_t *) 0xC0400000;
+uint8_t *memory_pool   = (uint8_t *)0xC0400000;
 size_t current_mem_idx = 0U;
 
 void *steering_malloc(size_t size) {

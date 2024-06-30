@@ -21,7 +21,9 @@
 
 #include "dac.h"
 #include "dma2d.h"
+#include "dts.h"
 #include "fdcan.h"
+#include "fmac.h"
 #include "fmc.h"
 #include "gpio.h"
 #include "i2c.h"
@@ -114,6 +116,8 @@ int main(void) {
     MX_TIM7_Init();
     MX_DMA2D_Init();
     MX_DAC1_Init();
+    MX_DTS_Init();
+    MX_FMAC_Init();
     /* USER CODE BEGIN 2 */
 
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
@@ -163,10 +167,6 @@ int main(void) {
     lv_timer_t *ptt_checker_task = lv_timer_create(ptt_tasks_fn, 100, NULL);
     lv_timer_set_repeat_count(ptt_checker_task, -1);
     lv_timer_reset(ptt_checker_task);
-
-    // lv_timer_t *gianni_timer = lv_timer_create(led_control_read_value, 100, NULL);
-    // lv_timer_set_repeat_count(gianni_timer, -1);
-    // lv_timer_reset(gianni_timer);
 
     if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
         enter_fatal_error_mode("Primary CAN fatal error");

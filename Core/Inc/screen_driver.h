@@ -5,5 +5,4 @@
 
 void screen_driver_init();
 
-#endif // SCREEN_DRIVER_H_
-
+#endif  // SCREEN_DRIVER_H_

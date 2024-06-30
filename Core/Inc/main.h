@@ -68,25 +68,41 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define INT1_Pin              GPIO_PIN_2
-#define INT1_GPIO_Port        GPIOE
-#define INT1_EXTI_IRQn        EXTI2_IRQn
-#define INT3_Pin              GPIO_PIN_3
-#define INT3_GPIO_Port        GPIOE
-#define INT3_EXTI_IRQn        EXTI3_IRQn
-#define LCD_BL_DIM_Pin        GPIO_PIN_4
-#define LCD_BL_DIM_GPIO_Port  GPIOA
-#define LCD_BL_EN_Pin         GPIO_PIN_7
-#define LCD_BL_EN_GPIO_Port   GPIOD
-#define INT4_Pin              GPIO_PIN_4
-#define INT4_GPIO_Port        GPIOB
-#define INT4_EXTI_IRQn        EXTI4_IRQn
-#define INT2_Pin              GPIO_PIN_5
-#define INT2_GPIO_Port        GPIOB
-#define INT2_EXTI_IRQn        EXTI9_5_IRQn
-#define ExtraButton_Pin       GPIO_PIN_9
-#define ExtraButton_GPIO_Port GPIOB
-#define ExtraButton_EXTI_IRQn EXTI9_5_IRQn
+#define PADDLE_TOP_LEFT_Pin          GPIO_PIN_2
+#define PADDLE_TOP_LEFT_GPIO_Port    GPIOE
+#define IMUX_C3_Pin                  GPIO_PIN_3
+#define IMUX_C3_GPIO_Port            GPIOE
+#define LCD_BL_DIM_Pin               GPIO_PIN_4
+#define LCD_BL_DIM_GPIO_Port         GPIOA
+#define GREEN_BUTTON_RIGHT_Pin       GPIO_PIN_11
+#define GREEN_BUTTON_RIGHT_GPIO_Port GPIOC
+#define GREEN_BUTTON_LEFT_Pin        GPIO_PIN_12
+#define GREEN_BUTTON_LEFT_GPIO_Port  GPIOC
+#define PAD_BOTTOM_RIGHT_Pin         GPIO_PIN_4
+#define PAD_BOTTOM_RIGHT_GPIO_Port   GPIOD
+#define PAD_BOTTOM_LEFT_Pin          GPIO_PIN_5
+#define PAD_BOTTOM_LEFT_GPIO_Port    GPIOD
+#define PAD_BOTTOM_LEFT_EXTI_IRQn    EXTI9_5_IRQn
+#define PAD_TOP_RIGHT_Pin            GPIO_PIN_6
+#define PAD_TOP_RIGHT_GPIO_Port      GPIOD
+#define PAD_TOP_RIGHT_EXTI_IRQn      EXTI9_5_IRQn
+#define LCD_BL_EN_Pin                GPIO_PIN_7
+#define LCD_BL_EN_GPIO_Port          GPIOD
+#define IMUX_C1_Pin                  GPIO_PIN_9
+#define IMUX_C1_GPIO_Port            GPIOG
+#define IMUX_S4_Pin                  GPIO_PIN_11
+#define IMUX_S4_GPIO_Port            GPIOG
+#define IMUX_S3_Pin                  GPIO_PIN_12
+#define IMUX_S3_GPIO_Port            GPIOG
+#define IMUX_S2_Pin                  GPIO_PIN_14
+#define IMUX_S2_GPIO_Port            GPIOG
+#define IMUX_S1_Pin                  GPIO_PIN_4
+#define IMUX_S1_GPIO_Port            GPIOB
+#define IMUX_C2_Pin                  GPIO_PIN_5
+#define IMUX_C2_GPIO_Port            GPIOB
+#define TSON_BUTTON_Pin              GPIO_PIN_9
+#define TSON_BUTTON_GPIO_Port        GPIOB
+#define TSON_BUTTON_EXTI_IRQn        EXTI9_5_IRQn
 
 /* USER CODE BEGIN Private defines */
 

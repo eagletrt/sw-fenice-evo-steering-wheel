@@ -152,6 +152,7 @@ void tab_hv_update_error_label() {
 bool precharge_bar_active = false;
 
 void precharge_bar_update(int32_t val) {
+    return;
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_HV);
     if (precharge_bar_active) {
         lv_bar_set_value(tab_hv_precharge_bar, val, LV_ANIM_OFF);
@@ -159,6 +160,7 @@ void precharge_bar_update(int32_t val) {
 }
 
 void precharge_bar_insert(bool precharge) {
+    return;
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_HV);
     if (precharge && !precharge_bar_active) {
         static lv_coord_t precharge_panel_cols[] = {DATA_PANEL_WIDTH, LV_GRID_TEMPLATE_LAST};
@@ -225,14 +227,14 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
             char buf[128];
             int to_display = snprintf(buf, 128, "SHUTDOWN CIRCUIT OPENED:\n%s", shutdown_labels[last_opend_index]);
             if (to_display < 128 && to_display > 0) {
-                display_notification(buf, 5000, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+                display_notification(buf, 3000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
             }
         }
         global_shutdown_status = SC_OPEN;
         return;
     }
-    if (global_shutdown_status == SC_UNKNOWN) {
-        display_notification("SHUTDOWN CIRCUIT CLOSED", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+    if (global_shutdown_status != SC_OPEN) {
+        display_notification("SHUTDOWN CIRCUIT CLOSED", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
     }
     set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status_lb);
     global_shutdown_status = SC_CLOSE;

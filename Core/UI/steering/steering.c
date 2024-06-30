@@ -275,9 +275,9 @@ void hv_feedback_ts_voltage_update(void) {
 
 void hv_feedback_sd_voltage_update(void) {
     GET_LAST_STATE(primary, hv_feedback_sd_voltage, PRIMARY, HV_FEEDBACK_SD_VOLTAGE);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_sd_voltage_last_state->sd_in > 3.0f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_sd_voltage_last_state->sd_end > 2.5f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_sd_voltage_last_state->sd_out > 3.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_sd_voltage_last_state->sd_in > 2.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_sd_voltage_last_state->sd_end > 2.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_sd_voltage_last_state->sd_out > 2.0f);
 }
 
 void ecu_feedbacks_update(void) {
@@ -290,16 +290,16 @@ void ecu_feedbacks_update(void) {
 
 void lv_feedback_sd_voltage_update() {
     GET_LAST_STATE(primary, lv_feedback_sd_voltage, PRIMARY, LV_FEEDBACK_SD_VOLTAGE);
-    update_shutdown_circuit_component(shutdown_circuit_sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start > 12.0f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock > 12.0f);
-    update_shutdown_circuit_component(shutdown_circuit_sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end > 12.0f);
+    update_shutdown_circuit_component(shutdown_circuit_sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start > 7.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock > 7.0f);
+    update_shutdown_circuit_component(shutdown_circuit_sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end > 7.0f);
 }
 
 void lv_feedback_ts_voltage_update() {
     GET_LAST_STATE(primary, lv_feedback_ts_voltage, PRIMARY, LV_FEEDBACK_TS_VOLTAGE);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_hvd_fb_index, true);  // mmm not available(?)
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd > 12.0f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock > 12.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_hvd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd > 7.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd > 7.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock > 7.0f);
 }
 
 void lv_feedback_enclosure_voltage_update() {

@@ -178,7 +178,7 @@ void from_gpio_to_buttons(uint8_t gpio) {
 }
 
 void send_set_car_status_check(lv_timer_t *tim) {
-    GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
+    GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
     if (tson_button_pressed && tson_pin_state == GPIO_PIN_RESET) {
         prepare_set_car_status();
     }
@@ -187,7 +187,7 @@ void send_set_car_status_check(lv_timer_t *tim) {
 GPIO_PinState current_state_tson_button = GPIO_PIN_SET;
 
 void changed_pin_fn(void) {
-    GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(ExtraButton_GPIO_Port, ExtraButton_Pin);
+    GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
     if (current_state_tson_button != tson_pin_state) {
         current_state_tson_button = tson_pin_state;
         if (tson_pin_state == GPIO_PIN_SET) {
@@ -220,6 +220,7 @@ void read_buttons(void) {
     dev1.gpio[1] = button_input;
 }
 
+// TODO: use a formula lol
 int delta_step_position(int delta_step) {
     if (delta_step == -7)
         delta_step = 1;
@@ -378,7 +379,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
             int_pins[RIGHT_MANETTINO_INTERRUPT_INDEX] = true;
             break;
 #endif
-        case ExtraButton_Pin:
+        case TSON_BUTTON_Pin:
             break;
         default:
             break;

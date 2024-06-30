@@ -57,8 +57,10 @@
 
 /* External variables --------------------------------------------------------*/
 extern DMA2D_HandleTypeDef hdma2d;
+extern DTS_HandleTypeDef hdts;
 extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
+extern FMAC_HandleTypeDef hfmac;
 extern UART_HandleTypeDef hlpuart1;
 extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim4;
@@ -197,45 +199,6 @@ void SysTick_Handler(void) {
 /******************************************************************************/
 
 /**
-  * @brief This function handles EXTI line2 interrupt.
-  */
-void EXTI2_IRQHandler(void) {
-    /* USER CODE BEGIN EXTI2_IRQn 0 */
-
-    /* USER CODE END EXTI2_IRQn 0 */
-    HAL_GPIO_EXTI_IRQHandler(INT1_Pin);
-    /* USER CODE BEGIN EXTI2_IRQn 1 */
-
-    /* USER CODE END EXTI2_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line3 interrupt.
-  */
-void EXTI3_IRQHandler(void) {
-    /* USER CODE BEGIN EXTI3_IRQn 0 */
-
-    /* USER CODE END EXTI3_IRQn 0 */
-    HAL_GPIO_EXTI_IRQHandler(INT3_Pin);
-    /* USER CODE BEGIN EXTI3_IRQn 1 */
-
-    /* USER CODE END EXTI3_IRQn 1 */
-}
-
-/**
-  * @brief This function handles EXTI line4 interrupt.
-  */
-void EXTI4_IRQHandler(void) {
-    /* USER CODE BEGIN EXTI4_IRQn 0 */
-
-    /* USER CODE END EXTI4_IRQn 0 */
-    HAL_GPIO_EXTI_IRQHandler(INT4_Pin);
-    /* USER CODE BEGIN EXTI4_IRQn 1 */
-
-    /* USER CODE END EXTI4_IRQn 1 */
-}
-
-/**
   * @brief This function handles FDCAN1 interrupt 0.
   */
 void FDCAN1_IT0_IRQHandler(void) {
@@ -268,8 +231,9 @@ void EXTI9_5_IRQHandler(void) {
     /* USER CODE BEGIN EXTI9_5_IRQn 0 */
 
     /* USER CODE END EXTI9_5_IRQn 0 */
-    HAL_GPIO_EXTI_IRQHandler(INT2_Pin);
-    HAL_GPIO_EXTI_IRQHandler(ExtraButton_Pin);
+    HAL_GPIO_EXTI_IRQHandler(PAD_BOTTOM_LEFT_Pin);
+    HAL_GPIO_EXTI_IRQHandler(PAD_TOP_RIGHT_Pin);
+    HAL_GPIO_EXTI_IRQHandler(TSON_BUTTON_Pin);
     /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
     /* USER CODE END EXTI9_5_IRQn 1 */
@@ -325,6 +289,32 @@ void LPUART1_IRQHandler(void) {
     /* USER CODE BEGIN LPUART1_IRQn 1 */
 
     /* USER CODE END LPUART1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles Digital Temperature Sensor Global Interrupt.
+  */
+void DTS_IRQHandler(void) {
+    /* USER CODE BEGIN DTS_IRQn 0 */
+
+    /* USER CODE END DTS_IRQn 0 */
+    HAL_DTS_IRQHandler(&hdts);
+    /* USER CODE BEGIN DTS_IRQn 1 */
+
+    /* USER CODE END DTS_IRQn 1 */
+}
+
+/**
+  * @brief This function handles FMAC interrupt.
+  */
+void FMAC_IRQHandler(void) {
+    /* USER CODE BEGIN FMAC_IRQn 0 */
+
+    /* USER CODE END FMAC_IRQn 0 */
+    HAL_FMAC_IRQHandler(&hfmac);
+    /* USER CODE BEGIN FMAC_IRQn 1 */
+
+    /* USER CODE END FMAC_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

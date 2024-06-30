@@ -1,10 +1,10 @@
-#include <screen_driver.h>
-
 #include "steering_config.h"
+
+#include <screen_driver.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#define FRAMEBUFFER_SIZE  (uint32_t)(SCREEN_HEIGHT * SCREEN_WIDTH) 
+#define FRAMEBUFFER_SIZE (uint32_t)(SCREEN_HEIGHT * SCREEN_WIDTH)
 
 extern LTDC_HandleTypeDef hltdc;
 extern DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
@@ -36,7 +36,7 @@ extern bool dma2d_transfer_completed;
 
 void stm32_flush_cb(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p) {
     // if (!dma2d_transfer_completed) {
-        // return;
+    // return;
     // }
     lv_disp_t *disp = _lv_refr_get_disp_refreshing();
     lv_color_t *dma_xfer_src, *dma_xfer_dst;

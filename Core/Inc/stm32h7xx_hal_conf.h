@@ -36,7 +36,7 @@ extern "C" {
 
 /* #define HAL_ADC_MODULE_ENABLED   */
 #define HAL_FDCAN_MODULE_ENABLED
-/* #define HAL_FMAC_MODULE_ENABLED   */
+#define HAL_FMAC_MODULE_ENABLED
 /* #define HAL_CEC_MODULE_ENABLED   */
 /* #define HAL_COMP_MODULE_ENABLED   */
 /* #define HAL_CORDIC_MODULE_ENABLED   */
@@ -88,7 +88,7 @@ extern "C" {
 /* #define HAL_JPEG_MODULE_ENABLED   */
 /* #define HAL_MDIOS_MODULE_ENABLED   */
 /* #define HAL_PSSI_MODULE_ENABLED   */
-/* #define HAL_DTS_MODULE_ENABLED   */
+#define HAL_DTS_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
 #define HAL_MDMA_MODULE_ENABLED
