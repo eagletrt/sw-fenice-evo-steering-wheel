@@ -58,7 +58,7 @@ void set_tab_racing_ptt_label_color(bool active) {
 }
 
 void set_tab_racing_speedometer_indicator(int32_t value) {
-    lv_meter_set_indicator_end_value(tab_racing_custom_meter, tab_racing_indicator_blue, value);
+    // lv_meter_set_indicator_end_value(tab_racing_custom_meter, tab_racing_indicator_blue, value);
 }
 
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx) {
