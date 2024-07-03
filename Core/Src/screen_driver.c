@@ -31,7 +31,7 @@ void screen_driver_init() {
 
     lv_display_t * disp = lv_display_create(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT); /*Basic initialization with horizontal and vertical resolution in pixels*/
     lv_display_set_flush_cb(disp, stm32_flush_cb); /*Set a flush callback to draw to the display*/
-    lv_display_set_buffers(disp, framebuffer_1, framebuffer_2, FRAMEBUFFER_SIZE, LV_DISPLAY_RENDER_MODE_PARTIAL); /*Set an initialized buffer*/
+    lv_display_set_buffers(disp, framebuffer_1, framebuffer_2, FRAMEBUFFER_SIZE, LV_DISPLAY_RENDER_MODE_DIRECT); /*Set an initialized buffer*/
 
 
     // static lv_disp_draw_buf_t draw_buf; //OLD 8.0
@@ -49,10 +49,10 @@ void screen_driver_init() {
 
 uint32_t last_tick = 0;
 
-void stm32_flush_cb(lv_display_t * disp_drv, const lv_area_t * area, lv_color_t * color_p) {
-    lv_display_t *disp = _lv_refr_get_disp_refreshing();
+void stm32_flush_cb(lv_display_t * disp, const lv_area_t * area, lv_color_t * color_p) {
+    
     uint32_t *dma_xfer_src, *dma_xfer_dst;
-    if (!lv_disp_flush_is_last(disp_drv)) {
+    if (!lv_disp_flush_is_last(disp)) {
         // lv_disp_flush_ready(disp_drv); //  TODO: check
 
 #if 0
@@ -73,7 +73,7 @@ void stm32_flush_cb(lv_display_t * disp_drv, const lv_area_t * area, lv_color_t 
     //         } else {
     //             dma_xfer_dst = (uint16_t *)framebuffer_1;
     //         }
-    //         lv_color_t *fb_ptr = (lv_color_t *)(lcd_fb_address);
+    //  memcpy       lv_color_t *fb_ptr = (lv_color_t *)(lcd_fb_address);
     //         fb_ptr[y * LCD_SCREEN_WIDTH + x] = *color_p;
     //         color_p++;
     //     }
@@ -95,10 +95,11 @@ void stm32_flush_cb(lv_display_t * disp_drv, const lv_area_t * area, lv_color_t 
     //     dma2d_copy_area(disp->inv_areas[i], (uint32_t)dma_xfer_src, (uint32_t)dma_xfer_dst);
     // }
 
-    memcpy(dma_xfer_dst, dma_xfer_src, 800*480*4);
+    //memcpy(dma_xfer_dst, dma_xfer_src, 800*480*4);
+    lv_disp_flush_ready(disp);
 
     
-    lv_disp_flush_ready(disp_drv);
+    
 }
 
 

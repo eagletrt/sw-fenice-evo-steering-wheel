@@ -59,8 +59,10 @@ extern FDCAN_HandleTypeDef hfdcan1;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern UART_HandleTypeDef hlpuart1;
 extern TIM_HandleTypeDef htim7;
-/* USER CODE BEGIN EV */
+extern TIM_HandleTypeDef htim4;
 
+/* USER CODE BEGIN EV */
+extern lv_display_t *disp;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -194,7 +196,7 @@ void SysTick_Handler(void)
   lv_tick_inc(1);
 
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
+
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -290,6 +292,20 @@ void EXTI9_5_IRQHandler(void)
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
   /* USER CODE END EXTI9_5_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM4 global interrupt.
+  */
+void TIM4_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM4_IRQn 0 */
+
+  /* USER CODE END TIM4_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim4);
+  /* USER CODE BEGIN TIM4_IRQn 1 */
+
+  /* USER CODE END TIM4_IRQn 1 */
 }
 
 /**
