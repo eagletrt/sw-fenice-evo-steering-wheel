@@ -395,6 +395,7 @@ void buttons_pressed_actions(uint8_t button) {
             }
             break;
         case BUTTON_BOTTOM_RIGHT:
+            HAL_NVIC_SystemReset();
             break;
         case BUTTON_BOTTOM_LEFT: {
             help();

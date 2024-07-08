@@ -65,12 +65,14 @@ void tlm_status_update();
 void angular_velocity_update();
 void vehicle_speed_update();
 void ecu_feedbacks_update();
+void ecu_errors_update();
 
 void hv_debug_signals_update();
 void hv_cells_voltage_stats_update();
 void hv_total_voltage_update();
 void hv_current_update();
 void hv_soc_estimation_update();
+void lv_soc_estimation_update();
 void hv_cells_temp_stats_update();
 void hv_errors_update();
 void hv_cell_balancing_status_update();
@@ -142,7 +144,7 @@ void set_ptt_button_pressed(bool);
 /***
  * Tab racing
  */
-void set_tab_racing_hv_current_bar(int32_t v);
+void set_tab_racing_lv_soc_bar(int32_t v);
 void set_tab_racing_hv_soc_bar(int32_t v);
 void set_tab_racing_label_text(const char *s, tab_racing_labels_enum idx);
 void set_tab_racing_ptt_label_color(bool active);

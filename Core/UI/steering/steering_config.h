@@ -124,7 +124,7 @@ typedef enum { SC_UNKNOWN, SC_OPEN, SC_CLOSE } shutdown_circuit_component_state_
 
 typedef enum {
     tab_rac_hv_soc_idx,
-    tab_rac_hv_curr_idx,
+    tab_rac_lv_soc_idx,
     tab_rac_curr_time_idx,
     tab_rac_last_time_idx,
     tab_rac_best_time_idx,

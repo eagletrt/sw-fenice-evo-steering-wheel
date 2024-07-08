@@ -37,7 +37,7 @@ void tab_notification_screen_create(lv_obj_t *notification_screen) {
     notification_screen_label = lv_label_create(notification_background);
 
     lv_obj_add_style(notification_screen_label, &notif_label_style, LV_PART_MAIN);
-    lv_obj_set_style_text_font(notification_screen_label, &lv_font_inter_bold_38, LV_PART_MAIN);
+    lv_obj_set_style_text_font(notification_screen_label, &lv_font_inter_bold_70, LV_PART_MAIN);
     lv_label_set_text(notification_screen_label, "PLACEHOLDER TEXT");
     lv_obj_align(notification_screen_label, LV_ALIGN_CENTER, 0, 0);
 }

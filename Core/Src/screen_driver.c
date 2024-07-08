@@ -23,7 +23,7 @@ extern DMA2D_HandleTypeDef hdma2d;
 extern lv_color_t *framebuffer_1;
 extern lv_color_t *framebuffer_2;
 
-void stm32_flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map);
+void stm32_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map);
 
 void screen_driver_init() {
     lv_display_t *disp = lv_display_create(LCD_SCREEN_WIDTH, LCD_SCREEN_HEIGHT);
@@ -34,11 +34,10 @@ void screen_driver_init() {
 uint32_t last_tick = 0;
 extern bool dma2d_transfer_completed;
 
-void stm32_flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * px_map) {
+void stm32_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
     if (!lv_disp_flush_is_last(disp)) {
         HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING);
     }
     // HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING);
     lv_disp_flush_ready(disp);
 }
-

@@ -66,6 +66,10 @@ void update_graphics(lv_timer_t *t) {
                     ecu_feedbacks_update();
                     break;
                 }
+                case PRIMARY_ECU_ERRORS_FRAME_ID: {
+                    ecu_errors_update();
+                    break;
+                }
                 case PRIMARY_TLM_STATUS_FRAME_ID: {
                     tlm_status_update();
                     break;
@@ -290,6 +294,10 @@ void update_graphics(lv_timer_t *t) {
                 }
                 case SECONDARY_HV_SOC_ESTIMATION_STATE_FRAME_ID: {
                     hv_soc_estimation_update();
+                    break;
+                }
+                case SECONDARY_LV_SOC_ESTIMATION_STATE_FRAME_ID: {
+                    lv_soc_estimation_update();
                     break;
                 }
                 default: {

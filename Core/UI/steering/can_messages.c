@@ -91,6 +91,10 @@ void handle_primary(can_message_t *msg) {
             STEER_CAN_UNPACK(primary, PRIMARY, ecu_feedbacks, ECU_FEEDBACKS, is_pmsg_new, true);
             break;
         }
+        case PRIMARY_ECU_ERRORS_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, ecu_errors, ECU_ERRORS, is_pmsg_new, true);
+            break;
+        }
         case PRIMARY_HV_DEBUG_SIGNALS_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, hv_debug_signals, HV_DEBUG_SIGNALS, is_pmsg_new, true);
             break;
@@ -324,6 +328,10 @@ void handle_secondary(can_message_t *msg) {
         }
         case SECONDARY_TLM_LAPS_STATS_FRAME_ID: {
             STEER_CAN_UNPACK(secondary, SECONDARY, tlm_laps_stats, TLM_LAPS_STATS, is_smsg_new, true);
+            break;
+        }
+        case SECONDARY_LV_SOC_ESTIMATION_STATE_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, lv_soc_estimation_state, LV_SOC_ESTIMATION_STATE, is_smsg_new, true);
             break;
         }
         case SECONDARY_HV_SOC_ESTIMATION_STATE_FRAME_ID: {

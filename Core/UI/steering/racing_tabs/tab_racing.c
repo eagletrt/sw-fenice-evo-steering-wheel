@@ -2,7 +2,7 @@
 
 lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
     [tab_rac_hv_soc_idx]        = NULL,
-    [tab_rac_hv_curr_idx]       = NULL,
+    [tab_rac_lv_soc_idx]        = NULL,
     [tab_rac_curr_time_idx]     = NULL,
     [tab_rac_last_time_idx]     = NULL,
     [tab_rac_best_time_idx]     = NULL,
@@ -19,12 +19,10 @@ lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
     [tab_rac_odometer_idx]      = NULL,
 };
 
-lv_obj_t *tab_racing_hv_current_bar;
+lv_obj_t *tab_racing_lv_soc_bar;
 lv_obj_t *tab_racing_hv_soc_bar;
 lv_obj_t *tab_racing_custom_meter;
 lv_obj_t *needle_line;
-// lv_meter_indicator_t *tab_racing_indicator_blue;
-// lv_meter_indicator_t *tab_racing_indicator_white;
 
 lv_style_t bar_hv_style;
 lv_style_t bar_lv_style;
@@ -32,9 +30,9 @@ lv_style_t bar_back_style;
 
 lv_obj_t *bottom_bar;
 
-void set_tab_racing_hv_current_bar(int32_t v) {
+void set_tab_racing_lv_soc_bar(int32_t v) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_RACING);
-    lv_bar_set_value(tab_racing_hv_current_bar, (int32_t)fabs(v), LV_ANIM_OFF);
+    lv_bar_set_value(tab_racing_lv_soc_bar, (int32_t)fabs(v), LV_ANIM_OFF);
 }
 
 void set_tab_racing_hv_soc_bar(int32_t v) {
@@ -113,7 +111,7 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_t *label_lv = lv_label_create(bar_panel_lv);
     lv_obj_add_style(label_lv, &label_style, LV_PART_MAIN);
     lv_obj_set_style_text_font(label_lv, &lv_font_inter_bold_22, LV_STATE_DEFAULT);
-    lv_label_set_text(label_lv, "SOC");
+    lv_label_set_text(label_lv, "HV");
     lv_obj_set_grid_cell(label_lv, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
     /*---------RIGHT BAR-----------*/
@@ -128,22 +126,22 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(bar_panel_hv, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *hv_perc =
-        lv_horizontal_pair_label(bar_panel_hv, &tab_racing_labels[tab_rac_hv_curr_idx], "NA", &lv_font_inter_bold_30, "A", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(bar_panel_hv, &tab_racing_labels[tab_rac_lv_soc_idx], "NA", &lv_font_inter_bold_30, "%%", &lv_font_inter_bold_20);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(hv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5);  // change "%" position
     lv_obj_set_grid_cell(hv_perc, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *label_hv = lv_label_create(bar_panel_hv);
     lv_obj_add_style(label_hv, &label_style, LV_PART_MAIN);
     lv_obj_set_style_text_font(label_hv, &lv_font_inter_bold_22, LV_STATE_DEFAULT);
-    lv_label_set_text(label_hv, "HV-A");
+    lv_label_set_text(label_hv, "LV");
     lv_obj_set_grid_cell(label_hv, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
-    tab_racing_hv_current_bar = lv_bar_create(bar_panel_hv);
-    custom_side_bar(tab_racing_hv_current_bar);
-    lv_bar_set_range(tab_racing_hv_current_bar, 0, 200);
-    lv_bar_set_value(tab_racing_hv_current_bar, 0, LV_ANIM_OFF);
-    lv_obj_set_style_bg_color(tab_racing_hv_current_bar, lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_INDICATOR);
-    lv_obj_set_grid_cell(tab_racing_hv_current_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
+    tab_racing_lv_soc_bar = lv_bar_create(bar_panel_hv);
+    custom_side_bar(tab_racing_lv_soc_bar);
+    lv_bar_set_range(tab_racing_lv_soc_bar, 0, 200);
+    lv_bar_set_value(tab_racing_lv_soc_bar, 0, LV_ANIM_OFF);
+    lv_obj_set_style_bg_color(tab_racing_lv_soc_bar, lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_INDICATOR);
+    lv_obj_set_grid_cell(tab_racing_lv_soc_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
     /*-------------------------------------*/
     // CENTRAL PANEL

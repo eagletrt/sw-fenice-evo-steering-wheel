@@ -90,6 +90,15 @@ void car_status_update() {
     }
 }
 
+void ecu_errors_update(void) {
+    GET_LAST_STATE(primary, ecu_errors, PRIMARY, ECU_ERRORS);
+    if (primary_ecu_errors_last_state->error_bspd_limits || primary_ecu_errors_last_state->error_pedal_implausibility) {
+        display_notification("MOLLA IL FRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+    } else if (primary_ecu_errors_last_state->error_no_brake_to_rtd) {
+        display_notification("PREMI IL FRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+    }
+}
+
 void lv_pumps_actual_value_update() {
 }
 
@@ -208,8 +217,8 @@ void hv_total_voltage_update(void) {
 void hv_current_update() {
     GET_LAST_STATE(primary, hv_current, PRIMARY, HV_CURRENT);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", primary_hv_current_last_state->current);
-    set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_curr_idx);
-    set_tab_racing_hv_current_bar((int32_t)(primary_hv_current_last_state->current));
+    // set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_soc_idx);
+    // set_tab_racing_lv_soc_bar((int32_t)(primary_hv_current_last_state->current));
 }
 
 void hv_soc_estimation_update() {
@@ -217,6 +226,13 @@ void hv_soc_estimation_update() {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", secondary_hv_soc_estimation_state_last_state->soc * 100.0f);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_soc_idx);
     set_tab_racing_hv_soc_bar((int32_t)(secondary_hv_soc_estimation_state_last_state->soc * 100.0f));
+}
+
+void lv_soc_estimation_update() {
+    GET_LAST_STATE(secondary, lv_soc_estimation_state, SECONDARY, LV_SOC_ESTIMATION_STATE);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", secondary_lv_soc_estimation_state_last_state->soc * 100.0f);
+    set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_soc_idx);
+    set_tab_racing_lv_soc_bar((int32_t)(secondary_lv_soc_estimation_state_last_state->soc * 100.0f));
 }
 
 void hv_cells_temp_stats_update() {
@@ -559,7 +575,7 @@ void canlib_versions_mismatch_checker() {
          (was_received_hv_cellboard_version && CANLIB_BUILD_TIME != primary_hv_cellboard_version_last_state->canlib_build_time) ||
          (was_received_tlm_version && CANLIB_BUILD_TIME != primary_tlm_version_last_state->canlib_build_time))) {
         last_popup_on_canlib_versions_mismatch = get_current_time_ms();
-        display_notification("CANLIB VERSIONS MISMATCH", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+        display_notification("CANLIB VERSIONS\nMISMATCH", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
     }
 }
 
