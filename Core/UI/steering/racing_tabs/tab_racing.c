@@ -138,7 +138,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
     tab_racing_lv_soc_bar = lv_bar_create(bar_panel_hv);
     custom_side_bar(tab_racing_lv_soc_bar);
-    lv_bar_set_range(tab_racing_lv_soc_bar, 0, 200);
+    lv_bar_set_range(tab_racing_lv_soc_bar, 0, 100);
     lv_bar_set_value(tab_racing_lv_soc_bar, 0, LV_ANIM_OFF);
     lv_obj_set_style_bg_color(tab_racing_lv_soc_bar, lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_INDICATOR);
     lv_obj_set_grid_cell(tab_racing_lv_soc_bar, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
@@ -306,7 +306,7 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_remove_style_all(meter_container);
     lv_obj_set_height(meter_container, LV_SIZE_CONTENT);
 
-    tab_racing_custom_meter = lv_scale_create(meter_container);
+    // tab_racing_custom_meter = lv_scale_create(meter_container);
 
     // TODO fix this warning!!!
     // lv_custom_meter(&tab_racing_custom_meter);
@@ -382,6 +382,7 @@ void init_racing_style(void) {
     lv_style_set_bg_color(&bar_back_style, lv_color_hex(COLOR_SECONDARY_HEX));
 }
 
+#if 0
 // shadow ? of custom meter and indicator blue and white
 void lv_custom_meter(lv_obj_t **custom_meter) {
     /*Remove the circle from the middle*/
@@ -446,6 +447,7 @@ void lv_custom_meter(lv_obj_t **custom_meter) {
 
     // return custom_meter;
 }
+#endif
 
 void custom_side_bar(lv_obj_t *bar) {
     lv_obj_remove_style_all(bar);

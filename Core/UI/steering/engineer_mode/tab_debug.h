@@ -1,3 +1,5 @@
+#if 0
+
 #ifndef TAB_DEBUG_H
 #define TAB_DEBUG_H
 
@@ -36,3 +38,5 @@ void change_errors_view(bool dir_left);
 #endif  // STEER_TAB_DEBUG_ENABLED
 
 #endif  // TAB_DEBUG_H
+
+#endif // #if 0

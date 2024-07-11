@@ -69,11 +69,7 @@ static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][21] = {
     "BSPD",
     "INVC motors interlock",
     "TSMS[LV]",
-    "TSMS[HV]",
-    // "Precharge",
-    // "AIR P",
-    // "AIR N"
-};
+    "TSMS[HV]"};
 
 static shutdown_circuit_component_state_t shutdown_status_lb_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
 
@@ -225,7 +221,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
         set_tab_hv_label_text(shutdown_labels[last_opend_index], shutdown_status_lb);
         if (global_shutdown_status == SC_CLOSE) {
             char buf[128];
-            int to_display = snprintf(buf, 128, "SHUTDOWN CIRCUIT OPENED:\n%s", shutdown_labels[last_opend_index]);
+            int to_display = snprintf(buf, 128, "SHUTDOWN \nCIRCUIT \nOPENED:\n");  // %s", shutdown_labels[last_opend_index]);
             if (to_display < 128 && to_display > 0) {
                 display_notification(buf, 3000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
             }
@@ -233,8 +229,8 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
         global_shutdown_status = SC_OPEN;
         return;
     }
-    if (global_shutdown_status != SC_OPEN) {
-        display_notification("SHUTDOWN CIRCUIT CLOSED", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+    if (global_shutdown_status != SC_CLOSE) {
+        display_notification("SHUTDOWN \nCIRCUIT \nCLOSED", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
     }
     set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status_lb);
     global_shutdown_status = SC_CLOSE;

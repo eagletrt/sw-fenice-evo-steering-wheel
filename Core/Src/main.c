@@ -270,6 +270,10 @@ void openblt_reset(void) {
     HAL_NVIC_SystemReset();
 }
 
+void system_reset(void) {
+    HAL_NVIC_SystemReset();
+}
+
 uint32_t get_current_time_ms(void) {
     return HAL_GetTick();
 }

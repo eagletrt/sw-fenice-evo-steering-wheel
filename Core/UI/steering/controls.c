@@ -46,10 +46,10 @@ void turn_telemetry_on_off(void) {
     GET_LAST_STATE(primary, tlm_status, PRIMARY, TLM_STATUS);
     primary_tlm_set_status_converted_t converted = {0};
     if (primary_tlm_status_last_state->status == primary_tlm_status_status_on) {
-        display_notification("Sending Telemetry OFF", 800, 0xff9245U, COLOR_PRIMARY_HEX);
+        display_notification("Sending\nTelemetry\nOFF", 800, 0xff9245U, COLOR_PRIMARY_HEX);
         converted.status = primary_tlm_set_status_status_off;
     } else {
-        display_notification("Sending Telemetry ON", 800, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+        display_notification("Sending\nTelemetry\nON", 800, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
         converted.status = primary_tlm_set_status_status_on;
     }
     STEER_CAN_PACK(primary, PRIMARY, tlm_set_status, TLM_SET_STATUS);
@@ -395,7 +395,7 @@ void buttons_pressed_actions(uint8_t button) {
             }
             break;
         case BUTTON_BOTTOM_RIGHT:
-            HAL_NVIC_SystemReset();
+            system_reset();
             break;
         case BUTTON_BOTTOM_LEFT: {
             help();
@@ -517,7 +517,7 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_enable_inv_updates:
         case primary_ecu_status_status_check_inv_settings: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("ECU not in IDLE yet, sending IDLE anyway", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+            display_notification("Sending\nIDLE\nanyway", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_idle: {
@@ -527,7 +527,7 @@ void prepare_set_car_status(void) {
         }
         case primary_ecu_status_status_start_ts_precharge:
         case primary_ecu_status_status_wait_ts_precharge: {
-            display_notification("Precharge not finished yet", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+            display_notification("Precharge\nnot finished\nyet", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_wait_driver: {
@@ -546,7 +546,7 @@ void prepare_set_car_status(void) {
         }
         case primary_ecu_status_status_fatal_error: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("ECU in FATAL ERROR, sending IDLE anyway", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+            display_notification("ECU in FATAL ERROR,\nsending IDLE anyway", 1500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
             break;
         }
     }

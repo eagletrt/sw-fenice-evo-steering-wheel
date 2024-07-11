@@ -49,8 +49,7 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
     }
 #endif
 
-#define STEER_ERROR_INVALIDATE(device, error_name, aindex) \
-    lv_obj_set_style_bg_color(steering.device[aindex], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
+// #define STEER_ERROR_INVALIDATE(device, error_name, aindex) lv_obj_set_style_bg_color(steering.device[aindex], lv_color_hex(COLOR_YELLOW_STATUS_HEX), LV_PART_MAIN);
 
 // #define CHECK_CURRENT_TAB(condition, mod, curr) if ((condition) || (current_##mod##_tab != curr)) return
 
@@ -162,18 +161,8 @@ void set_tab_track_test_steering_angle_bar(float v);
 void set_tab_track_test_lb_speed(const char *s);
 void set_tab_track_test_dmt_steering_angle_target(float f);
 void set_tab_track_test_lb_steering_angle(const char *s);
-void tab_track_test_lb_steering_angle_invalidate();
 void set_tab_track_test_lb_speed(const char *s);
-void tab_track_test_lb_speed_invalidate();
 
-void bal_status_label_invalidate();
-
-void pumps_speed_bar_invalidate();
-void radiators_speed_bar_invalidate();
-void pork_speed_bar_invalidate();
-void pumps_speed_value_label_invalidate();
-void radiators_speed_value_label_invalidate();
-void pork_speed_value_label_invalidate();
 void precharge_bar_update(int32_t);
 void precharge_bar_insert(bool precharge);
 
@@ -193,7 +182,6 @@ void tab_hv_update_error_label();
 void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
 void set_balancing_column(bool balancing, uint8_t idx);
 void tab_hv_set_pork_speed_bar(int32_t, bool);
-void tab_hv_pork_speed_bar_invalidate();
 
 void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close);
 

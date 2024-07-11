@@ -25,7 +25,6 @@ lv_obj_t *tab_inverters_cansniffer_ptr;
 #endif
 
 lv_obj_t *tab_terminal_ptr;
-lv_obj_t *tab_balancing_status_ptr;
 
 lv_timer_t *notification_timer;
 lv_group_t *g;
@@ -59,9 +58,8 @@ void tab_manager(void) {
     tab_secondary_cansniffer_ptr = lv_obj_create(NULL);
     tab_inverters_cansniffer_ptr = lv_obj_create(NULL);
 #endif
-    tab_terminal_ptr         = lv_obj_create(NULL);
-    tab_fatal_error_ptr      = lv_obj_create(NULL);
-    tab_balancing_status_ptr = lv_obj_create(NULL);
+    tab_terminal_ptr    = lv_obj_create(NULL);
+    tab_fatal_error_ptr = lv_obj_create(NULL);
 
     lv_group_add_obj(g, tab_racing_ptr);
     lv_group_add_obj(g, tab_sensors_ptr);
@@ -86,7 +84,6 @@ void tab_manager(void) {
 #endif
     lv_group_add_obj(g, tab_terminal_ptr);
     lv_group_add_obj(g, tab_fatal_error_ptr);
-    lv_group_add_obj(g, tab_balancing_status_ptr);
 
     tab_racing_create(tab_racing_ptr);
     tab_sensors_create(tab_sensors_ptr);
@@ -111,7 +108,6 @@ void tab_manager(void) {
 #endif
     tab_terminal_create(tab_terminal_ptr);
     tab_fatal_error_create(tab_fatal_error_ptr);
-    tab_balancing_status_screen_create(tab_balancing_status_ptr);
 
     lv_scr_load(tab_racing_ptr);
     current_racing_tab   = STEERING_WHEEL_TAB_RACING;
@@ -147,8 +143,6 @@ void actions_on_changed_tab(void) {
     if (engineer_mode) {
         switch (current_engineer_tab) {
             case STEERING_WHEEL_TAB_TERMINAL:
-                break;
-            case STEERING_WHEEL_TAB_BALANCING_STATUS:
                 break;
 #if CANSNIFFER_ENABLED == 1
             case STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER:
@@ -243,9 +237,6 @@ void load_current_engineering_tab() {
 #endif
         case STEERING_WHEEL_TAB_TERMINAL:
             lv_scr_load(tab_terminal_ptr);
-            break;
-        case STEERING_WHEEL_TAB_BALANCING_STATUS:
-            lv_scr_load(tab_balancing_status_ptr);
             break;
         default:
             break;

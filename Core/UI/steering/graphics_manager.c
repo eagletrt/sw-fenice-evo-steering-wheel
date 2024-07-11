@@ -124,7 +124,7 @@ void update_graphics(lv_timer_t *t) {
                 }
                 case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
                     hv_feedbacks_status_update();
-                    debug_hv_feedbacks_status_update();
+                    // debug_hv_feedbacks_status_update();
                     break;
                 }
                 case PRIMARY_LV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
@@ -140,7 +140,7 @@ void update_graphics(lv_timer_t *t) {
                     break;
                 }
                 case PRIMARY_LV_ERRORS_FRAME_ID: {
-                    lv_errors_update();
+                    // lv_errors_update();
                     break;
                 }
                 case PRIMARY_LV_RADIATOR_SPEED_FRAME_ID: {

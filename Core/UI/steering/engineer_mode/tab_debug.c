@@ -1,3 +1,5 @@
+#if 0
+
 #include "steering_config.h"
 
 #if STEER_TAB_DEBUG_ENABLED == 1
@@ -537,3 +539,5 @@ void lv_errors_update() {
     set_label_color_lv_errors(lv_errors_last_state.errors_mux, 16);
 #endif
 }
+
+#endif  // #if 0

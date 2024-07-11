@@ -272,18 +272,13 @@ static void hal_init(void) {
     lv_group_set_default(g);
 
     keyboard_init();
-    // static lv_indev_drv_t indev_drv_2;
-    // lv_indev_drv_init(&indev_drv_2); /*Basic initialization*/
-    // indev_drv_2.type        = LV_INDEV_TYPE_KEYPAD;
-    // indev_drv_2.read_cb     = keyboard_read;
-
-    lv_indev_t *indev = lv_indev_create();
-    lv_indev_set_type(indev, LV_INDEV_TYPE_KEYBOARD); /*See below.*/
+    static lv_indev_drv_t indev_drv_2;
+    lv_indev_drv_init(&indev_drv_2); /*Basic initialization*/
+    indev_drv_2.type        = LV_INDEV_TYPE_KEYPAD;
+    indev_drv_2.read_cb     = keyboard_read;
+    indev_drv_2.feedback_cb = keyboard_fn;
+    lv_indev_t *kb_indev    = lv_indev_drv_register(&indev_drv_2);
     lv_indev_set_group(kb_indev, g);
-
-    indev.feedback_cb = keyboard_fn;
-
-    lv_indev_set_read_cb(indev, keyboard_read); /*See below.*/
 }
 
 /**
@@ -302,10 +297,9 @@ static int tick_thread(void *data) {
     return 0;
 }
 
-void keyboard_fn(lv_indev_t *indev_drv, lv_indev_data_t *data) {
-    // lv_indev_data_t data;
-    // keyboard_read(indev_drv, &data);
-    data->key = last_key();
+void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e) {
+    lv_indev_data_t data;
+    keyboard_read(indev_drv, &data);
 
     switch (data.key) {
         case 'a':
@@ -362,6 +356,9 @@ bool can_send(can_message_t *msg, bool to_primary_network) {
 }
 
 void openblt_reset(void) {
+}
+
+void system_reset(void) {
 }
 
 uint32_t get_current_time_ms(void) {

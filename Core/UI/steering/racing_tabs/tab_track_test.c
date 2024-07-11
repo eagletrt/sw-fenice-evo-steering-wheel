@@ -46,16 +46,6 @@ void set_tab_track_test_dmt_steering_angle_target(float v) {
     display_notification(b, 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
 }
 
-void tab_track_test_lb_steering_angle_invalidate() {
-    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_TRACK_TEST);
-    lv_label_set_text(tab_track_test_lb_steering_angle, "NA");
-}
-
-void tab_track_test_lb_speed_invalidate() {
-    CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_TRACK_TEST);
-    lv_label_set_text(tab_track_test_lb_speed, "NA");
-}
-
 void tab_track_test_create(lv_obj_t *parent) {
     /*---creating MAIN GRID ---*/
 

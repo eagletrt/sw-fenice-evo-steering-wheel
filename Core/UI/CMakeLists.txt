@@ -13,14 +13,9 @@ file(GLOB_RECURSE CANLIB_SOURCES ../Lib/can/lib/**/*.c)
 add_executable(SteeringSimulator 
     steering/steering.c
     steering/tab_manager.c
-    # steering/engineer_mode/tab_engineer_mode.c
-    # steering/engineer_mode/tab_cooling.c
     steering/engineer_mode/tab_fatal_error.c
     steering/engineer_mode/tab_terminal.c
     steering/engineer_mode/tab_debug.c
-    # steering/engineer_mode/tab_shutdown_circuit.c
-    steering/engineer_mode/tab_balancing_status.c
-    # steering/racing_tabs/tab_calibration.c
     steering/racing_tabs/tab_notification.c
     steering/racing_tabs/tab_racing.c
     steering/racing_tabs/tab_sensors.c

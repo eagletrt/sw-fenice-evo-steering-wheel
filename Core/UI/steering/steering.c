@@ -93,9 +93,9 @@ void car_status_update() {
 void ecu_errors_update(void) {
     GET_LAST_STATE(primary, ecu_errors, PRIMARY, ECU_ERRORS);
     if (primary_ecu_errors_last_state->error_bspd_limits || primary_ecu_errors_last_state->error_pedal_implausibility) {
-        display_notification("MOLLA IL FRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+        display_notification("MOLLA\nIL\nFRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
     } else if (primary_ecu_errors_last_state->error_no_brake_to_rtd) {
-        display_notification("PREMI IL FRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+        display_notification("PREMI\nIL\nFRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
     }
 }
 
@@ -251,8 +251,6 @@ void hv_cells_temp_stats_update() {
 
 bool cellboard_bal[N_PORK_CELLBOARD] = {0};
 
-void set_bal_status_label_text(char *text);
-
 void hv_cell_balancing_status_update() {
     GET_LAST_STATE(primary, hv_balancing_status, PRIMARY, HV_BALANCING_STATUS);
     uint8_t cellboard_id = (uint8_t)primary_hv_balancing_status_last_state->cellboard_id;
@@ -268,12 +266,7 @@ void hv_cell_balancing_status_update() {
             break;
         }
     }
-    char buf[BUFSIZ] = {0};
-    snprintf(buf, BUFSIZ, "BAL STATUS: %s", is_bal ? "ON" : "OFF");
-    set_bal_status_label_text(buf);
-
     set_balancing_column(cellboard_bal[cellboard_id], cellboard_id);
-    // TODO: if bal is off, write bal off on the screen
 }
 
 void hv_feedback_misc_voltage_update(void) {
@@ -568,12 +561,21 @@ void canlib_versions_mismatch_checker() {
     GET_LAST_STATE(primary, hv_cellboard_version, PRIMARY, HV_CELLBOARD_VERSION);
     GET_LAST_STATE(primary, hv_mainboard_version, PRIMARY, HV_MAINBOARD_VERSION);
     GET_LAST_STATE(primary, tlm_version, PRIMARY, TLM_VERSION);
+
+    // ricevuto  !=   NOT
+    // not ric   !=   OK
+    // ricevuto  ==   OK
+    // not ric   ==   OK
+    volatile bool ecu_version_is_not_correct          = !was_received_ecu_version || CANLIB_BUILD_TIME != primary_ecu_version_last_state->canlib_build_time;
+    volatile bool lv_version_is_not_correct           = !was_received_lv_version || CANLIB_BUILD_TIME != primary_lv_version_last_state->canlib_build_time;
+    volatile bool hv_mainboard_version_is_not_correct = !was_received_hv_mainboard_version ||
+                                                        CANLIB_BUILD_TIME != primary_hv_mainboard_version_last_state->canlib_build_time;
+    volatile bool hv_cellboard_version_is_not_correct = !was_received_hv_cellboard_version ||
+                                                        CANLIB_BUILD_TIME != primary_hv_cellboard_version_last_state->canlib_build_time;
+    volatile bool tlm_version_is_not_correct = !was_received_tlm_version || CANLIB_BUILD_TIME != primary_tlm_version_last_state->canlib_build_time;
     if ((get_current_time_ms() - last_popup_on_canlib_versions_mismatch) > 6500 &&
-        ((was_received_ecu_version && CANLIB_BUILD_TIME != primary_ecu_version_last_state->canlib_build_time) ||
-         (was_received_lv_version && CANLIB_BUILD_TIME != primary_lv_version_last_state->canlib_build_time) ||
-         (was_received_hv_mainboard_version && CANLIB_BUILD_TIME != primary_hv_mainboard_version_last_state->canlib_build_time) ||
-         (was_received_hv_cellboard_version && CANLIB_BUILD_TIME != primary_hv_cellboard_version_last_state->canlib_build_time) ||
-         (was_received_tlm_version && CANLIB_BUILD_TIME != primary_tlm_version_last_state->canlib_build_time))) {
+        ((ecu_version_is_not_correct) || (lv_version_is_not_correct) || (hv_mainboard_version_is_not_correct) || (hv_cellboard_version_is_not_correct) ||
+         (tlm_version_is_not_correct))) {
         last_popup_on_canlib_versions_mismatch = get_current_time_ms();
         display_notification("CANLIB VERSIONS\nMISMATCH", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
     }

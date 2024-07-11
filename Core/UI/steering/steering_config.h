@@ -80,7 +80,6 @@ typedef enum {
 
 typedef enum {
     STEERING_WHEEL_TAB_TERMINAL,
-    STEERING_WHEEL_TAB_BALANCING_STATUS,
 #if CANSNIFFER_ENABLED == 1
     STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER,
     STEERING_WHEEL_TAB_INVERTERS_CANSNIFFER,
@@ -236,5 +235,6 @@ typedef enum {
  */
 uint32_t get_current_time_ms(void);
 void openblt_reset(void);
+void system_reset(void);
 
 #endif  // STEERING_CONFIG_H

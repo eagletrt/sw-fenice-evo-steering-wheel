@@ -4,7 +4,6 @@
 #define TAB_MANAGER_H
 
 #include "can_messages.h"
-#include "engineer_mode/tab_balancing_status.h"
 #include "engineer_mode/tab_debug.h"
 #include "engineer_mode/tab_fatal_error.h"
 #include "engineer_mode/tab_primary_cansniffer.h"
