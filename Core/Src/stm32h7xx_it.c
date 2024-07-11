@@ -91,6 +91,20 @@ void NMI_Handler(void) {
 void HardFault_Handler(void) {
     /* USER CODE BEGIN HardFault_IRQn 0 */
     // HAL_NVIC_SystemReset();
+    __asm__("mrs r3, xpsr\n\t");
+    __asm__("mrs r2, psp\n\t");
+    __asm__("mrs r1, msp\n\t");
+    // __asm__ (
+    //   "ldr sp, =0x2001BF00\n\t"
+    // );
+    __asm__("push.w {r1-r11,lr}\n\t");
+    __asm__("mov r0, sp\n\t");
+    __asm__("bl CrashCatcher_Entry\n\t");
+    __asm__(
+        // "bl CrashCatcher_DumpStart\n\t"
+        "pop.w {r1-r11,lr}\n\t");
+    __asm__("mov sp, r1\n\t");
+    __asm__("bx lr\n\t");
     /* USER CODE END HardFault_IRQn 0 */
     while (1) {
         /* USER CODE BEGIN W1_HardFault_IRQn 0 */
