@@ -145,28 +145,29 @@ void angular_velocity_update(void) {
     }
 
 void hv_errors_update() {
+    static uint32_t last_bms_error_showed = 0;
     GET_LAST_STATE(primary, hv_errors, PRIMARY, HV_ERRORS);
     size_t error_counter          = 0;
     char hv_errors_buffer[BUFSIZ] = {0};
     size_t hv_errors_buffer_size  = 0;
     hv_errors_buffer_size += snprintf(hv_errors_buffer + hv_errors_buffer_size, BUFSIZ - hv_errors_buffer_size, "HV BMS ERRORS: \n");
-    ERROR_COUNTER_CHECKER(errors_cell_under_voltage, "errors_cell_under_voltage");
-    ERROR_COUNTER_CHECKER(errors_cell_over_voltage, "errors_cell_over_voltage");
-    ERROR_COUNTER_CHECKER(errors_cell_under_temperature, "errors_cell_under_temperature");
-    ERROR_COUNTER_CHECKER(errors_cell_over_temperature, "errors_cell_over_temperature");
-    ERROR_COUNTER_CHECKER(errors_over_current, "errors_over_current");
-    ERROR_COUNTER_CHECKER(errors_can, "errors_can");
-    ERROR_COUNTER_CHECKER(errors_int_voltage_mismatch, "errors_int_voltage_mismatch");
-    ERROR_COUNTER_CHECKER(errors_cellboard_comm, "errors_cellboard_comm");
-    ERROR_COUNTER_CHECKER(errors_cellboard_internal, "errors_cellboard_internal");
-    ERROR_COUNTER_CHECKER(errors_connector_disconnected, "errors_connector_disconnected");
-    ERROR_COUNTER_CHECKER(errors_fans_disconnected, "errors_fans_disconnected");
-    ERROR_COUNTER_CHECKER(errors_feedback, "errors_feedback");
-    ERROR_COUNTER_CHECKER(errors_feedback_circuitry, "errors_feedback_circuitry");
-    ERROR_COUNTER_CHECKER(errors_eeprom_comm, "errors_eeprom_comm");
-    ERROR_COUNTER_CHECKER(errors_eeprom_write, "errors_eeprom_write");
+    ERROR_COUNTER_CHECKER(errors_cell_under_voltage, "cell_undervolt");
+    ERROR_COUNTER_CHECKER(errors_cell_over_voltage, "cell_overvolt");
+    ERROR_COUNTER_CHECKER(errors_cell_under_temperature, "cell_undertemp");
+    ERROR_COUNTER_CHECKER(errors_cell_over_temperature, "cell_overtemp");
+    ERROR_COUNTER_CHECKER(errors_over_current, "overcurr");
+    ERROR_COUNTER_CHECKER(errors_can, "can");
+    ERROR_COUNTER_CHECKER(errors_int_voltage_mismatch, "int_voltage_mismatch");
+    ERROR_COUNTER_CHECKER(errors_cellboard_comm, "cellboard_comm");
+    ERROR_COUNTER_CHECKER(errors_cellboard_internal, "cellboard_internal");
+    ERROR_COUNTER_CHECKER(errors_connector_disconnected, "connector_disconnected");
+    ERROR_COUNTER_CHECKER(errors_fans_disconnected, "fans_disconnected");
+    ERROR_COUNTER_CHECKER(errors_feedback, "feedback");
+    ERROR_COUNTER_CHECKER(errors_feedback_circuitry, "feedback_circuitry");
+    ERROR_COUNTER_CHECKER(errors_eeprom_comm, "eeprom_comm");
+    ERROR_COUNTER_CHECKER(errors_eeprom_write, "eeprom_write");
 display_notification_jmp:
-    if (error_counter != 0)
+    if (error_counter != 0 && ((get_current_time_ms() - last_bms_error_showed) > 15000))
         display_notification(hv_errors_buffer, 2500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
 }
 
@@ -259,13 +260,6 @@ void hv_cell_balancing_status_update() {
     }
     primary_hv_balancing_status_balancing_status status = primary_hv_balancing_status_last_state->balancing_status;
     cellboard_bal[cellboard_id]                         = status == primary_hv_balancing_status_balancing_status_off ? false : true;
-    bool is_bal                                         = false;
-    for (uint8_t i = 0; i < N_PORK_CELLBOARD; i++) {
-        if (cellboard_bal[i]) {
-            is_bal = true;
-            break;
-        }
-    }
     set_balancing_column(cellboard_bal[cellboard_id], cellboard_id);
 }
 
@@ -384,10 +378,11 @@ void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg)
     lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f));
 }
 
-#define ALMOST_ERROR                (0.005f)
+#define ALMOST_ERROR                (0.008f)
 #define IS_ALMOST_EQUAL(val1, val2) ((fabs(val1 - val2) < ALMOST_ERROR))
 
 void lv_pumps_speed_update(void) {
+    return;
     GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
     float actual_speed  = primary_lv_pumps_speed_last_state->pumps_speed;
     float actual_status = primary_lv_pumps_speed_last_state->status;
@@ -404,12 +399,7 @@ void lv_pumps_speed_update(void) {
                 break;
             if ((!IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.pumps_speed, actual_speed)) &&
                 !IS_ALMOST_EQUAL(steering_wheel_state_pumps_speed.status, actual_status)) {
-                display_notification(
-                    "BMS LV does not respond\n"
-                    "on pumps settings",
-                    2000,
-                    COLOR_RED_STATUS_HEX,
-                    COLOR_PRIMARY_HEX);
+                display_notification("BMS LV\nNOT\nRESPONDING", 2000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
                 steering_wheel_state_pumps_speed.pumps_speed = actual_speed;
                 steering_wheel_state_pumps_speed.status      = actual_status;
                 steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -434,6 +424,7 @@ void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t
 }
 
 void lv_radiator_speed_update(void) {
+    return;
     GET_LAST_STATE(primary, lv_radiator_speed, PRIMARY, LV_RADIATOR_SPEED);
     float actual_speed  = primary_lv_radiator_speed_last_state->radiator_speed;
     float actual_status = primary_lv_radiator_speed_last_state->status;
@@ -450,12 +441,7 @@ void lv_radiator_speed_update(void) {
                 break;
             if (!IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.radiator_speed, actual_speed) &&
                 !IS_ALMOST_EQUAL(steering_wheel_state_radiator_speed.status, actual_status)) {
-                display_notification(
-                    "BMS LV does not respond\n"
-                    "on radiator settings",
-                    2000,
-                    COLOR_RED_STATUS_HEX,
-                    COLOR_PRIMARY_HEX);
+                display_notification("BMS LV\nNOT\nRESPONDING", 2000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
                 steering_wheel_state_radiator_speed.radiator_speed = actual_speed;
                 steering_wheel_state_radiator_speed.status         = actual_status;
                 steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -554,6 +540,11 @@ bool was_received_hv_mainboard_version = false;
 bool was_received_hv_cellboard_version = false;
 bool was_received_tlm_version          = false;
 
+/**
+ * @brief This because CANLIB_BUILD_TIME could differ slightly between networks
+ */
+#define CANLIB_BUILD_TIME_ALMOST_EQUAL(val) (CANLIB_BUILD_TIME + 20 >= val && CANLIB_BUILD_TIME - 20 <= val)
+
 void canlib_versions_mismatch_checker() {
     static uint32_t last_popup_on_canlib_versions_mismatch = 0;
     GET_LAST_STATE(primary, ecu_version, PRIMARY, ECU_VERSION);
@@ -566,13 +557,15 @@ void canlib_versions_mismatch_checker() {
     // not ric   !=   OK
     // ricevuto  ==   OK
     // not ric   ==   OK
-    volatile bool ecu_version_is_not_correct          = !was_received_ecu_version || CANLIB_BUILD_TIME != primary_ecu_version_last_state->canlib_build_time;
-    volatile bool lv_version_is_not_correct           = !was_received_lv_version || CANLIB_BUILD_TIME != primary_lv_version_last_state->canlib_build_time;
-    volatile bool hv_mainboard_version_is_not_correct = !was_received_hv_mainboard_version ||
-                                                        CANLIB_BUILD_TIME != primary_hv_mainboard_version_last_state->canlib_build_time;
-    volatile bool hv_cellboard_version_is_not_correct = !was_received_hv_cellboard_version ||
-                                                        CANLIB_BUILD_TIME != primary_hv_cellboard_version_last_state->canlib_build_time;
-    volatile bool tlm_version_is_not_correct = !was_received_tlm_version || CANLIB_BUILD_TIME != primary_tlm_version_last_state->canlib_build_time;
+    volatile bool ecu_version_is_not_correct =
+        !(!was_received_ecu_version || CANLIB_BUILD_TIME_ALMOST_EQUAL(primary_ecu_version_last_state->canlib_build_time));
+    volatile bool lv_version_is_not_correct = !(!was_received_lv_version || CANLIB_BUILD_TIME_ALMOST_EQUAL(primary_lv_version_last_state->canlib_build_time));
+    volatile bool hv_mainboard_version_is_not_correct =
+        !(!was_received_hv_mainboard_version || CANLIB_BUILD_TIME_ALMOST_EQUAL(primary_hv_mainboard_version_last_state->canlib_build_time));
+    volatile bool hv_cellboard_version_is_not_correct =
+        !(!was_received_hv_cellboard_version || CANLIB_BUILD_TIME_ALMOST_EQUAL(primary_hv_cellboard_version_last_state->canlib_build_time));
+    volatile bool tlm_version_is_not_correct =
+        !(!was_received_tlm_version || CANLIB_BUILD_TIME_ALMOST_EQUAL(primary_tlm_version_last_state->canlib_build_time));
     if ((get_current_time_ms() - last_popup_on_canlib_versions_mismatch) > 6500 &&
         ((ecu_version_is_not_correct) || (lv_version_is_not_correct) || (hv_mainboard_version_is_not_correct) || (hv_cellboard_version_is_not_correct) ||
          (tlm_version_is_not_correct))) {

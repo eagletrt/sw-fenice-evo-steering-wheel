@@ -1,26 +1,11 @@
 #!/usr/bin/env bash
 
-# Usage: ./tools/fmt
-
-# -------------
-# Logic
-# -------------
+set -xe
 
 if ! [ -d .git ]; then
     echo "[!] Please run this script from the root of the repository"
     exit 1
 fi
 
-BUILD_DIR=./build
-IGNORE=./Drivers
-CORE_LIB_PATH=./Core/Lib
-OPEN_BLT=./open-blt-fenice-steering-wheel
+clang-format -i Core/Src/*.c && clang-format -i Core/Inc/*.h && clang-format -i Core/UI/**/*.c
 
-CLANG_FORMAT=clang-format
-
-echo "[*] Formatting c files"
-find . -path $OPEN_BLT -prune -false -o -path $BUILD_DIR -prune -false -o -path $CORE_LIB_PATH -prune -false -o -path $IGNORE -prune -false -o -type f \
--name "*.c" -exec sh -c "$CLANG_FORMAT -i \$1" _ {} \;
-echo "[*] Formatting h   files"
-find . -path $OPEN_BLT -prune -false -o -path $BUILD_DIR -prune -false -o -path $CORE_LIB_PATH -prune -false -o  -path $IGNORE -prune -false -o -type f \
--name "*.h" -exec sh -c "$CLANG_FORMAT -i \$1" _ {} \;

@@ -24,7 +24,6 @@ extern bool debug_signal_error_status[DEBUG_SIGNAL_ERROR_SIZE];
 void tab_hv_create(lv_obj_t *parent);
 
 void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
-void set_balancing_column(bool balancing, uint8_t idx);
 
 void init_hv_styles(void);
 void tab_hv_resync(void);

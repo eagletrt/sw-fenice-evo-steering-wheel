@@ -10,8 +10,8 @@
 #define BP_WIDTH        300
 #define BP_BORDER_WIDTH 3
 
-#define B_COLUMN_HEIGHT  BP_HEIGHT - 2 * BP_BORDER_WIDTH
-#define B_COLUMN_WIDTH   (BP_WIDTH - 2 * BP_BORDER_WIDTH) / N_PORK_CELLBOARD
+#define B_COLUMN_HEIGHT  (BP_HEIGHT - 2 * BP_BORDER_WIDTH)
+#define B_COLUMN_WIDTH   ((BP_WIDTH - 2 * BP_BORDER_WIDTH) / N_PORK_CELLBOARD)
 #define B_COLUMN_SPACING 6
 
 lv_obj_t *data_panel;
@@ -104,6 +104,8 @@ void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx) {
 
 void set_balancing_column(bool balancing, uint8_t idx) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_HV);
+    if (engineer_mode || current_racing_tab != STEERING_WHEEL_TAB_HV)
+        return;
 
     if (balancing_status[idx] != balancing) {
         balancing_status[idx] = balancing;

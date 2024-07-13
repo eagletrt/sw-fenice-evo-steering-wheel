@@ -34,8 +34,8 @@ uint32_t steering_wheel_lv_radiators_speed_sent_timestamp              = 0;
 steering_wheel_cooling_status_t steering_wheel_lv_pumps_speed_state    = STEERING_WHEEL_COOLING_STATUS_SYNC;
 steering_wheel_cooling_status_t steering_wheel_lv_radiator_speed_state = STEERING_WHEEL_COOLING_STATUS_SYNC;
 
-void manettino_set_radiators_speed(void);
-void manettino_set_pumps_speed(void);
+void manettino_set_radiators_speed(int);
+void manettino_set_pumps_speed(int);
 
 void set_dmt_steering_angle_target(void) {
     GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
@@ -158,12 +158,7 @@ void manettino_right_actions(int dsteps) {
                 send_pork_fans_status((float)pork_fans_status_last_state / 100.0f);
                 break;
             case STEERING_WHEEL_TAB_LV: {
-                steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SET;
-                float new_radspeed_val                             = steering_wheel_state_radiator_speed.radiator_speed + ((float)dsteps / 10.0f);
-                new_radspeed_val                                   = fminf(new_radspeed_val, SET_RADIATORS_MAX);
-                new_radspeed_val                                   = fmaxf(new_radspeed_val, SET_RADIATORS_MIN);
-                steering_wheel_state_radiator_speed.radiator_speed = new_radspeed_val;
-                manettino_set_radiators_speed();
+                manettino_set_radiators_speed(dsteps);
                 break;
             }
             default:
@@ -231,12 +226,7 @@ void manettino_left_actions(int dsteps) {
                 // wheel map (see images)
                 break;
             case STEERING_WHEEL_TAB_LV: {
-                steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SET;
-                float new_pumps_speed_val                    = steering_wheel_state_pumps_speed.pumps_speed + ((float)dsteps / 10.0f);
-                new_pumps_speed_val                          = fminf(new_pumps_speed_val, SET_PUMP_SPEED_MAX);
-                new_pumps_speed_val                          = fmaxf(new_pumps_speed_val, SET_PUMP_SPEED_MIN);
-                steering_wheel_state_pumps_speed.pumps_speed = new_pumps_speed_val;
-                manettino_set_pumps_speed();
+                manettino_set_pumps_speed(dsteps);
                 break;
             }
             default:
@@ -278,7 +268,13 @@ void manettino_send_radiators_speed(void) {
     can_send(&msg, true);
 }
 
-void manettino_set_radiators_speed(void) {
+void manettino_set_radiators_speed(int dsteps) {
+    steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SET;
+    float new_radspeed_val                             = steering_wheel_state_radiator_speed.radiator_speed + ((float)dsteps / 10.0f);
+    new_radspeed_val                                   = fminf(new_radspeed_val, SET_RADIATORS_MAX);
+    new_radspeed_val                                   = fmaxf(new_radspeed_val, SET_RADIATORS_MIN);
+    steering_wheel_state_radiator_speed.radiator_speed = new_radspeed_val;
+
     steering_wheel_lv_radiators_speed_sent_timestamp = get_current_time_ms();
     steering_wheel_state_radiator_speed.status       = primary_lv_radiator_speed_status_manual;
 
@@ -304,7 +300,12 @@ void manettino_send_pumps_speed(void) {
     can_send(&msg, true);
 }
 
-void manettino_set_pumps_speed(void) {
+void manettino_set_pumps_speed(int dsteps) {
+    steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SET;
+    float new_pumps_speed_val                    = steering_wheel_state_pumps_speed.pumps_speed + ((float)dsteps / 10.0f);
+    new_pumps_speed_val                          = fminf(new_pumps_speed_val, SET_PUMP_SPEED_MAX);
+    new_pumps_speed_val                          = fmaxf(new_pumps_speed_val, SET_PUMP_SPEED_MIN);
+    steering_wheel_state_pumps_speed.pumps_speed = new_pumps_speed_val;
     steering_wheel_lv_pumps_speed_sent_timestamp = get_current_time_ms();
     steering_wheel_state_pumps_speed.status      = primary_lv_pumps_speed_status_manual;
 

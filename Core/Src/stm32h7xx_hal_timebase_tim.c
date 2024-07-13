@@ -46,7 +46,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
     uint32_t pFLatency;
     /*Configure the TIM4 IRQ priority */
     if (TickPriority < (1UL << __NVIC_PRIO_BITS)) {
-        HAL_NVIC_SetPriority(TIM4_IRQn, TickPriority, 0U);
+        HAL_NVIC_SetPriority(TIM4_IRQn, TickPriority, 0);
 
         /* Enable the TIM4 global Interrupt */
         HAL_NVIC_EnableIRQ(TIM4_IRQn);
@@ -57,10 +57,8 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
 
     /* Enable TIM4 clock */
     __HAL_RCC_TIM4_CLK_ENABLE();
-
     /* Get clock configuration */
     HAL_RCC_GetClockConfig(&clkconfig, &pFLatency);
-
     /* Get APB1 prescaler */
     uwAPB1Prescaler = clkconfig.APB1CLKDivider;
     /* Compute TIM4 clock */
