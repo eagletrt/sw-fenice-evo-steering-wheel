@@ -35,5 +35,6 @@ uint32_t last_tick = 0;
 extern bool dma2d_transfer_completed;
 
 void stm32_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) {
+    HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING);
     lv_disp_flush_ready(disp);
 }

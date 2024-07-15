@@ -39,4 +39,4 @@ void change_errors_view(bool dir_left);
 
 #endif  // TAB_DEBUG_H
 
-#endif // #if 0
+#endif  // #if 0

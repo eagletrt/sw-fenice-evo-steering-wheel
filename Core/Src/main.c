@@ -28,6 +28,7 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "ltdc.h"
+#include "memorymap.h"
 #include "octospi.h"
 #include "tim.h"
 #include "usart.h"
@@ -232,12 +233,12 @@ void SystemClock_Config(void) {
     RCC_OscInitStruct.CSICalibrationValue = 16;
     RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM            = 3;
-    RCC_OscInitStruct.PLL.PLLN            = 62;
+    RCC_OscInitStruct.PLL.PLLM            = 6;
+    RCC_OscInitStruct.PLL.PLLN            = 137;
     RCC_OscInitStruct.PLL.PLLP            = 1;
     RCC_OscInitStruct.PLL.PLLQ            = 5;
     RCC_OscInitStruct.PLL.PLLR            = 2;
-    RCC_OscInitStruct.PLL.PLLRGE          = RCC_PLL1VCIRANGE_3;
+    RCC_OscInitStruct.PLL.PLLRGE          = RCC_PLL1VCIRANGE_2;
     RCC_OscInitStruct.PLL.PLLVCOSEL       = RCC_PLL1VCOWIDE;
     RCC_OscInitStruct.PLL.PLLFRACN        = 4096;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {

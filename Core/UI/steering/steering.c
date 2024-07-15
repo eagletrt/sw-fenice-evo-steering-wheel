@@ -167,8 +167,10 @@ void hv_errors_update() {
     ERROR_COUNTER_CHECKER(errors_eeprom_comm, "eeprom_comm");
     ERROR_COUNTER_CHECKER(errors_eeprom_write, "eeprom_write");
 display_notification_jmp:
-    if (error_counter != 0 && ((get_current_time_ms() - last_bms_error_showed) > 15000))
+    if (error_counter != 0 && ((get_current_time_ms() - last_bms_error_showed) > 15000)) {
+        last_bms_error_showed = get_current_time_ms();
         display_notification(hv_errors_buffer, 2500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+    }
 }
 
 void hv_debug_signals_update(void) {

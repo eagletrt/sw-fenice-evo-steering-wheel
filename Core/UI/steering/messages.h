@@ -1,18 +1,19 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
-#include <steering_config.h>
-#include <assert.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include "inverters/inverters_network.h"
+#include "inverters/inverters_watchdog.h"
 #include "primary/primary_network.h"
 #include "primary/primary_watchdog.h"
 #include "secondary/secondary_network.h"
 #include "secondary/secondary_watchdog.h"
-#include "inverters/inverters_network.h"
-#include "inverters/inverters_watchdog.h"
+
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <steering_config.h>
+#include <string.h>
 
 #if WATCHDOG_ENABLED == 1
 #define STEER_CAN_UNPACK(ntw, NTW, msg_name, MSG_NAME, arr, update_cond)                                                                        \
@@ -39,7 +40,6 @@
         arr[ntw##_index_from_id(NTW##_##MSG_NAME##_FRAME_ID)] = true;                                                                           \
     }
 #endif
-
 
 #define STEER_CAN_PACK(ntw, NTW, msg_name, MSG_NAME)               \
     can_message_t msg        = {0};                                \

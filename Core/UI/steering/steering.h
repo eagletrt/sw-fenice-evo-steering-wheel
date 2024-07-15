@@ -53,7 +53,7 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
 
 // #define CHECK_CURRENT_TAB(condition, mod, curr) if ((condition) || (current_##mod##_tab != curr)) return
 
-#define CHECK_CURRENT_TAB(condition, mod, curr) (void) 0;
+#define CHECK_CURRENT_TAB(condition, mod, curr) (void)0;
 
 /*
  * UPDATE
@@ -114,7 +114,7 @@ void irts_rr_update(void);
 void pedal_throttle_update(void);
 void pedal_brakes_pressure_update(void);
 void set_tab_sensors_value_brake_f(float value_in_bar);
-void set_tab_sensors_value_brake_r (float value_in_bar);
+void set_tab_sensors_value_brake_r(float value_in_bar);
 void set_tab_sensors_value_apps(int32_t value_0_to_100);
 
 void ecu_version_update(void);
@@ -199,4 +199,4 @@ extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT][primary_MAX_ST
 extern uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT][secondary_MAX_STRUCT_SIZE_CONVERSION];
 extern uint8_t inverters_messages_last_state[inverters_MESSAGE_COUNT][inverters_MAX_STRUCT_SIZE_CONVERSION];
 
-#endif // STEERING_H
+#endif  // STEERING_H

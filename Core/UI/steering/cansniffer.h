@@ -31,7 +31,7 @@ void cansniffer_primary_new_message(can_message_t *msg);
 void update_secondary_cansniffer_ui(void);
 void cansniffer_inverters_new_message(can_message_t *msg);
 void update_inverters_cansniffer_ui(void);
-int8_t min_heap_compare_indexes(void * a, void * b);
+int8_t min_heap_compare_indexes(void *a, void *b);
 
 #endif  // CANSNIFFER_H
 

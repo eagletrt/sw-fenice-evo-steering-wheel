@@ -14,4 +14,3 @@ void inverters_tab_cansniffer_create(lv_obj_t *parent);
 #endif  // CANSNIFFER_ENABLED == 1
 
 #endif  // INVERTERS_TAB_CAN_SNIFFER_H
-

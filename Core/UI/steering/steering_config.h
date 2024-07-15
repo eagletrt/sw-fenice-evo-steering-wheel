@@ -51,7 +51,7 @@
 /***
  * General configurations 
 */
-#define HV_BUS_VOLTAGE_LIMIT (450U)
+#define HV_BUS_VOLTAGE_LIMIT    (450U)
 #define TLM_NTW_INTERFACE_MAX_N (6U)
 
 /**
