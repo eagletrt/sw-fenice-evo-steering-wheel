@@ -149,16 +149,14 @@ void tab_hv_update_error_label() {
 
 bool precharge_bar_active = false;
 
-void precharge_bar_update(int32_t val) {
-    return;
+void __precharge_bar_update(int32_t val) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_HV);
     if (precharge_bar_active) {
         lv_bar_set_value(tab_hv_precharge_bar, val, LV_ANIM_OFF);
     }
 }
 
-void precharge_bar_insert(bool precharge) {
-    return;
+void __precharge_bar_insert(bool precharge) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_HV);
     if (precharge && !precharge_bar_active) {
         static lv_coord_t precharge_panel_cols[] = {DATA_PANEL_WIDTH, LV_GRID_TEMPLATE_LAST};

@@ -3,6 +3,7 @@
 lv_obj_t *tab_racing_ptr;
 lv_obj_t *tab_sensors_ptr;
 lv_obj_t *tab_hv_ptr;
+lv_obj_t *tab_precharge_popup_ptr;
 lv_obj_t *tab_lv_ptr;
 
 #if STEER_TAB_CALIBRATION_ENABLED == 1
@@ -44,6 +45,7 @@ void tab_manager(void) {
     tab_sensors_ptr = lv_obj_create(NULL);
     tab_hv_ptr      = lv_obj_create(NULL);
     tab_lv_ptr      = lv_obj_create(NULL);
+    tab_precharge_popup_ptr = lv_obj_create(NULL);
 #if STEER_TAB_CALIBRATION_ENABLED == 1
     tab_calibration_ptr = lv_obj_create(NULL);
 #endif
@@ -65,6 +67,7 @@ void tab_manager(void) {
     lv_group_add_obj(g, tab_sensors_ptr);
     lv_group_add_obj(g, tab_hv_ptr);
     lv_group_add_obj(g, tab_lv_ptr);
+    lv_group_add_obj(g, tab_precharge_popup_ptr);
 
 #if STEER_TAB_CALIBRATION_ENABLED == 1
     lv_group_add_obj(g, tab_calibration_ptr);
@@ -89,6 +92,7 @@ void tab_manager(void) {
     tab_sensors_create(tab_sensors_ptr);
     tab_hv_create(tab_hv_ptr);
     tab_lv_create(tab_lv_ptr);
+    precharge_bar_screen_create(tab_precharge_popup_ptr);
 
 #if STEER_TAB_CALIBRATION_ENABLED == 1
     tab_calibration_create(tab_calibration_ptr);
@@ -294,6 +298,20 @@ void set_on_help_animation(void) {
 
 bool is_on_help_animation(void) {
     return help_animation;
+}
+
+static bool on_precharge_bar_popup = false;
+
+void precharge_bar_popup_show() {
+    on_precharge_bar_popup = true;
+    lv_scr_load(tab_precharge_popup_ptr);
+}
+
+void precharge_bar_popup_hide() {
+    if (on_precharge_bar_popup) {
+        on_precharge_bar_popup = false;
+        restore_previous_screen(NULL);
+    }
 }
 
 void display_notification(const char *label_content, uint32_t timeout_ms, uint32_t background_color_hex, uint32_t label_color_hex) {

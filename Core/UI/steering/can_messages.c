@@ -21,11 +21,13 @@ lv_timer_t *steer_version_task;
 char name_buffer[BUFSIZ];
 
 void send_steer_version(lv_timer_t *main_timer) {
+#ifdef STM32H723xx
     struct tm timeinfo;
     strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
     primary_steering_wheel_version_converted_t converted = {.canlib_build_time = CANLIB_BUILD_TIME, .component_build_time = mktime(&timeinfo)};
     STEER_CAN_PACK(primary, PRIMARY, steering_wheel_version, STEERING_WHEEL_VERSION)
     can_send(&msg, true);
+#endif
 }
 
 void send_steer_status(lv_timer_t *main_timer) {

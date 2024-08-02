@@ -163,8 +163,13 @@ void set_tab_track_test_dmt_steering_angle_target(float f);
 void set_tab_track_test_lb_steering_angle(const char *s);
 void set_tab_track_test_lb_speed(const char *s);
 
-void precharge_bar_update(int32_t);
-void precharge_bar_insert(bool precharge);
+void __precharge_bar_update(int32_t); // Deprecated
+void __precharge_bar_insert(bool precharge); // Deprecated
+
+void precharge_bar_popup_show();
+void precharge_bar_popup_hide();
+void precharge_bar_set_pack_voltage(float pack_voltage);
+void precharge_bar_set_bus_voltage(float bus_voltage);
 
 calibration_box_t *get_tab_calibration_curr_focus();
 lv_obj_t *get_tab_calibration_slider();

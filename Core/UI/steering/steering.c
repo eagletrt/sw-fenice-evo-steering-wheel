@@ -209,7 +209,10 @@ void hv_cells_voltage_stats_update(void) {
 void hv_total_voltage_update(void) {
     GET_LAST_STATE(primary, hv_total_voltage, PRIMARY, HV_TOTAL_VOLTAGE);
 
-    precharge_bar_update((int32_t)primary_hv_total_voltage_last_state->bus);
+    // __precharge_bar_update((int32_t)primary_hv_total_voltage_last_state->bus);
+    precharge_bar_set_bus_voltage((int32_t)primary_hv_total_voltage_last_state->bus);
+    precharge_bar_set_pack_voltage((int32_t)primary_hv_total_voltage_last_state->pack);
+
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_hv_total_voltage_last_state->pack);
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_pack_voltage);
 
@@ -317,31 +320,38 @@ void hv_status_update() {
 
     switch (primary_hv_status_last_state->status) {
         case primary_hv_status_status_init:
-            precharge_bar_insert(false);
+            // __precharge_bar_insert(false);
+            precharge_bar_popup_hide();
             set_tab_hv_label_text("INIT", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_idle:
-            precharge_bar_insert(false);
+            // __precharge_bar_insert(false);
+            precharge_bar_popup_hide();
             set_tab_hv_label_text("IDLE", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_airn_close:
-            precharge_bar_insert(false);
+            // __precharge_bar_insert(false);
+            precharge_bar_popup_hide();
             set_tab_hv_label_text("AIRN CLOSE", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_precharge:
-            precharge_bar_insert(true);
+            // __precharge_bar_insert(true);
+            precharge_bar_popup_show();
             set_tab_hv_label_text("PRECHARGE", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_airp_close:
-            precharge_bar_insert(false);
+            // __precharge_bar_insert(false);
+            precharge_bar_popup_hide();
             set_tab_hv_label_text("AIRP CLOSE", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_ts_on:
-            precharge_bar_insert(false);
+            // __precharge_bar_insert(false);
+            precharge_bar_popup_hide();
             set_tab_hv_label_text("TS ON", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_fatal_error:
-            precharge_bar_insert(false);
+            // __precharge_bar_insert(false);
+            precharge_bar_popup_hide();
             set_tab_hv_label_text("FATAL ERROR", tab_hv_lb_current_state);
             break;
     };
