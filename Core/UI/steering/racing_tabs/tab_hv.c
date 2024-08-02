@@ -223,9 +223,9 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
         set_tab_hv_label_text(shutdown_labels[last_opend_index], shutdown_status_lb);
         if (global_shutdown_status == SC_CLOSE) {
             char buf[128];
-            int to_display = snprintf(buf, 128, "SHUTDOWN \nCIRCUIT \nOPENED:\n");  // %s", shutdown_labels[last_opend_index]);
+            int to_display = snprintf(buf, 128, "SHUTDOWN \nCIRCUIT \nOPENED\n");  // %s", shutdown_labels[last_opend_index]);
             if (to_display < 128 && to_display > 0) {
-                display_notification(buf, 3000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+                display_notification(buf, 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
             }
         }
         global_shutdown_status = SC_OPEN;
@@ -236,6 +236,10 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
     }
     set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status_lb);
     global_shutdown_status = SC_CLOSE;
+}
+
+bool is_shutdown_closed(void) {
+    return (global_shutdown_status == SC_CLOSE);
 }
 
 void init_hv_styles(void) {

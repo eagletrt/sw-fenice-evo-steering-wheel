@@ -222,21 +222,22 @@ void read_buttons(void) {
 
 // TODO: use a formula lol
 int delta_step_position(int delta_step) {
-    if (delta_step == -7)
-        delta_step = 1;
-    if (delta_step == -6)
-        delta_step = 2;
-    if (delta_step == -5)
-        delta_step = 3;
-    if (delta_step == 5)
-        delta_step = -3;
-    if (delta_step == 6)
-        delta_step = -2;
-    if (delta_step == 7)
-        delta_step = -1;
-    if (delta_step < -7)
-        delta_step = 0;
-    return delta_step;
+    switch (delta_step) {
+        case -7:
+            return 1;
+        case -6:
+            return 2;
+        case -5:
+            return 3;
+        case 5:
+            return -3;
+        case 6:
+            return -2;
+        case 7:
+            return -1;
+        default:
+            return 0;
+    }
 }
 
 void manettini_actions(uint8_t value, uint8_t manettino) {

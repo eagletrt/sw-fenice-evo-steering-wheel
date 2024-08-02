@@ -38,6 +38,7 @@
 #include "test_flash.h"
 
 #include <stdarg.h>
+#include <stdio.h>
 
 void print(const char *fmt, ...) {
   char buff[256];

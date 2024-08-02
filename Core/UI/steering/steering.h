@@ -182,6 +182,7 @@ void tab_hv_update_error_label();
 void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
 void set_balancing_column(bool balancing, uint8_t idx);
 void tab_hv_set_pork_speed_bar(int32_t, bool);
+bool is_shutdown_closed(void);
 
 void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close);
 
@@ -189,7 +190,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
  * Tab lv
  */
 void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx);
-void lv_set_pumps_speed_bar(int32_t);
+void lv_set_pumps_speed_bar(int32_t, bool auto_mode);
 void lv_set_radiators_speed_bar(int32_t val, bool auto_mode);
 
 void lv_radiator_speed_update(void);

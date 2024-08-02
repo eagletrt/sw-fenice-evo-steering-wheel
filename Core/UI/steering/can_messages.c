@@ -314,8 +314,8 @@ void handle_secondary(can_message_t *msg) {
             STEER_CAN_UNPACK(secondary, SECONDARY, vehicle_speed, VEHICLE_SPEED, is_smsg_new, true);
             break;
         }
-        case SECONDARY_ANGULAR_VELOCITY_FRAME_ID: {
-            STEER_CAN_UNPACK(secondary, SECONDARY, angular_velocity, ANGULAR_VELOCITY, is_smsg_new, true);
+        case SECONDARY_FRONT_ANGULAR_VELOCITY_FRAME_ID: {
+            STEER_CAN_UNPACK(secondary, SECONDARY, front_angular_velocity, FRONT_ANGULAR_VELOCITY, is_smsg_new, true);
             break;
         }
         case SECONDARY_STEER_ANGLE_FRAME_ID: {
@@ -469,9 +469,11 @@ void message_parser(uint8_t *msg, size_t msg_siz) {
 }
 
 void init_periodic_can_messages_timers(void) {
+#ifdef PERIODIC_SET_ECU_POWER_MAPS
     steer_status_task = lv_timer_create(send_steer_status, PRIMARY_INTERVAL_ECU_SET_POWER_MAPS, NULL);
     lv_timer_set_repeat_count(steer_status_task, -1);
     lv_timer_reset(steer_status_task);
+#endif
 
     steer_version_task = lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEERING_WHEEL_VERSION, NULL);
     lv_timer_set_repeat_count(steer_version_task, -1);

@@ -169,7 +169,7 @@ void hv_errors_update() {
 display_notification_jmp:
     if (error_counter != 0 && ((get_current_time_ms() - last_bms_error_showed) > 15000)) {
         last_bms_error_showed = get_current_time_ms();
-        display_notification(hv_errors_buffer, 2500, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+        display_notification(hv_errors_buffer, 2500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
     }
 }
 
@@ -371,20 +371,19 @@ extern steering_wheel_cooling_status_t steering_wheel_lv_radiator_speed_state;
 
 void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg) {
     if (msg->status == primary_lv_pumps_speed_status_off || msg->status == primary_lv_pumps_speed_status_auto) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
-        set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_value);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->pumps_speed);
+        lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), true);
     } else {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->pumps_speed);
-        set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_value);
+        lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), false);
     }
-    lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f));
+    set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_value);
 }
 
 #define ALMOST_ERROR                (0.008f)
 #define IS_ALMOST_EQUAL(val1, val2) ((fabs(val1 - val2) < ALMOST_ERROR))
 
 void lv_pumps_speed_update(void) {
-    return;
     GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
     float actual_speed  = primary_lv_pumps_speed_last_state->pumps_speed;
     float actual_status = primary_lv_pumps_speed_last_state->status;
@@ -417,16 +416,16 @@ void lv_pumps_speed_update(void) {
 
 void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t *msg) {
     if (msg->status == primary_lv_radiator_speed_status_off || msg->status == primary_lv_radiator_speed_status_auto) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->radiator_speed);
+        lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), true);
     } else {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->radiator_speed);
+        lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), false);
     }
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_value);
-    lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), msg->status == primary_lv_radiator_speed_status_auto);
 }
 
 void lv_radiator_speed_update(void) {
-    return;
     GET_LAST_STATE(primary, lv_radiator_speed, PRIMARY, LV_RADIATOR_SPEED);
     float actual_speed  = primary_lv_radiator_speed_last_state->radiator_speed;
     float actual_status = primary_lv_radiator_speed_last_state->status;
@@ -568,11 +567,11 @@ void canlib_versions_mismatch_checker() {
         !(!was_received_hv_cellboard_version || CANLIB_BUILD_TIME_ALMOST_EQUAL(primary_hv_cellboard_version_last_state->canlib_build_time));
     volatile bool tlm_version_is_not_correct =
         !(!was_received_tlm_version || CANLIB_BUILD_TIME_ALMOST_EQUAL(primary_tlm_version_last_state->canlib_build_time));
-    if ((get_current_time_ms() - last_popup_on_canlib_versions_mismatch) > 6500 &&
+    if ((get_current_time_ms() - last_popup_on_canlib_versions_mismatch) > 10000 &&
         ((ecu_version_is_not_correct) || (lv_version_is_not_correct) || (hv_mainboard_version_is_not_correct) || (hv_cellboard_version_is_not_correct) ||
          (tlm_version_is_not_correct))) {
         last_popup_on_canlib_versions_mismatch = get_current_time_ms();
-        display_notification("CANLIB VERSIONS\nMISMATCH", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+        display_notification("CANLIB VERSIONS\nMISMATCH", 1000, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
     }
 }
 
