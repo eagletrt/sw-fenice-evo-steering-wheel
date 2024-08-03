@@ -84,6 +84,7 @@ includeDirectories:
   - Core/Src/**
   - Core/Lib/lvgl-stm32/lvgl
   - Core/UI/steering
+  - Core/Lib/invlib
   - Core/Lib/can/lib
   - Core/Lib/micro-libs/min-heap/inc
 
@@ -147,6 +148,7 @@ sourceFiles:
   - Core/Lib/can/lib/inverters/inverters_network.c
   # - Core/Lib/can/lib/inverters/inverters_watchdog.c
   - Core/Lib/micro-libs/min-heap/src/*.c
+  - Core/Lib/invlib/inverter_conversions.c
 
 
 # When no makefile is present it will show a warning pop-up.

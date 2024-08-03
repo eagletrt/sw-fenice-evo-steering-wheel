@@ -10,8 +10,8 @@ void precharge_bar_screen_create(lv_obj_t *screen) {
     lv_style_set_radius(&precharge_bar_style_precharge, 0);
     lv_style_set_bg_opa(&precharge_bar_style_precharge, LV_OPA_COVER);
     lv_style_set_bg_color(&precharge_bar_style_precharge, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_bg_grad_color(&precharge_bar_style_precharge, lv_palette_main(LV_PALETTE_RED));
-    lv_style_set_bg_grad_dir(&precharge_bar_style_precharge, LV_GRAD_DIR_HOR);
+    // lv_style_set_bg_grad_color(&precharge_bar_style_precharge, lv_palette_main(LV_PALETTE_RED));
+    // lv_style_set_bg_grad_dir(&precharge_bar_style_precharge, LV_GRAD_DIR_HOR);
 
     lv_style_init(&precharge_bar_style_back_indic);
     lv_style_set_radius(&precharge_bar_style_back_indic, 0);
@@ -38,5 +38,3 @@ void precharge_bar_set_pack_voltage(float pack_voltage) {
 void precharge_bar_set_bus_voltage(float bus_voltage) {
     lv_bar_set_value(precharge_bar_bar, bus_voltage, LV_ANIM_OFF);
 }
-
-

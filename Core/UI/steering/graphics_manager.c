@@ -6,10 +6,6 @@
 lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
 lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
-// extern primary_watchdog m_primary_watchdog;
-// extern secondary_watchdog m_secondary_watchdog;
-// extern inverters_watchdog m_inverters_watchdog;
-
 bool is_pmsg_new[primary_MESSAGE_COUNT];
 bool is_smsg_new[secondary_MESSAGE_COUNT];
 bool is_imsg_new[inverters_MESSAGE_COUNT];

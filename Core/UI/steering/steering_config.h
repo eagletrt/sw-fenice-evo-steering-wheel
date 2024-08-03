@@ -33,6 +33,8 @@
 #define CAN_OVER_SERIAL_ENABLED 0
 #define MCP23017_IT_ENABLED     0
 
+#define NOT_AVAILABLE_STRING_LABEL "NA"
+
 #define STEER_TAB_CALIBRATION_ENABLED 0
 #define STEER_TAB_SENSORS_ENABLED     1
 #define STEER_TAB_TRACK_TEST_ENABLED  1
@@ -225,7 +227,7 @@ typedef enum {
 /***
  * Cooling
  */
-#define COOLING_STATE_SYNC_TIMEOUT 200  // in ms
+#define COOLING_STATE_SYNC_TIMEOUT 1000  // in ms
 
 typedef enum {
     STEERING_WHEEL_COOLING_STATUS_SYNC,

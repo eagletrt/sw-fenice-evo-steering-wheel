@@ -75,6 +75,14 @@ void handle_primary(can_message_t *msg) {
     print("Primary network - message id %s\n", name_buffer);
 #endif
 
+#if WATCHDOG_ENABLED == 1
+    if (inverters_id_is_message(msg->id)) {
+        inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
+    } else {
+        primary_watchdog_reset(&m_primary_watchdog, msg->id, get_current_time_ms());
+    }
+#endif
+
     can_id_t id = msg->id;
     switch (id) {
         case PRIMARY_STEERING_WHEEL_JMP_TO_BLT_FRAME_ID:
@@ -248,10 +256,6 @@ void handle_primary(can_message_t *msg) {
 
         // INVERTERS
         case INVERTERS_INV_L_RCV_FRAME_ID: {
-#if WATCHDOG_ENABLED == 1
-            inverters_watchdog_reset(&m_inverters_watchdog, inverters_index_from_id(msg->id), get_current_time_ms());
-            inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
-#endif
             inverters_inv_l_rcv_t raw;
             inverters_inv_l_rcv_converted_t converted;
             inverters_inv_l_rcv_unpack(&raw, msg->data, INVERTERS_INV_L_RCV_BYTE_SIZE);
@@ -268,10 +272,6 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case INVERTERS_INV_R_RCV_FRAME_ID: {
-#if WATCHDOG_ENABLED == 1
-            inverters_watchdog_reset(&m_inverters_watchdog, inverters_index_from_id(msg->id), get_current_time_ms());
-            inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
-#endif
             inverters_inv_r_rcv_t raw;
             inverters_inv_r_rcv_converted_t converted;
             inverters_inv_r_rcv_unpack(&raw, msg->data, INVERTERS_INV_R_RCV_BYTE_SIZE);
@@ -302,6 +302,11 @@ void handle_secondary(can_message_t *msg) {
     secondary_message_name_from_id(msg->id, name_buffer);
     print("Secondary network - message id %s\n", name_buffer);
 #endif
+
+#if WATCHDOG_ENABLED == 1
+    secondary_watchdog_reset(&m_secondary_watchdog, msg->id, get_current_time_ms());
+#endif
+
     can_id_t id = msg->id;
     switch (id) {
         case SECONDARY_PEDAL_THROTTLE_FRAME_ID: {

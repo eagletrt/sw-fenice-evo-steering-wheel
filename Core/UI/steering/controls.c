@@ -283,18 +283,20 @@ void manettino_send_radiators_speed(void) {
 void manettino_set_radiators_speed(int dsteps) {
     steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SET;
     float new_radspeed_val                             = steering_wheel_state_radiator_speed.radiator_speed + ((float)dsteps / 10.0f);
-    new_radspeed_val                                   = roundf(new_radspeed_val * 100.0f) / 100.0f;
+    new_radspeed_val                                   = roundf(new_radspeed_val * 10.0f) / 10.0f;
     new_radspeed_val                                   = fminf(new_radspeed_val, SET_RADIATORS_MAX);
     new_radspeed_val                                   = fmaxf(new_radspeed_val, SET_RADIATORS_MIN);
     steering_wheel_state_radiator_speed.radiator_speed = new_radspeed_val;
     steering_wheel_lv_radiators_speed_sent_timestamp   = get_current_time_ms();
 
     if (steering_wheel_state_radiator_speed.radiator_speed < 0.0f) {
+        snprintf(sprintf_buffer_controls, BUFSIZ, "SET\nAUTO");
         steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_auto;
     } else {
+        snprintf(sprintf_buffer_controls, BUFSIZ, "%d", (int)(new_radspeed_val * 100.0f));
         steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_manual;
     }
-    // set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_value);
+    set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_value);
     manettino_send_radiators_speed();
 }
 
@@ -313,18 +315,21 @@ void manettino_send_pumps_speed(void) {
 void manettino_set_pumps_speed(int dsteps) {
     steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SET;
     float new_pumps_speed_val                    = steering_wheel_state_pumps_speed.pumps_speed + ((float)dsteps / 10.0f);
-    new_pumps_speed_val                          = roundf(new_pumps_speed_val * 100.0f) / 100.0f;
+    new_pumps_speed_val                          = roundf(new_pumps_speed_val * 10.0f) / 10.0f;
     new_pumps_speed_val                          = fminf(new_pumps_speed_val, SET_PUMP_SPEED_MAX);
     new_pumps_speed_val                          = fmaxf(new_pumps_speed_val, SET_PUMP_SPEED_MIN);
     steering_wheel_state_pumps_speed.pumps_speed = new_pumps_speed_val;
     steering_wheel_lv_pumps_speed_sent_timestamp = get_current_time_ms();
 
     if (steering_wheel_state_pumps_speed.pumps_speed < 0.0f) {
+        snprintf(sprintf_buffer_controls, BUFSIZ, "SET\nAUTO");
         steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_auto;
     } else {
+        snprintf(sprintf_buffer_controls, BUFSIZ, "%d", (int)(new_pumps_speed_val * 100.0f));
         steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_manual;
     }
-    // set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_value);
+
+    set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_value);
     manettino_send_pumps_speed();
 }
 
@@ -545,8 +550,14 @@ void prepare_set_car_status(void) {
             break;
         }
         case primary_ecu_status_status_wait_driver: {
+            GET_LAST_STATE(secondary, pedal_brakes_pressure, SECONDARY, PEDAL_BRAKES_PRESSURE);
+            float brake_pressure = (secondary_pedal_brakes_pressure_last_state->front + secondary_pedal_brakes_pressure_last_state->rear) / 2.0f;
+            if (brake_pressure > 0.89f) {
+                display_notification("DRIVE", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+            } else {
+                display_notification("Not Enough\nFreno\nSending DRIVE\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
+            }
             send_set_car_status(primary_ecu_set_status_status_drive);
-            display_notification("DRIVE", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_enable_inv_drive:
@@ -554,9 +565,8 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_disable_inv_drive:
         case primary_ecu_status_status_start_ts_discharge:
         case primary_ecu_status_status_wait_ts_discharge: {
-            // disabled because the central buttons reads badly at the hardware level
-            // send_set_car_status(primary_ecu_set_status_status_idle);
-            // display_notification("IDLE", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+            send_set_car_status(primary_ecu_set_status_status_idle);
+            display_notification("IDLE", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_fatal_error: {

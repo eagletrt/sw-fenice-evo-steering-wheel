@@ -32,16 +32,6 @@ void watchdog_task_fn(lv_timer_t *tim) {
         if (timed_out) {
             can_id_t id = primary_id_from_index(iindex);
             switch (id) {
-                case PRIMARY_LV_CELLS_TEMP_FRAME_ID: {
-                    memset(&lv_temps_stock_1, 0, sizeof(primary_lv_cells_temp_converted_t));
-                    memset(&lv_temps_stock_2, 0, sizeof(primary_lv_cells_temp_converted_t));
-                    break;
-                }
-                case PRIMARY_LV_CELLS_VOLTAGE_FRAME_ID: {
-                    memset(&lv_voltages_stock_1, 0, sizeof(primary_lv_cells_voltage_converted_t));
-                    memset(&lv_voltages_stock_2, 0, sizeof(primary_lv_cells_voltage_converted_t));
-                    break;
-                }
                 default:
                     memset(&primary_messages_last_state[iindex][0], 0, primary_MAX_STRUCT_SIZE_CONVERSION);
                     break;
