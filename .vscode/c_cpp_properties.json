@@ -7,6 +7,7 @@
         "Core/Inc/inputs",
         "Core/Inc/test",
         "Core/Lib/can/lib",
+        "Core/Lib/invlib",
         "Core/Lib/lvgl-stm32/lvgl",
         "Core/Lib/micro-libs/min-heap/inc",
         "Core/UI/steering",

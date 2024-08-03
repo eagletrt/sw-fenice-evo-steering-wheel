@@ -54,15 +54,15 @@ void init_lv_styles(void) {
     lv_style_set_radius(&tab_lv_style_indic_pumps, 0);
     lv_style_set_bg_opa(&tab_lv_style_indic_pumps, LV_OPA_COVER);
     lv_style_set_bg_color(&tab_lv_style_indic_pumps, lv_palette_main(LV_PALETTE_BLUE));
-    lv_style_set_bg_grad_color(&tab_lv_style_indic_pumps, lv_palette_main(LV_PALETTE_RED));
-    lv_style_set_bg_grad_dir(&tab_lv_style_indic_pumps, LV_GRAD_DIR_VER);
+    // lv_style_set_bg_grad_color(&tab_lv_style_indic_pumps, lv_palette_main(LV_PALETTE_RED));
+    // lv_style_set_bg_grad_dir(&tab_lv_style_indic_pumps, LV_GRAD_DIR_VER);
 
     lv_style_init(&tab_lv_style_indic_radiators);
     lv_style_set_radius(&tab_lv_style_indic_radiators, 0);
     lv_style_set_bg_opa(&tab_lv_style_indic_radiators, LV_OPA_COVER);
     lv_style_set_bg_color(&tab_lv_style_indic_radiators, lv_palette_main(LV_PALETTE_BLUE));
-    lv_style_set_bg_grad_color(&tab_lv_style_indic_radiators, lv_palette_main(LV_PALETTE_RED));
-    lv_style_set_bg_grad_dir(&tab_lv_style_indic_radiators, LV_GRAD_DIR_VER);
+    // lv_style_set_bg_grad_color(&tab_lv_style_indic_radiators, lv_palette_main(LV_PALETTE_RED));
+    // lv_style_set_bg_grad_dir(&tab_lv_style_indic_radiators, LV_GRAD_DIR_VER);
 
     lv_style_init(&tab_lv_style_back_indic);
     lv_style_set_radius(&tab_lv_style_back_indic, 0);

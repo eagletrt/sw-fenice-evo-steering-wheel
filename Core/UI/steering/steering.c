@@ -381,10 +381,10 @@ extern steering_wheel_cooling_status_t steering_wheel_lv_radiator_speed_state;
 
 void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg) {
     if (msg->status == primary_lv_pumps_speed_status_off || msg->status == primary_lv_pumps_speed_status_auto) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->pumps_speed);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), true);
     } else {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->pumps_speed);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int) (msg->pumps_speed * 100.0f));
         lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), false);
     }
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_value);
@@ -395,7 +395,7 @@ void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg)
 
 void lv_pumps_speed_update(void) {
     GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
-    float actual_speed  = primary_lv_pumps_speed_last_state->pumps_speed;
+    float actual_speed  = roundf(primary_lv_pumps_speed_last_state->pumps_speed * 10.0f) / 10.0f;
     float actual_status = primary_lv_pumps_speed_last_state->status;
 
     switch (steering_wheel_lv_pumps_speed_state) {
@@ -426,10 +426,10 @@ void lv_pumps_speed_update(void) {
 
 void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t *msg) {
     if (msg->status == primary_lv_radiator_speed_status_off || msg->status == primary_lv_radiator_speed_status_auto) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->radiator_speed);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), true);
     } else {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.1f", msg->radiator_speed);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int) (msg->radiator_speed * 100.0f));
         lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), false);
     }
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_value);
@@ -437,7 +437,7 @@ void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t
 
 void lv_radiator_speed_update(void) {
     GET_LAST_STATE(primary, lv_radiator_speed, PRIMARY, LV_RADIATOR_SPEED);
-    float actual_speed  = primary_lv_radiator_speed_last_state->radiator_speed;
+    float actual_speed  = roundf(primary_lv_radiator_speed_last_state->radiator_speed * 10.0f) / 10.0f;
     float actual_status = primary_lv_radiator_speed_last_state->status;
 
     switch (steering_wheel_lv_radiator_speed_state) {
@@ -693,6 +693,13 @@ float l_igbt_temp  = INVERTER_MESSAGE_UNINITIALIZED;
 float r_motor_temp = INVERTER_MESSAGE_UNINITIALIZED;
 float r_igbt_temp  = INVERTER_MESSAGE_UNINITIALIZED;
 
+#include "inverter_conversions.h"
+
+/***
+ * Old conversion, use invlib conversion
+ * 
+ */
+#if 0
 float IGBT_TEMP_COEFFICIENT[6] =
     {(float)3.58282057e-18, (float)-4.14165530e-13, (float)1.90916947e-08, (float)-4.38539758e-04, (float)5.02717412e+00, (float)-2.30219791e+04};
 
@@ -703,6 +710,7 @@ float convert_t_igbt(float val) {
     return (powf((val), 5) * IGBT_TEMP_COEFFICIENT[0]) + (powf((val), 4) * IGBT_TEMP_COEFFICIENT[1]) + (powf((val), 3) * IGBT_TEMP_COEFFICIENT[2]) +
            (powf((val), 2) * IGBT_TEMP_COEFFICIENT[3]) + (val * IGBT_TEMP_COEFFICIENT[4]) + IGBT_TEMP_COEFFICIENT[5];
 }
+#endif
 
 void inv_l_rcv_update(void) {
     GET_LAST_STATE(inverters, inv_l_rcv, INVERTERS, INV_L_RCV);

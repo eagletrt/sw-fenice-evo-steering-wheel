@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define PERIODIC_SET_ECU_POWER_MAPS
+// #define PERIODIC_SET_ECU_POWER_MAPS
 
 /****
  * If this is enabled, when changing tabs clears memory of past messages.
@@ -225,7 +225,7 @@ typedef enum {
 /***
  * Cooling
  */
-#define COOLING_STATE_SYNC_TIMEOUT 200  // in ms
+#define COOLING_STATE_SYNC_TIMEOUT 1000  // in ms
 
 typedef enum {
     STEERING_WHEEL_COOLING_STATUS_SYNC,
