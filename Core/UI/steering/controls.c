@@ -290,10 +290,10 @@ void manettino_set_radiators_speed(int dsteps) {
     steering_wheel_lv_radiators_speed_sent_timestamp   = get_current_time_ms();
 
     if (steering_wheel_state_radiator_speed.radiator_speed < 0.0f) {
-        snprintf(sprintf_buffer_controls, BUFSIZ, "SET\nAUTO");
+        snprintf(sprintf_buffer_controls, 128, "SET\nAUTO");
         steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_auto;
     } else {
-        snprintf(sprintf_buffer_controls, BUFSIZ, "%d", (int)(new_radspeed_val * 100.0f));
+        snprintf(sprintf_buffer_controls, 128, "%d", (int) (new_radspeed_val * 100.0f));
         steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_manual;
     }
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_value);
@@ -325,10 +325,10 @@ void manettino_set_pumps_speed(int dsteps) {
         snprintf(sprintf_buffer_controls, BUFSIZ, "SET\nAUTO");
         steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_auto;
     } else {
-        snprintf(sprintf_buffer_controls, BUFSIZ, "%d", (int)(new_pumps_speed_val * 100.0f));
+        snprintf(sprintf_buffer_controls, BUFSIZ, "%d", (int) (new_pumps_speed_val * 100.0f));
         steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_manual;
     }
-
+    
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_value);
     manettino_send_pumps_speed();
 }
@@ -565,8 +565,9 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_disable_inv_drive:
         case primary_ecu_status_status_start_ts_discharge:
         case primary_ecu_status_status_wait_ts_discharge: {
-            send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("IDLE", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+            // disabled because the central buttons reads badly at the hardware level
+            // send_set_car_status(primary_ecu_set_status_status_idle);
+            // display_notification("IDLE", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_fatal_error: {

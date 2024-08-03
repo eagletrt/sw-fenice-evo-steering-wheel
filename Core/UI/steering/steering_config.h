@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define PERIODIC_SET_ECU_POWER_MAPS
+// #define PERIODIC_SET_ECU_POWER_MAPS
 
 /****
  * If this is enabled, when changing tabs clears memory of past messages.

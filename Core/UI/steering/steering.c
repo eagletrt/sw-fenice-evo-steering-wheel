@@ -401,7 +401,7 @@ void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg)
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), true);
     } else {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)(msg->pumps_speed * 100.0f));
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int) (msg->pumps_speed * 100.0f));
         lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), false);
     }
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_value);
@@ -446,7 +446,7 @@ void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), true);
     } else {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)(msg->radiator_speed * 100.0f));
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int) (msg->radiator_speed * 100.0f));
         lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), false);
     }
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_value);
