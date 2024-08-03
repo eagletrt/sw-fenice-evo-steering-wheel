@@ -14,3 +14,6 @@
 [submodule "Core/Lib/lvgl-linux/lvgl"]
 	path = Core/Lib/lvgl-linux/lvgl
 	url = git@github.com:eagletrt/lvgl.git
+[submodule "Core/Lib/invlib"]
+	path = Core/Lib/invlib
+	url = git@github.com:eagletrt/invlib.git
