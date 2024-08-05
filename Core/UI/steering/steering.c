@@ -31,16 +31,27 @@ uint32_t timestamp_start_lap = 0;
 
 void car_status_update() {
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
+
+    /* if (!valid) {
+        // ....
+        set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
+        set_tab_racing_label_text(NOT_AVAILABLE_STRING_LABEL, tab_rac_status_idx);
+        set_tab_track_test_lb_speed(NOT_AVAILABLE_STRING_LABEL);
+        return;
+    } */
+
     switch (primary_ecu_status_last_state->status) {
         case primary_ecu_status_status_init:
         case primary_ecu_status_status_enable_inv_updates:
         case primary_ecu_status_status_check_inv_settings: {
+            precharge_bar_popup_hide();
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("INIT", tab_rac_status_idx);
             set_tab_track_test_lb_speed("INIT");
             break;
         }
         case primary_ecu_status_status_idle: {
+            precharge_bar_popup_hide();
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("IDLE", tab_rac_status_idx);
             set_tab_track_test_lb_speed("IDLE");
@@ -48,24 +59,28 @@ void car_status_update() {
         }
         case primary_ecu_status_status_start_ts_precharge:
         case primary_ecu_status_status_wait_ts_precharge: {
+            precharge_bar_popup_show();
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("PRCHG", tab_rac_status_idx);
             set_tab_track_test_lb_speed("PRCHG");
             break;
         }
         case primary_ecu_status_status_wait_driver: {
+            precharge_bar_popup_hide();
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("SETUP", tab_rac_status_idx);
             set_tab_track_test_lb_speed("SETUP");
             break;
         }
         case primary_ecu_status_status_enable_inv_drive: {
+            precharge_bar_popup_hide();
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("ENINV", tab_rac_status_idx);
             set_tab_track_test_lb_speed("ENINV");
             break;
         }
         case primary_ecu_status_status_drive: {
+            precharge_bar_popup_hide();
             set_tab_racing_label_text("km/h", tab_rac_bottom_status_idx);
             // set_tab_racing_label_text("DRIVE", tab_rac_status_idx);
             // set_tab_track_test_lb_speed("DRIVE");
@@ -74,12 +89,14 @@ void car_status_update() {
         case primary_ecu_status_status_disable_inv_drive:
         case primary_ecu_status_status_start_ts_discharge:
         case primary_ecu_status_status_wait_ts_discharge: {
+            precharge_bar_popup_show();
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("TSOFF", tab_rac_status_idx);
             set_tab_track_test_lb_speed("TSOFF");
             break;
         }
         case primary_ecu_status_status_fatal_error: {
+            precharge_bar_popup_hide();
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("FATAL", tab_rac_status_idx);
             set_tab_track_test_lb_speed("FATAL");
@@ -321,37 +338,37 @@ void hv_status_update() {
     switch (primary_hv_status_last_state->status) {
         case primary_hv_status_status_init:
             // __precharge_bar_insert(false);
-            precharge_bar_popup_hide();
+            // precharge_bar_popup_hide();
             set_tab_hv_label_text("INIT", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_idle:
             // __precharge_bar_insert(false);
-            precharge_bar_popup_hide();
+            // precharge_bar_popup_hide();
             set_tab_hv_label_text("IDLE", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_airn_close:
             // __precharge_bar_insert(false);
-            precharge_bar_popup_hide();
+            // precharge_bar_popup_hide();
             set_tab_hv_label_text("AIRN CLOSE", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_precharge:
             // __precharge_bar_insert(true);
-            precharge_bar_popup_show();
+            // precharge_bar_popup_show();
             set_tab_hv_label_text("PRECHARGE", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_airp_close:
             // __precharge_bar_insert(false);
-            precharge_bar_popup_hide();
+            // precharge_bar_popup_hide();
             set_tab_hv_label_text("AIRP CLOSE", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_ts_on:
             // __precharge_bar_insert(false);
-            precharge_bar_popup_hide();
+            // precharge_bar_popup_hide();
             set_tab_hv_label_text("TS ON", tab_hv_lb_current_state);
             break;
         case primary_hv_status_status_fatal_error:
             // __precharge_bar_insert(false);
-            precharge_bar_popup_hide();
+            // precharge_bar_popup_hide();
             set_tab_hv_label_text("FATAL ERROR", tab_hv_lb_current_state);
             break;
     };
@@ -384,7 +401,7 @@ void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg)
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), true);
     } else {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int) (msg->pumps_speed * 100.0f));
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)(msg->pumps_speed * 100.0f));
         lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), false);
     }
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pumps_value);
@@ -429,7 +446,7 @@ void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), true);
     } else {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int) (msg->radiator_speed * 100.0f));
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%d", (int)(msg->radiator_speed * 100.0f));
         lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), false);
     }
     set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_radiators_value);
@@ -697,7 +714,7 @@ float r_igbt_temp  = INVERTER_MESSAGE_UNINITIALIZED;
 
 /***
  * Old conversion, use invlib conversion
- * 
+ *
  */
 #if 0
 float IGBT_TEMP_COEFFICIENT[6] =

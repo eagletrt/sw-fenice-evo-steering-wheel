@@ -41,10 +41,10 @@ void load_current_engineering_tab();
 void tab_manager(void) {
     init_custom_styles();
 
-    tab_racing_ptr  = lv_obj_create(NULL);
-    tab_sensors_ptr = lv_obj_create(NULL);
-    tab_hv_ptr      = lv_obj_create(NULL);
-    tab_lv_ptr      = lv_obj_create(NULL);
+    tab_racing_ptr          = lv_obj_create(NULL);
+    tab_sensors_ptr         = lv_obj_create(NULL);
+    tab_hv_ptr              = lv_obj_create(NULL);
+    tab_lv_ptr              = lv_obj_create(NULL);
     tab_precharge_popup_ptr = lv_obj_create(NULL);
 #if STEER_TAB_CALIBRATION_ENABLED == 1
     tab_calibration_ptr = lv_obj_create(NULL);
@@ -303,8 +303,10 @@ bool is_on_help_animation(void) {
 static bool on_precharge_bar_popup = false;
 
 void precharge_bar_popup_show() {
-    on_precharge_bar_popup = true;
-    lv_scr_load(tab_precharge_popup_ptr);
+    if (!on_precharge_bar_popup) {
+        on_precharge_bar_popup = true;
+        lv_scr_load(tab_precharge_popup_ptr);
+    }
 }
 
 void precharge_bar_popup_hide() {

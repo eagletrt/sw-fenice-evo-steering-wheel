@@ -6,5 +6,4 @@
 
 void precharge_bar_screen_create(lv_obj_t *screen);
 
-#endif // PRECHARGE_BAR_H
-
+#endif  // PRECHARGE_BAR_H

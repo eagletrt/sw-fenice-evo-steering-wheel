@@ -38,5 +38,3 @@ void precharge_bar_set_pack_voltage(float pack_voltage) {
 void precharge_bar_set_bus_voltage(float bus_voltage) {
     lv_bar_set_value(precharge_bar_bar, bus_voltage, LV_ANIM_OFF);
 }
-
-
