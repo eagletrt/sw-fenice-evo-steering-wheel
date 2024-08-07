@@ -59,69 +59,69 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
  * UPDATE
  */
 
-void car_status_update();
-void tlm_status_update();
-void angular_velocity_update();
-void vehicle_speed_update();
-void ecu_feedbacks_update();
-void ecu_errors_update();
+void car_status_update(bool valid);
+void tlm_status_update(bool valid);
+void angular_velocity_update(bool valid);
+void vehicle_speed_update(bool valid);
+void ecu_feedbacks_update(bool valid);  // ?
+void ecu_errors_update(bool valid);
 
-void hv_debug_signals_update();
-void hv_cells_voltage_stats_update();
-void hv_total_voltage_update();
-void hv_current_update();
-void hv_soc_estimation_update();
-void lv_soc_estimation_update();
-void hv_cells_temp_stats_update();
-void hv_errors_update();
-void hv_cell_balancing_status_update();
-void hv_feedbacks_status_update();
-void debug_hv_feedbacks_status_update();
-void das_errors_update();
+void hv_debug_signals_update(bool valid);
+void hv_cells_voltage_stats_update(bool valid);
+void hv_total_voltage_update(bool valid);
+void hv_current_update(bool valid);  // ?
+void hv_soc_estimation_update(bool valid);
+void lv_soc_estimation_update(bool valid);
+void hv_cells_temp_stats_update(bool valid);
+void hv_errors_update(bool valid);
+void hv_cell_balancing_status_update(bool valid);
+void hv_feedbacks_status_update(bool valid);
+void debug_hv_feedbacks_status_update(bool valid);
+void das_errors_update(bool valid);
 
-void hv_feedback_ts_voltage_update(void);
-void hv_feedback_misc_voltage_update(void);
-void hv_feedback_sd_voltage_update(void);
+void hv_feedback_ts_voltage_update(bool valid);
+void hv_feedback_misc_voltage_update(bool valid);
+void hv_feedback_sd_voltage_update(bool valid);
 
-void lv_feedback_sd_voltage_update();
-void lv_feedback_ts_voltage_update();
-void lv_feedback_enclosure_voltage_update();
-void lv_errors_update();
-void lv_currents_update();
-void lv_total_voltage_update();
-void lv_cells_voltage_update();
-void lv_cells_voltage_stats_update();
-void lv_cells_temp_update();
-void lv_cells_temp_stats_update();
+void lv_feedback_sd_voltage_update(bool valid);
+void lv_feedback_ts_voltage_update(bool valid);
+void lv_feedback_enclosure_voltage_update(bool valid);
+void lv_errors_update(bool valid);
+void lv_currents_update(bool valid);
+void lv_total_voltage_update(bool valid);
+void lv_cells_voltage_update(bool valid);
+void lv_cells_voltage_stats_update(bool valid);
+void lv_cells_temp_update(bool valid);
+void lv_cells_temp_stats_update(bool valid);
 
-void hv_status_update();
-void hv_fans_override_status_update();
-void tlm_status_update();
+void hv_status_update(bool valid);
+void hv_fans_override_status_update(bool valid);
+void tlm_status_update(bool valid);
 
-void odometer_update();
-void steer_angle_update();
-void tlm_network_interface_update(void);
-void imu_acceleration_update();
-void tlm_lap_time_update(void);
-void tlm_laps_stats_update(void);
-void inv_l_rcv_update(void);
-void inv_r_rcv_update(void);
+void odometer_update(bool valid);
+void steer_angle_update(bool valid);
+void tlm_network_interface_update(bool valid);
+void imu_acceleration_update(bool valid);
+void tlm_lap_time_update(bool valid);
+void tlm_laps_stats_update(bool valid);
+void inv_l_rcv_update(bool valid);
+void inv_r_rcv_update(bool valid);
 
-void irts_fl_update(void);
-void irts_fr_update(void);
-void irts_rl_update(void);
-void irts_rr_update(void);
-void pedal_throttle_update(void);
-void pedal_brakes_pressure_update(void);
+void irts_fl_update(bool valid);
+void irts_fr_update(bool valid);
+void irts_rl_update(bool valid);
+void irts_rr_update(bool valid);
+void pedal_throttle_update(bool valid);
+void pedal_brakes_pressure_update(bool valid);
 void set_tab_sensors_value_brake_f(float value_in_bar);
 void set_tab_sensors_value_brake_r(float value_in_bar);
 void set_tab_sensors_value_apps(int32_t value_0_to_100);
 
-void ecu_version_update(void);
-void lv_version_update(void);
-void hv_cellboard_version_update(void);
-void hv_mainboard_version_update(void);
-void tlm_version_update(void);
+void ecu_version_update(bool valid);
+void lv_version_update(bool valid);
+void hv_cellboard_version_update(bool valid);
+void hv_mainboard_version_update(bool valid);
+void tlm_version_update(bool valid);
 
 void ptt_tasks_fn(lv_timer_t *tim);
 
@@ -161,8 +161,8 @@ void set_tab_track_test_steering_angle_bar(float v);
 void set_tab_track_test_lb_speed(const char *s);
 void set_tab_track_test_dmt_steering_angle_target(float f);
 void set_tab_track_test_lb_steering_angle(const char *s);
-void set_tab_track_test_lb_speed(const char *s);
 
+//TODO should we delete these fn?
 void __precharge_bar_update(int32_t);         // Deprecated
 void __precharge_bar_insert(bool precharge);  // Deprecated
 
@@ -198,8 +198,8 @@ void set_tab_lv_label_text(const char *s, tab_lv_labels_enum idx);
 void lv_set_pumps_speed_bar(int32_t, bool auto_mode);
 void lv_set_radiators_speed_bar(int32_t val, bool auto_mode);
 
-void lv_radiator_speed_update(void);
-void lv_pumps_speed_update(void);
+void lv_radiator_speed_update(bool valid);
+void lv_pumps_speed_update(bool valid);
 
 extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT][primary_MAX_STRUCT_SIZE_CONVERSION];
 extern uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT][secondary_MAX_STRUCT_SIZE_CONVERSION];

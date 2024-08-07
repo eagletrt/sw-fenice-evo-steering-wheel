@@ -208,6 +208,7 @@ shutdown_circuit_indexes_t last_shutdown_element_unknown(void) {
     return shutdown_circuit_no_element_index;
 }
 
+//TODO
 void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close) {
     shutdown_status_lb_array[idx] = is_close ? SC_CLOSE : SC_OPEN;
     shutdown_circuit_indexes_t last_opend_index;
@@ -268,15 +269,15 @@ void init_hv_styles(void) {
     lv_style_set_radius(&tab_hv_style_indic, 0);
     lv_style_set_bg_opa(&tab_hv_style_indic, LV_OPA_COVER);
     lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_BLUE));
-    lv_style_set_bg_grad_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_RED));
-    lv_style_set_bg_grad_dir(&tab_hv_style_indic, LV_GRAD_DIR_HOR);
+    // lv_style_set_bg_grad_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_RED));
+    // lv_style_set_bg_grad_dir(&tab_hv_style_indic, LV_GRAD_DIR_HOR);
 
     lv_style_init(&tab_hv_style_precharge);
     lv_style_set_radius(&tab_hv_style_precharge, 0);
     lv_style_set_bg_opa(&tab_hv_style_precharge, LV_OPA_COVER);
     lv_style_set_bg_color(&tab_hv_style_precharge, lv_palette_main(LV_PALETTE_YELLOW));
-    lv_style_set_bg_grad_color(&tab_hv_style_precharge, lv_palette_main(LV_PALETTE_RED));
-    lv_style_set_bg_grad_dir(&tab_hv_style_precharge, LV_GRAD_DIR_HOR);
+    // lv_style_set_bg_grad_color(&tab_hv_style_precharge, lv_palette_main(LV_PALETTE_RED));
+    // lv_style_set_bg_grad_dir(&tab_hv_style_precharge, LV_GRAD_DIR_HOR);
 
     lv_style_init(&tab_hv_style_back_indic);
     lv_style_set_radius(&tab_hv_style_back_indic, 0);
@@ -554,6 +555,7 @@ void custom_balancing_column(lv_obj_t *bar, bool balancing) {
 }
 
 void tab_hv_resync(void) {
+#if 0
     // Sets the text about the shutdown
     hv_feedbacks_status_update();
     // Sets the text about the speed of the fans and the bar
@@ -564,4 +566,5 @@ void tab_hv_resync(void) {
     hv_cells_temp_stats_update();
     hv_status_update();
     hv_fans_override_status_update();
+#endif
 }

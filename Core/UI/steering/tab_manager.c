@@ -303,6 +303,7 @@ bool is_on_help_animation(void) {
 static bool on_precharge_bar_popup = false;
 
 void precharge_bar_popup_show() {
+    return;
     if (!on_precharge_bar_popup) {
         on_precharge_bar_popup = true;
         lv_scr_load(tab_precharge_popup_ptr);
@@ -310,6 +311,7 @@ void precharge_bar_popup_show() {
 }
 
 void precharge_bar_popup_hide() {
+    return;
     if (on_precharge_bar_popup) {
         on_precharge_bar_popup = false;
         restore_previous_screen(NULL);

@@ -162,7 +162,8 @@ int main(void) {
     init_periodic_can_messages_timers();
     lv_tick_set_cb(HAL_GetTick);
 
-    lv_timer_t *graphics_updater_task = lv_timer_create(update_graphics, 100, NULL);
+    static bool valid_message         = true;
+    lv_timer_t *graphics_updater_task = lv_timer_create(update_graphics, 100, (void *)&valid_message);
     lv_timer_set_repeat_count(graphics_updater_task, -1);
     lv_timer_reset(graphics_updater_task);
 

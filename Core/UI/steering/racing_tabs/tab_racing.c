@@ -503,6 +503,7 @@ void tab_racing_resync(void) {
     snprintf(snprintf_buffer_controls, BUFSIZ, "%.0f", map_tv);
     set_tab_racing_label_text(snprintf_buffer_controls, tab_rac_torque_idx);
 
+#if 0
     car_status_update();
     angular_velocity_update();
     hv_total_voltage_update();
@@ -511,4 +512,5 @@ void tab_racing_resync(void) {
     lv_cells_temp_stats_update();
     // lap_count_update();
     inv_l_rcv_update();
+#endif
 }

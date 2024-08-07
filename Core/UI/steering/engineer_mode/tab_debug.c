@@ -423,7 +423,7 @@ void set_label_color_hv_feedbacks(int label, int i) {
 #endif
 }
 
-void debug_hv_feedbacks_status_update() {
+void debug_hv_feedbacks_status_update(bool valid) {
 #if 0
   set_label_color_hv_feedbacks(
       hv_feedback_status_last_state.feedback_implausibility_detected, 0);
@@ -492,7 +492,7 @@ void set_label_color_das_errors(bool label, int i) {
 #endif
 }
 
-void das_errors_update() {
+void das_errors_update(bool valid) {
 #if STEER_TAB_DEBUG_ENABLED
     set_label_color_das_errors(das_errors_last_state.das_error_pedal_adc, 0);
     set_label_color_das_errors(das_errors_last_state.das_error_pedal_implausibility, 1);
@@ -518,7 +518,12 @@ void set_label_color_lv_errors(bool label, int i) {
 #endif
 }
 
-void lv_errors_update() {
+void lv_errors_update(bool valid) {
+
+if(!valid){
+        return;
+    }
+
 #if STEER_TAB_DEBUG_ENABLED
     set_label_color_lv_errors(lv_errors_last_state.errors_cell_undervoltage, 0);
     set_label_color_lv_errors(lv_errors_last_state.errors_cell_overvoltage, 1);

@@ -10,7 +10,7 @@ target: fenice-evo-steering-wheel
 # Can be C or C++
 language: C
 
-optimization: Os
+optimization: Og
 
 # MCU settings
 targetMCU: stm32h7x
@@ -142,11 +142,11 @@ sourceFiles:
   - Core/Lib/lvgl-stm32/lvgl/src/**/*.c
   - Core/UI/steering/**/*.c
   - Core/Lib/can/lib/primary/primary_network.c
-  # - Core/Lib/can/lib/primary/primary_watchdog.c
+  - Core/Lib/can/lib/primary/primary_watchdog.c
   - Core/Lib/can/lib/secondary/secondary_network.c
-  # - Core/Lib/can/lib/secondary/secondary_watchdog.c
+  - Core/Lib/can/lib/secondary/secondary_watchdog.c
   - Core/Lib/can/lib/inverters/inverters_network.c
-  # - Core/Lib/can/lib/inverters/inverters_watchdog.c
+  - Core/Lib/can/lib/inverters/inverters_watchdog.c
   - Core/Lib/micro-libs/min-heap/src/*.c
   - Core/Lib/invlib/inverter_conversions.c
 

@@ -293,7 +293,7 @@ void manettino_set_radiators_speed(int dsteps) {
         snprintf(sprintf_buffer_controls, 128, "SET\nAUTO");
         steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_auto;
     } else {
-        snprintf(sprintf_buffer_controls, 128, "%d", (int) (new_radspeed_val * 100.0f));
+        snprintf(sprintf_buffer_controls, 128, "%d", (int)(new_radspeed_val * 100.0f));
         steering_wheel_state_radiator_speed.status = primary_lv_radiator_speed_status_manual;
     }
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_radiators_value);
@@ -325,10 +325,10 @@ void manettino_set_pumps_speed(int dsteps) {
         snprintf(sprintf_buffer_controls, BUFSIZ, "SET\nAUTO");
         steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_auto;
     } else {
-        snprintf(sprintf_buffer_controls, BUFSIZ, "%d", (int) (new_pumps_speed_val * 100.0f));
+        snprintf(sprintf_buffer_controls, BUFSIZ, "%d", (int)(new_pumps_speed_val * 100.0f));
         steering_wheel_state_pumps_speed.status = primary_lv_pumps_speed_status_manual;
     }
-    
+
     set_tab_lv_label_text(sprintf_buffer_controls, tab_lv_lb_pumps_value);
     manettino_send_pumps_speed();
 }

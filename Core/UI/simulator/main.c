@@ -188,7 +188,8 @@ int main(int argc, char **argv) {
     thread_id_1 = SDL_CreateThread(canread, "thread_1", &thread_data_1);
 #endif
 
-    lv_timer_t *ugt = lv_timer_create(update_graphics, 100, NULL);
+    static bool valid_message = true;
+    lv_timer_t *ugt           = lv_timer_create(update_graphics, 100, &valid_message);
     lv_timer_set_repeat_count(ugt, -1);
     lv_timer_reset(ugt);
 
@@ -196,7 +197,7 @@ int main(int argc, char **argv) {
     lv_timer_set_repeat_count(ptt_checker_task, -1);
     lv_timer_reset(ptt_checker_task);
 
-    // init_watchdog();
+    init_watchdog();
 
     while (1) {
 #if SIMULATOR_CAN

@@ -4,6 +4,14 @@ primary_watchdog m_primary_watchdog     = {0};
 secondary_watchdog m_secondary_watchdog = {0};
 inverters_watchdog m_inverters_watchdog = {0};
 
+extern bool is_pmsg_new[primary_MESSAGE_COUNT];
+extern bool is_smsg_new[secondary_MESSAGE_COUNT];
+extern bool is_imsg_new[inverters_MESSAGE_COUNT];
+
+extern bool is_pmsg_valid[primary_MESSAGE_COUNT];
+extern bool is_smsg_valid[secondary_MESSAGE_COUNT];
+extern bool is_imsg_valid[inverters_MESSAGE_COUNT];
+
 lv_timer_t *watchdog_task;
 
 void init_watchdog(void) {
@@ -30,28 +38,24 @@ void watchdog_task_fn(lv_timer_t *tim) {
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; ++iindex) {
         bool timed_out = CANLIB_BITTEST_ARRAY(m_primary_watchdog.timeout, iindex);
         if (timed_out) {
-            can_id_t id = primary_id_from_index(iindex);
-            switch (id) {
-                default:
-                    memset(&primary_messages_last_state[iindex][0], 0, primary_MAX_STRUCT_SIZE_CONVERSION);
-                    break;
-            }
+            is_pmsg_new[iindex]   = true;
+            is_pmsg_valid[iindex] = false;
         }
     }
 
     for (uint16_t iindex = 0; iindex < secondary_MESSAGE_COUNT; ++iindex) {
         bool timed_out = CANLIB_BITTEST_ARRAY(m_secondary_watchdog.timeout, iindex);
         if (timed_out) {
-            can_id_t id = secondary_id_from_index(iindex);
-            memset(&secondary_messages_last_state[secondary_index_from_id(id)][0], 0, secondary_MAX_STRUCT_SIZE_CONVERSION);
+            is_smsg_new[iindex]   = true;
+            is_smsg_valid[iindex] = false;
         }
     }
 
     for (uint16_t iindex = 0; iindex < inverters_MESSAGE_COUNT; ++iindex) {
         bool timed_out = CANLIB_BITTEST_ARRAY(m_inverters_watchdog.timeout, iindex);
         if (timed_out) {
-            can_id_t id = inverters_id_from_index(iindex);
-            memset(&inverters_messages_last_state[inverters_index_from_id(id)][0], 0, inverters_MAX_STRUCT_SIZE_CONVERSION);
+            is_imsg_new[iindex]   = true;
+            is_imsg_valid[iindex] = false;
         }
     }
 }

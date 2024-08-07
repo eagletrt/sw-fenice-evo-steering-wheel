@@ -9,6 +9,7 @@ file(GLOB_RECURSE MIN_HEAP_SOURCES ../Lib/micro-libs/min-heap/src/min-heap.c)
 file(GLOB_RECURSE LVGL_SOURCES ../Lib/lvgl-linux/lvgl/**/*.c)
 file(GLOB_RECURSE LVDRIVERS_SOURCES ../Lib/lvgl-linux/lv-drivers/**/*.c)
 file(GLOB_RECURSE CANLIB_SOURCES ../Lib/can/lib/**/*.c)
+file(GLOB_RECURSE INVLIB_SOURCES ../Lib/invlib/inverter_conversions.c)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-incompatible-pointer-types")
 
@@ -49,7 +50,11 @@ add_executable(SteeringSimulator
     ${LVDRIVERS_SOURCES}
     ${CANLIB_SOURCES}
     ${MIN_HEAP_SOURCES}
+    ${INVLIB_SOURCES}
     steering/graphics_manager.c
+    ../Lib/can/lib/primary/primary_watchdog.c
+    ../Lib/can/lib/secondary/secondary_watchdog.c
+    ../Lib/can/lib/inverters/inverters_watchdog.c
 )
 
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE)
@@ -58,6 +63,7 @@ TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/can/lib)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/lvgl-linux/lvgl)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/lvgl-linux)
+TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../Lib/invlib)
 TARGET_INCLUDE_DIRECTORIES(SteeringSimulator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/steering)
 
 TARGET_LINK_LIBRARIES(SteeringSimulator pthread SDL2 m)
