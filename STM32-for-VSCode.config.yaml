@@ -10,7 +10,7 @@ target: fenice-evo-steering-wheel
 # Can be C or C++
 language: C
 
-optimization: Os
+optimization: Og
 
 # MCU settings
 targetMCU: stm32h7x

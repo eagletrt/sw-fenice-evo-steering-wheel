@@ -559,8 +559,9 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_disable_inv_drive:
         case primary_ecu_status_status_start_ts_discharge:
         case primary_ecu_status_status_wait_ts_discharge: {
-            send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("IDLE", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+            // disabled for noise problems
+            // send_set_car_status(primary_ecu_set_status_status_idle);
+            // display_notification("IDLE", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_fatal_error: {
