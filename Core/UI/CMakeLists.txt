@@ -52,6 +52,9 @@ add_executable(SteeringSimulator
     ${MIN_HEAP_SOURCES}
     ${INVLIB_SOURCES}
     steering/graphics_manager.c
+    ../Lib/can/lib/primary/primary_watchdog.c
+    ../Lib/can/lib/secondary/secondary_watchdog.c
+    ../Lib/can/lib/inverters/inverters_watchdog.c
 )
 
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE)

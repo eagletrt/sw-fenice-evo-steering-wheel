@@ -29,7 +29,7 @@
  */
 #define CANSNIFFER_ENABLED      1
 #define CAN_LOG_ENABLED         0
-#define WATCHDOG_ENABLED        0
+#define WATCHDOG_ENABLED        1
 #define CAN_OVER_SERIAL_ENABLED 0
 #define MCP23017_IT_ENABLED     0
 
