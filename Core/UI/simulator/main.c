@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
     lv_timer_set_repeat_count(ptt_checker_task, -1);
     lv_timer_reset(ptt_checker_task);
 
-    // init_watchdog();
+    init_watchdog();
 
     while (1) {
 #if SIMULATOR_CAN

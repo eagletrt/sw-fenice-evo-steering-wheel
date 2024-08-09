@@ -822,29 +822,52 @@ void canlib_versions_mismatch_checker() {
     }
 }
 
-void ecu_version_update(void) {
-    was_received_ecu_version = true;
-    canlib_versions_mismatch_checker();
+void ecu_version_update(bool valid) {
+    if(valid){
+        was_received_ecu_version = true;
+        canlib_versions_mismatch_checker();
+    }else{
+        return;
+    }
+    
 }
 
-void lv_version_update(void) {
-    was_received_lv_version = true;
-    canlib_versions_mismatch_checker();
+void lv_version_update(bool valid) {
+    if(valid){
+        was_received_lv_version = true;
+        canlib_versions_mismatch_checker();
+    }else{
+        return;
+    }
+    
 }
 
-void hv_cellboard_version_update(void) {
-    was_received_hv_cellboard_version = true;
-    canlib_versions_mismatch_checker();
+void hv_cellboard_version_update(bool valid) {
+    if(valid){
+        was_received_hv_cellboard_version = true;
+        canlib_versions_mismatch_checker();
+    }else{
+        return;
+    }
 }
 
-void hv_mainboard_version_update(void) {
-    was_received_hv_mainboard_version = true;
-    canlib_versions_mismatch_checker();
+void hv_mainboard_version_update(bool valid) {
+    if(valid){
+        was_received_hv_mainboard_version = true;
+        canlib_versions_mismatch_checker();
+    }else{
+        return;
+    }
 }
 
-void tlm_version_update(void) {
-    was_received_tlm_version = true;
-    canlib_versions_mismatch_checker();
+void tlm_version_update(bool valid) {
+    if(valid){
+        was_received_tlm_version = true;
+        canlib_versions_mismatch_checker();
+    }else{
+        return;
+    }
+    
 }
 
 void steer_angle_update(bool valid) {

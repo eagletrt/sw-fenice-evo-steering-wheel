@@ -117,11 +117,11 @@ void set_tab_sensors_value_brake_f(float value_in_bar);
 void set_tab_sensors_value_brake_r(float value_in_bar);
 void set_tab_sensors_value_apps(int32_t value_0_to_100);
 
-void ecu_version_update(void);
-void lv_version_update(void);
-void hv_cellboard_version_update(void);
-void hv_mainboard_version_update(void);
-void tlm_version_update(void);
+void ecu_version_update(bool valid);
+void lv_version_update(bool valid);
+void hv_cellboard_version_update(bool valid);
+void hv_mainboard_version_update(bool valid);
+void tlm_version_update(bool valid);
 
 void ptt_tasks_fn(lv_timer_t *tim);
 
