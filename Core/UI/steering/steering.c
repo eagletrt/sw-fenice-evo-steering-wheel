@@ -130,7 +130,9 @@ void ecu_errors_update(bool valid) {
     GET_LAST_STATE(primary, ecu_errors, PRIMARY, ECU_ERRORS);
 
     if(!valid){
-        display_notification(NOT_AVAILABLE_STRING_LABEL, 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+        //Disabled cause it is spammed
+        //display_notification(NOT_AVAILABLE_STRING_LABEL, 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+        return;
     }
 
     if (primary_ecu_errors_last_state->error_bspd_limits || primary_ecu_errors_last_state->error_pedal_implausibility) {

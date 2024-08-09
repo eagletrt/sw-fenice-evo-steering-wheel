@@ -177,23 +177,23 @@ void update_graphics(lv_timer_t *t) {
                     break;
                 }
                 case PRIMARY_ECU_VERSION_FRAME_ID: {
-                    ecu_version_update();//TODO cosa fare con tutti i version update?
+                    ecu_version_update(is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_LV_VERSION_FRAME_ID: {
-                    lv_version_update();
+                    lv_version_update(is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_HV_CELLBOARD_VERSION_FRAME_ID: {
-                    hv_cellboard_version_update();
+                    hv_cellboard_version_update(is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_HV_MAINBOARD_VERSION_FRAME_ID: {
-                    hv_mainboard_version_update();
+                    hv_mainboard_version_update(is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_TLM_VERSION_FRAME_ID: {
-                    tlm_version_update();
+                    tlm_version_update(is_pmsg_valid[iindex]);
                     break;
                 }
                 default: {
