@@ -11,6 +11,10 @@ uint8_t primary_messages_last_state[primary_MESSAGE_COUNT][primary_MAX_STRUCT_SI
 uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT][secondary_MAX_STRUCT_SIZE_CONVERSION];
 uint8_t inverters_messages_last_state[inverters_MESSAGE_COUNT][inverters_MAX_STRUCT_SIZE_CONVERSION];
 
+bool is_pmsg_valid[primary_MESSAGE_COUNT];
+bool is_smsg_valid[secondary_MESSAGE_COUNT];
+bool is_imsg_valid[inverters_MESSAGE_COUNT];
+
 // extern int torque_vectoring_last_state;
 // extern int slip_control_last_state;
 extern int set_pumps_speed_last_state;
