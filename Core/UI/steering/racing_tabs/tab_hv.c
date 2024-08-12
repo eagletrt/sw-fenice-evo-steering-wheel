@@ -269,6 +269,7 @@ void init_hv_styles(void) {
     lv_style_set_radius(&tab_hv_style_indic, 0);
     lv_style_set_bg_opa(&tab_hv_style_indic, LV_OPA_COVER);
     lv_style_set_bg_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_BLUE));
+    // Gradient makes performances much worse
     // lv_style_set_bg_grad_color(&tab_hv_style_indic, lv_palette_main(LV_PALETTE_RED));
     // lv_style_set_bg_grad_dir(&tab_hv_style_indic, LV_GRAD_DIR_HOR);
 
@@ -276,6 +277,7 @@ void init_hv_styles(void) {
     lv_style_set_radius(&tab_hv_style_precharge, 0);
     lv_style_set_bg_opa(&tab_hv_style_precharge, LV_OPA_COVER);
     lv_style_set_bg_color(&tab_hv_style_precharge, lv_palette_main(LV_PALETTE_YELLOW));
+    // Gradient makes performances much worse
     // lv_style_set_bg_grad_color(&tab_hv_style_precharge, lv_palette_main(LV_PALETTE_RED));
     // lv_style_set_bg_grad_dir(&tab_hv_style_precharge, LV_GRAD_DIR_HOR);
 

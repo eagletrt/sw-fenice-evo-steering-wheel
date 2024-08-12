@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 // #define PERIODIC_SET_ECU_POWER_MAPS
+#define PRECHARGE_BAR_ENABLED (0U)
 
 /****
  * If this is enabled, when changing tabs clears memory of past messages.

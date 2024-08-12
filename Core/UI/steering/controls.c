@@ -564,6 +564,7 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_drive:
         case primary_ecu_status_status_disable_inv_drive:
         case primary_ecu_status_status_start_ts_discharge:
+        case primary_ecu_status_status_re_enable_inverter_drive:
         case primary_ecu_status_status_wait_ts_discharge: {
             // disabled because the central buttons reads badly at the hardware level
             // send_set_car_status(primary_ecu_set_status_status_idle);

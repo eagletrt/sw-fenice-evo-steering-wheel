@@ -98,6 +98,13 @@ void car_status_update(bool valid) {
             set_tab_track_test_lb_speed("ENINV");
             break;
         }
+        case primary_ecu_status_status_re_enable_inverter_drive: {
+            precharge_bar_popup_hide();
+            set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
+            set_tab_racing_label_text("REINV", tab_rac_status_idx);
+            set_tab_track_test_lb_speed("REINV");
+            break;
+        }
         case primary_ecu_status_status_drive: {
             precharge_bar_popup_hide();
             set_tab_racing_label_text("km/h", tab_rac_bottom_status_idx);
@@ -121,8 +128,6 @@ void car_status_update(bool valid) {
             set_tab_track_test_lb_speed("FATAL");
             break;
         }
-        default:
-            break;
     }
 }
 
@@ -178,6 +183,7 @@ void vehicle_speed_update(bool valid) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, NOT_AVAILABLE_STRING_LABEL);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_status_idx);
         set_tab_track_test_lb_speed(snprintf_buffer);
+        return;
     }
 
     if (primary_ecu_status_last_state->status != primary_ecu_status_status_drive) {
@@ -819,48 +825,33 @@ void canlib_versions_mismatch_checker() {
 }
 
 void ecu_version_update(bool valid) {
-    if (valid) {
-        was_received_ecu_version = true;
-        canlib_versions_mismatch_checker();
-    } else {
-        return;
-    }
+    if (!valid) return;
+    was_received_ecu_version = true;
+    canlib_versions_mismatch_checker();
 }
 
 void lv_version_update(bool valid) {
-    if (valid) {
-        was_received_lv_version = true;
-        canlib_versions_mismatch_checker();
-    } else {
-        return;
-    }
+    if (!valid) return;
+    was_received_lv_version = true;
+    canlib_versions_mismatch_checker();
 }
 
 void hv_cellboard_version_update(bool valid) {
-    if (valid) {
-        was_received_hv_cellboard_version = true;
-        canlib_versions_mismatch_checker();
-    } else {
-        return;
-    }
+    if (!valid) return;
+    was_received_hv_cellboard_version = true;
+    canlib_versions_mismatch_checker();
 }
 
 void hv_mainboard_version_update(bool valid) {
-    if (valid) {
-        was_received_hv_mainboard_version = true;
-        canlib_versions_mismatch_checker();
-    } else {
-        return;
-    }
+    if (!valid) return;
+    was_received_hv_mainboard_version = true;
+    canlib_versions_mismatch_checker();
 }
 
 void tlm_version_update(bool valid) {
-    if (valid) {
-        was_received_tlm_version = true;
-        canlib_versions_mismatch_checker();
-    } else {
-        return;
-    }
+    if (!valid) return;
+    was_received_tlm_version = true;
+    canlib_versions_mismatch_checker();
 }
 
 void steer_angle_update(bool valid) {

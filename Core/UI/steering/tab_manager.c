@@ -303,19 +303,21 @@ bool is_on_help_animation(void) {
 static bool on_precharge_bar_popup = false;
 
 void precharge_bar_popup_show() {
-    return;
+#if PRECHARGE_BAR_ENABLED == 1
     if (!on_precharge_bar_popup) {
         on_precharge_bar_popup = true;
         lv_scr_load(tab_precharge_popup_ptr);
     }
+#endif
 }
 
 void precharge_bar_popup_hide() {
-    return;
+#if PRECHARGE_BAR_ENABLED == 1
     if (on_precharge_bar_popup) {
         on_precharge_bar_popup = false;
         restore_previous_screen(NULL);
     }
+#endif
 }
 
 void display_notification(const char *label_content, uint32_t timeout_ms, uint32_t background_color_hex, uint32_t label_color_hex) {
