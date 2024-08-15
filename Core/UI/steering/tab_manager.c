@@ -300,7 +300,9 @@ bool is_on_help_animation(void) {
     return help_animation;
 }
 
+#if PRECHARGE_BAR_ENABLED == 1
 static bool on_precharge_bar_popup = false;
+#endif
 
 void precharge_bar_popup_show() {
 #if PRECHARGE_BAR_ENABLED == 1

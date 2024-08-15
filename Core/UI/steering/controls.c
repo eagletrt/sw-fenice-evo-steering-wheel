@@ -52,7 +52,12 @@ void turn_telemetry_on_off(void) {
         display_notification("Sending\nTelemetry\nON", 800, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
         converted.status = primary_tlm_set_status_status_on;
     }
-    STEER_CAN_PACK(primary, PRIMARY, tlm_set_status, TLM_SET_STATUS);
+    can_message_t msg        = {0};
+    msg.id                   = 0x431; // PRIMARY_TLM_SET_STATUS_FRAME_ID;
+    msg.size                 = PRIMARY_TLM_SET_STATUS_BYTE_SIZE;
+    primary_tlm_set_status_t raw = {0};
+    primary_tlm_set_status_conversion_to_raw_struct(&raw, &converted);
+    primary_tlm_set_status_pack(msg.data, &raw, PRIMARY_TLM_SET_STATUS_BYTE_SIZE);
     can_send(&msg, true);
 }
 

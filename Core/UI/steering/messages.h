@@ -33,7 +33,7 @@
     msg.size                 = NTW##_##MSG_NAME##_BYTE_SIZE;       \
     ntw##_##msg_name##_t raw = {0};                                \
     ntw##_##msg_name##_conversion_to_raw_struct(&raw, &converted); \
-    ntw##_##msg_name##_pack(msg.data, &raw, PRIMARY_##MSG_NAME##_BYTE_SIZE);
+    ntw##_##msg_name##_pack(msg.data, &raw, NTW##_##MSG_NAME##_BYTE_SIZE);
 
 typedef uint16_t can_id_t;
 

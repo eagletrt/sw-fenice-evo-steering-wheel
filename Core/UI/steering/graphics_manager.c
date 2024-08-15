@@ -57,7 +57,6 @@ void update_graphics(lv_timer_t *t) {
         if (is_pmsg_new[iindex]) {
             is_pmsg_new[iindex] = false;
             can_id_t id         = primary_id_from_index(iindex);
-            //bool valid = (bool) t->user_data;
             switch (id) {
                 case PRIMARY_ECU_STATUS_FRAME_ID: {
                     car_status_update(is_pmsg_valid[iindex]);
@@ -207,7 +206,6 @@ void update_graphics(lv_timer_t *t) {
         if (is_imsg_new[iindex]) {
             is_imsg_new[iindex] = false;
             can_id_t id         = inverters_id_from_index(iindex);
-            //bool valid = (bool) t->user_data;
             switch (id) {
                 case INVERTERS_INV_L_RCV_FRAME_ID:
                     inv_l_rcv_update(is_imsg_valid[iindex]);
@@ -225,7 +223,6 @@ void update_graphics(lv_timer_t *t) {
         if (is_smsg_new[iindex]) {
             is_smsg_new[iindex] = false;
             can_id_t id         = secondary_id_from_index(iindex);
-            //bool valid = (bool) t->user_data;
             switch (id) {
                 case SECONDARY_FRONT_ANGULAR_VELOCITY_FRAME_ID: {
                     angular_velocity_update(is_smsg_valid[iindex]);  //TODO funzione vuota

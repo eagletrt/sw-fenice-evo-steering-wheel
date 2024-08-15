@@ -37,22 +37,19 @@ void set_tab_sensors_label_text(const char *s, tab_sensors_labels_enum idx) {
 void set_tab_sensors_value_brake_f(float value_in_bar) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_SENSORS);
 
-    // assuming that maximum 15 bars are reached
-    lv_bar_set_value(brake_front_bar, (int32_t)(value_in_bar * 6.66f), LV_ANIM_OFF);
+    lv_bar_set_value(brake_front_bar, (int32_t)(value_in_bar), LV_ANIM_OFF);
 }
 
 void set_tab_sensors_value_brake_r(float value_in_bar) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_SENSORS);
 
-    // assuming that maximum 15 bars are reached
-    lv_bar_set_value(break_rear_bar, (int32_t)(value_in_bar * 6.66f), LV_ANIM_OFF);
+    lv_bar_set_value(break_rear_bar, (int32_t)(value_in_bar), LV_ANIM_OFF);
 }
 
 void set_tab_sensors_value_apps(int32_t value_0_to_100) {
     CHECK_CURRENT_TAB(engineer_mode, racing, STEERING_WHEEL_TAB_SENSORS);
 
     lv_bar_set_value(throttle_bar1, (int32_t)value_0_to_100, LV_ANIM_OFF);
-    // lv_bar_set_value(throttle_bar2, (int32_t) value_0_to_100, LV_ANIM_OFF);
 }
 
 lv_style_t throttle_bar_style;
