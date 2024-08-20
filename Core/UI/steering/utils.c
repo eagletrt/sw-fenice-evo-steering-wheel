@@ -163,9 +163,6 @@ lv_style_t bubble_large_style;
 
 char *notch_labels[NUM_RACING_TABS] = {
     "RACE",
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-    "CALIBRATE",
-#endif
 #if STEER_TAB_DEBUG_ENABLED == 1
     "DEBUG",
 #endif

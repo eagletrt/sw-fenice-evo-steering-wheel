@@ -7,7 +7,6 @@
 extern bool steering_initialized;
 
 #define SNPRINTF_BUFFER_SIZE (64u)
-char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 
 uint8_t primary_messages_last_state[primary_MESSAGE_COUNT][primary_MAX_STRUCT_SIZE_CONVERSION];
 uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT][secondary_MAX_STRUCT_SIZE_CONVERSION];
@@ -154,6 +153,7 @@ void lv_radiators_actual_value_update() {
 }
 
 void tlm_status_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, tlm_status, PRIMARY, TLM_STATUS);
 
     if (!valid) {
@@ -173,6 +173,7 @@ void tlm_status_update(bool valid) {
 }
 
 void vehicle_speed_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, vehicle_speed, SECONDARY, VEHICLE_SPEED);
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
 
@@ -251,6 +252,8 @@ void hv_debug_signals_update(bool valid) {
     }
 
     GET_LAST_STATE(primary, hv_debug_signals, PRIMARY, HV_DEBUG_SIGNALS);
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
+    
     tab_hv_set_error_status(debug_signal_error_cell_under_voltage, primary_hv_debug_signals_last_state->errors_cell_under_voltage);
     tab_hv_set_error_status(debug_signal_error_cell_over_voltage, primary_hv_debug_signals_last_state->errors_cell_over_voltage);
     tab_hv_set_error_status(debug_signal_error_cell_over_temperature, primary_hv_debug_signals_last_state->errors_cell_over_temperature);
@@ -271,6 +274,7 @@ void hv_debug_signals_update(bool valid) {
 
 void hv_cells_voltage_stats_update(bool valid) {
     GET_LAST_STATE(primary, hv_cells_voltage_stats, PRIMARY, HV_CELLS_VOLTAGE_STATS);
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 
     if (!valid) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, NOT_AVAILABLE_STRING_LABEL);
@@ -295,6 +299,7 @@ void hv_cells_voltage_stats_update(bool valid) {
 }
 
 void hv_total_voltage_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, hv_total_voltage, PRIMARY, HV_TOTAL_VOLTAGE);
 
     if (!valid) {
@@ -322,6 +327,7 @@ void hv_total_voltage_update(bool valid) {
 }
 
 void hv_current_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, hv_current, PRIMARY, HV_CURRENT);
 
     if (!valid) {
@@ -334,6 +340,7 @@ void hv_current_update(bool valid) {
 }
 
 void hv_soc_estimation_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, hv_soc_estimation_state, SECONDARY, HV_SOC_ESTIMATION_STATE);
 
     if (!valid) {
@@ -350,6 +357,7 @@ void hv_soc_estimation_update(bool valid) {
 }
 
 void lv_soc_estimation_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, lv_soc_estimation_state, SECONDARY, LV_SOC_ESTIMATION_STATE);
 
     if (!valid) {
@@ -366,6 +374,7 @@ void lv_soc_estimation_update(bool valid) {
 }
 
 void hv_cells_temp_stats_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, hv_cells_temp_stats, PRIMARY, HV_CELLS_TEMP_STATS);
 
     if (!valid) {
@@ -526,6 +535,7 @@ void hv_status_update(bool valid) {
 extern int pork_fans_status_last_state;
 
 void hv_fans_override_status_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, hv_fans_status, PRIMARY, HV_FANS_STATUS);
 
     if (!valid) {
@@ -554,6 +564,7 @@ extern steering_wheel_cooling_status_t steering_wheel_lv_pumps_speed_state;
 extern steering_wheel_cooling_status_t steering_wheel_lv_radiator_speed_state;
 
 void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     if (msg->status == primary_lv_pumps_speed_status_off || msg->status == primary_lv_pumps_speed_status_auto) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         lv_set_pumps_speed_bar((int32_t)(msg->pumps_speed * 100.0f), true);
@@ -604,6 +615,7 @@ void lv_pumps_speed_update(bool valid) {
 }
 
 void lv_radiator_speed_update_all_graphics(primary_lv_radiator_speed_converted_t *msg) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     if (msg->status == primary_lv_radiator_speed_status_off || msg->status == primary_lv_radiator_speed_status_auto) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         lv_set_radiators_speed_bar((int32_t)(msg->radiator_speed * 100.0f), true);
@@ -650,6 +662,7 @@ void lv_radiator_speed_update(bool valid) {
 }
 
 void lv_currents_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, lv_current_battery, PRIMARY, LV_CURRENT_BATTERY);
 
     if (!valid) {
@@ -663,6 +676,7 @@ void lv_currents_update(bool valid) {
 }
 
 void lv_total_voltage_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, lv_total_voltage, PRIMARY, LV_TOTAL_VOLTAGE);
 
     if (!valid) {
@@ -676,6 +690,7 @@ void lv_total_voltage_update(bool valid) {
 }
 
 void lv_cells_voltage_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     if (!valid) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, NOT_AVAILABLE_STRING_LABEL);
         set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_pack_voltage);
@@ -707,6 +722,7 @@ void lv_cells_voltage_update(bool valid) {
 }
 
 void lv_cells_voltage_stats_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, lv_cells_voltage_stats, PRIMARY, LV_CELLS_VOLTAGE_STATS);
 
     if (!valid) {
@@ -732,6 +748,7 @@ void lv_cells_voltage_stats_update(bool valid) {
 }
 
 void lv_cells_temp_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     if (!valid) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, NOT_AVAILABLE_STRING_LABEL);
         set_tab_lv_label_text(snprintf_buffer, tab_lv_lb_temp_avg);
@@ -759,6 +776,7 @@ void lv_cells_temp_update(bool valid) {
 }
 
 void lv_cells_temp_stats_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, lv_cells_temp_stats, PRIMARY, LV_CELLS_TEMP_STATS);
 
     if (!valid) {
@@ -859,6 +877,7 @@ void tlm_version_update(bool valid) {
 }
 
 void steer_angle_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
 
     if (!valid) {
@@ -872,6 +891,7 @@ void steer_angle_update(bool valid) {
 }
 
 void tlm_network_interface_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     if (!valid) {
         for (size_t i = 0; i < tlm_ntw_interfaces_current_size; i++) {
             snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, NOT_AVAILABLE_STRING_LABEL);
@@ -931,6 +951,7 @@ void imu_acceleration_update(bool valid) {
 }
 
 void tlm_lap_time_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, tlm_lap_time, SECONDARY, TLM_LAP_TIME);
 
     if (!valid) {
@@ -951,6 +972,7 @@ void tlm_lap_time_update(bool valid) {
 }
 
 void tlm_laps_stats_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, tlm_laps_stats, SECONDARY, TLM_LAPS_STATS);
 
     if (!valid) {
@@ -1004,6 +1026,7 @@ float convert_t_igbt(float val) {
 #endif
 
 void inv_l_rcv_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(inverters, inv_l_rcv, INVERTERS, INV_L_RCV);
 
     if (!valid) {
@@ -1032,6 +1055,7 @@ void inv_l_rcv_update(bool valid) {
 }
 
 void inv_r_rcv_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(inverters, inv_r_rcv, INVERTERS, INV_R_RCV);
 
     if (!valid) {
@@ -1050,6 +1074,7 @@ void inv_r_rcv_update(bool valid) {
 }
 
 void irts_fl_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, irts_fl_0, SECONDARY, IRTS_FL_0);
     GET_LAST_STATE(secondary, irts_fl_1, SECONDARY, IRTS_FL_1);
     GET_LAST_STATE(secondary, irts_fl_2, SECONDARY, IRTS_FL_2);
@@ -1072,6 +1097,7 @@ void irts_fl_update(bool valid) {
 }
 
 void irts_fr_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, irts_fr_0, SECONDARY, IRTS_FR_0);
     GET_LAST_STATE(secondary, irts_fr_1, SECONDARY, IRTS_FR_1);
     GET_LAST_STATE(secondary, irts_fr_2, SECONDARY, IRTS_FR_2);
@@ -1094,6 +1120,7 @@ void irts_fr_update(bool valid) {
 }
 
 void irts_rl_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, irts_rl_0, SECONDARY, IRTS_RL_0);
     GET_LAST_STATE(secondary, irts_rl_1, SECONDARY, IRTS_RL_1);
     GET_LAST_STATE(secondary, irts_rl_2, SECONDARY, IRTS_RL_2);
@@ -1117,6 +1144,7 @@ void irts_rl_update(bool valid) {
 }
 
 void irts_rr_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, irts_rr_0, SECONDARY, IRTS_RR_0);
     GET_LAST_STATE(secondary, irts_rr_1, SECONDARY, IRTS_RR_1);
     GET_LAST_STATE(secondary, irts_rr_2, SECONDARY, IRTS_RR_2);
@@ -1156,6 +1184,7 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
 }
 
 void odometer_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, odometer, SECONDARY, ODOMETER);
 
     if (!valid) {

@@ -5,11 +5,6 @@ lv_obj_t *tab_sensors_ptr;
 lv_obj_t *tab_hv_ptr;
 lv_obj_t *tab_precharge_popup_ptr;
 lv_obj_t *tab_lv_ptr;
-
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-lv_obj_t *tab_calibration_ptr;
-#endif
-
 lv_obj_t *tab_track_test_ptr;
 
 #if STEER_TAB_DEBUG_ENABLED == 1
@@ -46,9 +41,6 @@ void tab_manager(void) {
     tab_hv_ptr              = lv_obj_create(NULL);
     tab_lv_ptr              = lv_obj_create(NULL);
     tab_precharge_popup_ptr = lv_obj_create(NULL);
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-    tab_calibration_ptr = lv_obj_create(NULL);
-#endif
     tab_track_test_ptr = lv_obj_create(NULL);
 #if STEER_TAB_DEBUG_ENABLED == 1
     tab_debug_ptr = lv_obj_create(NULL);
@@ -68,10 +60,6 @@ void tab_manager(void) {
     lv_group_add_obj(g, tab_hv_ptr);
     lv_group_add_obj(g, tab_lv_ptr);
     lv_group_add_obj(g, tab_precharge_popup_ptr);
-
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-    lv_group_add_obj(g, tab_calibration_ptr);
-#endif
 
 #if STEER_TAB_DEBUG_ENABLED == 1
     lv_group_add_obj(g, tab_debug_ptr);
@@ -93,10 +81,6 @@ void tab_manager(void) {
     tab_hv_create(tab_hv_ptr);
     tab_lv_create(tab_lv_ptr);
     precharge_bar_screen_create(tab_precharge_popup_ptr);
-
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-    tab_calibration_create(tab_calibration_ptr);
-#endif
 
 #if STEER_TAB_DEBUG_ENABLED == 1
     tab_debug_create(tab_debug_ptr);
@@ -122,18 +106,6 @@ void tab_manager(void) {
 /***
  * Engineer Mode
  */
-
-/**
- * @brief Reload all the messages by setting the last state to 0
- */
-void reload_all(void) {
-#if STRICT_RELOAD_ALL_ENABLED == 1
-    memset((void *)primary_messages_last_state, 0, primary_MESSAGE_COUNT * primary_MAX_STRUCT_SIZE_CONVERSION);
-    memset((void *)secondary_messages_last_state, 0, secondary_MESSAGE_COUNT * secondary_MAX_STRUCT_SIZE_CONVERSION);
-    memset((void *)inverters_messages_last_state, 0, inverters_MESSAGE_COUNT * inverters_MAX_STRUCT_SIZE_CONVERSION);
-#endif
-}
-
 bool engineer_mode = false;
 
 void load_engineer_mode_screen(void) {
@@ -177,7 +149,6 @@ void switch_mode(void) {
         engineer_mode = true;
         load_engineer_mode_screen();
     }
-    reload_all();
 }
 
 /***
@@ -192,11 +163,6 @@ void load_current_racing_tab() {
             // tab_racing_resync();
             lv_scr_load(tab_racing_ptr);
             break;
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-        case TAB_CALIBRATION:
-            lv_scr_load(tab_calibration_ptr);
-            break;
-#endif
 #if STEER_TAB_DEBUG_ENABLED == 1
         case TAB_DEBUG:
             lv_scr_load(tab_debug_ptr);
@@ -254,7 +220,6 @@ void change_racing_tab(bool forward) {
         current_racing_tab = (current_racing_tab + NUM_RACING_TABS - 1) % NUM_RACING_TABS;
 
     load_current_racing_tab();
-    reload_all();
 }
 
 void change_engineer_tab(bool forward) {
@@ -264,7 +229,6 @@ void change_engineer_tab(bool forward) {
         current_engineer_tab = (current_engineer_tab + NUM_ENGINEER_TABS - 1) % NUM_ENGINEER_TABS;
 
     load_current_engineering_tab();
-    reload_all();
 }
 
 void steering_change_tab(bool forward) {

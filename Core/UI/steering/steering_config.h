@@ -15,46 +15,62 @@
 #include <stdint.h>
 
 #define PERIODIC_SET_ECU_POWER_MAPS
+
+/***
+ * Activate the precharge bar when HV accumulator is in precharge or in discharge
+ * TODO: make the bar nicer
+ */
 #define PRECHARGE_BAR_ENABLED (0U)
 
-/****
- * If this is enabled, when changing tabs clears memory of past messages.
- * Should not be a problem with watchdog enabled
+/***
+ * Color resolution in bytes, if you change this please make sure to also change the setting in STM32 CubeMX
  */
-#define STRICT_RELOAD_ALL_ENABLED 0
-
 #define COLOR_RESOLUTION (2U)
 
 /***
  * Activate candump in the engineering tabs
  */
 #define CANSNIFFER_ENABLED      (1U)
-#define CAN_LOG_ENABLED         (0U)
-#define WATCHDOG_ENABLED        (0U)
-#define CAN_OVER_SERIAL_ENABLED (0U)
-#define MCP23017_IT_ENABLED     (0U)
 
+/***
+ * Activate the watchdog on CAN bus values: if a value is not update, the watchdog triggers an action
+ */
+#define WATCHDOG_ENABLED        (1U)
+
+/***
+ * If WATCHDOG_ENABLED not-updated values are encoraged to use NOT_AVAILABLE_STRING_LABEL
+ */
 #define NOT_AVAILABLE_STRING_LABEL "NA"
 
-#define STEER_TAB_CALIBRATION_ENABLED (0U)
-#define STEER_TAB_SENSORS_ENABLED     (1U)
-#define STEER_TAB_TRACK_TEST_ENABLED  (1U)
+/***
+ * Until now MCP23017 is not working with interrupts enables
+ */
+#define MCP23017_IT_ENABLED     (0U)
+
+/***
+ * Legacy flags
+ */
+#define CAN_LOG_ENABLED         (0U)
+#define CAN_OVER_SERIAL_ENABLED (0U)
+
+/***
+ * Not very useful, now the tab hv gives feedback on shutdown circuit, which is enough
+ * TODO: remove it
+ */
 #define STEER_TAB_DEBUG_ENABLED       (0U)
 
+
+/***
+ * LOW LEVEL GRAPHICS SETTING, if you change this be sure to change also STM32 cubeMX settings accordingly
+ */
 #define SDRAM_BASE_ADDRESS (0xC0000000)
 #define FRAMEBUFFER1_ADDR  SDRAM_BASE_ADDRESS
 #define FRAMEBUFFER2_ADDR  (0xC0200000)
-
-#if CANSNIFFER_ENABLED == 1
-#define PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS   0xC0600000
-#define SECONDARY_CANSNIFFER_MEMORY_POOL_ADDRESS ((0xC0600000) + ((CANSNIFFER_ELEM_T_SIZE) * CAN_POSSIBLE_IDS))
-#endif
-
 #define SCREEN_WIDTH  (800u)
 #define SCREEN_HEIGHT (480u)
 
 /***
- * General configurations 
+ * General defines
 */
 #define HV_BUS_VOLTAGE_LIMIT    (450U)
 #define TLM_NTW_INTERFACE_MAX_N (6U)
@@ -228,7 +244,7 @@ typedef enum {
 /***
  * Cooling
  */
-#define COOLING_STATE_SYNC_TIMEOUT 1000  // in ms
+#define COOLING_STATE_SYNC_TIMEOUT (1000U)  // in ms
 
 typedef enum {
     STEERING_WHEEL_COOLING_STATUS_SYNC,

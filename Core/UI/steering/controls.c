@@ -19,12 +19,6 @@ int secondary_cansniffer_start_index = 0;
 int inverters_cansniffer_start_index = 0;
 #endif
 
-#if STEER_TAB_CALIBRATION_ENABLED == 1
-extern lv_obj_t *set_min_btn;
-extern lv_obj_t *set_max_btn;
-#endif
-char sprintf_buffer_controls[BUFSIZ];
-
 primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state = {.map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
 
 primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed = {.radiator_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
@@ -206,6 +200,7 @@ void manettino_center_actions(int dsteps) {
 }
 
 void manettino_left_actions(int dsteps) {
+    char sprintf_buffer_controls[BUFSIZ];
     if (dsteps == 0) {
         return;
     }
@@ -244,6 +239,7 @@ void manettino_left_actions(int dsteps) {
 }
 
 void manettino_send_slip_control(float val) {
+    char sprintf_buffer_controls[BUFSIZ];
     ecu_set_power_maps_last_state.map_sc = val;
     int map_val                          = (int)(ecu_set_power_maps_last_state.map_sc * 100.0f);
 #ifndef PERIODIC_SET_ECU_POWER_MAPS
@@ -255,6 +251,7 @@ void manettino_send_slip_control(float val) {
 }
 
 void manettino_send_torque_vectoring(float val) {
+    char sprintf_buffer_controls[BUFSIZ];
     ecu_set_power_maps_last_state.map_tv = val;
     int map_val                          = (int)(ecu_set_power_maps_last_state.map_tv * 100.0f);
 #ifndef PERIODIC_SET_ECU_POWER_MAPS
@@ -266,6 +263,7 @@ void manettino_send_torque_vectoring(float val) {
 }
 
 void manettino_send_power_map(float val) {
+    char sprintf_buffer_controls[BUFSIZ];
     ecu_set_power_maps_last_state.map_pw = val;
     float map_val                        = (float)(ecu_set_power_maps_last_state.map_pw * 100.0f);
 #ifndef PERIODIC_SET_ECU_POWER_MAPS
@@ -289,6 +287,7 @@ void manettino_send_radiators_speed(void) {
 }
 
 void manettino_set_radiators_speed(int dsteps) {
+    char sprintf_buffer_controls[BUFSIZ];
     steering_wheel_lv_radiator_speed_state             = STEERING_WHEEL_COOLING_STATUS_SET;
     float new_radspeed_val                             = steering_wheel_state_radiator_speed.radiator_speed + ((float)dsteps / 10.0f);
     new_radspeed_val                                   = roundf(new_radspeed_val * 10.0f) / 10.0f;
@@ -321,6 +320,7 @@ void manettino_send_pumps_speed(void) {
 }
 
 void manettino_set_pumps_speed(int dsteps) {
+    char sprintf_buffer_controls[BUFSIZ];
     steering_wheel_lv_pumps_speed_state          = STEERING_WHEEL_COOLING_STATUS_SET;
     float new_pumps_speed_val                    = steering_wheel_state_pumps_speed.pumps_speed + ((float)dsteps / 10.0f);
     new_pumps_speed_val                          = roundf(new_pumps_speed_val * 10.0f) / 10.0f;
@@ -507,6 +507,7 @@ void buttons_long_pressed_actions(uint8_t button) {
 }
 
 void send_pork_fans_status(float val) {
+    char sprintf_buffer_controls[BUFSIZ];
     primary_hv_fans_status_converted_t hv_fans_override_settings = {.fans_override = primary_hv_fans_status_fans_override_off, .fans_speed = 0.0f};
     if (val < 0.0f) {
         hv_fans_override_settings.fans_override = primary_hv_fans_status_fans_override_off;
