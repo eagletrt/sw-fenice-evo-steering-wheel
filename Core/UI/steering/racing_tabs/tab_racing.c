@@ -278,7 +278,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
     // power
     lv_obj_t *power =
-        lv_horizontal_pair_label(central_panel, &tab_racing_labels[tab_rac_pow_idx], "NA", &lv_font_inter_bold_38, " POWER", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(central_panel, &tab_racing_labels[tab_rac_pow_idx], "0", &lv_font_inter_bold_38, " POWER", &lv_font_inter_bold_22);
 
     lv_obj_set_grid_cell(lv_obj_get_child(power, 1), LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0,
                          1);  // center the label "POWER"
@@ -335,14 +335,14 @@ void tab_racing_create(lv_obj_t *parent) {
   lv_obj_set_style_pad_right(km_counter, 40, 0);
 #else
     lv_obj_t *slip_robo_del_coso =
-        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_slip_idx], "NA", &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_slip_idx], "0", &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(slip_robo_del_coso, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_END, 0, 1);
     lv_obj_set_style_pad_bottom(slip_robo_del_coso, 5, 0);
     lv_obj_set_style_pad_left(slip_robo_del_coso, 40, 0);
 
     // ???
     lv_obj_t *torque_robo_del_coso =
-        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_torque_idx], "NA", &lv_font_inter_bold_38, "TORQUE", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_torque_idx], "0", &lv_font_inter_bold_38, "TORQUE", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(torque_robo_del_coso, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_END, 0, 1);
     lv_obj_set_style_pad_bottom(torque_robo_del_coso, 5, 0);
     lv_obj_set_style_pad_right(torque_robo_del_coso, 40, 0);

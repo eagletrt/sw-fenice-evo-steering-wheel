@@ -38,6 +38,8 @@
 #define SET_RADIATORS_MIN               (-0.1f)
 #define PORK_HIGH_FANS_SPEED            (100)
 #define PORK_LOW_FANS_SPEED             (-10)
+#define BALANCING_THRESHOLD_HIGH        (50)
+#define BALANCING_THRESHOLD_LOW         (5)
 #define POWER_MAP_MAX                   (100)
 #define POWER_MAP_MIN                   (0)
 #define LEFT_MANETTINO_SLIP_OPTION      0

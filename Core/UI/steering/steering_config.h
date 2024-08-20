@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// #define PERIODIC_SET_ECU_POWER_MAPS
+#define PERIODIC_SET_ECU_POWER_MAPS
 #define PRECHARGE_BAR_ENABLED (0U)
 
 /****
@@ -28,22 +28,22 @@
 /***
  * Activate candump in the engineering tabs
  */
-#define CANSNIFFER_ENABLED      1
-#define CAN_LOG_ENABLED         0
-#define WATCHDOG_ENABLED        0
-#define CAN_OVER_SERIAL_ENABLED 0
-#define MCP23017_IT_ENABLED     0
+#define CANSNIFFER_ENABLED      (1U)
+#define CAN_LOG_ENABLED         (0U)
+#define WATCHDOG_ENABLED        (0U)
+#define CAN_OVER_SERIAL_ENABLED (0U)
+#define MCP23017_IT_ENABLED     (0U)
 
 #define NOT_AVAILABLE_STRING_LABEL "NA"
 
-#define STEER_TAB_CALIBRATION_ENABLED 0
-#define STEER_TAB_SENSORS_ENABLED     1
-#define STEER_TAB_TRACK_TEST_ENABLED  1
-#define STEER_TAB_DEBUG_ENABLED       0
+#define STEER_TAB_CALIBRATION_ENABLED (0U)
+#define STEER_TAB_SENSORS_ENABLED     (1U)
+#define STEER_TAB_TRACK_TEST_ENABLED  (1U)
+#define STEER_TAB_DEBUG_ENABLED       (0U)
 
-#define SDRAM_BASE_ADDRESS 0xC0000000
+#define SDRAM_BASE_ADDRESS (0xC0000000)
 #define FRAMEBUFFER1_ADDR  SDRAM_BASE_ADDRESS
-#define FRAMEBUFFER2_ADDR  0xC0200000
+#define FRAMEBUFFER2_ADDR  (0xC0200000)
 
 #if CANSNIFFER_ENABLED == 1
 #define PRIMARY_CANSNIFFER_MEMORY_POOL_ADDRESS   0xC0600000
@@ -171,7 +171,7 @@ typedef enum {
 typedef enum {
     tab_hv_lb_temp_max,
     tab_hv_lb_temp_min,
-    tab_hv_lb_temp_avg,
+    tab_hv_threshold_setting,
     tab_hv_lb_voltage_max,
     tab_hv_lb_voltage_min,
     tab_hv_lb_voltage_delta,

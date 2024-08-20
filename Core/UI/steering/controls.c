@@ -8,6 +8,7 @@ uint32_t calibration_max_request_timestamp[CALBOX_N];
 int torque_vectoring_last_state = 0;
 int slip_control_last_state     = 0;
 int pork_fans_status_last_state = 0;
+int pork_balancing_threshold_mV = 50;
 int power_map_last_state        = 0;
 
 int left_manettino_selection = 0;
@@ -52,9 +53,9 @@ void turn_telemetry_on_off(void) {
         display_notification("Sending\nTelemetry\nON", 800, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
         converted.status = primary_tlm_set_status_status_on;
     }
-    can_message_t msg        = {0};
-    msg.id                   = 0x431; // PRIMARY_TLM_SET_STATUS_FRAME_ID;
-    msg.size                 = PRIMARY_TLM_SET_STATUS_BYTE_SIZE;
+    can_message_t msg            = {0};
+    msg.id                       = 0x431;  // PRIMARY_TLM_SET_STATUS_FRAME_ID;
+    msg.size                     = PRIMARY_TLM_SET_STATUS_BYTE_SIZE;
     primary_tlm_set_status_t raw = {0};
     primary_tlm_set_status_conversion_to_raw_struct(&raw, &converted);
     primary_tlm_set_status_pack(msg.data, &raw, PRIMARY_TLM_SET_STATUS_BYTE_SIZE);
@@ -227,8 +228,10 @@ void manettino_left_actions(int dsteps) {
             case STEERING_WHEEL_TAB_SENSORS:
                 break;
             case STEERING_WHEEL_TAB_HV:
-                // TODO: implement Balancing threshold as defined by the new steering
-                // wheel map (see images)
+                pork_balancing_threshold_mV += dsteps * 5;
+                pork_balancing_threshold_mV = LV_CLAMP(BALANCING_THRESHOLD_LOW, pork_balancing_threshold_mV, BALANCING_THRESHOLD_HIGH);
+                snprintf(sprintf_buffer_controls, BUFSIZ, "%d", pork_balancing_threshold_mV);
+                set_tab_hv_label_text(sprintf_buffer_controls, tab_hv_threshold_setting);
                 break;
             case STEERING_WHEEL_TAB_LV: {
                 manettino_set_pumps_speed(dsteps);
@@ -382,8 +385,10 @@ void buttons_pressed_actions(uint8_t button) {
             } else {
                 switch (current_racing_tab) {
                     case STEERING_WHEEL_TAB_HV:
-                        send_bal(true);
-                        display_notification("BAL ON", 500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+                        send_hv_set_balancing_status_steering_wheel(true, pork_balancing_threshold_mV);
+                        char buff1[50];
+                        snprintf(buff1, 50, "BAL ON: %d", pork_balancing_threshold_mV);
+                        display_notification(buff1, 500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
                         break;
                     default:
                         break;
@@ -404,8 +409,10 @@ void buttons_pressed_actions(uint8_t button) {
                     case STEERING_WHEEL_TAB_SENSORS:
                         break;
                     case STEERING_WHEEL_TAB_HV:
-                        send_bal(false);
-                        display_notification("BAL OFF", 500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+                        send_hv_set_balancing_status_steering_wheel(false, pork_balancing_threshold_mV);
+                        char buff1[50];
+                        snprintf(buff1, 50, "BAL OFF: %d", pork_balancing_threshold_mV);
+                        display_notification(buff1, 500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
                         break;
                     case STEERING_WHEEL_TAB_LV:
                         break;
@@ -537,30 +544,30 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_enable_inv_updates:
         case primary_ecu_status_status_check_inv_settings: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("Sending\nIDLE\nanyway", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+            // display_notification("Sending\nIDLE\nanyway", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_idle: {
             send_set_car_status(primary_ecu_set_status_status_ready);
             if (is_shutdown_closed()) {
-                display_notification("TSON", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+                // display_notification("TSON", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
             } else {
-                display_notification("Shutdown\nOpen\nSending TSON\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
+                // display_notification("Shutdown\nOpen\nSending TSON\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
             }
             break;
         }
         case primary_ecu_status_status_start_ts_precharge:
         case primary_ecu_status_status_wait_ts_precharge: {
-            display_notification("Precharge\nnot finished\nyet", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
+            // display_notification("Precharge\nnot finished\nyet", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_wait_driver: {
             GET_LAST_STATE(secondary, pedal_brakes_pressure, SECONDARY, PEDAL_BRAKES_PRESSURE);
             float brake_pressure = (secondary_pedal_brakes_pressure_last_state->front + secondary_pedal_brakes_pressure_last_state->rear) / 2.0f;
             if (brake_pressure > 0.89f) {
-                display_notification("DRIVE", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
+                // display_notification("DRIVE", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
             } else {
-                display_notification("Not Enough\nFreno\nSending DRIVE\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
+                // display_notification("Not Enough\nFreno\nSending DRIVE\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
             }
             send_set_car_status(primary_ecu_set_status_status_drive);
             break;
@@ -578,7 +585,7 @@ void prepare_set_car_status(void) {
         }
         case primary_ecu_status_status_fatal_error: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            display_notification("ECU in FATAL ERROR,\nsending IDLE anyway", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
+            // display_notification("ECU in FATAL ERROR,\nsending IDLE anyway", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
     }

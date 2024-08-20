@@ -27,7 +27,7 @@ bool can_send(can_message_t *msg, bool to_primary_network);
 void send_steer_version(lv_timer_t *);
 void send_steer_status(lv_timer_t *);
 void handle_ptt_message();
-void send_bal(bool on);
+void send_hv_set_balancing_status_steering_wheel(bool set_balancing_on, uint8_t balancing_threshold);
 
 void handle_primary(can_message_t *msg);
 void handle_secondary(can_message_t *msg);

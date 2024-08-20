@@ -140,11 +140,11 @@ void ecu_errors_update(bool valid) {
         return;
     }
 
-    if (primary_ecu_errors_last_state->error_bspd_limits || primary_ecu_errors_last_state->error_pedal_implausibility) {
-        display_notification("MOLLA\nIL\nFRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
-    } else if (primary_ecu_errors_last_state->error_no_brake_to_rtd) {
-        display_notification("PREMI\nIL\nFRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
-    }
+    // if (primary_ecu_errors_last_state->error_bspd_limits || primary_ecu_errors_last_state->error_pedal_implausibility) {
+    // display_notification("MOLLA\nIL\nFRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+    // } else if (primary_ecu_errors_last_state->error_no_brake_to_rtd) {
+    // display_notification("PREMI\nIL\nFRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
+    // }
 }
 
 void lv_pumps_actual_value_update() {
@@ -369,17 +369,16 @@ void hv_cells_temp_stats_update(bool valid) {
     GET_LAST_STATE(primary, hv_cells_temp_stats, PRIMARY, HV_CELLS_TEMP_STATS);
 
     if (!valid) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, NOT_AVAILABLE_STRING_LABEL);
-        set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_avg_temp_idx);
-        set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_avg);
-        set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_max);
-        set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_min);
+        set_tab_racing_label_text(NOT_AVAILABLE_STRING_LABEL, tab_rac_hv_avg_temp_idx);
+        // set_tab_hv_label_text(NOT_AVAILABLE_STRING_LABEL, tab_hv_threshold_setting);
+        set_tab_hv_label_text(NOT_AVAILABLE_STRING_LABEL, tab_hv_lb_temp_max);
+        set_tab_hv_label_text(NOT_AVAILABLE_STRING_LABEL, tab_hv_lb_temp_min);
         return;
     }
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->avg);
-    set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_avg_temp_idx);
-    set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_avg);
+    // snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->avg);
+    // set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_avg_temp_idx);
+    // set_tab_hv_label_text(snprintf_buffer, tab_hv_threshold_setting);
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->max);
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_max);
@@ -825,31 +824,36 @@ void canlib_versions_mismatch_checker() {
 }
 
 void ecu_version_update(bool valid) {
-    if (!valid) return;
+    if (!valid)
+        return;
     was_received_ecu_version = true;
     canlib_versions_mismatch_checker();
 }
 
 void lv_version_update(bool valid) {
-    if (!valid) return;
+    if (!valid)
+        return;
     was_received_lv_version = true;
     canlib_versions_mismatch_checker();
 }
 
 void hv_cellboard_version_update(bool valid) {
-    if (!valid) return;
+    if (!valid)
+        return;
     was_received_hv_cellboard_version = true;
     canlib_versions_mismatch_checker();
 }
 
 void hv_mainboard_version_update(bool valid) {
-    if (!valid) return;
+    if (!valid)
+        return;
     was_received_hv_mainboard_version = true;
     canlib_versions_mismatch_checker();
 }
 
 void tlm_version_update(bool valid) {
-    if (!valid) return;
+    if (!valid)
+        return;
     was_received_tlm_version = true;
     canlib_versions_mismatch_checker();
 }

@@ -33,7 +33,7 @@ lv_style_t label_custom_style;
 lv_obj_t *tab_hv_labels[tab_hv_labels_n] = {
     [tab_hv_lb_temp_max]       = NULL,
     [tab_hv_lb_temp_min]       = NULL,
-    [tab_hv_lb_temp_avg]       = NULL,
+    [tab_hv_threshold_setting] = NULL,
     [tab_hv_lb_voltage_max]    = NULL,
     [tab_hv_lb_voltage_min]    = NULL,
     [tab_hv_lb_voltage_delta]  = NULL,
@@ -379,7 +379,7 @@ void tab_hv_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(inv_r_temp_lb, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *motor_l_temp_lb = lv_triple_label(
-        top_data_panel, &tab_hv_labels[tab_hv_lb_temp_avg], "NA", &lv_font_inter_bold_30, "°C", &lv_font_inter_bold_22, "AVG", &lv_font_inter_bold_20);
+        top_data_panel, &tab_hv_labels[tab_hv_threshold_setting], "50", &lv_font_inter_bold_30, "mV", &lv_font_inter_bold_22, "D THR", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(motor_l_temp_lb, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     /* VOLT */
