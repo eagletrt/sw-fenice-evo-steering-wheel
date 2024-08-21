@@ -327,7 +327,9 @@ void display_notification(const char *label_content, uint32_t timeout_ms, uint32
     lv_timer_set_repeat_count(notification_timer, 1);
     tab_notification_set_bg_color(background_color_hex);
     tab_notification_set_label_color(label_color_hex);
-    set_notification_screen_label(label_content);
+    //set_notification_screen_label(label_content);
+    LV_IMG_DECLARE(Racing_Tab2); //TODO change name img to image for LVGL 9
+    tab_notification_set_img(Racing_Tab2);
     lv_scr_load(notif_screen);
     lv_timer_reset(notification_timer);
 }

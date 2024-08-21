@@ -1,0 +1,1 @@
+extern const lv_image_dsc_t Racing_Tab2;

@@ -3,12 +3,18 @@
 lv_style_t notif_label_style;
 
 lv_obj_t *notification_screen_label;
+lv_obj_t *notification_image;
 
 void set_notification_screen_label(const char *s) {
     lv_label_set_text(notification_screen_label, s);
 }
 
 lv_obj_t *notification_background;
+
+void tab_notification_set_img(lv_img_dsc_t image_source){ //TODO change name img to image for LVGL 9
+    lv_img_set_src(notification_image, &image_source); //TODO change name img to image for LVGL 9
+    lv_obj_align(notification_image, LV_ALIGN_CENTER, 0, 0);
+}
 
 void tab_notification_set_bg_color(uint32_t hex_color) {
     lv_obj_set_style_bg_color(notification_background, lv_color_hex(hex_color), LV_PART_MAIN);
@@ -40,4 +46,7 @@ void tab_notification_screen_create(lv_obj_t *notification_screen) {
     lv_obj_set_style_text_font(notification_screen_label, &lv_font_inter_bold_70, LV_PART_MAIN);
     lv_label_set_text(notification_screen_label, "PLACEHOLDER TEXT");
     lv_obj_align(notification_screen_label, LV_ALIGN_CENTER, 0, 0);
+
+    notification_image = lv_img_create(notification_background); //TODO change name img to image for LVGL 9
+    lv_obj_align(notification_image, LV_ALIGN_CENTER, 0, 0);
 }
