@@ -23,7 +23,7 @@ lv_obj_t *tab_inverters_cansniffer_ptr;
 lv_obj_t *tab_terminal_ptr;
 
 lv_timer_t *notification_timer;
-lv_group_t *g;
+lv_group_t *steering_wheel_tab_group;
 
 racing_tab_t current_racing_tab;
 engineer_tab_t current_engineer_tab;
@@ -41,7 +41,7 @@ void tab_manager(void) {
     tab_hv_ptr              = lv_obj_create(NULL);
     tab_lv_ptr              = lv_obj_create(NULL);
     tab_precharge_popup_ptr = lv_obj_create(NULL);
-    tab_track_test_ptr = lv_obj_create(NULL);
+    tab_track_test_ptr      = lv_obj_create(NULL);
 #if STEER_TAB_DEBUG_ENABLED == 1
     tab_debug_ptr = lv_obj_create(NULL);
 #endif
@@ -55,26 +55,26 @@ void tab_manager(void) {
     tab_terminal_ptr    = lv_obj_create(NULL);
     tab_fatal_error_ptr = lv_obj_create(NULL);
 
-    lv_group_add_obj(g, tab_racing_ptr);
-    lv_group_add_obj(g, tab_sensors_ptr);
-    lv_group_add_obj(g, tab_hv_ptr);
-    lv_group_add_obj(g, tab_lv_ptr);
-    lv_group_add_obj(g, tab_precharge_popup_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_racing_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_sensors_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_hv_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_lv_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_precharge_popup_ptr);
 
 #if STEER_TAB_DEBUG_ENABLED == 1
-    lv_group_add_obj(g, tab_debug_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_debug_ptr);
 #endif
 
-    lv_group_add_obj(g, tab_track_test_ptr);
-    lv_group_add_obj(g, notif_screen);
+    lv_group_add_obj(steering_wheel_tab_group, tab_track_test_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, notif_screen);
 
 #if CANSNIFFER_ENABLED == 1
-    lv_group_add_obj(g, tab_primary_cansniffer_ptr);
-    lv_group_add_obj(g, tab_secondary_cansniffer_ptr);
-    lv_group_add_obj(g, tab_inverters_cansniffer_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_primary_cansniffer_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_secondary_cansniffer_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_inverters_cansniffer_ptr);
 #endif
-    lv_group_add_obj(g, tab_terminal_ptr);
-    lv_group_add_obj(g, tab_fatal_error_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_terminal_ptr);
+    lv_group_add_obj(steering_wheel_tab_group, tab_fatal_error_ptr);
 
     tab_racing_create(tab_racing_ptr);
     tab_sensors_create(tab_sensors_ptr);

@@ -24,7 +24,7 @@
 #include "lv-drivers/indev/keyboard.h"
 #endif
 
-extern lv_group_t *g;
+extern lv_group_t *endurance_group;
 
 void tab_manager(void);
 

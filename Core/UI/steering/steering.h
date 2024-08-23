@@ -123,8 +123,6 @@ void hv_cellboard_version_update(bool valid);
 void hv_mainboard_version_update(bool valid);
 void tlm_version_update(bool valid);
 
-void ptt_tasks_fn(lv_timer_t *tim);
-
 void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);
 

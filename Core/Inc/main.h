@@ -37,6 +37,7 @@ extern "C" {
 #include "inputs/inputs.h"
 #include "led_control.h"
 #include "messages.h"
+#include "ptt.h"
 #include "steering_config.h"
 #include "test/i2c_test.h"
 #include "test/sdram_test.h"

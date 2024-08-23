@@ -17,6 +17,11 @@
 #define PERIODIC_SET_ECU_POWER_MAPS
 
 /***
+ * Activate endurance mode
+ */
+#define ENDURANCE_MODE_ENABLED
+
+/***
  * Activate the precharge bar when HV accumulator is in precharge or in discharge
  * TODO: make the bar nicer
  */
@@ -30,12 +35,12 @@
 /***
  * Activate candump in the engineering tabs
  */
-#define CANSNIFFER_ENABLED      (1U)
+#define CANSNIFFER_ENABLED (1U)
 
 /***
  * Activate the watchdog on CAN bus values: if a value is not update, the watchdog triggers an action
  */
-#define WATCHDOG_ENABLED        (1U)
+#define WATCHDOG_ENABLED (0U)
 
 /***
  * If WATCHDOG_ENABLED not-updated values are encoraged to use NOT_AVAILABLE_STRING_LABEL
@@ -45,7 +50,7 @@
 /***
  * Until now MCP23017 is not working with interrupts enables
  */
-#define MCP23017_IT_ENABLED     (0U)
+#define MCP23017_IT_ENABLED (0U)
 
 /***
  * Legacy flags
@@ -57,8 +62,7 @@
  * Not very useful, now the tab hv gives feedback on shutdown circuit, which is enough
  * TODO: remove it
  */
-#define STEER_TAB_DEBUG_ENABLED       (0U)
-
+#define STEER_TAB_DEBUG_ENABLED (0U)
 
 /***
  * LOW LEVEL GRAPHICS SETTING, if you change this be sure to change also STM32 cubeMX settings accordingly
@@ -66,8 +70,8 @@
 #define SDRAM_BASE_ADDRESS (0xC0000000)
 #define FRAMEBUFFER1_ADDR  SDRAM_BASE_ADDRESS
 #define FRAMEBUFFER2_ADDR  (0xC0200000)
-#define SCREEN_WIDTH  (800u)
-#define SCREEN_HEIGHT (480u)
+#define SCREEN_WIDTH       (800u)
+#define SCREEN_HEIGHT      (480u)
 
 /***
  * General defines

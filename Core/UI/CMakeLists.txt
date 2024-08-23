@@ -16,6 +16,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-incompatible-pointer-types")
 add_executable(SteeringSimulator 
     steering/steering.c
     steering/tab_manager.c
+    steering/endurance_mode/endurance.c
+    steering/ptt.c
     steering/engineer_mode/tab_fatal_error.c
     steering/engineer_mode/tab_terminal.c
     steering/engineer_mode/tab_debug.c

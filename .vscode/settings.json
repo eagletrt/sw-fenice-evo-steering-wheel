@@ -86,7 +86,8 @@
         "time.h": "c",
         "serial_to_can.h": "c",
         "secondary_watchdog.h": "c",
-        "min-heap.h": "c"
+        "min-heap.h": "c",
+        "endurance.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": false,

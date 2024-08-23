@@ -45,13 +45,35 @@ void send_steer_status(lv_timer_t *main_timer) {
 }
 
 void send_hv_set_balancing_status_steering_wheel(bool set_balancing_on, uint8_t balancing_threshold) {
-        primary_hv_set_balancing_status_steering_wheel_converted_t converted = {
-            .set_balancing_status = set_balancing_on ? primary_hv_set_balancing_status_steering_wheel_set_balancing_status_on
-                                       : primary_hv_set_balancing_status_steering_wheel_set_balancing_status_off,
-            .balancing_threshold  = balancing_threshold};
-        STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_steering_wheel, HV_SET_BALANCING_STATUS_STEERING_WHEEL)
-        can_send(&msg, true);
+    primary_hv_set_balancing_status_steering_wheel_converted_t converted = {
+        .set_balancing_status = set_balancing_on ? primary_hv_set_balancing_status_steering_wheel_set_balancing_status_on
+                                                 : primary_hv_set_balancing_status_steering_wheel_set_balancing_status_off,
+        .balancing_threshold  = balancing_threshold};
+    STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_steering_wheel, HV_SET_BALANCING_STATUS_STEERING_WHEEL)
+    can_send(&msg, true);
 }
+
+#ifdef ENDURANCE_MODE_ENABLED
+
+void handle_primary(can_message_t *msg) {
+#if WATCHDOG_ENABLED == 1
+    if (inverters_id_is_message(msg->id)) {
+        inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
+    } else {
+        primary_watchdog_reset(&m_primary_watchdog, msg->id, get_current_time_ms());
+    }
+#endif
+#warning To be implemented
+}
+
+void handle_secondary(can_message_t *msg) {
+#if WATCHDOG_ENABLED == 1
+    secondary_watchdog_reset(&m_secondary_watchdog, msg->id, get_current_time_ms());
+#endif
+#warning To be implemented
+}
+
+#else  // Normal steering wheel interface
 
 void handle_primary(can_message_t *msg) {
     if (!steering_initialized)
@@ -449,6 +471,8 @@ void handle_secondary(can_message_t *msg) {
             break;
     }
 }
+
+#endif  // ENDURANCE_MODE_ENABLED
 
 void message_parser(uint8_t *msg, size_t msg_siz) {
     msg[msg_siz]  = 0;

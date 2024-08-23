@@ -16,6 +16,10 @@ bool is_pmsg_valid[primary_MESSAGE_COUNT];
 bool is_smsg_valid[secondary_MESSAGE_COUNT];
 bool is_imsg_valid[inverters_MESSAGE_COUNT];
 
+#ifdef ENDURANCE_MODE_ENABLED
+
+#else
+
 // extern int torque_vectoring_last_state;
 // extern int slip_control_last_state;
 extern int set_pumps_speed_last_state;
@@ -131,7 +135,7 @@ void car_status_update(bool valid) {
 }
 
 void ecu_errors_update(bool valid) {
-    GET_LAST_STATE(primary, ecu_errors, PRIMARY, ECU_ERRORS);
+    // GET_LAST_STATE(primary, ecu_errors, PRIMARY, ECU_ERRORS);
 
     if (!valid) {
         //Disabled cause it is spammed
@@ -252,8 +256,7 @@ void hv_debug_signals_update(bool valid) {
     }
 
     GET_LAST_STATE(primary, hv_debug_signals, PRIMARY, HV_DEBUG_SIGNALS);
-    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
-    
+
     tab_hv_set_error_status(debug_signal_error_cell_under_voltage, primary_hv_debug_signals_last_state->errors_cell_under_voltage);
     tab_hv_set_error_status(debug_signal_error_cell_over_voltage, primary_hv_debug_signals_last_state->errors_cell_over_voltage);
     tab_hv_set_error_status(debug_signal_error_cell_over_temperature, primary_hv_debug_signals_last_state->errors_cell_over_temperature);
@@ -699,7 +702,7 @@ void lv_cells_voltage_update(bool valid) {
         return;
     }
 
-#define N_LV_CELLS 6
+#define N_LV_CELLS                          6
     float current_lv_voltages[N_LV_CELLS] = {0};
     current_lv_voltages[0]                = lv_voltages_stock_1.voltage_0;
     current_lv_voltages[1]                = lv_voltages_stock_1.voltage_1;
@@ -1197,68 +1200,4 @@ void odometer_update(bool valid) {
     set_tab_racing_label_text(snprintf_buffer, tab_rac_odometer_idx);
 }
 
-/***
- * PTT
- */
-
-typedef enum {
-    ptt_status_OFF     = 0,
-    ptt_status_SET_ON  = 1,
-    ptt_status_ON      = 2,
-    ptt_status_SET_OFF = 3,
-} ptt_status_t;
-
-bool ecu_ack            = false;
-bool ptt_button_pressed = false;
-ptt_status_t ptt_status = ptt_status_OFF;
-
-#include "can_messages.h"
-
-void set_ptt_button_pressed(bool val) {
-    ptt_button_pressed = val;
-}
-
-void send_ptt_status_message(bool on) {
-    primary_ecu_set_ptt_status_converted_t converted = {0};
-    converted.status                                 = on ? primary_ecu_set_ptt_status_status_on : primary_ecu_set_ptt_status_status_off;
-    STEER_CAN_PACK(primary, PRIMARY, ecu_set_ptt_status, ECU_SET_PTT_STATUS);
-    can_send(&msg, true);
-}
-
-void ptt_tasks_fn(lv_timer_t *timer) {
-    if (!ecu_ack && ptt_button_pressed) {
-        ptt_status = ptt_status_SET_ON;
-        send_ptt_status_message(true);
-        update_sensors_extra_value("SON", 0);
-        set_tab_racing_label_text("SON", tab_rac_ptt_status_idx);
-        set_tab_racing_ptt_label_color(true);
-    } else if (ecu_ack && !ptt_button_pressed) {
-        ptt_status = ptt_status_SET_OFF;
-        send_ptt_status_message(false);
-        update_sensors_extra_value("SOF", 0);
-        set_tab_racing_label_text("SOF", tab_rac_ptt_status_idx);
-        set_tab_racing_ptt_label_color(false);
-    } else if (ecu_ack && ptt_button_pressed) {
-        ptt_status = ptt_status_ON;
-        send_ptt_status_message(true);
-        update_sensors_extra_value("ON", 0);
-        set_tab_racing_label_text("ON", tab_rac_ptt_status_idx);
-        set_tab_racing_ptt_label_color(true);
-    } else if (!ecu_ack && !ptt_button_pressed) {
-        ptt_status = ptt_status_OFF;
-        send_ptt_status_message(false);
-        update_sensors_extra_value("OFF", 0);
-        set_tab_racing_label_text("OFF", tab_rac_ptt_status_idx);
-        set_tab_racing_ptt_label_color(false);
-    }
-}
-
-void handle_ptt_message(void) {
-    GET_LAST_STATE(primary, ecu_ptt_status, PRIMARY, ECU_PTT_STATUS);
-    primary_ecu_ptt_status_status val = primary_ecu_ptt_status_last_state->status;
-    if (val == primary_ecu_ptt_status_status_off) {
-        ecu_ack = false;
-    } else if (val == primary_ecu_ptt_status_status_on) {
-        ecu_ack = true;
-    }
-}
+#endif  // ENDURANCE_MODE_ENABLED

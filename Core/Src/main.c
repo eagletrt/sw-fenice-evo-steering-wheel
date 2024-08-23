@@ -148,7 +148,7 @@ int main(void) {
     sdram_test_simple_write();
 #endif
 
-#if 0  // Green screen
+#if 0  // Simple green screen
   uint8_t *display_buffer = (uint8_t *)SDRAM_BASE_ADDRESS;
   for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
     display_buffer[4 * icell] = 0xFF;

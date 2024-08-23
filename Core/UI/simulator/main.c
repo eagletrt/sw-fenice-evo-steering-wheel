@@ -18,6 +18,7 @@
 #include "lv-drivers/indev/mouse.h"
 #include "lv-drivers/indev/mousewheel.h"
 #include "lvgl.h"
+#include "ptt.h"
 #include "steering.h"
 #include "steering_config.h"
 #include "tab_manager.h"
@@ -157,7 +158,11 @@ int main(int argc, char **argv) {
 
     // steering_values_init();
 
+#ifdef ENDURANCE_MODE_ENABLED
+    endurance_screen_create();
+#else
     tab_manager();
+#endif  // ENDURANCE_MODE_ENABLED
 
     // lv_timer_create((lv_timer_cb_t) test_value_update_incremental, 70, NULL);
 
@@ -269,8 +274,9 @@ static void hal_init(void) {
     lv_theme_t *th = lv_theme_default_init(disp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), LV_THEME_DEFAULT_DARK, LV_FONT_DEFAULT);
     lv_disp_set_theme(disp, th);
 
-    g = lv_group_create();
-    lv_group_set_default(g);
+#ifdef ENDURANCE_MODE_ENABLED
+    steering_wheel_tab_group = lv_group_create();
+    lv_group_set_default(steering_wheel_tab_group);
 
     keyboard_init();
     static lv_indev_drv_t indev_drv_2;
@@ -279,7 +285,20 @@ static void hal_init(void) {
     indev_drv_2.read_cb     = keyboard_read;
     indev_drv_2.feedback_cb = keyboard_fn;
     lv_indev_t *kb_indev    = lv_indev_drv_register(&indev_drv_2);
-    lv_indev_set_group(kb_indev, g);
+    lv_indev_set_group(kb_indev, steering_wheel_tab_group);
+#else
+    endurance_group = lv_group_create();
+    lv_group_set_default(endurance_group);
+
+    keyboard_init();
+    static lv_indev_drv_t indev_drv_2;
+    lv_indev_drv_init(&indev_drv_2); /*Basic initialization*/
+    indev_drv_2.type        = LV_INDEV_TYPE_KEYPAD;
+    indev_drv_2.read_cb     = keyboard_read;
+    indev_drv_2.feedback_cb = keyboard_fn;
+    lv_indev_t *kb_indev    = lv_indev_drv_register(&indev_drv_2);
+    lv_indev_set_group(kb_indev, endurance_group);
+#endif
 }
 
 /**
