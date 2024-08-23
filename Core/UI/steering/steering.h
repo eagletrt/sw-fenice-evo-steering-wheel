@@ -35,7 +35,7 @@ typedef enum { BSE, STEER, APPS, CALBOX_N } calibration_box_t;
             lv_obj_set_style_text_color(name[itab], lv_color_hex(color), LV_PART_MAIN); \
     }
 
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
 #define STEER_ERROR_UPDATE(device, error_name, aindex)                                                         \
     if (device##_last_state.error_name != data->error_name) {                                                  \
         device##_last_state.error_name = data->error_name;                                                     \

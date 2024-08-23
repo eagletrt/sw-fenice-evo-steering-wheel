@@ -29,7 +29,7 @@ device_t secondary_can_device;
 uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
 uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 extern cansniffer_elem_t *primary_cansniffer_buffer;
 extern cansniffer_elem_t *secondary_cansniffer_buffer;
 #endif
@@ -384,11 +384,6 @@ void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
         HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
         HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
 
-#if CAN_LOG_ENABLED
-        uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO0);
-        print("RX Fifo0 fill level %" PRIu32 "\n", fill_level);
-#endif
-
         msg.id   = header.Identifier;
         msg.size = 0;
 
@@ -439,11 +434,6 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
         can_message_t msg;
         HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, msg.data);
         HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
-
-#if CAN_LOG_ENABLED
-        uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO1);
-        print("RX Fifo1 fill level %" PRIu32 "\n", fill_level);
-#endif
 
         msg.id   = header.Identifier;
         msg.size = 0;

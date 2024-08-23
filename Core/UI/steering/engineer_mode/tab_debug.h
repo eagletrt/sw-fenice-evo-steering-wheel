@@ -5,7 +5,7 @@
 
 #include "steering_config.h"
 
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
 
 #include "lvgl.h"
 #include "steering.h"

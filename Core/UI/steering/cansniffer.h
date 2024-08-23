@@ -3,7 +3,7 @@
 
 #include "steering_config.h"
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 
 #include "lvgl.h"
 #include "maxheap.h"
@@ -35,4 +35,4 @@ int8_t min_heap_compare_indexes(void *a, void *b);
 
 #endif  // CANSNIFFER_H
 
-#endif  // CANSNIFFER_ENABLED == 1
+#endif  // CANSNIFFER_ENABLED

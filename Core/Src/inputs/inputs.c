@@ -62,7 +62,7 @@ void inputs_init(void) {
     mcp23017_init(&dev1);
     mcp23017_init(&dev2);
 
-#if MCP23017_IT_ENABLED == 1
+#ifdef MCP23017_IT_ENABLED
     /**
    * @paragraph Interrupts
    *
@@ -251,55 +251,18 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     }
     switch (manettino) {
         case MANETTINO_RIGHT_INDEX: {
-            //
             int dstep = new_manettino_index - manettini[MANETTINO_RIGHT_INDEX];
-
             manettino_right_actions(delta_step_position(dstep));
-            /*
-    if (!engineer_mode) {
-      manettino_send_torque_vectoring(
-          val_torque_map_index[new_manettino_index]);
-    } else {
-      manettino_send_set_radiators(
-          val_radiators_speed_index[new_manettino_index]);
-    }
-    */
             break;
         }
         case MANETTINO_CENTER_INDEX: {
             int dstep = new_manettino_index - manettini[MANETTINO_CENTER_INDEX];
             manettino_center_actions(delta_step_position(dstep));
             break;
-#if 0
-    if (!engineer_mode) {
-      power_map_last_state += (dstep * 10);
-      power_map_last_state = imin(power_map_last_state, POWER_MAP_MAX);
-      power_map_last_state = imax(power_map_last_state, POWER_MAP_MIN);
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
-    } else {
-      // pork cooling
-      hv_fans_override_last_state += dstep * 10;
-      hv_fans_override_last_state =
-          imin(hv_fans_override_last_state, PORK_HIGH_FANS_SPEED);
-      hv_fans_override_last_state =
-          imax(hv_fans_override_last_state, PORK_LOW_FANS_SPEED);
-      send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
-    }
-    break;
-#endif
         }
         case MANETTINO_LEFT_INDEX: {
             int dstep = new_manettino_index - manettini[MANETTINO_LEFT_INDEX];
             manettino_left_actions(delta_step_position(dstep));
-
-#if 0
-    if (!engineer_mode) {
-      manettino_send_slip_control(val_slip_map_index[new_manettino_index]);
-    } else {
-      manettino_send_set_pumps_speed(
-          val_pumps_speed_index[new_manettino_index]);
-    }
-#endif
             break;
         }
         default: {
@@ -354,7 +317,7 @@ void read_manettino_right(void) {
     }
 }
 
-#if MCP23017_IT_ENABLED == 1
+#ifdef MCP23017_IT_ENABLED
 bool int_pins[NUM_INTERRUPT_PINS] = {false};
 #endif
 
@@ -365,7 +328,7 @@ bool int_pins[NUM_INTERRUPT_PINS] = {false};
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     switch (GPIO_Pin) {
-#if MCP23017_IT_ENABLED == 1
+#ifdef MCP23017_IT_ENABLED
         case INT1_Pin:
             int_pins[BUTTONS_INTERRUPT_INDEX] = true;
             break;
@@ -396,7 +359,7 @@ void read_inputs(lv_timer_t *tim) {
     if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
         manettini_last_change = HAL_GetTick();
 
-#if MCP23017_IT_ENABLED == 1
+#ifdef MCP23017_IT_ENABLED
         if (int_pins[BUTTONS_INTERRUPT_INDEX]) {
             int_pins[BUTTONS_INTERRUPT_INDEX] = false;
             read_buttons();

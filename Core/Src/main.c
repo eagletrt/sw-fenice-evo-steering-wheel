@@ -57,7 +57,7 @@
 
 /* USER CODE BEGIN PV */
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 extern cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT];
 extern cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT];
 #endif
@@ -179,7 +179,7 @@ int main(void) {
         enter_fatal_error_mode("Secondary CAN fatal error");
         Error_Handler();
     }
-#if WATCHDOG_ENABLED == 1
+#ifdef WATCHDOG_ENABLED
     init_watchdog();
 #endif
     init_input_polling();

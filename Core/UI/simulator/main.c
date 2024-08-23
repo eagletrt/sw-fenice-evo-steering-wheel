@@ -68,7 +68,7 @@ static int tick_thread(void *data);
  *  STATIC VARIABLES
  **********************/
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 extern cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT];
 extern cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT];
 #endif
@@ -82,7 +82,7 @@ extern cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT];
  **********************/
 
 void keyboard_fn(lv_indev_drv_t *indev_drv, uint8_t e);
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 void save_cansniffer_data(lv_timer_t *timer);
 #endif
 
@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
  *   STATIC FUNCTIONS
  **********************/
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 void save_cansniffer_data(lv_timer_t *timer) {
     for (int i = 0; i < primary_MESSAGE_COUNT; i++) {
         if (primary_cansniffer_buffer[i].timestamp != 0) {

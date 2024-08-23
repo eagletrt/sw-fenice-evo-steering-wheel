@@ -163,7 +163,7 @@ lv_style_t bubble_large_style;
 
 char *notch_labels[NUM_RACING_TABS] = {
     "RACE",
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
     "DEBUG",
 #endif
     "TEST",

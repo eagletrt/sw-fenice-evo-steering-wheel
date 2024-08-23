@@ -7,14 +7,14 @@ lv_obj_t *tab_precharge_popup_ptr;
 lv_obj_t *tab_lv_ptr;
 lv_obj_t *tab_track_test_ptr;
 
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
 lv_obj_t *tab_debug_ptr;
 #endif
 
 lv_obj_t *notif_screen;
 lv_obj_t *tab_fatal_error_ptr;
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 lv_obj_t *tab_primary_cansniffer_ptr;
 lv_obj_t *tab_secondary_cansniffer_ptr;
 lv_obj_t *tab_inverters_cansniffer_ptr;
@@ -42,12 +42,12 @@ void tab_manager(void) {
     tab_lv_ptr              = lv_obj_create(NULL);
     tab_precharge_popup_ptr = lv_obj_create(NULL);
     tab_track_test_ptr      = lv_obj_create(NULL);
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
     tab_debug_ptr = lv_obj_create(NULL);
 #endif
     notif_screen = lv_obj_create(NULL);
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
     tab_primary_cansniffer_ptr   = lv_obj_create(NULL);
     tab_secondary_cansniffer_ptr = lv_obj_create(NULL);
     tab_inverters_cansniffer_ptr = lv_obj_create(NULL);
@@ -61,14 +61,14 @@ void tab_manager(void) {
     lv_group_add_obj(steering_wheel_tab_group, tab_lv_ptr);
     lv_group_add_obj(steering_wheel_tab_group, tab_precharge_popup_ptr);
 
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
     lv_group_add_obj(steering_wheel_tab_group, tab_debug_ptr);
 #endif
 
     lv_group_add_obj(steering_wheel_tab_group, tab_track_test_ptr);
     lv_group_add_obj(steering_wheel_tab_group, notif_screen);
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
     lv_group_add_obj(steering_wheel_tab_group, tab_primary_cansniffer_ptr);
     lv_group_add_obj(steering_wheel_tab_group, tab_secondary_cansniffer_ptr);
     lv_group_add_obj(steering_wheel_tab_group, tab_inverters_cansniffer_ptr);
@@ -82,14 +82,14 @@ void tab_manager(void) {
     tab_lv_create(tab_lv_ptr);
     precharge_bar_screen_create(tab_precharge_popup_ptr);
 
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
     tab_debug_create(tab_debug_ptr);
 #endif
 
     tab_track_test_create(tab_track_test_ptr);
     tab_notification_screen_create(notif_screen);
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
     primary_tab_cansniffer_create(tab_primary_cansniffer_ptr);
     secondary_tab_cansniffer_create(tab_secondary_cansniffer_ptr);
     inverters_tab_cansniffer_create(tab_inverters_cansniffer_ptr);
@@ -120,7 +120,7 @@ void actions_on_changed_tab(void) {
         switch (current_engineer_tab) {
             case STEERING_WHEEL_TAB_TERMINAL:
                 break;
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
             case STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER:
                 break;
             case STEERING_WHEEL_TAB_INVERTERS_CANSNIFFER:
@@ -128,7 +128,7 @@ void actions_on_changed_tab(void) {
             case STEERING_WHEEL_TAB_SECONDARY_CANSNIFFER:
                 break;
 #endif
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
             case TAB_DEBUG:
                 break;
 #endif
@@ -163,7 +163,7 @@ void load_current_racing_tab() {
             // tab_racing_resync();
             lv_scr_load(tab_racing_ptr);
             break;
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
         case TAB_DEBUG:
             lv_scr_load(tab_debug_ptr);
             break;
@@ -191,7 +191,7 @@ void load_current_racing_tab() {
 
 void load_current_engineering_tab() {
     switch (current_engineer_tab) {
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
         case STEERING_WHEEL_TAB_SECONDARY_CANSNIFFER:
             update_secondary_cansniffer_ui();
             lv_scr_load(tab_secondary_cansniffer_ptr);
@@ -264,12 +264,12 @@ bool is_on_help_animation(void) {
     return help_animation;
 }
 
-#if PRECHARGE_BAR_ENABLED == 1
+#ifdef PRECHARGE_BAR_ENABLED
 static bool on_precharge_bar_popup = false;
 #endif
 
 void precharge_bar_popup_show() {
-#if PRECHARGE_BAR_ENABLED == 1
+#ifdef PRECHARGE_BAR_ENABLED
     if (!on_precharge_bar_popup) {
         on_precharge_bar_popup = true;
         lv_scr_load(tab_precharge_popup_ptr);
@@ -278,7 +278,7 @@ void precharge_bar_popup_show() {
 }
 
 void precharge_bar_popup_hide() {
-#if PRECHARGE_BAR_ENABLED == 1
+#ifdef PRECHARGE_BAR_ENABLED
     if (on_precharge_bar_popup) {
         on_precharge_bar_popup = false;
         restore_previous_screen(NULL);

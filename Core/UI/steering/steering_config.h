@@ -14,55 +14,62 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define PERIODIC_SET_ECU_POWER_MAPS
-
-/***
- * Activate endurance mode
- */
-#define ENDURANCE_MODE_ENABLED
-
-/***
- * Activate the precharge bar when HV accumulator is in precharge or in discharge
- * TODO: make the bar nicer
- */
-#define PRECHARGE_BAR_ENABLED (0U)
-
 /***
  * Color resolution in bytes, if you change this please make sure to also change the setting in STM32 CubeMX
  */
 #define COLOR_RESOLUTION (2U)
 
 /***
- * Activate candump in the engineering tabs
+ * If defined, SET_ECU_POWER_MAPS message is sent periodically according to canlib interval, disable it only for debugging purposes on ECU
  */
-#define CANSNIFFER_ENABLED (1U)
+#define PERIODIC_SET_ECU_POWER_MAPS
 
 /***
  * Activate the watchdog on CAN bus values: if a value is not update, the watchdog triggers an action
  */
-#define WATCHDOG_ENABLED (0U)
+// #define WATCHDOG_ENABLED
 
+#ifdef WATCHDOG_ENABLED
 /***
  * If WATCHDOG_ENABLED not-updated values are encoraged to use NOT_AVAILABLE_STRING_LABEL
  */
 #define NOT_AVAILABLE_STRING_LABEL "NA"
+#endif  // WATCHDOG_ENABLED
 
 /***
  * Until now MCP23017 is not working with interrupts enables
  */
-#define MCP23017_IT_ENABLED (0U)
+// #define MCP23017_IT_ENABLED
 
 /***
- * Legacy flags
+ * Activate endurance mode
  */
-#define CAN_LOG_ENABLED         (0U)
-#define CAN_OVER_SERIAL_ENABLED (0U)
+#define ENDURANCE_MODE_ENABLED
+
+#ifndef ENDURANCE_MODE_ENABLED
+/***
+ * Activate the precharge bar when HV accumulator is in precharge or in discharge
+ * TODO: make the bar nicer
+ */
+// #define PRECHARGE_BAR_ENABLED
+
+/***
+ * Activate candump in the engineering tabs
+ */
+#define CANSNIFFER_ENABLED
 
 /***
  * Not very useful, now the tab hv gives feedback on shutdown circuit, which is enough
  * TODO: remove it
  */
-#define STEER_TAB_DEBUG_ENABLED (0U)
+// #define STEER_TAB_DEBUG_ENABLED
+
+#endif  // ENDURANCE_MODE_ENABLED
+
+/***
+ * Legacy flags
+ */
+#define CAN_OVER_SERIAL_ENABLED (0U)
 
 /***
  * LOW LEVEL GRAPHICS SETTING, if you change this be sure to change also STM32 cubeMX settings accordingly
@@ -92,6 +99,7 @@
 #define RIGHT_MANETTINO_INTERRUPT_INDEX  3
 #define NUM_INTERRUPT_PINS               4
 
+// #ifndef ENDURANCE_MODE_ENABLED // TODO: in the future
 typedef enum {
     NOT_SCREEN = -1,
     STEERING_WHEEL_TAB_RACING,
@@ -105,12 +113,12 @@ typedef enum {
 
 typedef enum {
     STEERING_WHEEL_TAB_TERMINAL,
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
     STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER,
     STEERING_WHEEL_TAB_INVERTERS_CANSNIFFER,
     STEERING_WHEEL_TAB_SECONDARY_CANSNIFFER,
 #endif
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
     TAB_DEBUG,
 #endif
     // add here new tabs

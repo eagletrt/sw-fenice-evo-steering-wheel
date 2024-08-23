@@ -52,16 +52,16 @@ typedef enum { RADS_AUTO, RADS_OFF, RADS_025, RADS_050, RADS_075, RADS_100, RADS
 
 typedef enum { PUMPS_AUTO, PUMPS_OFF, PUMPS_025, PUMPS_050, PUMPS_075, PUMPS_100, P_LENGTH } pumps_speed_t;
 
+// void set_dmt_steering_angle_target(void);
+// void manettino_send_slip_control(float);
+// void manettino_send_torque_vectoring(float);
+// void manettino_send_power_map(float);
+// void send_pork_fans_status(float val);
+
+// void turn_telemetry_on_off(void);
+
 void prepare_set_car_status(void);
 bool send_set_car_status_directly(void);
-
-void set_dmt_steering_angle_target(void);
-void manettino_send_slip_control(float);
-void manettino_send_torque_vectoring(float);
-void manettino_send_power_map(float);
-void send_pork_fans_status(float val);
-
-void turn_telemetry_on_off(void);
 
 void manettino_right_actions(int dsteps);
 void manettino_center_actions(int dsteps);
@@ -74,7 +74,7 @@ void buttons_long_pressed_actions(uint8_t button);
 // float fmin(float x, float y);
 // float fmax(float x, float y);
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 void change_cansniffer_index(bool);
 #endif
 

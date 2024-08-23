@@ -2,7 +2,7 @@
 
 #include "steering_config.h"
 
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
 
 #include "tab_debug.h"
 
@@ -404,7 +404,7 @@ void change_errors_view(bool dir_left) {
 #endif
 
 void set_label_color_hv_feedbacks(int label, int i) {
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
     // PRIMARY_HV_FEEDBACK_STATUS_FEEDBACK_BMS_COCKPIT_FEEDBACK_STATE_LOW_CHOICE
     // it's better to use the enum canlib, but we use 0 or 1 or 2 for demplicity
     // sake. If canlib specs will change, then we need to change also this code
@@ -469,7 +469,7 @@ void debug_hv_feedbacks_status_update(bool valid) {
 }
 
 void set_label_color_hv_errors(int label, int i) {
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
     if (label) {
         lv_obj_set_style_border_color(hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
         lv_obj_set_style_bg_color(hv_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
@@ -481,7 +481,7 @@ void set_label_color_hv_errors(int label, int i) {
 }
 
 void set_label_color_das_errors(bool label, int i) {
-#if STEER_TAB_DEBUG_ENABLED == 1
+#ifdef STEER_TAB_DEBUG_ENABLED
     if (label) {
         lv_obj_set_style_border_color(das_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);
         lv_obj_set_style_bg_color(das_errors[i], lv_color_hex(COLOR_RED_STATUS_HEX), LV_PART_MAIN);

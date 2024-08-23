@@ -1,6 +1,6 @@
 #include "steering_config.h"
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 
 #include "tab_secondary_cansniffer.h"
 #define SECONDARY_CANSNIFFER_ID_NAME_SIZE     128
@@ -205,4 +205,4 @@ void secondary_tab_cansniffer_create(lv_obj_t *parent) {
     }
 }
 
-#endif  // CANSNIFFER_ENABLED == 1
+#endif  // CANSNIFFER_ENABLED

@@ -5,7 +5,7 @@
 extern bool steering_initialized;
 extern primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state;
 
-#if WATCHDOG_ENABLED == 1
+#ifdef WATCHDOG_ENABLED
 extern primary_watchdog m_primary_watchdog;
 extern secondary_watchdog m_secondary_watchdog;
 extern inverters_watchdog m_inverters_watchdog;
@@ -56,7 +56,7 @@ void send_hv_set_balancing_status_steering_wheel(bool set_balancing_on, uint8_t 
 #ifdef ENDURANCE_MODE_ENABLED
 
 void handle_primary(can_message_t *msg) {
-#if WATCHDOG_ENABLED == 1
+#ifdef WATCHDOG_ENABLED
     if (inverters_id_is_message(msg->id)) {
         inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
     } else {
@@ -67,7 +67,7 @@ void handle_primary(can_message_t *msg) {
 }
 
 void handle_secondary(can_message_t *msg) {
-#if WATCHDOG_ENABLED == 1
+#ifdef WATCHDOG_ENABLED
     secondary_watchdog_reset(&m_secondary_watchdog, msg->id, get_current_time_ms());
 #endif
 #warning To be implemented
@@ -78,19 +78,15 @@ void handle_secondary(can_message_t *msg) {
 void handle_primary(can_message_t *msg) {
     if (!steering_initialized)
         return;
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
     if (inverters_id_is_message(msg->id)) {
         cansniffer_inverters_new_message(msg);
     } else {
         cansniffer_primary_new_message(msg);
     }
 #endif  // CANSNIFFER_ENABLED
-#if CAN_LOG_ENABLED
-    primary_message_name_from_id(msg->id, name_buffer);
-    print("Primary network - message id %s\n", name_buffer);
-#endif
 
-#if WATCHDOG_ENABLED == 1
+#ifdef WATCHDOG_ENABLED
     if (inverters_id_is_message(msg->id)) {
         inverters_watchdog_reset(&m_inverters_watchdog, msg->id, get_current_time_ms());
     } else {
@@ -314,15 +310,11 @@ void handle_primary(can_message_t *msg) {
 void handle_secondary(can_message_t *msg) {
     if (!steering_initialized)
         return;
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
     cansniffer_secondary_new_message(msg);
 #endif  // CANSNIFFER_ENABLED
-#if CAN_LOG_ENABLED
-    secondary_message_name_from_id(msg->id, name_buffer);
-    print("Secondary network - message id %s\n", name_buffer);
-#endif
 
-#if WATCHDOG_ENABLED == 1
+#ifdef WATCHDOG_ENABLED
     secondary_watchdog_reset(&m_secondary_watchdog, msg->id, get_current_time_ms());
 #endif
 

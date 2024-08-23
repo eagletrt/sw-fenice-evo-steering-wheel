@@ -1,5 +1,94 @@
 #include "controls.h"
 
+primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state = {.map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
+
+void send_set_car_status(primary_ecu_set_status_status val) {
+    primary_ecu_set_status_converted_t converted = {0};
+    converted.status                             = val;
+    STEER_CAN_PACK(primary, PRIMARY, ecu_set_status, ECU_SET_STATUS);
+    can_send(&msg, true);
+    can_send(&msg, true);
+}
+
+void prepare_set_car_status(void) {
+    GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
+    switch (primary_ecu_status_last_state->status) {
+        case primary_ecu_status_status_init:
+        case primary_ecu_status_status_enable_inv_updates:
+        case primary_ecu_status_status_check_inv_settings: {
+            send_set_car_status(primary_ecu_set_status_status_idle);
+            break;
+        }
+        case primary_ecu_status_status_idle: {
+            send_set_car_status(primary_ecu_set_status_status_ready);
+            break;
+        }
+        case primary_ecu_status_status_start_ts_precharge:
+        case primary_ecu_status_status_wait_ts_precharge: {
+            break;
+        }
+        case primary_ecu_status_status_wait_driver: {
+            send_set_car_status(primary_ecu_set_status_status_drive);
+            break;
+        }
+        case primary_ecu_status_status_enable_inv_drive:
+        case primary_ecu_status_status_drive:
+        case primary_ecu_status_status_disable_inv_drive:
+        case primary_ecu_status_status_start_ts_discharge:
+        case primary_ecu_status_status_re_enable_inverter_drive:
+        case primary_ecu_status_status_wait_ts_discharge: {
+            break;
+        }
+        case primary_ecu_status_status_fatal_error: {
+            send_set_car_status(primary_ecu_set_status_status_idle);
+            break;
+        }
+    }
+}
+
+bool send_set_car_status_directly(void) {
+    GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
+    bool retval = true;
+    switch (primary_ecu_status_last_state->status) {
+        case primary_ecu_status_status_idle:
+        case primary_ecu_status_status_wait_driver: {
+            retval = false;
+            break;
+        }
+        default:
+            break;
+    }
+    return retval;
+}
+
+void manettino_right_actions(int dsteps) {
+#warning To be implemented
+}
+
+void manettino_center_actions(int dsteps) {
+#warning To be implemented
+}
+
+void manettino_left_actions(int dsteps) {
+#warning To be implemented
+}
+
+void buttons_pressed_actions(uint8_t button) {
+#warning To be implemented
+}
+
+void buttons_released_actions(uint8_t button) {
+#warning To be implemented
+}
+
+void buttons_long_pressed_actions(uint8_t button) {
+#warning To be implemented
+}
+
+#ifdef ENDURANCE_MODE_ENABLED
+
+#else
+
 bool calibration_min_sent_request[CALBOX_N];
 bool calibration_max_sent_request[CALBOX_N];
 uint32_t calibration_min_request_timestamp[CALBOX_N];
@@ -13,13 +102,11 @@ int power_map_last_state        = 0;
 
 int left_manettino_selection = 0;
 
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 int primary_cansniffer_start_index   = 0;
 int secondary_cansniffer_start_index = 0;
 int inverters_cansniffer_start_index = 0;
 #endif
-
-primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state = {.map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
 
 primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed = {.radiator_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
 primary_lv_pumps_speed_converted_t steering_wheel_state_pumps_speed       = {.pumps_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
@@ -530,84 +617,7 @@ void send_pork_fans_status(float val) {
     set_tab_hv_label_text(sprintf_buffer_controls, tab_hv_pork_speed_value);
 }
 
-void send_set_car_status(primary_ecu_set_status_status val) {
-    primary_ecu_set_status_converted_t converted = {0};
-    converted.status                             = val;
-    STEER_CAN_PACK(primary, PRIMARY, ecu_set_status, ECU_SET_STATUS);
-    can_send(&msg, true);
-    can_send(&msg, true);
-}
-
-void prepare_set_car_status(void) {
-    GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
-    switch (primary_ecu_status_last_state->status) {
-        case primary_ecu_status_status_init:
-        case primary_ecu_status_status_enable_inv_updates:
-        case primary_ecu_status_status_check_inv_settings: {
-            send_set_car_status(primary_ecu_set_status_status_idle);
-            // display_notification("Sending\nIDLE\nanyway", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
-            break;
-        }
-        case primary_ecu_status_status_idle: {
-            send_set_car_status(primary_ecu_set_status_status_ready);
-            if (is_shutdown_closed()) {
-                // display_notification("TSON", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
-            } else {
-                // display_notification("Shutdown\nOpen\nSending TSON\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
-            }
-            break;
-        }
-        case primary_ecu_status_status_start_ts_precharge:
-        case primary_ecu_status_status_wait_ts_precharge: {
-            // display_notification("Precharge\nnot finished\nyet", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
-            break;
-        }
-        case primary_ecu_status_status_wait_driver: {
-            GET_LAST_STATE(secondary, pedal_brakes_pressure, SECONDARY, PEDAL_BRAKES_PRESSURE);
-            float brake_pressure = (secondary_pedal_brakes_pressure_last_state->front + secondary_pedal_brakes_pressure_last_state->rear) / 2.0f;
-            if (brake_pressure > 0.89f) {
-                // display_notification("DRIVE", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
-            } else {
-                // display_notification("Not Enough\nFreno\nSending DRIVE\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
-            }
-            send_set_car_status(primary_ecu_set_status_status_drive);
-            break;
-        }
-        case primary_ecu_status_status_enable_inv_drive:
-        case primary_ecu_status_status_drive:
-        case primary_ecu_status_status_disable_inv_drive:
-        case primary_ecu_status_status_start_ts_discharge:
-        case primary_ecu_status_status_re_enable_inverter_drive:
-        case primary_ecu_status_status_wait_ts_discharge: {
-            // disabled because the central buttons reads badly at the hardware level
-            // send_set_car_status(primary_ecu_set_status_status_idle);
-            // display_notification("IDLE", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
-            break;
-        }
-        case primary_ecu_status_status_fatal_error: {
-            send_set_car_status(primary_ecu_set_status_status_idle);
-            // display_notification("ECU in FATAL ERROR,\nsending IDLE anyway", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
-            break;
-        }
-    }
-}
-
-bool send_set_car_status_directly(void) {
-    GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
-    bool retval = true;
-    switch (primary_ecu_status_last_state->status) {
-        case primary_ecu_status_status_idle:
-        case primary_ecu_status_status_wait_driver: {
-            retval = false;
-            break;
-        }
-        default:
-            break;
-    }
-    return retval;
-}
-
-#if CANSNIFFER_ENABLED == 1
+#ifdef CANSNIFFER_ENABLED
 
 void change_cansniffer_index(bool plus) {
     if (current_engineer_tab == STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER) {
@@ -640,3 +650,5 @@ void change_cansniffer_index(bool plus) {
     }
 }
 #endif  // CANSNIFFER_ENABLED
+
+#endif  // ENDURANCE_MODE_ENABLED
