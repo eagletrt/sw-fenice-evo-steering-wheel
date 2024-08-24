@@ -71,7 +71,7 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("PRCHG", tab_rac_status_idx);
             set_tab_track_test_lb_speed("PRCHG");
-            endurance_screen_set_label("PRECHARGE", car_status_idx);
+            endurance_screen_set_label("PRCHG", car_status_idx);
             endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
@@ -350,7 +350,7 @@ void hv_soc_estimation_update(bool valid) {
     } else if (secondary_hv_soc_estimation_state_last_state->soc < SOC_ALERT_THRESHOLD) {
         endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, hv_soc_idx);
     } else {
-        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, hv_soc_idx);
+        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, hv_soc_idx);
     }
 }
 
@@ -366,7 +366,7 @@ void lv_soc_estimation_update(bool valid) {
         return;
     }
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", secondary_lv_soc_estimation_state_last_state->soc * 100.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", secondary_lv_soc_estimation_state_last_state->soc * 100.0f);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_soc_idx);
     set_tab_racing_lv_soc_bar((int32_t)(secondary_lv_soc_estimation_state_last_state->soc * 100.0f));
 
@@ -376,7 +376,7 @@ void lv_soc_estimation_update(bool valid) {
     } else if (secondary_lv_soc_estimation_state_last_state->soc < SOC_ALERT_THRESHOLD) {
         endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, lv_soc_idx);
     } else {
-        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, lv_soc_idx);
+        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, lv_soc_idx);
     }
 }
 
@@ -400,14 +400,14 @@ void hv_cells_temp_stats_update(bool valid) {
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_max);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_avg_temp_idx);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f°", primary_hv_cells_temp_stats_last_state->max);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->max);
     endurance_screen_set_label(snprintf_buffer, hv_temp_idx);
     if (primary_hv_cells_temp_stats_last_state->max > HV_TEMP_CRITICAL_THRESHOLD) {
         endurance_screen_set_color(COLOR_RED_STATUS_HEX, hv_temp_idx);
     } else if (primary_hv_cells_temp_stats_last_state->max > HV_TEMP_ALERT_THRESHOLD) {
         endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, hv_temp_idx);
     } else {
-        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, hv_temp_idx);
+        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, hv_temp_idx);
     }
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->min);
@@ -565,7 +565,7 @@ void hv_fans_override_status_update(bool valid) {
         return;
     }
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", primary_hv_fans_status_last_state->fans_speed * 100.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_hv_fans_status_last_state->fans_speed * 100.0f);
     endurance_screen_set_label(snprintf_buffer, hv_cooling_idx);
 
     if (primary_hv_fans_status_last_state->fans_override == primary_hv_fans_status_fans_override_off) {
@@ -611,7 +611,7 @@ void lv_pumps_speed_update(bool valid) {
     float actual_speed  = roundf(primary_lv_pumps_speed_last_state->pumps_speed * 10.0f) / 10.0f;
     float actual_status = primary_lv_pumps_speed_last_state->status;
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", actual_speed * 100.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", actual_speed * 100.0f);
     endurance_screen_set_label(snprintf_buffer, pt_cooling_idx);
     endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, pt_cooling_idx);
 
@@ -1053,12 +1053,12 @@ void inv_l_rcv_update(bool valid) {
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_left_motor_temp);
     float motor_temp_mean = (l_motor_temp + r_motor_temp) / 2.0f;
     if (r_motor_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f°", motor_temp_mean);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", motor_temp_mean);
         endurance_screen_set_label(snprintf_buffer, motor_temp_idx);  // mean of the two motor temps
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", motor_temp_mean);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_mot_idx);
         if (motor_temp_mean < MOTOR_TEMP_ALERT_THRESHOLD) {
-            endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, motor_temp_idx);
+            endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, motor_temp_idx);
         } else if (motor_temp_mean < MOTOR_TEMP_CRITICAL_THRESHOLD) {
             endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, motor_temp_idx);
         } else {
@@ -1071,12 +1071,12 @@ void inv_l_rcv_update(bool valid) {
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_left_inverter_temp);
     float igbt_temp_mean = (l_igbt_temp + r_igbt_temp) / 2.0f;
     if (r_igbt_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f°", igbt_temp_mean);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", igbt_temp_mean);
         endurance_screen_set_label(snprintf_buffer, inverter_temp_idx);  // mean of the two inverter temps
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", igbt_temp_mean);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_inv_idx);
         if (igbt_temp_mean < INVERTER_TEMP_ALERT_THRESHOLD) {
-            endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, inverter_temp_idx);
+            endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, inverter_temp_idx);
         } else if (igbt_temp_mean < INVERTER_TEMP_CRITICAL_THRESHOLD) {
             endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, inverter_temp_idx);
         } else {
@@ -1218,15 +1218,15 @@ void control_status_update(bool valid) {
     char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(primary, control_status, PRIMARY, CONTROL_STATUS);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", primary_control_status_last_state->map_sc * 100.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_control_status_last_state->map_sc * 100.0f);
     endurance_screen_set_label(snprintf_buffer, slip_map_idx);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", primary_control_status_last_state->map_tv * 100.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_control_status_last_state->map_tv * 100.0f);
     endurance_screen_set_label(snprintf_buffer, torque_map_idx);
 
     if (primary_control_status_last_state->map_tv != 0 || primary_control_status_last_state->map_sc != 0) {
-        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, slip_map_idx);
-        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, torque_map_idx);
+        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, slip_map_idx);
+        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, torque_map_idx);
     } else {
         endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, slip_map_idx);
         endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, torque_map_idx);

@@ -238,7 +238,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
     }
     set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status_lb);
     endurance_screen_set_label("CLOSED", shutdown_status_idx);
-    endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, shutdown_status_idx);
+    endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, shutdown_status_idx);
     global_shutdown_status = SC_CLOSE;
 }
 
