@@ -26,6 +26,7 @@ add_executable(SteeringSimulator
     steering/racing_tabs/tab_lv.c
     steering/racing_tabs/precharge_bar_popup.c
     steering/racing_tabs/tab_track_test.c
+    steering/racing_tabs/endurance.c
     steering/maxheap.c
     steering/engineer_mode/tab_primary_cansniffer.c
     steering/engineer_mode/tab_secondary_cansniffer.c
@@ -41,6 +42,8 @@ add_executable(SteeringSimulator
     steering/fonts/lv_font_inter_bold_30.c
     steering/fonts/lv_font_inter_bold_38.c
     steering/fonts/lv_font_inter_bold_70.c
+    steering/fonts/lv_font_inter_bold_90.c
+    steering/fonts/lv_font_inter_bold_200.c
     simulator/can.c
     simulator/main.c
     simulator/mouse_cursor_icon.c

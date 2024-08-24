@@ -1,6 +1,9 @@
 #include "tab_manager.h"
 
 lv_obj_t *tab_racing_ptr;
+#ifdef ENDURANCE_MODE_ENABLED
+lv_obj_t *endurance_screen_ptr;
+#endif
 lv_obj_t *tab_sensors_ptr;
 lv_obj_t *tab_hv_ptr;
 lv_obj_t *tab_precharge_popup_ptr;
@@ -36,12 +39,15 @@ void load_current_engineering_tab();
 void tab_manager(void) {
     init_custom_styles();
 
-    tab_racing_ptr          = lv_obj_create(NULL);
+    tab_racing_ptr = lv_obj_create(NULL);
+#ifdef ENDURANCE_MODE_ENABLED
+    endurance_screen_ptr = lv_obj_create(NULL);
+#endif
     tab_sensors_ptr         = lv_obj_create(NULL);
     tab_hv_ptr              = lv_obj_create(NULL);
     tab_lv_ptr              = lv_obj_create(NULL);
     tab_precharge_popup_ptr = lv_obj_create(NULL);
-    tab_track_test_ptr = lv_obj_create(NULL);
+    tab_track_test_ptr      = lv_obj_create(NULL);
 #if STEER_TAB_DEBUG_ENABLED == 1
     tab_debug_ptr = lv_obj_create(NULL);
 #endif
@@ -56,6 +62,9 @@ void tab_manager(void) {
     tab_fatal_error_ptr = lv_obj_create(NULL);
 
     lv_group_add_obj(g, tab_racing_ptr);
+#ifdef ENDURANCE_MODE_ENABLED
+    lv_group_add_obj(g, endurance_screen_ptr);
+#endif
     lv_group_add_obj(g, tab_sensors_ptr);
     lv_group_add_obj(g, tab_hv_ptr);
     lv_group_add_obj(g, tab_lv_ptr);
@@ -77,6 +86,9 @@ void tab_manager(void) {
     lv_group_add_obj(g, tab_fatal_error_ptr);
 
     tab_racing_create(tab_racing_ptr);
+#ifdef ENDURANCE_MODE_ENABLED
+    endurance_screen_create(endurance_screen_ptr);
+#endif
     tab_sensors_create(tab_sensors_ptr);
     tab_hv_create(tab_hv_ptr);
     tab_lv_create(tab_lv_ptr);
@@ -97,8 +109,13 @@ void tab_manager(void) {
     tab_terminal_create(tab_terminal_ptr);
     tab_fatal_error_create(tab_fatal_error_ptr);
 
+#ifdef ENDURANCE_MODE_ENABLED
+    current_racing_tab = STEERING_WHEEL_ENDURANCE_SCREEN;
+    lv_scr_load(endurance_screen_ptr);
+#else
+    current_racing_tab = STEERING_WHEEL_TAB_RACING;
     lv_scr_load(tab_racing_ptr);
-    current_racing_tab   = STEERING_WHEEL_TAB_RACING;
+#endif
     current_engineer_tab = STEERING_WHEEL_TAB_TERMINAL;
     steering_initialized = true;
 }
@@ -163,6 +180,11 @@ void load_current_racing_tab() {
             // tab_racing_resync();
             lv_scr_load(tab_racing_ptr);
             break;
+#ifdef ENDURANCE_MODE_ENABLED
+        case STEERING_WHEEL_ENDURANCE_SCREEN:
+            lv_scr_load(endurance_screen_ptr);
+            break;
+#endif
 #if STEER_TAB_DEBUG_ENABLED == 1
         case TAB_DEBUG:
             lv_scr_load(tab_debug_ptr);
@@ -287,6 +309,9 @@ void precharge_bar_popup_hide() {
 }
 
 void display_notification(const char *label_content, uint32_t timeout_ms, uint32_t background_color_hex, uint32_t label_color_hex) {
+#ifdef ENDURANCE_MODE_ENABLED
+    return;
+#endif
     if (on_animation) {
         lv_timer_set_repeat_count(notification_timer, 0);
     }

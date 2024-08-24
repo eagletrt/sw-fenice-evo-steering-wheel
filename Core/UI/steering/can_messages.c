@@ -45,12 +45,12 @@ void send_steer_status(lv_timer_t *main_timer) {
 }
 
 void send_hv_set_balancing_status_steering_wheel(bool set_balancing_on, uint8_t balancing_threshold) {
-        primary_hv_set_balancing_status_steering_wheel_converted_t converted = {
-            .set_balancing_status = set_balancing_on ? primary_hv_set_balancing_status_steering_wheel_set_balancing_status_on
-                                       : primary_hv_set_balancing_status_steering_wheel_set_balancing_status_off,
-            .balancing_threshold  = balancing_threshold};
-        STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_steering_wheel, HV_SET_BALANCING_STATUS_STEERING_WHEEL)
-        can_send(&msg, true);
+    primary_hv_set_balancing_status_steering_wheel_converted_t converted = {
+        .set_balancing_status = set_balancing_on ? primary_hv_set_balancing_status_steering_wheel_set_balancing_status_on
+                                                 : primary_hv_set_balancing_status_steering_wheel_set_balancing_status_off,
+        .balancing_threshold  = balancing_threshold};
+    STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_steering_wheel, HV_SET_BALANCING_STATUS_STEERING_WHEEL)
+    can_send(&msg, true);
 }
 
 void handle_primary(can_message_t *msg) {
@@ -224,6 +224,10 @@ void handle_primary(can_message_t *msg) {
         }
         case PRIMARY_CONTROL_OUTPUT_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, control_output, CONTROL_OUTPUT, is_pmsg, true);
+            break;
+        }
+        case PRIMARY_CONTROL_STATUS_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, control_status, CONTROL_STATUS, is_pmsg, true);
             break;
         }
         case PRIMARY_ECU_VERSION_FRAME_ID: {

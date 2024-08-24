@@ -195,6 +195,10 @@ void update_graphics(lv_timer_t *t) {
                     tlm_version_update(is_pmsg_valid[iindex]);
                     break;
                 }
+                case PRIMARY_CONTROL_STATUS_FRAME_ID: {
+                    control_status_update(true);
+                    break;
+                }
                 default: {
                     break;
                 }

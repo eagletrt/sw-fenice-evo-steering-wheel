@@ -30,12 +30,12 @@
 /***
  * Activate candump in the engineering tabs
  */
-#define CANSNIFFER_ENABLED      (1U)
+#define CANSNIFFER_ENABLED (1U)
 
 /***
  * Activate the watchdog on CAN bus values: if a value is not update, the watchdog triggers an action
  */
-#define WATCHDOG_ENABLED        (1U)
+#define WATCHDOG_ENABLED (0U)
 
 /***
  * If WATCHDOG_ENABLED not-updated values are encoraged to use NOT_AVAILABLE_STRING_LABEL
@@ -45,7 +45,7 @@
 /***
  * Until now MCP23017 is not working with interrupts enables
  */
-#define MCP23017_IT_ENABLED     (0U)
+#define MCP23017_IT_ENABLED (0U)
 
 /***
  * Legacy flags
@@ -57,8 +57,12 @@
  * Not very useful, now the tab hv gives feedback on shutdown circuit, which is enough
  * TODO: remove it
  */
-#define STEER_TAB_DEBUG_ENABLED       (0U)
+#define STEER_TAB_DEBUG_ENABLED (0U)
 
+/***
+ * Enable endurance mode instead of classic racing tab
+ */
+#define ENDURANCE_MODE_ENABLED
 
 /***
  * LOW LEVEL GRAPHICS SETTING, if you change this be sure to change also STM32 cubeMX settings accordingly
@@ -66,8 +70,8 @@
 #define SDRAM_BASE_ADDRESS (0xC0000000)
 #define FRAMEBUFFER1_ADDR  SDRAM_BASE_ADDRESS
 #define FRAMEBUFFER2_ADDR  (0xC0200000)
-#define SCREEN_WIDTH  (800u)
-#define SCREEN_HEIGHT (480u)
+#define SCREEN_WIDTH       (800u)
+#define SCREEN_HEIGHT      (480u)
 
 /***
  * General defines
@@ -90,6 +94,9 @@
 
 typedef enum {
     NOT_SCREEN = -1,
+#ifdef ENDURANCE_MODE_ENABLED
+    STEERING_WHEEL_ENDURANCE_SCREEN,
+#endif
     STEERING_WHEEL_TAB_RACING,
     STEERING_WHEEL_TAB_TRACK_TEST,
     STEERING_WHEEL_TAB_SENSORS,
@@ -240,6 +247,57 @@ typedef enum {
     tab_lv_lb_state,
     tab_lv_labels_n
 } tab_lv_labels_enum;
+
+#ifdef ENDURANCE_MODE_ENABLED
+typedef enum {
+    shutdown_status_idx,
+    car_status_idx,
+    ptt_status_idx,
+    motor_temp_idx,
+    hv_soc_idx,
+    lv_soc_idx,
+    inverter_temp_idx,
+    hv_temp_idx,
+    pt_cooling_idx,
+    slip_map_idx,
+    regen_on_off_idx,
+    torque_map_idx,
+    hv_cooling_idx,
+    endurance_screen_n_labels
+} endurance_screen_labels_idx_t;
+#endif
+
+#define MOTOR_TEMP_ALERT_THRESHOLD    (60.0f)
+#define MOTOR_TEMP_CRITICAL_THRESHOLD (80.0f)
+
+#define INVERTER_TEMP_ALERT_THRESHOLD    (60.0f)
+#define INVERTER_TEMP_CRITICAL_THRESHOLD (80.0f)
+
+#define SOC_ALERT_THRESHOLD    (0.6f)
+#define SOC_CRITICAL_THRESHOLD (0.3f)
+
+#define HV_TEMP_ALERT_THRESHOLD    (55.0f)
+#define HV_TEMP_CRITICAL_THRESHOLD (45.0f)
+
+/***
+ * mettere le labels
+ * 
+ * shutdown verde = chiuso
+ * stato della macchina = nero
+ * ptt = blu se on -> talk else off
+ * cooling = nero neutro
+ * tutti altri verde ok
+ * controlli mappa 0 -> nero
+ * else attivi -> verde
+ * not attivi -> rosso
+ * regen -> verde se attiva else nero
+ */
+
+/***
+ * cooling pt sx bottone verde su e giallo giu
+ * porco cooling sx bottone verde su e giallo giu
+ * manettini slip torque, manettino centrale libero
+ */
 
 /***
  * Cooling

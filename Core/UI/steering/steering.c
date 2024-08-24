@@ -38,25 +38,11 @@ void car_status_update(bool valid) {
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
 
     if (!valid) {
-        // snprintf
-        //o usa set tab racing label text
-        //set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
-        //            set_tab_racing_label_text(NOT_AVAILABLE_TEXT, tab_rac_status_idx);
-        //            set_tab_track_test_lb_speed("INIT");
-        //return
         set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
         set_tab_racing_label_text(NOT_AVAILABLE_STRING_LABEL, tab_rac_status_idx);
         set_tab_track_test_lb_speed(NOT_AVAILABLE_STRING_LABEL);
         return;
     }
-
-    /* if (!valid) {
-        // .... 
-        set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
-        set_tab_racing_label_text(NOT_AVAILABLE_STRING_LABEL, tab_rac_status_idx);
-        set_tab_track_test_lb_speed(NOT_AVAILABLE_STRING_LABEL);
-        return;
-    } */
 
     switch (primary_ecu_status_last_state->status) {
         case primary_ecu_status_status_init:
@@ -66,6 +52,8 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("INIT", tab_rac_status_idx);
             set_tab_track_test_lb_speed("INIT");
+            endurance_screen_set_label("INIT", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_idle: {
@@ -73,6 +61,8 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("IDLE", tab_rac_status_idx);
             set_tab_track_test_lb_speed("IDLE");
+            endurance_screen_set_label("IDLE", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_start_ts_precharge:
@@ -81,6 +71,8 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("PRCHG", tab_rac_status_idx);
             set_tab_track_test_lb_speed("PRCHG");
+            endurance_screen_set_label("PRECHARGE", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_wait_driver: {
@@ -88,6 +80,8 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("SETUP", tab_rac_status_idx);
             set_tab_track_test_lb_speed("SETUP");
+            endurance_screen_set_label("SETUP", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_enable_inv_drive: {
@@ -95,6 +89,8 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("ENINV", tab_rac_status_idx);
             set_tab_track_test_lb_speed("ENINV");
+            endurance_screen_set_label("ENINV", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_re_enable_inverter_drive: {
@@ -102,13 +98,15 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("REINV", tab_rac_status_idx);
             set_tab_track_test_lb_speed("REINV");
+            endurance_screen_set_label("REINV", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_drive: {
             precharge_bar_popup_hide();
             set_tab_racing_label_text("km/h", tab_rac_bottom_status_idx);
-            // set_tab_racing_label_text("DRIVE", tab_rac_status_idx);
-            // set_tab_track_test_lb_speed("DRIVE");
+            endurance_screen_set_label("DRIVE", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_disable_inv_drive:
@@ -118,6 +116,8 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("TSOFF", tab_rac_status_idx);
             set_tab_track_test_lb_speed("TSOFF");
+            endurance_screen_set_label("TSOFF", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_fatal_error: {
@@ -125,25 +125,14 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("-", tab_rac_bottom_status_idx);
             set_tab_racing_label_text("FATAL", tab_rac_status_idx);
             set_tab_track_test_lb_speed("FATAL");
+            endurance_screen_set_label("FATAL", car_status_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
     }
 }
 
 void ecu_errors_update(bool valid) {
-    GET_LAST_STATE(primary, ecu_errors, PRIMARY, ECU_ERRORS);
-
-    if (!valid) {
-        //Disabled cause it is spammed
-        //display_notification(NOT_AVAILABLE_STRING_LABEL, 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
-        return;
-    }
-
-    // if (primary_ecu_errors_last_state->error_bspd_limits || primary_ecu_errors_last_state->error_pedal_implausibility) {
-    // display_notification("MOLLA\nIL\nFRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
-    // } else if (primary_ecu_errors_last_state->error_no_brake_to_rtd) {
-    // display_notification("PREMI\nIL\nFRENO", 1000, COLOR_SECONDARY_HEX, COLOR_PRIMARY_HEX);
-    // }
 }
 
 void lv_pumps_actual_value_update() {
@@ -253,7 +242,7 @@ void hv_debug_signals_update(bool valid) {
 
     GET_LAST_STATE(primary, hv_debug_signals, PRIMARY, HV_DEBUG_SIGNALS);
     char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
-    
+
     tab_hv_set_error_status(debug_signal_error_cell_under_voltage, primary_hv_debug_signals_last_state->errors_cell_under_voltage);
     tab_hv_set_error_status(debug_signal_error_cell_over_voltage, primary_hv_debug_signals_last_state->errors_cell_over_voltage);
     tab_hv_set_error_status(debug_signal_error_cell_over_temperature, primary_hv_debug_signals_last_state->errors_cell_over_temperature);
@@ -354,6 +343,15 @@ void hv_soc_estimation_update(bool valid) {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", secondary_hv_soc_estimation_state_last_state->soc * 100.0f);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_soc_idx);
     set_tab_racing_hv_soc_bar((int32_t)(secondary_hv_soc_estimation_state_last_state->soc * 100.0f));
+
+    endurance_screen_set_label(snprintf_buffer, hv_soc_idx);
+    if (secondary_hv_soc_estimation_state_last_state->soc < SOC_CRITICAL_THRESHOLD) {
+        endurance_screen_set_color(COLOR_RED_STATUS_HEX, hv_soc_idx);
+    } else if (secondary_hv_soc_estimation_state_last_state->soc < SOC_ALERT_THRESHOLD) {
+        endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, hv_soc_idx);
+    } else {
+        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, hv_soc_idx);
+    }
 }
 
 void lv_soc_estimation_update(bool valid) {
@@ -368,9 +366,18 @@ void lv_soc_estimation_update(bool valid) {
         return;
     }
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", secondary_lv_soc_estimation_state_last_state->soc * 100.0f);
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", secondary_lv_soc_estimation_state_last_state->soc * 100.0f);
     set_tab_racing_label_text(snprintf_buffer, tab_rac_lv_soc_idx);
     set_tab_racing_lv_soc_bar((int32_t)(secondary_lv_soc_estimation_state_last_state->soc * 100.0f));
+
+    endurance_screen_set_label(snprintf_buffer, lv_soc_idx);
+    if (secondary_lv_soc_estimation_state_last_state->soc < SOC_CRITICAL_THRESHOLD) {
+        endurance_screen_set_color(COLOR_RED_STATUS_HEX, lv_soc_idx);
+    } else if (secondary_lv_soc_estimation_state_last_state->soc < SOC_ALERT_THRESHOLD) {
+        endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, lv_soc_idx);
+    } else {
+        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, lv_soc_idx);
+    }
 }
 
 void hv_cells_temp_stats_update(bool valid) {
@@ -391,6 +398,17 @@ void hv_cells_temp_stats_update(bool valid) {
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->max);
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_max);
+    set_tab_racing_label_text(snprintf_buffer, tab_rac_hv_avg_temp_idx);
+
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f°", primary_hv_cells_temp_stats_last_state->max);
+    endurance_screen_set_label(snprintf_buffer, hv_temp_idx);
+    if (primary_hv_cells_temp_stats_last_state->max > HV_TEMP_CRITICAL_THRESHOLD) {
+        endurance_screen_set_color(COLOR_RED_STATUS_HEX, hv_temp_idx);
+    } else if (primary_hv_cells_temp_stats_last_state->max > HV_TEMP_ALERT_THRESHOLD) {
+        endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, hv_temp_idx);
+    } else {
+        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, hv_temp_idx);
+    }
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->min);
     set_tab_hv_label_text(snprintf_buffer, tab_hv_lb_temp_min);
@@ -439,6 +457,7 @@ void hv_feedback_sd_voltage_update(bool valid) {
     update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_sd_voltage_last_state->sd_out > 2.0f);
 }
 
+#include <stdio.h>
 void ecu_feedbacks_update(bool valid) {
     if (!valid) {
         //TODO riscrivere update_shutdown_circuit_component
@@ -546,6 +565,9 @@ void hv_fans_override_status_update(bool valid) {
         return;
     }
 
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", primary_hv_fans_status_last_state->fans_speed * 100.0f);
+    endurance_screen_set_label(snprintf_buffer, hv_cooling_idx);
+
     if (primary_hv_fans_status_last_state->fans_override == primary_hv_fans_status_fans_override_off) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "AUTO");
         tab_hv_set_pork_speed_bar((int32_t)(primary_hv_fans_status_last_state->fans_speed * 100.0f), true);
@@ -580,6 +602,7 @@ void lv_pumps_speed_update_all_graphics(primary_lv_pumps_speed_converted_t *msg)
 
 void lv_pumps_speed_update(bool valid) {
     GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 
     if (!valid) {
         return;
@@ -587,6 +610,10 @@ void lv_pumps_speed_update(bool valid) {
 
     float actual_speed  = roundf(primary_lv_pumps_speed_last_state->pumps_speed * 10.0f) / 10.0f;
     float actual_status = primary_lv_pumps_speed_last_state->status;
+
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", actual_speed * 100.0f);
+    endurance_screen_set_label(snprintf_buffer, pt_cooling_idx);
+    endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, pt_cooling_idx);
 
     switch (steering_wheel_lv_pumps_speed_state) {
         case STEERING_WHEEL_COOLING_STATUS_SYNC: {
@@ -1008,23 +1035,6 @@ float r_igbt_temp  = INVERTER_MESSAGE_UNINITIALIZED;
 
 #include "inverter_conversions.h"
 
-/***
- * Old conversion, use invlib conversion
- * 
- */
-#if 0
-float IGBT_TEMP_COEFFICIENT[6] =
-    {(float)3.58282057e-18, (float)-4.14165530e-13, (float)1.90916947e-08, (float)-4.38539758e-04, (float)5.02717412e+00, (float)-2.30219791e+04};
-
-float convert_t_motor(float val) {
-    return (val - 9393.9f) / 55.1f;
-}
-float convert_t_igbt(float val) {
-    return (powf((val), 5) * IGBT_TEMP_COEFFICIENT[0]) + (powf((val), 4) * IGBT_TEMP_COEFFICIENT[1]) + (powf((val), 3) * IGBT_TEMP_COEFFICIENT[2]) +
-           (powf((val), 2) * IGBT_TEMP_COEFFICIENT[3]) + (val * IGBT_TEMP_COEFFICIENT[4]) + IGBT_TEMP_COEFFICIENT[5];
-}
-#endif
-
 void inv_l_rcv_update(bool valid) {
     char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(inverters, inv_l_rcv, INVERTERS, INV_L_RCV);
@@ -1041,16 +1051,37 @@ void inv_l_rcv_update(bool valid) {
     l_motor_temp = convert_t_motor(inverters_inv_l_rcv_last_state->t_motor);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", l_motor_temp);
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_left_motor_temp);
+    float motor_temp_mean = (l_motor_temp + r_motor_temp) / 2.0f;
     if (r_motor_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", (l_motor_temp + r_motor_temp) / 2.0f);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f°", motor_temp_mean);
+        endurance_screen_set_label(snprintf_buffer, motor_temp_idx);  // mean of the two motor temps
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", motor_temp_mean);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_mot_idx);
+        if (motor_temp_mean < MOTOR_TEMP_ALERT_THRESHOLD) {
+            endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, motor_temp_idx);
+        } else if (motor_temp_mean < MOTOR_TEMP_CRITICAL_THRESHOLD) {
+            endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, motor_temp_idx);
+        } else {
+            endurance_screen_set_color(COLOR_RED_STATUS_HEX, motor_temp_idx);
+        }
     }
+
     l_igbt_temp = convert_t_igbt(inverters_inv_l_rcv_last_state->t_igbt);
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.1f", l_igbt_temp);
     set_tab_sensors_label_text(snprintf_buffer, tab_sensors_lb_left_inverter_temp);
+    float igbt_temp_mean = (l_igbt_temp + r_igbt_temp) / 2.0f;
     if (r_igbt_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", (l_igbt_temp + r_igbt_temp) / 2.0f);
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f°", igbt_temp_mean);
+        endurance_screen_set_label(snprintf_buffer, inverter_temp_idx);  // mean of the two inverter temps
+        snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", igbt_temp_mean);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_inv_idx);
+        if (igbt_temp_mean < INVERTER_TEMP_ALERT_THRESHOLD) {
+            endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, inverter_temp_idx);
+        } else if (igbt_temp_mean < INVERTER_TEMP_CRITICAL_THRESHOLD) {
+            endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, inverter_temp_idx);
+        } else {
+            endurance_screen_set_color(COLOR_RED_STATUS_HEX, inverter_temp_idx);
+        }
     }
 }
 
@@ -1183,6 +1214,25 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
     }
 }
 
+void control_status_update(bool valid) {
+    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
+    GET_LAST_STATE(primary, control_status, PRIMARY, CONTROL_STATUS);
+
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", primary_control_status_last_state->map_sc * 100.0f);
+    endurance_screen_set_label(snprintf_buffer, slip_map_idx);
+
+    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f%%", primary_control_status_last_state->map_tv * 100.0f);
+    endurance_screen_set_label(snprintf_buffer, torque_map_idx);
+
+    if (primary_control_status_last_state->map_tv != 0 || primary_control_status_last_state->map_sc != 0) {
+        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, slip_map_idx);
+        endurance_screen_set_color(COLOR_GREEN_STATUS_HEX, torque_map_idx);
+    } else {
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, slip_map_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, torque_map_idx);
+    }
+}
+
 void odometer_update(bool valid) {
     char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
     GET_LAST_STATE(secondary, odometer, SECONDARY, ODOMETER);
@@ -1232,24 +1282,32 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         update_sensors_extra_value("SON", 0);
         set_tab_racing_label_text("SON", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(true);
+        endurance_screen_set_label("OFF", ptt_status_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     } else if (ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_SET_OFF;
         send_ptt_status_message(false);
         update_sensors_extra_value("SOF", 0);
         set_tab_racing_label_text("SOF", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(false);
+        endurance_screen_set_label("OFF", ptt_status_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     } else if (ecu_ack && ptt_button_pressed) {
         ptt_status = ptt_status_ON;
         send_ptt_status_message(true);
         update_sensors_extra_value("ON", 0);
         set_tab_racing_label_text("ON", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(true);
+        endurance_screen_set_label("TALK", ptt_status_idx);
+        endurance_screen_set_color(COLOR_BLUE_STATUS_HEX, ptt_status_idx);
     } else if (!ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_OFF;
         send_ptt_status_message(false);
         update_sensors_extra_value("OFF", 0);
         set_tab_racing_label_text("OFF", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(false);
+        endurance_screen_set_label("OFF", ptt_status_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     }
 }
 

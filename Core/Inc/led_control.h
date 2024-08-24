@@ -57,16 +57,17 @@ Fade-Rate 0 Exponential Time-Constant Setting
 110 = 2s
 111 = 4s */
 
-#define COLOR_WHITE  (uint32_t)0xFFFFFF
-#define COLOR_RED    (uint32_t)0xFF0000
-#define COLOR_ORANGE (uint32_t)0xFFA500
-#define COLOR_YELLOW (uint32_t)0xFFFF00
-#define COLOR_GREEN  (uint32_t)0x00FF00
-#define COLOR_BLUE   (uint32_t)0x0000FF
-#define COLOR_PURPLE (uint32_t)0x800080
-#define COLOR_OFF    (uint32_t)0x000000
-#define KTD2052A     (uint8_t)0b11101000
-#define KTD2052C     (uint8_t)0b11101010
+#define COLOR_WHITE  ((uint32_t)0xFFFFFF)
+#define COLOR_BLACK  ((uint32_t)0x000000)
+#define COLOR_RED    ((uint32_t)0xFF0000)
+#define COLOR_ORANGE ((uint32_t)0xFFA500)
+#define COLOR_YELLOW ((uint32_t)0xFFFF00)
+#define COLOR_GREEN  ((uint32_t)0x00FF00)
+#define COLOR_BLUE   ((uint32_t)0x0000FF)
+#define COLOR_PURPLE ((uint32_t)0x800080)
+#define COLOR_OFF    ((uint32_t)0x000000)
+#define KTD2052A     ((uint8_t)0b11101000)
+#define KTD2052C     ((uint8_t)0b11101010)
 
 extern uint8_t reply[2];
 

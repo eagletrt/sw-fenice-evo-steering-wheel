@@ -21,6 +21,8 @@
 #define COLOR_TERTIARY_HEX      (0xF2F3F5u)  // white
 #define COLOR_YELLOW_STATUS_HEX (0xFFFA14u)
 #define COLOR_BLUE_STATUS_HEX   (0x0000FFu)
+#define COLOR_BLACK_STATUS_HEX  (0x000000u)
+#define COLOR_WHITE_STATUS_HEX  (0xFFFFFFu)
 #define COLOR_GREEN_STATUS_HEX  (0x39D103u)
 #define COLOR_ORANGE_STATUS_HEX (0xE78A00u)
 #define COLOR_RED_STATUS_HEX    (0xCE0000u)
@@ -32,6 +34,8 @@ LV_FONT_DECLARE(lv_font_inter_bold_22);
 LV_FONT_DECLARE(lv_font_inter_bold_30);
 LV_FONT_DECLARE(lv_font_inter_bold_38);
 LV_FONT_DECLARE(lv_font_inter_bold_70);
+LV_FONT_DECLARE(lv_font_inter_bold_90);
+LV_FONT_DECLARE(lv_font_inter_bold_200);
 
 extern lv_style_t grid_style;
 extern lv_style_t label_style;

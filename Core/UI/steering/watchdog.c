@@ -39,7 +39,7 @@ void watchdog_task_fn(lv_timer_t *tim) {
         bool timed_out = CANLIB_BITTEST_ARRAY(m_primary_watchdog.timeout, iindex);
         if (timed_out) {
             is_pmsg_new[iindex]   = true;
-            is_pmsg_valid[iindex] = false;
+            is_pmsg_valid[iindex] = true;  //false;
         }
     }
 
@@ -47,7 +47,7 @@ void watchdog_task_fn(lv_timer_t *tim) {
         bool timed_out = CANLIB_BITTEST_ARRAY(m_secondary_watchdog.timeout, iindex);
         if (timed_out) {
             is_smsg_new[iindex]   = true;
-            is_smsg_valid[iindex] = false;
+            is_smsg_valid[iindex] = true;  //false;
         }
     }
 
@@ -55,7 +55,7 @@ void watchdog_task_fn(lv_timer_t *tim) {
         bool timed_out = CANLIB_BITTEST_ARRAY(m_inverters_watchdog.timeout, iindex);
         if (timed_out) {
             is_imsg_new[iindex]   = true;
-            is_imsg_valid[iindex] = false;
+            is_imsg_valid[iindex] = true;  //false;
         }
     }
 }

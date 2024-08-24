@@ -197,7 +197,9 @@ int main(int argc, char **argv) {
     lv_timer_set_repeat_count(ptt_checker_task, -1);
     lv_timer_reset(ptt_checker_task);
 
+#if WATCHDOG_ENABLED == 1
     init_watchdog();
+#endif
 
     while (1) {
 #if SIMULATOR_CAN
