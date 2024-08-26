@@ -1,6 +1,6 @@
 [submodule "lvgl"]
 	path = Core/Lib/lvgl-stm32/lvgl
-	url = git@github.com:lvgl/lvgl.git
+	url = git@github.com:eagletrt/lvgl.git
 [submodule "steering/micro-libs"]
 	path = Core/Lib/micro-libs
 	url = git@github.com:eagletrt/micro-libs.git
