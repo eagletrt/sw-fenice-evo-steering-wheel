@@ -5,6 +5,9 @@
 lv_obj_t *endurance_screen_labels[endurance_screen_n_labels];
 lv_obj_t *endurance_screen_objects[endurance_screen_n_labels];
 lv_style_t endurance_screen_objects_styles[endurance_screen_n_labels];
+bool endurance_screen_first_changed[endurance_screen_n_labels] = {0};
+uint32_t endurance_screen_colors[endurance_screen_n_labels];
+
 static lv_style_t label_style_small;
 static lv_style_t label_style_large;
 
@@ -13,9 +16,13 @@ void endurance_screen_set_label(const char *text, endurance_screen_labels_idx_t 
 }
 
 void endurance_screen_set_color(uint32_t color_hex, endurance_screen_labels_idx_t label_idx) {
-    lv_style_set_bg_color(&endurance_screen_objects_styles[label_idx], lv_color_hex(color_hex));
-    lv_style_set_bg_opa(&endurance_screen_objects_styles[label_idx], LV_OPA_COVER);
-    lv_obj_refresh_style(endurance_screen_objects[label_idx], LV_PART_MAIN, LV_STYLE_PROP_ANY);
+    if (!endurance_screen_first_changed[label_idx] || endurance_screen_colors[label_idx] != color_hex) {
+        endurance_screen_first_changed[label_idx] = true;
+        endurance_screen_colors[label_idx] = color_hex;
+        lv_style_set_bg_color(&endurance_screen_objects_styles[label_idx], lv_color_hex(color_hex));
+        lv_style_set_bg_opa(&endurance_screen_objects_styles[label_idx], LV_OPA_COVER);
+        lv_obj_refresh_style(endurance_screen_objects[label_idx], LV_PART_MAIN, LV_STYLE_PROP_ANY);
+    }
 }
 
 void endurance_screen_init_styles() {
