@@ -213,7 +213,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
     shutdown_status_lb_array[idx] = is_close ? SC_CLOSE : SC_OPEN;
     shutdown_circuit_indexes_t last_opend_index;
     if ((last_opend_index = last_shutdown_element_unknown()) != shutdown_circuit_no_element_index) {
-        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, shutdown_status_idx);
+        endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, shutdown_status_idx);
         char buf[64];
         snprintf(buf, 64, "unknown %s", shutdown_labels[last_opend_index]);
         set_tab_hv_label_text(buf, shutdown_status_lb);
@@ -222,7 +222,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
     if ((last_opend_index = last_open_shutdown_circuit()) != shutdown_circuit_no_element_index) {
         set_tab_hv_label_text(shutdown_labels[last_opend_index], shutdown_status_lb);
         endurance_screen_set_label(shutdown_labels[last_opend_index], shutdown_status_idx);
-        endurance_screen_set_color(COLOR_RED_STATUS_HEX, shutdown_status_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_RED_HEX, shutdown_status_idx);
         if (global_shutdown_status == SC_CLOSE) {
             char buf[128];
             int to_display = snprintf(buf, 128, "SHUTDOWN \nCIRCUIT \nOPENED\n");  // %s", shutdown_labels[last_opend_index]);
@@ -238,7 +238,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
     }
     set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status_lb);
     endurance_screen_set_label("CLOSED", shutdown_status_idx);
-    endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, shutdown_status_idx);
+    endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_GREEN_HEX, shutdown_status_idx);
     global_shutdown_status = SC_CLOSE;
 }
 

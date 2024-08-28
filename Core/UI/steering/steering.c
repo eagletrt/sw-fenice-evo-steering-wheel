@@ -53,7 +53,7 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("INIT", tab_rac_status_idx);
             set_tab_track_test_lb_speed("INIT");
             endurance_screen_set_label("INIT", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_idle: {
@@ -62,7 +62,7 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("IDLE", tab_rac_status_idx);
             set_tab_track_test_lb_speed("IDLE");
             endurance_screen_set_label("IDLE", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_start_ts_precharge:
@@ -72,7 +72,7 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("PRCHG", tab_rac_status_idx);
             set_tab_track_test_lb_speed("PRCHG");
             endurance_screen_set_label("PRCHG", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_wait_driver: {
@@ -81,7 +81,7 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("SETUP", tab_rac_status_idx);
             set_tab_track_test_lb_speed("SETUP");
             endurance_screen_set_label("SETUP", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_enable_inv_drive: {
@@ -90,7 +90,7 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("ENINV", tab_rac_status_idx);
             set_tab_track_test_lb_speed("ENINV");
             endurance_screen_set_label("ENINV", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_re_enable_inverter_drive: {
@@ -99,14 +99,14 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("REINV", tab_rac_status_idx);
             set_tab_track_test_lb_speed("REINV");
             endurance_screen_set_label("REINV", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_drive: {
             precharge_bar_popup_hide();
             set_tab_racing_label_text("km/h", tab_rac_bottom_status_idx);
             endurance_screen_set_label("DRIVE", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_disable_inv_drive:
@@ -117,7 +117,7 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("TSOFF", tab_rac_status_idx);
             set_tab_track_test_lb_speed("TSOFF");
             endurance_screen_set_label("TSOFF", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
         case primary_ecu_status_status_fatal_error: {
@@ -126,7 +126,7 @@ void car_status_update(bool valid) {
             set_tab_racing_label_text("FATAL", tab_rac_status_idx);
             set_tab_track_test_lb_speed("FATAL");
             endurance_screen_set_label("FATAL", car_status_idx);
-            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, car_status_idx);
+            endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, car_status_idx);
             break;
         }
     }
@@ -346,11 +346,11 @@ void hv_soc_estimation_update(bool valid) {
 
     endurance_screen_set_label(snprintf_buffer, hv_soc_idx);
     if (secondary_hv_soc_estimation_state_last_state->soc < SOC_CRITICAL_THRESHOLD) {
-        endurance_screen_set_color(COLOR_RED_STATUS_HEX, hv_soc_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_RED_HEX, hv_soc_idx);
     } else if (secondary_hv_soc_estimation_state_last_state->soc < SOC_ALERT_THRESHOLD) {
-        endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, hv_soc_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_YELLOW_HEX, hv_soc_idx);
     } else {
-        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, hv_soc_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_GREEN_HEX, hv_soc_idx);
     }
 }
 
@@ -372,11 +372,11 @@ void lv_soc_estimation_update(bool valid) {
 
     endurance_screen_set_label(snprintf_buffer, lv_soc_idx);
     if (secondary_lv_soc_estimation_state_last_state->soc < SOC_CRITICAL_THRESHOLD) {
-        endurance_screen_set_color(COLOR_RED_STATUS_HEX, lv_soc_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_RED_HEX, lv_soc_idx);
     } else if (secondary_lv_soc_estimation_state_last_state->soc < SOC_ALERT_THRESHOLD) {
-        endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, lv_soc_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_YELLOW_HEX, lv_soc_idx);
     } else {
-        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, lv_soc_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_GREEN_HEX, lv_soc_idx);
     }
 }
 
@@ -403,11 +403,11 @@ void hv_cells_temp_stats_update(bool valid) {
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->max);
     endurance_screen_set_label(snprintf_buffer, hv_temp_idx);
     if (primary_hv_cells_temp_stats_last_state->max > HV_TEMP_CRITICAL_THRESHOLD) {
-        endurance_screen_set_color(COLOR_RED_STATUS_HEX, hv_temp_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_RED_HEX, hv_temp_idx);
     } else if (primary_hv_cells_temp_stats_last_state->max > HV_TEMP_ALERT_THRESHOLD) {
-        endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, hv_temp_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_YELLOW_HEX, hv_temp_idx);
     } else {
-        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, hv_temp_idx);
+        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_GREEN_HEX, hv_temp_idx);
     }
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%0.f", primary_hv_cells_temp_stats_last_state->min);
@@ -613,7 +613,7 @@ void lv_pumps_speed_update(bool valid) {
 
     snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", actual_speed * 100.0f);
     endurance_screen_set_label(snprintf_buffer, pt_cooling_idx);
-    endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, pt_cooling_idx);
+    endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, pt_cooling_idx);
 
     switch (steering_wheel_lv_pumps_speed_state) {
         case STEERING_WHEEL_COOLING_STATUS_SYNC: {
@@ -1058,11 +1058,11 @@ void inv_l_rcv_update(bool valid) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", motor_temp_mean);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_mot_idx);
         if (motor_temp_mean < MOTOR_TEMP_ALERT_THRESHOLD) {
-            endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, motor_temp_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_GREEN_HEX, motor_temp_idx);
         } else if (motor_temp_mean < MOTOR_TEMP_CRITICAL_THRESHOLD) {
-            endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, motor_temp_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_YELLOW_HEX, motor_temp_idx);
         } else {
-            endurance_screen_set_color(COLOR_RED_STATUS_HEX, motor_temp_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_RED_HEX, motor_temp_idx);
         }
     }
 
@@ -1076,11 +1076,11 @@ void inv_l_rcv_update(bool valid) {
         snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", igbt_temp_mean);
         set_tab_racing_label_text(snprintf_buffer, tab_rac_inv_idx);
         if (igbt_temp_mean < INVERTER_TEMP_ALERT_THRESHOLD) {
-            endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, inverter_temp_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_GREEN_HEX, inverter_temp_idx);
         } else if (igbt_temp_mean < INVERTER_TEMP_CRITICAL_THRESHOLD) {
-            endurance_screen_set_color(COLOR_YELLOW_STATUS_HEX, inverter_temp_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_YELLOW_HEX, inverter_temp_idx);
         } else {
-            endurance_screen_set_color(COLOR_RED_STATUS_HEX, inverter_temp_idx);
+            endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_RED_HEX, inverter_temp_idx);
         }
     }
 }
@@ -1225,11 +1225,11 @@ void control_status_update(bool valid) {
     endurance_screen_set_label(snprintf_buffer, torque_map_idx);
 
     if (primary_control_status_last_state->map_tv != 0 || primary_control_status_last_state->map_sc != 0) {
-        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, slip_map_idx);
-        endurance_screen_set_color(COLOR_DARK_GREEN_STATUS_HEX, torque_map_idx);
+        endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_DARK_GREEN_STATUS_HEX, slip_map_idx);
+        endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_DARK_GREEN_STATUS_HEX, torque_map_idx);
     } else {
-        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, slip_map_idx);
-        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, torque_map_idx);
+        endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_BLACK_STATUS_HEX, slip_map_idx);
+        endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_BLACK_STATUS_HEX, torque_map_idx);
     }
 }
 
@@ -1283,7 +1283,7 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         set_tab_racing_label_text("SON", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(true);
         endurance_screen_set_label("OFF", ptt_status_idx);
-        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, ptt_status_idx);
+        endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     } else if (ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_SET_OFF;
         send_ptt_status_message(false);
@@ -1291,7 +1291,7 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         set_tab_racing_label_text("SOF", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(false);
         endurance_screen_set_label("OFF", ptt_status_idx);
-        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, ptt_status_idx);
+        endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     } else if (ecu_ack && ptt_button_pressed) {
         ptt_status = ptt_status_ON;
         send_ptt_status_message(true);
@@ -1299,7 +1299,7 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         set_tab_racing_label_text("ON", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(true);
         endurance_screen_set_label("TALK", ptt_status_idx);
-        endurance_screen_set_color(COLOR_BLUE_STATUS_HEX, ptt_status_idx);
+        endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BRIGHT_BLUE_HEX, ptt_status_idx);
     } else if (!ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_OFF;
         send_ptt_status_message(false);
@@ -1307,7 +1307,7 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         set_tab_racing_label_text("OFF", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(false);
         endurance_screen_set_label("OFF", ptt_status_idx);
-        endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, ptt_status_idx);
+        endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     }
 }
 

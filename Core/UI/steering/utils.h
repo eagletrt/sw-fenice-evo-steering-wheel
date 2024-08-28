@@ -29,6 +29,11 @@
 #define COLOR_RED_STATUS_HEX        (0xCE0000u)
 #define COLOR_CAR_HEX               (0X78797Au)
 
+#define COLOR_BRIGHT_RED_HEX        (0xFF0000u)
+#define COLOR_BRIGHT_GREEN_HEX      (0x00FF00u)
+#define COLOR_BRIGHT_BLUE_HEX       (0x0000FFu)
+#define COLOR_BRIGHT_YELLOW_HEX     (0xFFFF00u)
+
 LV_FONT_DECLARE(lv_font_inter_bold_14);
 LV_FONT_DECLARE(lv_font_inter_bold_20);
 LV_FONT_DECLARE(lv_font_inter_bold_22);
@@ -47,6 +52,7 @@ void init_custom_styles(void);
 lv_obj_t *lv_vertical_pair_label(
     lv_obj_t *parent,
     lv_obj_t **main_l,
+    lv_obj_t **aux_l,
     const char *up_text,
     const lv_font_t *up_text_font,
     const char *bottom_text,
@@ -62,6 +68,7 @@ lv_obj_t *lv_vertical_pair_two_labels(
 lv_obj_t *lv_horizontal_pair_label(
     lv_obj_t *parent,
     lv_obj_t **main_l,
+    lv_obj_t **aux_l,
     const char *left_text,
     const lv_font_t *left_text_font,
     const char *right_text,
