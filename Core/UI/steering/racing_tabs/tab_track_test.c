@@ -150,14 +150,14 @@ void tab_track_test_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(label_panel, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
     lv_obj_t *x_axis_h =
-        lv_vertical_pair_label(label_panel, &tab_track_test_lb_target, "NA", &lv_font_inter_bold_30, "TARGET\ndegrees", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(label_panel, &tab_track_test_lb_target, NULL, "NA", &lv_font_inter_bold_30, "TARGET\ndegrees", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(x_axis_h, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    lv_obj_t *x_axis_g = lv_vertical_pair_label(label_panel, &tab_track_test_lb_speed, "NA", &lv_font_inter_bold_30, "SPEED\nKM/H", &lv_font_inter_bold_22);
+    lv_obj_t *x_axis_g = lv_vertical_pair_label(label_panel, &tab_track_test_lb_speed, NULL, "NA", &lv_font_inter_bold_30, "SPEED\nKM/H", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(x_axis_g, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *x_axis_j =
-        lv_vertical_pair_label(label_panel, &tab_track_test_lb_steering_angle, "NA", &lv_font_inter_bold_30, "STEERING ANGLE\ndegrees", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(label_panel, &tab_track_test_lb_steering_angle, NULL, "NA", &lv_font_inter_bold_30, "STEERING ANGLE\ndegrees", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(x_axis_j, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 }
 

@@ -206,7 +206,7 @@ void lv_pumps_speed_update(bool valid);
  * Endurance screen
  */
 void endurance_screen_set_label(const char *text, endurance_screen_labels_idx_t label_idx);
-void endurance_screen_set_color(uint32_t color_hex, endurance_screen_labels_idx_t label_idx);
+void endurance_screen_set_color(uint32_t fg_color_hex, uint32_t bg_color_hex, endurance_screen_labels_idx_t label_idx);
 
 extern uint8_t primary_messages_last_state[primary_MESSAGE_COUNT][primary_MAX_STRUCT_SIZE_CONVERSION];
 extern uint8_t secondary_messages_last_state[secondary_MESSAGE_COUNT][secondary_MAX_STRUCT_SIZE_CONVERSION];

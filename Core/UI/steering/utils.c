@@ -7,6 +7,7 @@ lv_style_t box_panels_style;
 lv_obj_t *lv_vertical_pair_label(
     lv_obj_t *parent,
     lv_obj_t **main_l,
+    lv_obj_t **aux_l,
     const char *up_text,
     const lv_font_t *up_text_font,
     const char *bottom_text,
@@ -40,6 +41,8 @@ lv_obj_t *lv_vertical_pair_label(
     lv_obj_set_style_text_font(bl, bottom_text_font, LV_STATE_DEFAULT);
     lv_obj_align(bl, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_grid_cell(bot_o, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_CONTENT, 1, 1);
+    if (aux_l != NULL)
+        *aux_l = bl;
 
     return grid;
 }
@@ -88,6 +91,7 @@ lv_obj_t *lv_vertical_pair_two_labels(
 lv_obj_t *lv_horizontal_pair_label(
     lv_obj_t *parent,
     lv_obj_t **main_l,
+    lv_obj_t **aux_l,
     const char *left_text,
     const lv_font_t *left_text_font,
     const char *right_text,
@@ -118,6 +122,8 @@ lv_obj_t *lv_horizontal_pair_label(
     lv_obj_align(rx_l, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_text_font(rx_l, right_text_font, LV_STATE_DEFAULT);
     lv_obj_set_grid_cell(rx_o, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
+    if (aux_l != NULL)
+        *aux_l = rx_l;
 
     return grid;
 }
@@ -139,7 +145,7 @@ lv_obj_t *lv_triple_label(
     lv_obj_set_size(grid, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_grid_dsc_array(grid, grid_col_dsc, grid_row_dsc);
 
-    lv_obj_t *up_l = lv_horizontal_pair_label(grid, main_l, left_text, left_text_font, right_text, right_text_font);
+    lv_obj_t *up_l = lv_horizontal_pair_label(grid, main_l, NULL, left_text, left_text_font, right_text, right_text_font);
     lv_obj_set_size(up_l, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_set_grid_cell(up_l, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 

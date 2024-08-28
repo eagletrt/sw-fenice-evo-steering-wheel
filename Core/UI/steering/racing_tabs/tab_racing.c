@@ -97,7 +97,7 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(bar_panel_lv, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
     lv_obj_t *lv_perc =
-        lv_horizontal_pair_label(bar_panel_lv, &tab_racing_labels[tab_rac_hv_soc_idx], "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(bar_panel_lv, &tab_racing_labels[tab_rac_hv_soc_idx], NULL, "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(lv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5);  // change "%" position
     lv_obj_set_grid_cell(lv_perc, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
@@ -126,7 +126,7 @@ void tab_racing_create(lv_obj_t *parent) {
     lv_obj_set_grid_cell(bar_panel_hv, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *hv_perc =
-        lv_horizontal_pair_label(bar_panel_hv, &tab_racing_labels[tab_rac_lv_soc_idx], "NA", &lv_font_inter_bold_30, "%%", &lv_font_inter_bold_20);
+        lv_horizontal_pair_label(bar_panel_hv, &tab_racing_labels[tab_rac_lv_soc_idx], NULL, "NA", &lv_font_inter_bold_30, "%%", &lv_font_inter_bold_20);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(hv_perc, 1), 0), LV_ALIGN_CENTER, 0, 5);  // change "%" position
     lv_obj_set_grid_cell(hv_perc, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
@@ -197,19 +197,19 @@ void tab_racing_create(lv_obj_t *parent) {
 
     /* inserting data into data left panel */
     lv_obj_t *best_time = lv_vertical_pair_label(
-        left_data_panel, &tab_racing_labels[tab_rac_curr_time_idx], "0:NA:0", &lv_font_inter_bold_38, "CURR TIME", &lv_font_inter_bold_22);
+        left_data_panel, &tab_racing_labels[tab_rac_curr_time_idx], NULL, "0:NA:0", &lv_font_inter_bold_38, "CURR TIME", &lv_font_inter_bold_22);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(best_time, 1), 0), LV_ALIGN_LEFT_MID, 10, 0);  // change bottom label position
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(best_time, 0), 0), LV_ALIGN_LEFT_MID, 5, 0);   // change bottom label position
     lv_obj_set_grid_cell(best_time, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *last_time = lv_vertical_pair_label(
-        left_data_panel, &tab_racing_labels[tab_rac_last_time_idx], "0:NA:0", &lv_font_inter_bold_38, "LAST TIME", &lv_font_inter_bold_22);
+        left_data_panel, &tab_racing_labels[tab_rac_last_time_idx], NULL, "0:NA:0", &lv_font_inter_bold_38, "LAST TIME", &lv_font_inter_bold_22);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(last_time, 1), 0), LV_ALIGN_LEFT_MID, 10, 0);  // change bottom label position
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(last_time, 0), 0), LV_ALIGN_LEFT_MID, 5, 0);   // change bottom label position
     lv_obj_set_grid_cell(last_time, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 
     lv_obj_t *delta = lv_vertical_pair_label(
-        left_data_panel, &tab_racing_labels[tab_rac_best_time_idx], "0:NA:0", &lv_font_inter_bold_38, "BEST TIME", &lv_font_inter_bold_22);
+        left_data_panel, &tab_racing_labels[tab_rac_best_time_idx], NULL, "0:NA:0", &lv_font_inter_bold_38, "BEST TIME", &lv_font_inter_bold_22);
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(delta, 0), 0), LV_ALIGN_LEFT_MID, 10, 0);  // change upper label position
     lv_obj_align(lv_obj_get_child(lv_obj_get_child(delta, 1), 0), LV_ALIGN_LEFT_MID, 10, 0);  // change bottom label position
     lv_obj_set_grid_cell(delta, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
@@ -236,11 +236,11 @@ void tab_racing_create(lv_obj_t *parent) {
 
     /*inserting data into data right panel*/
     lv_obj_t *trq =
-        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_odometer_idx], "NA", &lv_font_inter_bold_30, "km", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_odometer_idx], NULL, "NA", &lv_font_inter_bold_30, "km", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(trq, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     lv_obj_t *slip =
-        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_ptt_status_idx], "NA", &lv_font_inter_bold_38, "PTT", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(right_data_panel, &tab_racing_labels[tab_rac_ptt_status_idx], NULL, "NA", &lv_font_inter_bold_38, "PTT", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(slip, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     // adding separation line for right data panel
@@ -278,7 +278,7 @@ void tab_racing_create(lv_obj_t *parent) {
 
     // power
     lv_obj_t *power =
-        lv_horizontal_pair_label(central_panel, &tab_racing_labels[tab_rac_pow_idx], "0", &lv_font_inter_bold_38, " POWER", &lv_font_inter_bold_22);
+        lv_horizontal_pair_label(central_panel, &tab_racing_labels[tab_rac_pow_idx], NULL, "0", &lv_font_inter_bold_38, " POWER", &lv_font_inter_bold_22);
 
     lv_obj_set_grid_cell(lv_obj_get_child(power, 1), LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0,
                          1);  // center the label "POWER"
@@ -335,14 +335,14 @@ void tab_racing_create(lv_obj_t *parent) {
   lv_obj_set_style_pad_right(km_counter, 40, 0);
 #else
     lv_obj_t *slip_robo_del_coso =
-        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_slip_idx], "0", &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_slip_idx], NULL, "0", &lv_font_inter_bold_38, "SLIP", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(slip_robo_del_coso, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_END, 0, 1);
     lv_obj_set_style_pad_bottom(slip_robo_del_coso, 5, 0);
     lv_obj_set_style_pad_left(slip_robo_del_coso, 40, 0);
 
     // ???
     lv_obj_t *torque_robo_del_coso =
-        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_torque_idx], "0", &lv_font_inter_bold_38, "TORQUE", &lv_font_inter_bold_22);
+        lv_vertical_pair_label(data_panel, &tab_racing_labels[tab_rac_torque_idx], NULL, "0", &lv_font_inter_bold_38, "TORQUE", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(torque_robo_del_coso, LV_GRID_ALIGN_END, 1, 1, LV_GRID_ALIGN_END, 0, 1);
     lv_obj_set_style_pad_bottom(torque_robo_del_coso, 5, 0);
     lv_obj_set_style_pad_right(torque_robo_del_coso, 40, 0);
