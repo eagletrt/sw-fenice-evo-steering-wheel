@@ -8,7 +8,6 @@
         "Core/Inc/test",
         "Core/Lib/can/lib",
         "Core/Lib/invlib",
-        "Core/Lib/lvgl-stm32/lvgl",
         "Core/Lib/micro-libs/min-heap/inc",
         "Core/UI/steering",
         "Drivers/CMSIS/Device/ST/STM32H7xx/Include",
@@ -21,7 +20,7 @@
         "STM32H723xx",
         "USE_HAL_DRIVER"
       ],
-      "compilerPath": "/home/tonidotpy/.config/Code - OSS/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/12.2.1-1.2.1/.content/bin/arm-none-eabi-gcc"
+      "compilerPath": "/home/gmazzucchi/.config/Code/User/globalStorage/bmd.stm32-for-vscode/@xpack-dev-tools/arm-none-eabi-gcc/13.2.1-1.1.1/.content/bin/arm-none-eabi-gcc"
     }
   ],
   "version": 4

@@ -1,5 +1,7 @@
 #include "steering_config.h"
 
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include <screen_driver.h>
 #include <string.h>
 
@@ -38,3 +40,5 @@ void stm32_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map) 
     HAL_LTDC_Reload(&hltdc, LTDC_RELOAD_VERTICAL_BLANKING);
     lv_disp_flush_ready(disp);
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

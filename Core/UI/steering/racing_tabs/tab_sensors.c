@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "tab_sensors.h"
 
 #include <stdio.h>
@@ -549,3 +553,5 @@ void tab_sensor_resync(void) {
     irts_rr_update();
 #endif
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "endurance.h"
 
 #ifdef ENDURANCE_MODE_ENABLED
@@ -19,7 +23,7 @@ void endurance_screen_set_label(const char *text, endurance_screen_labels_idx_t 
 void endurance_screen_set_color(uint32_t fg_color_hex, uint32_t bg_color_hex, endurance_screen_labels_idx_t label_idx) {
     if (!endurance_screen_first_changed[label_idx] || endurance_screen_colors[label_idx] != bg_color_hex) {
         endurance_screen_first_changed[label_idx] = true;
-        endurance_screen_colors[label_idx] = bg_color_hex;
+        endurance_screen_colors[label_idx]        = bg_color_hex;
         lv_obj_set_style_text_color(endurance_screen_labels[label_idx], lv_color_hex(fg_color_hex), LV_PART_MAIN);
         lv_obj_set_style_text_color(endurance_screen_labels_aux[label_idx], lv_color_hex(fg_color_hex), LV_PART_MAIN);
 
@@ -76,72 +80,72 @@ void endurance_screen_create(lv_obj_t *parent) {
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "NA", &lv_font_inter_bold_38, "", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[shutdown_status_idx], LV_PART_MAIN);
-    endurance_screen_objects[shutdown_status_idx] = cobj;
-    endurance_screen_labels[shutdown_status_idx]  = clabel;
-    endurance_screen_labels_aux[shutdown_status_idx]  = clabel_aux;
+    endurance_screen_objects[shutdown_status_idx]    = cobj;
+    endurance_screen_labels[shutdown_status_idx]     = clabel;
+    endurance_screen_labels_aux[shutdown_status_idx] = clabel_aux;
 
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "NA", &lv_font_inter_bold_70, "", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 2, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[car_status_idx], LV_PART_MAIN);
-    endurance_screen_objects[car_status_idx] = cobj;
-    endurance_screen_labels[car_status_idx]  = clabel;
-    endurance_screen_labels_aux[car_status_idx]  = clabel_aux;
+    endurance_screen_objects[car_status_idx]    = cobj;
+    endurance_screen_labels[car_status_idx]     = clabel;
+    endurance_screen_labels_aux[car_status_idx] = clabel_aux;
 
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "MUTE", &lv_font_inter_bold_70, "", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_END, 3, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[ptt_status_idx], LV_PART_MAIN);
-    endurance_screen_objects[ptt_status_idx] = cobj;
-    endurance_screen_labels[ptt_status_idx]  = clabel;
-    endurance_screen_labels_aux[ptt_status_idx]  = clabel_aux;
+    endurance_screen_objects[ptt_status_idx]    = cobj;
+    endurance_screen_labels[ptt_status_idx]     = clabel;
+    endurance_screen_labels_aux[ptt_status_idx] = clabel_aux;
 
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "NA", &lv_font_inter_bold_90, "T\nMOT", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[motor_temp_idx], LV_PART_MAIN);
-    endurance_screen_objects[motor_temp_idx] = cobj;
-    endurance_screen_labels[motor_temp_idx]  = clabel;
-    endurance_screen_labels_aux[motor_temp_idx]  = clabel_aux;
+    endurance_screen_objects[motor_temp_idx]    = cobj;
+    endurance_screen_labels[motor_temp_idx]     = clabel;
+    endurance_screen_labels_aux[motor_temp_idx] = clabel_aux;
 
     cobj = lv_vertical_pair_two_labels(endurance_screen, &clabel, "NA", &lv_font_inter_bold_200, &description, "SOC HV", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 2, 1, LV_GRID_ALIGN_STRETCH, 1, 2);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[hv_soc_idx], LV_PART_MAIN);
-    endurance_screen_objects[hv_soc_idx] = cobj;
-    endurance_screen_labels[hv_soc_idx]  = clabel;
-    endurance_screen_labels_aux[hv_soc_idx]  = description;
+    endurance_screen_objects[hv_soc_idx]    = cobj;
+    endurance_screen_labels[hv_soc_idx]     = clabel;
+    endurance_screen_labels_aux[hv_soc_idx] = description;
 
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "NA", &lv_font_inter_bold_90, "LV", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 3, 1, LV_GRID_ALIGN_STRETCH, 1, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[lv_soc_idx], LV_PART_MAIN);
-    endurance_screen_objects[lv_soc_idx] = cobj;
-    endurance_screen_labels[lv_soc_idx]  = clabel;
-    endurance_screen_labels_aux[lv_soc_idx]  = clabel_aux;
+    endurance_screen_objects[lv_soc_idx]    = cobj;
+    endurance_screen_labels[lv_soc_idx]     = clabel;
+    endurance_screen_labels_aux[lv_soc_idx] = clabel_aux;
 
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "NA", &lv_font_inter_bold_90, "T\nINV", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 2, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[inverter_temp_idx], LV_PART_MAIN);
-    endurance_screen_objects[inverter_temp_idx] = cobj;
-    endurance_screen_labels[inverter_temp_idx]  = clabel;
-    endurance_screen_labels_aux[inverter_temp_idx]  = clabel_aux;
+    endurance_screen_objects[inverter_temp_idx]    = cobj;
+    endurance_screen_labels[inverter_temp_idx]     = clabel;
+    endurance_screen_labels_aux[inverter_temp_idx] = clabel_aux;
 
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "NA", &lv_font_inter_bold_90, "COOL\nPT", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 3, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[pt_cooling_idx], LV_PART_MAIN);
-    endurance_screen_objects[pt_cooling_idx] = cobj;
-    endurance_screen_labels[pt_cooling_idx]  = clabel;
-    endurance_screen_labels_aux[pt_cooling_idx]  = clabel_aux;
+    endurance_screen_objects[pt_cooling_idx]    = cobj;
+    endurance_screen_labels[pt_cooling_idx]     = clabel;
+    endurance_screen_labels_aux[pt_cooling_idx] = clabel_aux;
 
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "NA", &lv_font_inter_bold_90, "T\nHV", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 3, 1, LV_GRID_ALIGN_STRETCH, 2, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[hv_temp_idx], LV_PART_MAIN);
-    endurance_screen_objects[hv_temp_idx] = cobj;
-    endurance_screen_labels[hv_temp_idx]  = clabel;
-    endurance_screen_labels_aux[hv_temp_idx]  = clabel_aux;
+    endurance_screen_objects[hv_temp_idx]    = cobj;
+    endurance_screen_labels[hv_temp_idx]     = clabel;
+    endurance_screen_labels_aux[hv_temp_idx] = clabel_aux;
 
     cobj = lv_horizontal_pair_label(endurance_screen, &clabel, &clabel_aux, "NA", &lv_font_inter_bold_90, "COOL\nHV", &lv_font_inter_bold_38);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 3, 1, LV_GRID_ALIGN_STRETCH, 3, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[hv_cooling_idx], LV_PART_MAIN);
-    endurance_screen_objects[hv_cooling_idx] = cobj;
-    endurance_screen_labels[hv_cooling_idx]  = clabel;
-    endurance_screen_labels_aux[hv_cooling_idx]  = clabel_aux;
+    endurance_screen_objects[hv_cooling_idx]    = cobj;
+    endurance_screen_labels[hv_cooling_idx]     = clabel;
+    endurance_screen_labels_aux[hv_cooling_idx] = clabel_aux;
 
     static lv_coord_t controls_cols[] = {50, 164, 50, LV_GRID_TEMPLATE_LAST};
     static lv_coord_t controls_rows[] = {130, LV_GRID_TEMPLATE_LAST};
@@ -168,23 +172,23 @@ void endurance_screen_create(lv_obj_t *parent) {
     cobj = lv_vertical_pair_label(container, &clabel, &clabel_aux, "", &lv_font_inter_bold_38, "", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[regen_on_off_idx], LV_PART_MAIN);
-    endurance_screen_objects[regen_on_off_idx] = cobj;
-    endurance_screen_labels[regen_on_off_idx]  = clabel;
-    endurance_screen_labels_aux[regen_on_off_idx]  = clabel_aux;
+    endurance_screen_objects[regen_on_off_idx]    = cobj;
+    endurance_screen_labels[regen_on_off_idx]     = clabel;
+    endurance_screen_labels_aux[regen_on_off_idx] = clabel_aux;
 
     cobj = lv_horizontal_pair_label(container, &clabel, &clabel_aux, "", &lv_font_inter_bold_38, "", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[slip_map_idx], LV_PART_MAIN);
-    endurance_screen_objects[slip_map_idx] = cobj;
-    endurance_screen_labels[slip_map_idx]  = clabel;
-    endurance_screen_labels_aux[slip_map_idx]  = clabel_aux;
+    endurance_screen_objects[slip_map_idx]    = cobj;
+    endurance_screen_labels[slip_map_idx]     = clabel;
+    endurance_screen_labels_aux[slip_map_idx] = clabel_aux;
 
     cobj = lv_vertical_pair_label(container, &clabel, &clabel_aux, "", &lv_font_inter_bold_38, "", &lv_font_inter_bold_22);
     lv_obj_set_grid_cell(cobj, LV_GRID_ALIGN_STRETCH, 2, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
     lv_obj_add_style(cobj, &endurance_screen_objects_styles[torque_map_idx], LV_PART_MAIN);
-    endurance_screen_objects[torque_map_idx] = cobj;
-    endurance_screen_labels[torque_map_idx]  = clabel;
-    endurance_screen_labels_aux[torque_map_idx]  = clabel_aux;
+    endurance_screen_objects[torque_map_idx]    = cobj;
+    endurance_screen_labels[torque_map_idx]     = clabel;
+    endurance_screen_labels_aux[torque_map_idx] = clabel_aux;
 
     lv_scr_load(endurance_screen);
 }
@@ -205,3 +209,4 @@ void endurance_screen_create(lv_obj_t *parent) {
  * 
  */
 
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

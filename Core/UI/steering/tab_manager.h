@@ -1,7 +1,9 @@
-#include "steering_config.h"
-
 #ifndef TAB_MANAGER_H
 #define TAB_MANAGER_H
+
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
 #include "can_messages.h"
 #include "engineer_mode/tab_debug.h"
@@ -34,5 +36,7 @@ void tab_manager(void);
 void switch_mode(void);
 
 void steering_change_tab(bool forward);
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
 #endif

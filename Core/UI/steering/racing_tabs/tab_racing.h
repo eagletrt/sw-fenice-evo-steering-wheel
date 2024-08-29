@@ -1,6 +1,10 @@
 #ifndef TAB_RACING_H
 #define TAB_RACING_H
 
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "lvgl.h"
 #include "steering.h"
 #include "utils.h"
@@ -26,5 +30,7 @@ void custom_side_bar(lv_obj_t *bar);
 
 void racing_error_notification(char *msg);
 void tab_racing_resync(void);
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
 #endif  // TAB_RACING_H

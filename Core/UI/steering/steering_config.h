@@ -14,6 +14,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define STEERING_WHEEL_LVGL_MODE   (0U)
+#define STEERING_WHEEL_OLIVEC_MODE (1U)
+#define STEERING_WHEEL_MODE        STEERING_WHEEL_OLIVEC_MODE
+
 #define PERIODIC_SET_ECU_POWER_MAPS
 
 /***
@@ -30,7 +34,7 @@
 /***
  * Activate candump in the engineering tabs
  */
-#define CANSNIFFER_ENABLED (1U)
+#define CANSNIFFER_ENABLED ((STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE) && 1U)
 
 /***
  * Activate the watchdog on CAN bus values: if a value is not update, the watchdog triggers an action
@@ -91,6 +95,9 @@
 #define CENTER_MANETTINO_INTERRUPT_INDEX 2
 #define RIGHT_MANETTINO_INTERRUPT_INDEX  3
 #define NUM_INTERRUPT_PINS               4
+
+#define GET_LAST_STATE(ntw, msg, NTW, MSG) \
+    ntw##_##msg##_converted_t *ntw##_##msg##_last_state = (ntw##_##msg##_converted_t *)&ntw##_messages_last_state[NTW##_##MSG##_INDEX][0]
 
 typedef enum {
     NOT_SCREEN = -1,

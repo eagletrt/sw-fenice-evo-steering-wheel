@@ -87,10 +87,14 @@
         "serial_to_can.h": "c",
         "secondary_watchdog.h": "c",
         "min-heap.h": "c",
-        "endurance.h": "c"
+        "endurance.h": "c",
+        "secondary_network.h": "c",
+        "controls_lvgl.h": "c",
+        "steering_olivec.h": "c",
+        "lv_obj_pos.h": "c"
     },
     "cmake.configureOnOpen": false,
-    "C_Cpp.dimInactiveRegions": false,
+    "C_Cpp.dimInactiveRegions": true,
     "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc",
     "cmake.sourceDirectory": "/home/tzarjakob/STM32CubeIDE/workspace_1.11.2/fenice-evo-steering-wheel/Core/Lib/lvgl-linux/lv-drivers"
 }

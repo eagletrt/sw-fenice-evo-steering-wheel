@@ -1,13 +1,12 @@
 #ifndef CANSNIFFER_H
 #define CANSNIFFER_H
 
+#include "messages.h"
 #include "steering_config.h"
 
 #if CANSNIFFER_ENABLED == 1
 
-#include "lvgl.h"
 #include "maxheap.h"
-#include "messages.h"
 #include "min-heap.h"
 
 #define CANSNIFFER_ELEM_T_SIZE 20

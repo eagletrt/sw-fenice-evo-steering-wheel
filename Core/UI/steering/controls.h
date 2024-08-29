@@ -2,12 +2,8 @@
 #define CONTROLS_H
 
 #include "can_messages.h"
-#include "lvgl.h"
-#include "primary/primary_network.h"
-#include "secondary/secondary_network.h"
 #include "steering.h"
 #include "steering_config.h"
-#include "tab_manager.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -55,27 +51,14 @@ typedef enum { PUMPS_AUTO, PUMPS_OFF, PUMPS_025, PUMPS_050, PUMPS_075, PUMPS_100
 void prepare_set_car_status(void);
 bool send_set_car_status_directly(void);
 
-void set_dmt_steering_angle_target(void);
-void manettino_send_slip_control(float);
-void manettino_send_torque_vectoring(float);
-void manettino_send_power_map(float);
-void send_pork_fans_status(float val);
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
-void turn_telemetry_on_off(void);
+#include "controls_lvgl.h"
 
-void manettino_right_actions(int dsteps);
-void manettino_center_actions(int dsteps);
-void manettino_left_actions(int dsteps);
+#elif STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
 
-void buttons_pressed_actions(uint8_t button);
-void buttons_released_actions(uint8_t button);
-void buttons_long_pressed_actions(uint8_t button);
+#include "controls_olivec.h"
 
-// float fmin(float x, float y);
-// float fmax(float x, float y);
+#endif  // STEERING_WHEEL_MODE
 
-#if CANSNIFFER_ENABLED == 1
-void change_cansniffer_index(bool);
-#endif
-
-#endif
+#endif  // CONTROLS_H

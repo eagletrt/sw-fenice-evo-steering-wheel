@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "tab_racing.h"
 
 lv_obj_t *tab_racing_labels[tab_rac_labels_n] = {
@@ -514,3 +518,5 @@ void tab_racing_resync(void) {
     inv_l_rcv_update();
 #endif
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

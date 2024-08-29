@@ -3,7 +3,6 @@
 
 #include "can_messages.h"
 #include "controls.h"
-#include "lvgl.h"
 #include "mcp23017.h"
 #include "steering.h"
 #include "steering_config.h"
@@ -28,7 +27,7 @@
 #define MANETTINO_LEFT_VALS   {127, 191, 247, 251, 253, 254, 239, 223}
 
 void inputs_init(void);
-void read_inputs(lv_timer_t *);
+void read_inputs(void *);
 
 void changed_pin_fn(void);
 void init_input_polling(void);
