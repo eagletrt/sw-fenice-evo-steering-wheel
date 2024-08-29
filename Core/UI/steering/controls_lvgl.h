@@ -1,5 +1,5 @@
-#ifndef CONTROLS_H
-#define CONTROLS_H
+#ifndef CONTROLS_LVGL_H
+#define CONTROLS_LVGL_H
 
 #include "steering_config.h"
 

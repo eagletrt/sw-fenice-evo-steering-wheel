@@ -224,7 +224,7 @@ void hv_debug_signals_update(bool valid) {
     }
 
     GET_LAST_STATE(primary, hv_debug_signals, PRIMARY, HV_DEBUG_SIGNALS);
-    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
+    // char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
 
     tab_hv_set_error_status(debug_signal_error_cell_under_voltage, primary_hv_debug_signals_last_state->errors_cell_under_voltage);
     tab_hv_set_error_status(debug_signal_error_cell_over_voltage, primary_hv_debug_signals_last_state->errors_cell_over_voltage);
@@ -902,6 +902,9 @@ void steer_angle_update(bool valid) {
 
 void tlm_network_interface_update(bool valid) {
     char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
+    extern size_t tlm_ntw_interfaces_current_size;
+    extern uint32_t tlm_ntw_interfaces[TLM_NTW_INTERFACE_MAX_N];
+    extern uint32_t tlm_ntw_ips[TLM_NTW_INTERFACE_MAX_N];
     if (!valid) {
         for (size_t i = 0; i < tlm_ntw_interfaces_current_size; i++) {
             snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, NOT_AVAILABLE_STRING_LABEL);
@@ -1258,7 +1261,7 @@ void send_ptt_status_message(bool on) {
     can_send(&msg, true);
 }
 
-void ptt_tasks_fn(lv_timer_t *timer) {
+void ptt_tasks_fn(void *timer) {
     if (!ecu_ack && ptt_button_pressed) {
         ptt_status = ptt_status_SET_ON;
         send_ptt_status_message(true);

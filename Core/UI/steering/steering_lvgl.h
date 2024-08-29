@@ -49,8 +49,6 @@ void set_tab_sensors_value_brake_f(float value_in_bar);
 void set_tab_sensors_value_brake_r(float value_in_bar);
 void set_tab_sensors_value_apps(int32_t value_0_to_100);
 
-void ptt_tasks_fn(lv_timer_t *tim);
-
 void keep_lap_counter_value(uint32_t);
 void remove_keep_lap_counter(lv_timer_t *timer);
 

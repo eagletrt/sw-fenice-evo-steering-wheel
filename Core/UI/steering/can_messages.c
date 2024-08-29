@@ -22,9 +22,11 @@ size_t tlm_ntw_interfaces_current_size               = 0;
 uint32_t tlm_ntw_interfaces[TLM_NTW_INTERFACE_MAX_N] = {0};
 uint32_t tlm_ntw_ips[TLM_NTW_INTERFACE_MAX_N]        = {0};
 
-//TODO desburing
-// lv_timer_t *steer_status_task;
-// lv_timer_t *steer_version_task;
+// TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+lv_timer_t *steer_status_task;
+lv_timer_t *steer_version_task;
+#endif
 
 char name_buffer[BUFSIZ];
 
@@ -477,14 +479,16 @@ void message_parser(uint8_t *msg, size_t msg_siz) {
 }
 
 void init_periodic_can_messages_timers(void) {
-    // TODO: desburing
-    // #ifdef PERIODIC_SET_ECU_POWER_MAPS
-    //     steer_status_task = lv_timer_create(send_steer_status, PRIMARY_INTERVAL_ECU_SET_POWER_MAPS, NULL);
-    //     lv_timer_set_repeat_count(steer_status_task, -1);
-    //     lv_timer_reset(steer_status_task);
-    // #endif
-    //
-    //     steer_version_task = lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEERING_WHEEL_VERSION, NULL);
-    //     lv_timer_set_repeat_count(steer_version_task, -1);
-    //     lv_timer_reset(steer_version_task);
+// TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+#ifdef PERIODIC_SET_ECU_POWER_MAPS
+    steer_status_task = lv_timer_create(send_steer_status, PRIMARY_INTERVAL_ECU_SET_POWER_MAPS, NULL);
+    lv_timer_set_repeat_count(steer_status_task, -1);
+    lv_timer_reset(steer_status_task);
+#endif
+
+    steer_version_task = lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEERING_WHEEL_VERSION, NULL);
+    lv_timer_set_repeat_count(steer_version_task, -1);
+    lv_timer_reset(steer_version_task);
+#endif
 }

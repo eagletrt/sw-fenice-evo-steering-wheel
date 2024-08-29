@@ -3,6 +3,8 @@
 
 #include "steering_config.h"
 
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #if CANSNIFFER_ENABLED == 1
 
 #include "cansniffer.h"

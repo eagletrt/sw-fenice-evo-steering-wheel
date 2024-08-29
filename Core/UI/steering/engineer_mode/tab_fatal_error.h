@@ -2,6 +2,9 @@
 #define TAB_FATAL_ERROR_H
 
 #include "steering.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "utils.h"
 
 void tab_fatal_error_create(lv_obj_t *);

@@ -14,7 +14,10 @@ uint32_t manettini_last_change;
 bool manettini_initialized[MANETTINI_N] = {false};
 
 bool tson_button_pressed;
-// lv_timer_t *send_set_car_status_long_press_delay = NULL;// desburing
+// TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+lv_timer_t *send_set_car_status_long_press_delay = NULL;
+#endif
 
 int hv_fans_override_last_state = 0;
 
@@ -192,16 +195,21 @@ void changed_pin_fn(void) {
         current_state_tson_button = tson_pin_state;
         if (tson_pin_state == GPIO_PIN_SET) {
             tson_button_pressed = false;
-            //lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0); // desburing
+            // TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+            lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
+#endif
         } else {
             if (send_set_car_status_directly()) {
                 prepare_set_car_status();
             } else {
-                // TODO: DESBURING
-                // send_set_car_status_long_press_delay = lv_timer_create(send_set_car_status_check, 500, NULL);
-                // tson_button_pressed                  = true;
-                // lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
-                // lv_timer_reset(send_set_car_status_long_press_delay);
+// TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+                send_set_car_status_long_press_delay = lv_timer_create(send_set_car_status_check, 500, NULL);
+                tson_button_pressed                  = true;
+                lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
+                lv_timer_reset(send_set_car_status_long_press_delay);
+#endif
             }
         }
     }
@@ -423,9 +431,11 @@ void read_inputs(void *unused) {
 
 void init_input_polling(void) {
     inputs_init();
-    // TODO: desburing
-    // static lv_timer_t *read_inputs_task = NULL;
-    // read_inputs_task                    = lv_timer_create(read_inputs, 100, NULL);
-    // lv_timer_set_repeat_count(read_inputs_task, -1);
-    // lv_timer_reset(read_inputs_task);
+// TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+    static lv_timer_t *read_inputs_task = NULL;
+    read_inputs_task                    = lv_timer_create(read_inputs, 100, NULL);
+    lv_timer_set_repeat_count(read_inputs_task, -1);
+    lv_timer_reset(read_inputs_task);
+#endif
 }

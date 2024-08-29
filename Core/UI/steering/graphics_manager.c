@@ -9,8 +9,8 @@ lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
 #elif STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
 
-uint32_t ***framebuffer_1 = (uint32_t **)FRAMEBUFFER1_ADDR;
-uint32_t ***framebuffer_2 = (uint32_t **)FRAMEBUFFER2_ADDR;
+uint32_t ***framebuffer_1 = (uint32_t ***)FRAMEBUFFER1_ADDR;
+uint32_t ***framebuffer_2 = (uint32_t ***)FRAMEBUFFER2_ADDR;
 
 #endif
 
