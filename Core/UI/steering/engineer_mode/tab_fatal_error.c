@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "tab_fatal_error.h"
 
 lv_style_t tab_fatal_error_style;
@@ -30,3 +34,5 @@ void tab_fatal_error_create(lv_obj_t *parent) {
     lv_label_set_text(tab_fatal_error_label, "TAB_FATAL_ERROR");
     lv_obj_align(tab_fatal_error_label, LV_ALIGN_CENTER, 0, 0);
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

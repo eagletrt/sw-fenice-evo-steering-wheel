@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "tab_hv.h"
 
 #include <stdio.h>
@@ -576,3 +580,5 @@ void tab_hv_resync(void) {
     hv_fans_override_status_update();
 #endif
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

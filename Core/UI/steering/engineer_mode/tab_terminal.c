@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "tab_terminal.h"
 
 lv_style_t tab_terminal_style;
@@ -72,3 +76,5 @@ void tab_terminal_clear() {
         lv_label_set_text_fmt(tab_terminal_labels[i], "-----");
     }
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

@@ -1,6 +1,10 @@
 #ifndef TAB_HV_H
 #define TAB_HV_H
 
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "lvgl.h"
 #include "steering.h"
 
@@ -27,5 +31,7 @@ void set_tab_hv_label_text(const char *s, tab_hv_labels_enum idx);
 
 void init_hv_styles(void);
 void tab_hv_resync(void);
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
 #endif  // TAB_HV_H

@@ -1,42 +1,57 @@
 #include "graphics_manager.h"
 
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 #include "src/core/lv_obj.h"
 #include "src/core/lv_obj_pos.h"
 
 lv_color_t *framebuffer_1 = (lv_color_t *)FRAMEBUFFER1_ADDR;
 lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
-bool is_pmsg_new[primary_MESSAGE_COUNT];
-bool is_smsg_new[secondary_MESSAGE_COUNT];
-bool is_imsg_new[inverters_MESSAGE_COUNT];
+#elif STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
 
-extern bool is_pmsg_valid[primary_MESSAGE_COUNT];
-extern bool is_smsg_valid[secondary_MESSAGE_COUNT];
-extern bool is_imsg_valid[inverters_MESSAGE_COUNT];
+uint32_t ***framebuffer_1 = (uint32_t **)FRAMEBUFFER1_ADDR;
+uint32_t ***framebuffer_2 = (uint32_t **)FRAMEBUFFER2_ADDR;
+
+#endif
 
 void init_graphics_manager(void) {
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
     lv_init();
 #ifdef STM32H723xx
     screen_driver_init();
 #endif
     tab_manager();
+#elif STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
+    for (size_t i = 0; i < SCREEN_WIDTH; i++) {
+        for (size_t j = 0; j < SCREEN_HEIGHT; j++) {
+            framebuffer_1[i][j][0] = 0xFF;
+            framebuffer_1[i][j][0] = 0xFF;
+            framebuffer_1[i][j][0] = 0x00;
+            framebuffer_1[i][j][0] = 0x00;
+        }
+    }
+    for (size_t i = 0; i < SCREEN_WIDTH; i++) {
+        for (size_t j = 0; j < SCREEN_HEIGHT; j++) {
+            framebuffer_2[i][j][0] = 0xFF;
+            framebuffer_2[i][j][0] = 0x00;
+            framebuffer_2[i][j][0] = 0xFF;
+            framebuffer_2[i][j][0] = 0x00;
+        }
+    }
 
-    // lv_obj_t * label1 = lv_label_create(NULL);
-    // lv_label_set_long_mode(label1, LV_LABEL_LONG_WRAP);     /*Break the long lines*/
-    // lv_label_set_text(label1, "Recolor is not supported for v9 now.");
-    // lv_obj_set_width(label1, 150);  /*Set smaller width to make the lines wrap*/
-    // lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
-    // lv_obj_align(label1, LV_ALIGN_CENTER, 0, -40);
-    // lv_scr_load(label1);
-}
-
-void refresh_graphics(void) {
-#ifdef STM32H723xx
-    lv_timer_handler();
 #endif
 }
 
-void update_graphics(lv_timer_t *t) {
+void refresh_graphics(void) {
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+#ifdef STM32H723xx
+    lv_timer_handler();
+#endif
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+}
+
+void update_graphics(void *unused) {
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
     if (engineer_mode) {
         switch (current_engineer_tab) {
             case STEERING_WHEEL_TAB_PRIMARY_CANSNIFFER:
@@ -52,6 +67,7 @@ void update_graphics(lv_timer_t *t) {
                 break;
         }
     }
+#endif  // #if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {
         if (is_pmsg_new[iindex]) {

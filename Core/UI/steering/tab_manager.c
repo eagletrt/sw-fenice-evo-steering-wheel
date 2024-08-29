@@ -1,5 +1,7 @@
 #include "tab_manager.h"
 
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 lv_obj_t *tab_racing_ptr;
 #ifdef ENDURANCE_MODE_ENABLED
 lv_obj_t *endurance_screen_ptr;
@@ -30,8 +32,6 @@ lv_group_t *g;
 
 racing_tab_t current_racing_tab;
 engineer_tab_t current_engineer_tab;
-
-bool steering_initialized = false;
 
 void load_current_racing_tab();
 void load_current_engineering_tab();
@@ -117,7 +117,6 @@ void tab_manager(void) {
     lv_scr_load(tab_racing_ptr);
 #endif
     current_engineer_tab = STEERING_WHEEL_TAB_TERMINAL;
-    steering_initialized = true;
 }
 
 /***
@@ -360,3 +359,5 @@ void remove_keep_lap_counter(lv_timer_t *timer) {
     on_lap_keep = false;
     lv_timer_set_repeat_count(lap_counter_timer, 0);
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

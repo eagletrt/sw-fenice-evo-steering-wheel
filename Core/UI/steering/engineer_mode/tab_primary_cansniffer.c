@@ -1,5 +1,7 @@
 #include "steering_config.h"
 
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #if CANSNIFFER_ENABLED == 1
 
 #include "tab_primary_cansniffer.h"
@@ -205,3 +207,5 @@ void primary_tab_cansniffer_create(lv_obj_t *parent) {
 }
 
 #endif  // CANSNIFFER_ENABLED == 1
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

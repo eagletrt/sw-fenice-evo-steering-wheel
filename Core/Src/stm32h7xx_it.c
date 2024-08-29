@@ -66,7 +66,6 @@ extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN EV */
-extern lv_display_t *disp;
 /* USER CODE END EV */
 
 /******************************************************************************/

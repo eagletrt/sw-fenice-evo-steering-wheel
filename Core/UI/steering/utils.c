@@ -1,5 +1,7 @@
 #include "utils.h"
 
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 lv_style_t grid_style;
 lv_style_t label_style;
 lv_style_t box_panels_style;
@@ -327,3 +329,5 @@ void init_custom_styles(void) {
     lv_style_set_bg_opa(&bubble_large_style, LV_OPA_COVER);
     lv_style_set_radius(&bubble_large_style, 9);
 }
+
+#endif  // #if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

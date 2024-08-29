@@ -82,7 +82,7 @@ includeDirectories:
   - Core/Inc/**
   - Src/**
   - Core/Src/**
-  - Core/Lib/lvgl-stm32/lvgl
+  # - Core/Lib/lvgl-stm32/lvgl
   - Core/UI/steering
   - Core/Lib/invlib
   - Core/Lib/can/lib
@@ -139,7 +139,7 @@ sourceFiles:
   - Core/Src/system_stm32h7xx.c
   - Src/**
   - Core/Src/**
-  - Core/Lib/lvgl-stm32/lvgl/src/**/*.c
+  # - Core/Lib/lvgl-stm32/lvgl/src/**/*.c
   - Core/UI/steering/**/*.c
   - Core/Lib/can/lib/primary/primary_network.c
   - Core/Lib/can/lib/primary/primary_watchdog.c

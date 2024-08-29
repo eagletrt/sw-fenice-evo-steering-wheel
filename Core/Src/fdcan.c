@@ -22,8 +22,6 @@
 
 /* USER CODE BEGIN 0 */
 
-extern bool steering_initialized;
-
 device_t primary_can_device;
 device_t secondary_can_device;
 uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];

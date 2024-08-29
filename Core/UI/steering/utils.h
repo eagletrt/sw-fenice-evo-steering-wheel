@@ -1,8 +1,11 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "lvgl.h"
 #include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
+#include "lvgl.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -29,10 +32,10 @@
 #define COLOR_RED_STATUS_HEX        (0xCE0000u)
 #define COLOR_CAR_HEX               (0X78797Au)
 
-#define COLOR_BRIGHT_RED_HEX        (0xFF0000u)
-#define COLOR_BRIGHT_GREEN_HEX      (0x00FF00u)
-#define COLOR_BRIGHT_BLUE_HEX       (0x0000FFu)
-#define COLOR_BRIGHT_YELLOW_HEX     (0xFFFF00u)
+#define COLOR_BRIGHT_RED_HEX    (0xFF0000u)
+#define COLOR_BRIGHT_GREEN_HEX  (0x00FF00u)
+#define COLOR_BRIGHT_BLUE_HEX   (0x0000FFu)
+#define COLOR_BRIGHT_YELLOW_HEX (0xFFFF00u)
 
 LV_FONT_DECLARE(lv_font_inter_bold_14);
 LV_FONT_DECLARE(lv_font_inter_bold_20);
@@ -84,5 +87,7 @@ lv_obj_t *lv_triple_label(
     const lv_font_t *bottom_text_font);
 
 lv_obj_t *create_notch(lv_obj_t *parent, racing_tab_t TabId);
+
+#endif  // STEERING_WHEEL_MODE
 
 #endif

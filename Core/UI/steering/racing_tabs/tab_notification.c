@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "tab_notification.h"
 
 lv_style_t notif_label_style;
@@ -41,3 +45,5 @@ void tab_notification_screen_create(lv_obj_t *notification_screen) {
     lv_label_set_text(notification_screen_label, "PLACEHOLDER TEXT");
     lv_obj_align(notification_screen_label, LV_ALIGN_CENTER, 0, 0);
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

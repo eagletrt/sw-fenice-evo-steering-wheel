@@ -1,6 +1,10 @@
 #ifndef TAB_SENSORS_H
 #define TAB_SENSORS_H
 
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "lvgl.h"
 #include "steering.h"
 #include "utils.h"
@@ -20,5 +24,7 @@ void tab_sensors_create(lv_obj_t *parent);
 
 void init_sensors_styles(void);
 void tab_sensor_resync(void);
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
 #endif  // TAB_SENSORS_H

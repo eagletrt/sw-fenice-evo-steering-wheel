@@ -70,7 +70,7 @@ extern bool secondary_can_fatal_error;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void watchdog_task_fn(lv_timer_t *);
+void watchdog_task_fn(void *);
 
 /* USER CODE END PFP */
 
@@ -126,15 +126,9 @@ int main(void) {
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_Delay(100);
 
-#if 1
-    //led_control_init_reset();
-    //led_control_init();
-    //led_control_read_value();
-    //led_control_set_all(&hi2c4, COLOR_YELLOW);
-    //led_mem_write();
-    // try_led_last_time();
-
-#endif
+    uint32_t active_framebuffer    = FRAMEBUFFER1_ADDR;
+    uint32_t writable_framebuffer  = FRAMEBUFFER2_ADDR;
+    uint32_t last_swap_framebuffer = HAL_GetTick();
 
 #define I2C_TESTS 0
 #if I2C_TESTS == 1
@@ -159,6 +153,9 @@ int main(void) {
 #endif
 
     init_graphics_manager();
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
     init_periodic_can_messages_timers();
     lv_tick_set_cb(HAL_GetTick);
 
@@ -171,12 +168,14 @@ int main(void) {
     lv_timer_set_repeat_count(ptt_checker_task, -1);
     lv_timer_reset(ptt_checker_task);
 
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
     if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
-        enter_fatal_error_mode("Primary CAN fatal error");
+        // enter_fatal_error_mode("Primary CAN fatal error");
         Error_Handler();
     }
     if (HAL_FDCAN_Start(&hfdcan2) != HAL_OK) {
-        enter_fatal_error_mode("Secondary CAN fatal error");
+        // enter_fatal_error_mode("Secondary CAN fatal error");
         Error_Handler();
     }
 #if WATCHDOG_ENABLED == 1
@@ -197,6 +196,14 @@ int main(void) {
         can_over_serial_routine();
 #endif
         refresh_graphics();
+
+        if (get_current_time_ms() - last_swap_framebuffer > 20) {
+            uint32_t tmp         = active_framebuffer;
+            active_framebuffer   = writable_framebuffer;
+            writable_framebuffer = tmp;
+            HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
+        }
+
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

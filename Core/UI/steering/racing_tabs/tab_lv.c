@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "tab_lv.h"
 
 #include <stdio.h>
@@ -343,8 +347,8 @@ void tab_lv_create(lv_obj_t *parent) {
 
     lv_obj_set_grid_cell(tab_lv_radiators_speed_bar, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    lv_obj_t *radiators_local_value =
-        lv_horizontal_pair_label(radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_value], NULL, "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
+    lv_obj_t *radiators_local_value = lv_horizontal_pair_label(
+        radiators_bar_panel, &tab_lv_labels[tab_lv_lb_radiators_value], NULL, "NA", &lv_font_inter_bold_30, "%", &lv_font_inter_bold_20);
     lv_obj_set_grid_cell(radiators_local_value, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
 }
 
@@ -360,3 +364,5 @@ void tab_lv_resync(void) {
     lv_cells_temp_stats_update();
 #endif
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

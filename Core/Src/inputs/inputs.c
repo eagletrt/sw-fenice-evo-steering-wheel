@@ -14,7 +14,7 @@ uint32_t manettini_last_change;
 bool manettini_initialized[MANETTINI_N] = {false};
 
 bool tson_button_pressed;
-lv_timer_t *send_set_car_status_long_press_delay = NULL;
+// lv_timer_t *send_set_car_status_long_press_delay = NULL;// desburing
 
 int hv_fans_override_last_state = 0;
 
@@ -177,7 +177,7 @@ void from_gpio_to_buttons(uint8_t gpio) {
     }
 }
 
-void send_set_car_status_check(lv_timer_t *tim) {
+void send_set_car_status_check(void *unused) {
     GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
     if (tson_button_pressed && tson_pin_state == GPIO_PIN_RESET) {
         prepare_set_car_status();
@@ -192,15 +192,16 @@ void changed_pin_fn(void) {
         current_state_tson_button = tson_pin_state;
         if (tson_pin_state == GPIO_PIN_SET) {
             tson_button_pressed = false;
-            lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
+            //lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0); // desburing
         } else {
             if (send_set_car_status_directly()) {
                 prepare_set_car_status();
             } else {
-                send_set_car_status_long_press_delay = lv_timer_create(send_set_car_status_check, 500, NULL);
-                tson_button_pressed                  = true;
-                lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
-                lv_timer_reset(send_set_car_status_long_press_delay);
+                // TODO: DESBURING
+                // send_set_car_status_long_press_delay = lv_timer_create(send_set_car_status_check, 500, NULL);
+                // tson_button_pressed                  = true;
+                // lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
+                // lv_timer_reset(send_set_car_status_long_press_delay);
             }
         }
     }
@@ -210,7 +211,7 @@ void read_buttons(void) {
     uint8_t button_input;
     if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1, &button_input, 1, 100) != HAL_OK) {
         if (inputs_error_counter > ERROR_THRESHOLD) {
-            enter_fatal_error_mode("INPUT ERROR: BUTTONS");
+            // enter_fatal_error_mode("INPUT ERROR: BUTTONS");
         }
         reinit_i2c();
         inputs_error_counter = 0;
@@ -391,8 +392,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * and read the value of the interrupt pins
  * @param tim:   Pointer to the LVGL timer
  */
-void read_inputs(lv_timer_t *tim) {
-    UNUSED(tim);
+void read_inputs(void *unused) {
+    (void)unused;
     if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
         manettini_last_change = HAL_GetTick();
 
@@ -422,8 +423,9 @@ void read_inputs(lv_timer_t *tim) {
 
 void init_input_polling(void) {
     inputs_init();
-    static lv_timer_t *read_inputs_task = NULL;
-    read_inputs_task                    = lv_timer_create(read_inputs, 100, NULL);
-    lv_timer_set_repeat_count(read_inputs_task, -1);
-    lv_timer_reset(read_inputs_task);
+    // TODO: desburing
+    // static lv_timer_t *read_inputs_task = NULL;
+    // read_inputs_task                    = lv_timer_create(read_inputs, 100, NULL);
+    // lv_timer_set_repeat_count(read_inputs_task, -1);
+    // lv_timer_reset(read_inputs_task);
 }

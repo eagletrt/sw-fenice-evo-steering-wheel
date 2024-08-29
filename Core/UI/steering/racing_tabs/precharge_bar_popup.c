@@ -1,3 +1,7 @@
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 #include "precharge_bar_popup.h"
 
 lv_style_t precharge_bar_style_precharge;
@@ -39,3 +43,5 @@ void precharge_bar_set_pack_voltage(float pack_voltage) {
 void precharge_bar_set_bus_voltage(float bus_voltage) {
     lv_bar_set_value(precharge_bar_bar, bus_voltage, LV_ANIM_OFF);
 }
+
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

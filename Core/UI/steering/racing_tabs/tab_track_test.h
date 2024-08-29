@@ -1,5 +1,9 @@
 #ifndef TAB_TRACK_TEST_H
-#define TAB_SENSORS_H
+#define TAB_TRACK_TEST_H
+
+#include "steering_config.h"
+
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
 #include "lvgl.h"
 #include "steering.h"
@@ -19,4 +23,6 @@
 void tab_track_test_create(lv_obj_t *parent);
 void tab_track_test_resync(void);
 
-#endif  // TAB_SENSORS_H
+#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
+#endif  // TAB_TRACK_TEST_H
