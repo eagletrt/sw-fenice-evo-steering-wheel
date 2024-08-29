@@ -452,9 +452,9 @@ void hv_feedback_sd_voltage_update(bool valid) {
         return;
     }
 
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_sd_voltage_last_state->sd_in > 2.0f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_sd_voltage_last_state->sd_end > 2.0f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_sd_voltage_last_state->sd_out > 2.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_sd_voltage_last_state->sd_in > 1.5f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_sd_voltage_last_state->sd_end > 1.5f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_sd_voltage_last_state->sd_out > 1.5f);
 }
 
 #include <stdio.h>
@@ -477,9 +477,9 @@ void lv_feedback_sd_voltage_update(bool valid) {
     }
 
     GET_LAST_STATE(primary, lv_feedback_sd_voltage, PRIMARY, LV_FEEDBACK_SD_VOLTAGE);
-    update_shutdown_circuit_component(shutdown_circuit_sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start > 7.0f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock > 7.0f);
-    update_shutdown_circuit_component(shutdown_circuit_sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end > 7.0f);
+    update_shutdown_circuit_component(shutdown_circuit_sd_start_index, primary_lv_feedback_sd_voltage_last_state->sd_start > 5.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_interlock_fb_index, primary_lv_feedback_sd_voltage_last_state->interlock > 5.0f);
+    update_shutdown_circuit_component(shutdown_circuit_sd_end_index, primary_lv_feedback_sd_voltage_last_state->sd_end > 5.0f);
 }
 
 void lv_feedback_ts_voltage_update(bool valid) {
@@ -489,9 +489,9 @@ void lv_feedback_ts_voltage_update(bool valid) {
         return;
     }
 
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_hvd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd > 7.0f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd > 7.0f);
-    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock > 7.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_hvd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd > 5.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_bspd_fb_index, primary_lv_feedback_ts_voltage_last_state->bspd > 5.0f);
+    update_shutdown_circuit_component(shutdown_circuit_feedbacks_invc_interlock_fb_index, primary_lv_feedback_ts_voltage_last_state->invc_interlock > 5.0f);
 }
 
 void lv_feedback_enclosure_voltage_update(bool valid) {
@@ -1215,22 +1215,22 @@ void update_sensors_extra_value(const char *buf, uint8_t extra_value) {
 }
 
 void control_status_update(bool valid) {
-    char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
-    GET_LAST_STATE(primary, control_status, PRIMARY, CONTROL_STATUS);
+    // char snprintf_buffer[SNPRINTF_BUFFER_SIZE];
+    // GET_LAST_STATE(primary, control_status, PRIMARY, CONTROL_STATUS);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_control_status_last_state->map_sc * 100.0f);
-    endurance_screen_set_label(snprintf_buffer, slip_map_idx);
+    // snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_control_status_last_state->map_sc * 100.0f);
+    // endurance_screen_set_label(snprintf_buffer, slip_map_idx);
 
-    snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_control_status_last_state->map_tv * 100.0f);
-    endurance_screen_set_label(snprintf_buffer, torque_map_idx);
+    // snprintf(snprintf_buffer, SNPRINTF_BUFFER_SIZE, "%.0f", primary_control_status_last_state->map_tv * 100.0f);
+    // endurance_screen_set_label(snprintf_buffer, torque_map_idx);
 
-    if (primary_control_status_last_state->map_tv != 0 || primary_control_status_last_state->map_sc != 0) {
-        endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_DARK_GREEN_STATUS_HEX, slip_map_idx);
-        endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_DARK_GREEN_STATUS_HEX, torque_map_idx);
-    } else {
-        endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_BLACK_STATUS_HEX, slip_map_idx);
-        endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_BLACK_STATUS_HEX, torque_map_idx);
-    }
+    // if (primary_control_status_last_state->map_tv != 0 || primary_control_status_last_state->map_sc != 0) {
+        // endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_DARK_GREEN_STATUS_HEX, slip_map_idx);
+        // endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_DARK_GREEN_STATUS_HEX, torque_map_idx);
+    // } else {
+        // endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_BLACK_STATUS_HEX, slip_map_idx);
+        // endurance_screen_set_color(COLOR_SECONDARY_HEX, COLOR_BLACK_STATUS_HEX, torque_map_idx);
+    // }
 }
 
 void odometer_update(bool valid) {
@@ -1282,7 +1282,7 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         update_sensors_extra_value("SON", 0);
         set_tab_racing_label_text("SON", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(true);
-        endurance_screen_set_label("OFF", ptt_status_idx);
+        endurance_screen_set_label("MUTE", ptt_status_idx);
         endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     } else if (ecu_ack && !ptt_button_pressed) {
         ptt_status = ptt_status_SET_OFF;
@@ -1290,7 +1290,7 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         update_sensors_extra_value("SOF", 0);
         set_tab_racing_label_text("SOF", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(false);
-        endurance_screen_set_label("OFF", ptt_status_idx);
+        endurance_screen_set_label("MUTE", ptt_status_idx);
         endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     } else if (ecu_ack && ptt_button_pressed) {
         ptt_status = ptt_status_ON;
@@ -1306,7 +1306,7 @@ void ptt_tasks_fn(lv_timer_t *timer) {
         update_sensors_extra_value("OFF", 0);
         set_tab_racing_label_text("OFF", tab_rac_ptt_status_idx);
         set_tab_racing_ptt_label_color(false);
-        endurance_screen_set_label("OFF", ptt_status_idx);
+        endurance_screen_set_label("MUTE", ptt_status_idx);
         endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, ptt_status_idx);
     }
 }

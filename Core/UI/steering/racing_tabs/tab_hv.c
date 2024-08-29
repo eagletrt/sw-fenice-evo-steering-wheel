@@ -56,20 +56,20 @@ lv_obj_t *balancing_columns[N_PORK_CELLBOARD] = {
 };
 
 static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][21] = {
-    "SD start",
-    "SD in",
-    "SD out",
-    "TSAC interlock",
-    "Mushroom L+R",
-    "Mushroom cock",
-    "Inertial switch",
+    "SD START",
+    "TSAC LV IN",
+    "TSAC LV OUT",
+    "TSAC HV",
+    "MUSHROOM L R",
+    "MUSHROOM COCK",
+    "INERTIAL SWITCH",
     "BOTS",
-    "INVC Lid",
+    "INVC LID",
     "HVD",
     "BSPD",
-    "INVC motors interlock",
-    "TSMS[LV]",
-    "TSMS[HV]"};
+    "INVC MOT",
+    "TSMS LV",
+    "TSMS HV"};
 
 static shutdown_circuit_component_state_t shutdown_status_lb_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
 
@@ -210,6 +210,7 @@ shutdown_circuit_indexes_t last_shutdown_element_unknown(void) {
 
 //TODO
 void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_close) {
+    // TODO: cambiare le soglie
     shutdown_status_lb_array[idx] = is_close ? SC_CLOSE : SC_OPEN;
     shutdown_circuit_indexes_t last_opend_index;
     if ((last_opend_index = last_shutdown_element_unknown()) != shutdown_circuit_no_element_index) {
@@ -237,7 +238,7 @@ void update_shutdown_circuit_component(shutdown_circuit_indexes_t idx, bool is_c
         display_notification("SHUTDOWN \nCIRCUIT \nCLOSED", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
     }
     set_tab_hv_label_text("SHUTDOWN CLOSE", shutdown_status_lb);
-    endurance_screen_set_label("CLOSED", shutdown_status_idx);
+    endurance_screen_set_label("OK", shutdown_status_idx);
     endurance_screen_set_color(COLOR_BLACK_STATUS_HEX, COLOR_BRIGHT_GREEN_HEX, shutdown_status_idx);
     global_shutdown_status = SC_CLOSE;
 }
