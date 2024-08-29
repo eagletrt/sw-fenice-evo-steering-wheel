@@ -4,7 +4,10 @@ primary_watchdog m_primary_watchdog     = {0};
 secondary_watchdog m_secondary_watchdog = {0};
 inverters_watchdog m_inverters_watchdog = {0};
 
-// lv_timer_t *watchdog_task; // desburing
+// TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+lv_timer_t *watchdog_task;
+#endif
 
 void init_watchdog(void) {
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; ++iindex) {
@@ -16,9 +19,12 @@ void init_watchdog(void) {
     for (uint16_t iindex = 0; iindex < inverters_MESSAGE_COUNT; ++iindex) {
         CANLIB_BITSET_ARRAY(m_inverters_watchdog.activated, iindex);
     }
-    // watchdog_task = lv_timer_create(watchdog_task_fn, 1000, NULL); // desburing
-    // lv_timer_set_repeat_count(watchdog_task, -1); // desburing
-    // lv_timer_reset(watchdog_task); // desburing
+// TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+    watchdog_task = lv_timer_create(watchdog_task_fn, 1000, NULL);
+    lv_timer_set_repeat_count(watchdog_task, -1);
+    lv_timer_reset(watchdog_task);
+#endif
 }
 
 void watchdog_task_fn(void *unused) {

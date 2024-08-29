@@ -17,5 +17,6 @@
 void init_graphics_manager(void);
 void refresh_graphics(void);
 void update_graphics(void *unused);
+void ptt_tasks_fn(void *tim);
 
 #endif  // GRAPHICS_MANAGER_H

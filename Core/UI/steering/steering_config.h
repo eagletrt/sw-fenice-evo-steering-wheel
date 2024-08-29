@@ -14,6 +14,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/***
+ * If you change one to the other, remember to change LTDC and DMA2D config in cubeMX
+ */
 #define STEERING_WHEEL_LVGL_MODE   (0U)
 #define STEERING_WHEEL_OLIVEC_MODE (1U)
 #define STEERING_WHEEL_MODE        STEERING_WHEEL_OLIVEC_MODE
@@ -29,7 +32,11 @@
 /***
  * Color resolution in bytes, if you change this please make sure to also change the setting in STM32 CubeMX
  */
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 #define COLOR_RESOLUTION (2U)
+#elif STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
+#define COLOR_RESOLUTION (4U)
+#endif
 
 /***
  * Activate candump in the engineering tabs

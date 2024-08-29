@@ -96,11 +96,11 @@ void lv_pumps_speed_update(bool valid);
 
 #if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 
-#include "controls_lvgl.h"
+#include "steering_lvgl.h"
 
 #elif STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
 
-#include "controls_olivec.h"
+#include "steering_olivec.h"
 
 #endif  // STEERING_WHEEL_MODE
 
