@@ -21,11 +21,6 @@ int secondary_cansniffer_start_index = 0;
 int inverters_cansniffer_start_index = 0;
 #endif
 
-primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state = {.map_pw = 0.0f, .map_sc = 0.0f, .map_tv = 0.0f};
-
-primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed = {.radiator_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
-primary_lv_pumps_speed_converted_t steering_wheel_state_pumps_speed       = {.pumps_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
-
 uint32_t steering_wheel_lv_pumps_speed_sent_timestamp                  = 0;
 uint32_t steering_wheel_lv_radiators_speed_sent_timestamp              = 0;
 steering_wheel_cooling_status_t steering_wheel_lv_pumps_speed_state    = STEERING_WHEEL_COOLING_STATUS_SYNC;
@@ -245,8 +240,8 @@ void manettino_send_slip_control(float val) {
     ecu_set_power_maps_last_state.map_sc = val;
     int map_val                          = (int)(ecu_set_power_maps_last_state.map_sc * 100.0f);
 #ifndef PERIODIC_SET_ECU_POWER_MAPS
-    send_steer_status(NULL);
-    send_steer_status(NULL);
+    send_ecu_set_power_maps(NULL);
+    send_ecu_set_power_maps(NULL);
 #endif
     snprintf(sprintf_buffer_controls, BUFSIZ, "%u", map_val);
     set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_slip_idx);
@@ -257,8 +252,8 @@ void manettino_send_torque_vectoring(float val) {
     ecu_set_power_maps_last_state.map_tv = val;
     int map_val                          = (int)(ecu_set_power_maps_last_state.map_tv * 100.0f);
 #ifndef PERIODIC_SET_ECU_POWER_MAPS
-    send_steer_status(NULL);
-    send_steer_status(NULL);
+    send_ecu_set_power_maps(NULL);
+    send_ecu_set_power_maps(NULL);
 #endif
     snprintf(sprintf_buffer_controls, BUFSIZ, "%u", map_val);
     set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_torque_idx);
@@ -269,8 +264,8 @@ void manettino_send_power_map(float val) {
     ecu_set_power_maps_last_state.map_pw = val;
     float map_val                        = (float)(ecu_set_power_maps_last_state.map_pw * 100.0f);
 #ifndef PERIODIC_SET_ECU_POWER_MAPS
-    send_steer_status(NULL);
-    send_steer_status(NULL);
+    send_ecu_set_power_maps(NULL);
+    send_ecu_set_power_maps(NULL);
 #endif
     snprintf(sprintf_buffer_controls, BUFSIZ, "%.0f", map_val);
     set_tab_racing_label_text(sprintf_buffer_controls, tab_rac_pow_idx);

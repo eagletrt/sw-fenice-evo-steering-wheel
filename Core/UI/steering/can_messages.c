@@ -30,7 +30,7 @@ lv_timer_t *steer_version_task;
 
 char name_buffer[BUFSIZ];
 
-void send_steer_version(void *unused) {
+void send_steering_wheel_version(void *unused) {
 #ifdef STM32H723xx
     struct tm timeinfo;
     strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
@@ -40,11 +40,12 @@ void send_steer_version(void *unused) {
 #endif
 }
 
-void send_steer_status(void *unused) {
+void send_ecu_set_power_maps(void *unused) {
     primary_ecu_set_power_maps_converted_t converted = {
-        .map_pw = ecu_set_power_maps_last_state.map_pw,
-        .map_sc = ecu_set_power_maps_last_state.map_sc,
-        .map_tv = ecu_set_power_maps_last_state.map_tv,
+        .map_power = ecu_set_power_maps_last_state.map_power,
+        .reg_state = ecu_set_power_maps_last_state.reg_state,
+        .sc_state  = ecu_set_power_maps_last_state.sc_state,
+        .tv_state  = ecu_set_power_maps_last_state.tv_state,
     };
     STEER_CAN_PACK(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS)
     can_send(&msg, true);
@@ -87,6 +88,10 @@ void handle_primary(can_message_t *msg) {
             break;
         case PRIMARY_ECU_STATUS_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, ecu_status, ECU_STATUS, is_pmsg, true);
+            break;
+        }
+        case PRIMARY_ECU_POWER_MAPS_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, ecu_power_maps, ECU_POWER_MAPS, is_pmsg, true);
             break;
         }
         case PRIMARY_ECU_PTT_STATUS_FRAME_ID: {
@@ -164,6 +169,14 @@ void handle_primary(can_message_t *msg) {
         }
         case PRIMARY_LV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, lv_feedback_ts_voltage, LV_FEEDBACK_TS_VOLTAGE, is_pmsg, true);
+            break;
+        }
+        case PRIMARY_LV_COOLING_AGGRESSIVENESS_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, lv_cooling_aggressiveness, LV_COOLING_AGGRESSIVENESS, is_pmsg, true);
+            break;
+        }
+        case PRIMARY_ECU_CONTROL_STATUS_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, ecu_control_status, ECU_CONTROL_STATUS, is_pmsg, true);
             break;
         }
         case PRIMARY_LV_FEEDBACK_ENCLOSURE_VOLTAGE_FRAME_ID: {
@@ -482,12 +495,12 @@ void init_periodic_can_messages_timers(void) {
 // TODO: find solution with olivec
 #if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 #ifdef PERIODIC_SET_ECU_POWER_MAPS
-    steer_status_task = lv_timer_create(send_steer_status, PRIMARY_INTERVAL_ECU_SET_POWER_MAPS, NULL);
+    steer_status_task = lv_timer_create(send_ecu_set_power_maps, PRIMARY_INTERVAL_ECU_SET_POWER_MAPS, NULL);
     lv_timer_set_repeat_count(steer_status_task, -1);
     lv_timer_reset(steer_status_task);
 #endif
 
-    steer_version_task = lv_timer_create(send_steer_version, PRIMARY_INTERVAL_STEERING_WHEEL_VERSION, NULL);
+    steer_version_task = lv_timer_create(send_steering_wheel_version, PRIMARY_INTERVAL_STEERING_WHEEL_VERSION, NULL);
     lv_timer_set_repeat_count(steer_version_task, -1);
     lv_timer_reset(steer_version_task);
 #endif

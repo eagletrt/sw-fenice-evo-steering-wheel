@@ -196,17 +196,7 @@ void endurance_screen_create(lv_obj_t *parent) {
 #endif  // ENDURANCE_MODE_ENABLED
 
 /***
- * RGN
- * TRQ 
  * SLP sotto e sopra la lettera in grande, slash con disabilitato. nero su sfondo verde se acceso
- * 
- * in verticale
- * 
- * bianco su sfondo nero -> spento
- * colore nero su sfondo verde -> accesi
- * 
- * COOLING
- * 
  */
 
 #endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE

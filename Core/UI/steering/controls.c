@@ -1,5 +1,10 @@
 #include "controls.h"
 
+primary_ecu_set_power_maps_converted_t ecu_set_power_maps_last_state      = {.map_power = 1.0f, .reg_state = 1, .sc_state = 1, .tv_state = 1};
+primary_lv_radiator_speed_converted_t steering_wheel_state_radiator_speed = {.radiator_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
+primary_lv_pumps_speed_converted_t steering_wheel_state_pumps_speed       = {.pumps_speed = 0.0f, .status = primary_lv_radiator_speed_status_off};
+primary_hv_set_fans_status_converted_t steering_wheel_set_fans_status     = {.fans_override = 0, .fans_speed = 0.0f};
+
 void send_set_car_status(primary_ecu_set_status_status val) {
     primary_ecu_set_status_converted_t converted = {0};
     converted.status                             = val;
@@ -15,31 +20,17 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_enable_inv_updates:
         case primary_ecu_status_status_check_inv_settings: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            // display_notification("Sending\nIDLE\nanyway", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_idle: {
             send_set_car_status(primary_ecu_set_status_status_ready);
-            // if (is_shutdown_closed()) {
-            // display_notification("TSON", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
-            // } else {
-            // display_notification("Shutdown\nOpen\nSending TSON\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
-            // }
             break;
         }
         case primary_ecu_status_status_start_ts_precharge:
         case primary_ecu_status_status_wait_ts_precharge: {
-            // display_notification("Precharge\nnot finished\nyet", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_wait_driver: {
-            GET_LAST_STATE(secondary, pedal_brakes_pressure, SECONDARY, PEDAL_BRAKES_PRESSURE);
-            float brake_pressure = (secondary_pedal_brakes_pressure_last_state->front + secondary_pedal_brakes_pressure_last_state->rear) / 2.0f;
-            if (brake_pressure > 0.89f) {
-                // display_notification("DRIVE", 1500, COLOR_RED_STATUS_HEX, COLOR_PRIMARY_HEX);
-            } else {
-                // display_notification("Not Enough\nFreno\nSending DRIVE\nAnyway", 1500, COLOR_ORANGE_STATUS_HEX, COLOR_PRIMARY_HEX);
-            }
             send_set_car_status(primary_ecu_set_status_status_drive);
             break;
         }
@@ -49,14 +40,10 @@ void prepare_set_car_status(void) {
         case primary_ecu_status_status_start_ts_discharge:
         case primary_ecu_status_status_re_enable_inverter_drive:
         case primary_ecu_status_status_wait_ts_discharge: {
-            // disabled because the central buttons reads badly at the hardware level
-            // send_set_car_status(primary_ecu_set_status_status_idle);
-            // display_notification("IDLE", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
         case primary_ecu_status_status_fatal_error: {
             send_set_car_status(primary_ecu_set_status_status_idle);
-            // display_notification("ECU in FATAL ERROR,\nsending IDLE anyway", 1500, COLOR_GREEN_STATUS_HEX, COLOR_PRIMARY_HEX);
             break;
         }
     }

@@ -31,7 +31,12 @@ extern primary_lv_cells_voltage_converted_t lv_voltages_stock_2;
 extern primary_lv_cells_temp_converted_t lv_temps_stock_1;
 extern primary_lv_cells_temp_converted_t lv_temps_stock_2;
 
+extern bool ecu_ack;
+extern bool ptt_button_pressed;
+extern ptt_status_t ptt_status;
+
 void car_status_update(bool valid);
+void ecu_power_maps_update(bool valid);
 void angular_velocity_update(bool valid);
 void vehicle_speed_update(bool valid);
 void ecu_feedbacks_update(bool valid);  // ?
@@ -64,6 +69,7 @@ void lv_cells_voltage_update(bool valid);
 void lv_cells_voltage_stats_update(bool valid);
 void lv_cells_temp_update(bool valid);
 void lv_cells_temp_stats_update(bool valid);
+void lv_cooling_aggressiveness_update(bool valid);
 
 void hv_status_update(bool valid);
 void hv_fans_override_status_update(bool valid);
@@ -93,6 +99,9 @@ void tlm_version_update(bool valid);
 void control_status_update(bool valid);
 void lv_radiator_speed_update(bool valid);
 void lv_pumps_speed_update(bool valid);
+
+void set_ptt_button_pressed(bool);
+void send_ptt_status_message(bool on);
 
 #if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 

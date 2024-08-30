@@ -1233,34 +1233,6 @@ void odometer_update(bool valid) {
     set_tab_racing_label_text(snprintf_buffer, tab_rac_odometer_idx);
 }
 
-/***
- * PTT
- */
-
-typedef enum {
-    ptt_status_OFF     = 0,
-    ptt_status_SET_ON  = 1,
-    ptt_status_ON      = 2,
-    ptt_status_SET_OFF = 3,
-} ptt_status_t;
-
-bool ecu_ack            = false;
-bool ptt_button_pressed = false;
-ptt_status_t ptt_status = ptt_status_OFF;
-
-#include "can_messages.h"
-
-void set_ptt_button_pressed(bool val) {
-    ptt_button_pressed = val;
-}
-
-void send_ptt_status_message(bool on) {
-    primary_ecu_set_ptt_status_converted_t converted = {0};
-    converted.status                                 = on ? primary_ecu_set_ptt_status_status_on : primary_ecu_set_ptt_status_status_off;
-    STEER_CAN_PACK(primary, PRIMARY, ecu_set_ptt_status, ECU_SET_PTT_STATUS);
-    can_send(&msg, true);
-}
-
 void ptt_tasks_fn(void *timer) {
     if (!ecu_ack && ptt_button_pressed) {
         ptt_status = ptt_status_SET_ON;
@@ -1294,16 +1266,6 @@ void ptt_tasks_fn(void *timer) {
         set_tab_racing_ptt_label_color(false);
         endurance_screen_set_label("MUTE", ptt_status_idx);
         endurance_screen_set_color(COLOR_WHITE_STATUS_HEX, COLOR_BLACK_STATUS_HEX, ptt_status_idx);
-    }
-}
-
-void handle_ptt_message(void) {
-    GET_LAST_STATE(primary, ecu_ptt_status, PRIMARY, ECU_PTT_STATUS);
-    primary_ecu_ptt_status_status val = primary_ecu_ptt_status_last_state->status;
-    if (val == primary_ecu_ptt_status_status_off) {
-        ecu_ack = false;
-    } else if (val == primary_ecu_ptt_status_status_on) {
-        ecu_ack = true;
     }
 }
 

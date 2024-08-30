@@ -91,7 +91,10 @@
         "secondary_network.h": "c",
         "controls_lvgl.h": "c",
         "steering_olivec.h": "c",
-        "lv_obj_pos.h": "c"
+        "lv_obj_pos.h": "c",
+        "steering_wheel_font_3.h": "c",
+        "steering_wheel_font_2.h": "c",
+        "steering_wheel_font_50.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": true,

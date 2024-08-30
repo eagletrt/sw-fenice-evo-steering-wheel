@@ -5,6 +5,8 @@
 
 #if STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
 
+void ptt_periodic_check(void *timer);
+
 #endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
 
 #endif  // STEERING_OLIVEC_H

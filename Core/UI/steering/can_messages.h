@@ -14,8 +14,8 @@ extern uint32_t tlm_ntw_ips[TLM_NTW_INTERFACE_MAX_N];
 
 bool can_send(can_message_t *msg, bool to_primary_network);
 
-void send_steer_version(void *);
-void send_steer_status(void *);
+void send_steering_wheel_version(void *);
+void send_ecu_set_power_maps(void *);
 void handle_ptt_message();
 void send_hv_set_balancing_status_steering_wheel(bool set_balancing_on, uint8_t balancing_threshold);
 

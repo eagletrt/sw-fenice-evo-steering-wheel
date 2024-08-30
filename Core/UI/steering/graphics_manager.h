@@ -8,6 +8,8 @@
 
 #if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
 #include "lvgl.h"
+#else  // TODO desburing
+// #include "olive.c"
 #endif
 
 #ifdef STM32H723xx

@@ -180,6 +180,9 @@ void from_gpio_to_buttons(uint8_t gpio) {
     }
 }
 
+// TODO: find solution with olivec
+#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
+
 void send_set_car_status_check(void *unused) {
     GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
     if (tson_button_pressed && tson_pin_state == GPIO_PIN_RESET) {
@@ -189,31 +192,32 @@ void send_set_car_status_check(void *unused) {
 
 GPIO_PinState current_state_tson_button = GPIO_PIN_SET;
 
-void changed_pin_fn(void) {
+void tson_button(void) {
     GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
     if (current_state_tson_button != tson_pin_state) {
         current_state_tson_button = tson_pin_state;
         if (tson_pin_state == GPIO_PIN_SET) {
             tson_button_pressed = false;
-            // TODO: find solution with olivec
-#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
             lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
-#endif
         } else {
             if (send_set_car_status_directly()) {
                 prepare_set_car_status();
             } else {
-// TODO: find solution with olivec
-#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
                 send_set_car_status_long_press_delay = lv_timer_create(send_set_car_status_check, 500, NULL);
                 tson_button_pressed                  = true;
                 lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
                 lv_timer_reset(send_set_car_status_long_press_delay);
-#endif
             }
         }
     }
 }
+
+#else
+
+void tson_button() {
+}
+
+#endif
 
 void read_buttons(void) {
     uint8_t button_input;
@@ -260,55 +264,18 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
     }
     switch (manettino) {
         case MANETTINO_RIGHT_INDEX: {
-            //
             int dstep = new_manettino_index - manettini[MANETTINO_RIGHT_INDEX];
-
             manettino_right_actions(delta_step_position(dstep));
-            /*
-    if (!engineer_mode) {
-      manettino_send_torque_vectoring(
-          val_torque_map_index[new_manettino_index]);
-    } else {
-      manettino_send_set_radiators(
-          val_radiators_speed_index[new_manettino_index]);
-    }
-    */
             break;
         }
         case MANETTINO_CENTER_INDEX: {
             int dstep = new_manettino_index - manettini[MANETTINO_CENTER_INDEX];
             manettino_center_actions(delta_step_position(dstep));
             break;
-#if 0
-    if (!engineer_mode) {
-      power_map_last_state += (dstep * 10);
-      power_map_last_state = imin(power_map_last_state, POWER_MAP_MAX);
-      power_map_last_state = imax(power_map_last_state, POWER_MAP_MIN);
-      manettino_send_power_map((float)power_map_last_state / 100.0f);
-    } else {
-      // pork cooling
-      hv_fans_override_last_state += dstep * 10;
-      hv_fans_override_last_state =
-          imin(hv_fans_override_last_state, PORK_HIGH_FANS_SPEED);
-      hv_fans_override_last_state =
-          imax(hv_fans_override_last_state, PORK_LOW_FANS_SPEED);
-      send_pork_fans_status((float)hv_fans_override_last_state / 100.0f);
-    }
-    break;
-#endif
         }
         case MANETTINO_LEFT_INDEX: {
             int dstep = new_manettino_index - manettini[MANETTINO_LEFT_INDEX];
             manettino_left_actions(delta_step_position(dstep));
-
-#if 0
-    if (!engineer_mode) {
-      manettino_send_slip_control(val_slip_map_index[new_manettino_index]);
-    } else {
-      manettino_send_set_pumps_speed(
-          val_pumps_speed_index[new_manettino_index]);
-    }
-#endif
             break;
         }
         default: {
@@ -424,7 +391,7 @@ void read_inputs(void *unused) {
         read_manettino_left();
         read_manettino_center();
         read_manettino_right();
-        changed_pin_fn();
+        tson_button();
 #endif
     }
 }

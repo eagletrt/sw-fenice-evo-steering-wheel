@@ -103,6 +103,7 @@
 #define RIGHT_MANETTINO_INTERRUPT_INDEX  3
 #define NUM_INTERRUPT_PINS               4
 
+#define clamp(x, a, b) (((x) < (a)) ? (a) : (((x) > (b)) ? (b) : (x)))
 #define GET_LAST_STATE(ntw, msg, NTW, MSG) \
     ntw##_##msg##_converted_t *ntw##_##msg##_last_state = (ntw##_##msg##_converted_t *)&ntw##_messages_last_state[NTW##_##MSG##_INDEX][0]
 
@@ -137,6 +138,13 @@ typedef enum {
 extern racing_tab_t current_racing_tab;
 extern engineer_tab_t current_engineer_tab;
 extern bool engineer_mode;
+
+typedef enum {
+    ptt_status_OFF     = 0,
+    ptt_status_SET_ON  = 1,
+    ptt_status_ON      = 2,
+    ptt_status_SET_OFF = 3,
+} ptt_status_t;
 
 typedef enum {
     shutdown_circuit_no_element_index = -1,
@@ -293,25 +301,13 @@ typedef enum {
 #define HV_TEMP_ALERT_THRESHOLD    (46.0f)
 #define HV_TEMP_CRITICAL_THRESHOLD (54.0f)
 
-/***
- * mettere le labels
- * 
- * shutdown verde = chiuso
- * stato della macchina = nero
- * ptt = blu se on -> talk else off
- * cooling = nero neutro
- * tutti altri verde ok
- * controlli mappa 0 -> nero
- * else attivi -> verde
- * not attivi -> rosso
- * regen -> verde se attiva else nero
- */
-
-/***
- * cooling pt sx bottone verde su e giallo giu
- * porco cooling sx bottone verde su e giallo giu
- * manettini slip torque, manettino centrale libero
- */
+#define OLIVEC_COLOR_RED        (0xFFFF0000)
+#define OLIVEC_COLOR_BLUE       (0xFF0000FF)
+#define OLIVEC_COLOR_LIGHT_BLUE (0xFFADD8E6)
+#define OLIVEC_COLOR_YELLOW     (0xFFFFFF00)
+#define OLIVEC_COLOR_GREEN      (0xFF00FF00)
+#define OLIVEC_COLOR_BLACK      (0xFF000000)
+#define OLIVEC_COLOR_WHITE      (0xFFFFFFFF)
 
 /***
  * Cooling
@@ -329,5 +325,34 @@ typedef enum {
 uint32_t get_current_time_ms(void);
 void openblt_reset(void);
 void system_reset(void);
+
+typedef enum {
+    swoc_sd = 0,
+    swoc_lap_time,
+    swoc_ptt,
+    swoc_temp_mot,
+    swoc_temp_mot_name,
+    swoc_soc_hv,
+    swoc_soc_lv,
+    swoc_soc_lv_name,
+    swoc_temp_inv,
+    swoc_temp_inv_name,
+    swoc_temp_hv,
+    swoc_temp_hv_name,
+    swoc_pt_cooling,
+    swoc_pt_cooling_name,
+    swoc_regen,
+    swoc_slip,
+    swoc_torque,
+    swoc_hv_cooling,
+    swoc_hv_cooling_name,
+    swoc_elems_n
+} swoc_elems_t;
+
+#define SWOC_STRING_LEN (32U)
+extern bool swoc_elem_was_updated[swoc_elems_n];
+extern char swoc_elem_label[swoc_elems_n][SWOC_STRING_LEN];
+extern uint32_t swoc_elem_lb_color[swoc_elems_n];
+extern uint32_t swoc_elem_bg_color[swoc_elems_n];
 
 #endif  // STEERING_CONFIG_H

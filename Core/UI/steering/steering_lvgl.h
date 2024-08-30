@@ -62,7 +62,6 @@ void all_leds_green(void);
 void all_leds_red(void);
 void tab_terminal_new_message(const char *message);
 void tab_terminal_clear(void);
-void set_ptt_button_pressed(bool);
 
 /***
  * Tab racing

@@ -9,8 +9,8 @@ lv_color_t *framebuffer_2 = (lv_color_t *)FRAMEBUFFER2_ADDR;
 
 #elif STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
 
-uint32_t ***framebuffer_1 = (uint32_t ***)FRAMEBUFFER1_ADDR;
-uint32_t ***framebuffer_2 = (uint32_t ***)FRAMEBUFFER2_ADDR;
+uint8_t *framebuffer_1 = (uint8_t *)FRAMEBUFFER1_ADDR;
+uint8_t *framebuffer_2 = (uint8_t *)FRAMEBUFFER2_ADDR;
 
 #endif
 
@@ -22,22 +22,18 @@ void init_graphics_manager(void) {
 #endif
     tab_manager();
 #elif STEERING_WHEEL_MODE == STEERING_WHEEL_OLIVEC_MODE
-    for (size_t i = 0; i < SCREEN_WIDTH; i++) {
-        for (size_t j = 0; j < SCREEN_HEIGHT; j++) {
-            framebuffer_1[i][j][0] = 0xFF;
-            framebuffer_1[i][j][0] = 0xFF;
-            framebuffer_1[i][j][0] = 0x00;
-            framebuffer_1[i][j][0] = 0x00;
-        }
-    }
-    for (size_t i = 0; i < SCREEN_WIDTH; i++) {
-        for (size_t j = 0; j < SCREEN_HEIGHT; j++) {
-            framebuffer_2[i][j][0] = 0xFF;
-            framebuffer_2[i][j][0] = 0x00;
-            framebuffer_2[i][j][0] = 0xFF;
-            framebuffer_2[i][j][0] = 0x00;
-        }
-    }
+    // for (size_t i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT * COLOR_RESOLUTION; i += 4) {
+    // framebuffer_1[i + 0] = 0xFF;
+    // framebuffer_1[i + 1] = 0x00;
+    // framebuffer_1[i + 2] = 0x00;
+    // framebuffer_1[i + 3] = 0xFF;
+    // }
+    // for (size_t i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT * COLOR_RESOLUTION; i += 4) {
+    // framebuffer_2[i + 0] = 0xFF;
+    // framebuffer_2[i + 1] = 0x00;
+    // framebuffer_2[i + 2] = 0xFF;
+    // framebuffer_2[i + 3] = 0x00;
+    // }
 
 #endif
 }
@@ -78,6 +74,9 @@ void update_graphics(void *unused) {
                     car_status_update(is_pmsg_valid[iindex]);
                     break;
                 }
+                case PRIMARY_ECU_POWER_MAPS_FRAME_ID:
+                    ecu_power_maps_update(is_pmsg_valid[iindex]);
+                    break;
                 case PRIMARY_ECU_FEEDBACKS_FRAME_ID: {
                     ecu_feedbacks_update(is_pmsg_valid[iindex]);
                     break;
@@ -157,6 +156,10 @@ void update_graphics(void *unused) {
                 }
                 case PRIMARY_LV_ERRORS_FRAME_ID: {
                     // lv_errors_update(); //TODO è commentato, eliminiamo?
+                    break;
+                }
+                case PRIMARY_LV_COOLING_AGGRESSIVENESS_FRAME_ID: {
+                    lv_cooling_aggressiveness_update(is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_LV_RADIATOR_SPEED_FRAME_ID: {
