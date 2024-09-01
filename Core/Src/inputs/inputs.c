@@ -14,10 +14,6 @@ uint32_t manettini_last_change;
 bool manettini_initialized[MANETTINI_N] = {false};
 
 bool tson_button_pressed;
-// TODO: find solution with olivec
-#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
-lv_timer_t *send_set_car_status_long_press_delay = NULL;
-#endif
 
 int hv_fans_override_last_state = 0;
 
@@ -125,25 +121,6 @@ void inputs_init(void) {
 #endif
 }
 
-void reinit_i2c() {
-    HAL_I2C_DeInit(&hi2c4);
-    MX_I2C4_Init();
-    inputs_init();
-}
-
-void print_buttons(void) {
-#ifdef STEERING_LOG_ENABLED
-    char buffer[100];
-    uint32_t len = 0;
-    len += snprintf(buffer + len, BUFFER_SIZE_PRINT_BUTTONS, "Buttons: ");
-    for (int i = 0; i < BUTTONS_N; i++) {
-        len += snprintf(buffer + len, BUFFER_SIZE_PRINT_BUTTONS, "%d ", buttons[i]);
-    }
-    len += snprintf(buffer + len, BUFFER_SIZE_PRINT_BUTTONS, "\n");
-    print("%s", buffer);
-#endif
-}
-
 /**
  * @param value: The value of the manettino
  * @param manettino: The manettino index (left, center, right)
@@ -180,53 +157,10 @@ void from_gpio_to_buttons(uint8_t gpio) {
     }
 }
 
-// TODO: find solution with olivec
-#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
-
-void send_set_car_status_check(void *unused) {
-    GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
-    if (tson_button_pressed && tson_pin_state == GPIO_PIN_RESET) {
-        prepare_set_car_status();
-    }
-}
-
-GPIO_PinState current_state_tson_button = GPIO_PIN_SET;
-
-void tson_button(void) {
-    GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
-    if (current_state_tson_button != tson_pin_state) {
-        current_state_tson_button = tson_pin_state;
-        if (tson_pin_state == GPIO_PIN_SET) {
-            tson_button_pressed = false;
-            lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 0);
-        } else {
-            if (send_set_car_status_directly()) {
-                prepare_set_car_status();
-            } else {
-                send_set_car_status_long_press_delay = lv_timer_create(send_set_car_status_check, 500, NULL);
-                tson_button_pressed                  = true;
-                lv_timer_set_repeat_count(send_set_car_status_long_press_delay, 1);
-                lv_timer_reset(send_set_car_status_long_press_delay);
-            }
-        }
-    }
-}
-
-#else
-
-void tson_button() {
-}
-
-#endif
-
 void read_buttons(void) {
     uint8_t button_input;
     if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOB, 1, &button_input, 1, 100) != HAL_OK) {
-        if (inputs_error_counter > ERROR_THRESHOLD) {
-            // enter_fatal_error_mode("INPUT ERROR: BUTTONS");
-        }
-        reinit_i2c();
-        inputs_error_counter = 0;
+        // TODO: handle errors
         return;
     }
     from_gpio_to_buttons(button_input);
@@ -294,8 +228,7 @@ void manettini_actions(uint8_t value, uint8_t manettino) {
 void read_manettino_left(void) {
     uint8_t manettino_input;
     if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV1_ADDR << 1, REGISTER_GPIOA, 1, &manettino_input, 1, 100) != HAL_OK) {
-        reinit_i2c();
-        inputs_error_counter = 0;
+        // TODO: handle errors
         return;
     }
     if (manettino_input != dev1.gpio[0]) {
@@ -307,8 +240,7 @@ void read_manettino_left(void) {
 void read_manettino_center(void) {
     uint8_t manettino_input;
     if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOB, 1, &manettino_input, 1, 100) != HAL_OK) {
-        reinit_i2c();
-        inputs_error_counter = 0;
+        // TODO: handle errors
         return;
     }
     if (manettino_input != dev2.gpio[1]) {
@@ -320,8 +252,7 @@ void read_manettino_center(void) {
 void read_manettino_right(void) {
     uint8_t manettino_input;
     if (HAL_I2C_Mem_Read(&hi2c4, MCP23017_DEV2_ADDR << 1, REGISTER_GPIOA, 1, &manettino_input, 1, 100) != HAL_OK) {
-        reinit_i2c();
-        inputs_error_counter = 0;
+        // TODO handle errors
         return;
     }
     if (manettino_input != dev2.gpio[0]) {
@@ -367,8 +298,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
  * and read the value of the interrupt pins
  * @param tim:   Pointer to the LVGL timer
  */
-void read_inputs(void *unused) {
-    (void)unused;
+void read_inputs(void) {
     if (HAL_GetTick() - manettini_last_change > MANETTINO_DEBOUNCE) {
         manettini_last_change = HAL_GetTick();
 
@@ -391,18 +321,7 @@ void read_inputs(void *unused) {
         read_manettino_left();
         read_manettino_center();
         read_manettino_right();
-        tson_button();
 #endif
     }
 }
 
-void init_input_polling(void) {
-    inputs_init();
-// TODO: find solution with olivec
-#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
-    static lv_timer_t *read_inputs_task = NULL;
-    read_inputs_task                    = lv_timer_create(read_inputs, 100, NULL);
-    lv_timer_set_repeat_count(read_inputs_task, -1);
-    lv_timer_reset(read_inputs_task);
-#endif
-}

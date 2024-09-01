@@ -94,10 +94,10 @@
         "lv_obj_pos.h": "c",
         "steering_wheel_font_3.h": "c",
         "steering_wheel_font_2.h": "c",
-        "steering_wheel_font_50.h": "c"
+        "steering_wheel_font_50.h": "c",
+        "can_over_serial.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": true,
     "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc",
-    "cmake.sourceDirectory": "/home/tzarjakob/STM32CubeIDE/workspace_1.11.2/fenice-evo-steering-wheel/Core/Lib/lvgl-linux/lv-drivers"
 }

@@ -80,14 +80,10 @@ includeDirectories:
   - Drivers/CMSIS/Include
   - Inc/**
   - Core/Inc/**
-  - Src/**
-  - Core/Src/**
-  # - Core/Lib/lvgl-stm32/lvgl
-  - Core/UI/steering
+  - Core/UI/Inc/**
   - Core/Lib/invlib
   - Core/Lib/can/lib
   - Core/Lib/micro-libs/min-heap/inc
-  - Core/UI/olivec/inc
 
 
 # Files that should be included in the compilation.
@@ -138,11 +134,8 @@ sourceFiles:
   - Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim.c
   - Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_tim_ex.c
   - Core/Src/system_stm32h7xx.c
-  - Src/**
   - Core/Src/**
-  # - Core/Lib/lvgl-stm32/lvgl/src/**/*.c
-  # - Core/UI/fonts/*.c
-  - Core/UI/steering/**/*.c
+  - Core/UI/Src/**
   - Core/Lib/can/lib/primary/primary_network.c
   - Core/Lib/can/lib/primary/primary_watchdog.c
   - Core/Lib/can/lib/secondary/secondary_network.c

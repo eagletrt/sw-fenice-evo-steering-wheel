@@ -2,7 +2,6 @@
  * led_control.h
  *
  *  Created on: Mar 6, 2023
- *      Author: tzarjakob
  */
 
 #ifndef INC_LED_CONTROL_H_

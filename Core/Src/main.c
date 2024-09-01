@@ -109,21 +109,21 @@ char swoc_elem_label[swoc_elems_n][SWOC_STRING_LEN] = {
     "",      // swoc_lap_time,
     "MUTE",  // swoc_ptt,
     "",      // swoc_temp_mot,
-    "MOT",   // swoc_temp_mot_name,
+    "MT",   // swoc_temp_mot_name,
     "",      // swoc_soc_hv,
     "",      // swoc_soc_lv,
     "LV",    // swoc_soc_lv_name,
     "",      // swoc_temp_inv,
     "INV",   // swoc_temp_inv_name,
     "",      // swoc_temp_hv,
-    "HV T",  // swoc_temp_hv_name,
+    "HV",  // swoc_temp_hv_name,
     "",      // swoc_pt_cooling,
-    "PT C",  // swoc_pt_cooling_name,
+    "PT",  // swoc_pt_cooling_name,
     "",      // swoc_regen,
     "",      // swoc_slip,
     "",      // swoc_torque,
     "",      // swoc_hv_cooling,
-    "HV C",  // swoc_hv_cooling_name,
+    "HV",  // swoc_hv_cooling_name,
 };
 
 char swoc_desc_label[swoc_elems_n][SWOC_STRING_LEN] = {
@@ -371,34 +371,16 @@ int main(void) {
     HAL_DMA2D_Init(&hdma2d);
     HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_BACKGROUND_LAYER);
 
-#if STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
-
-    init_periodic_can_messages_timers();
-    lv_tick_set_cb(HAL_GetTick);
-
-    static bool valid_message         = true;
-    lv_timer_t *graphics_updater_task = lv_timer_create(update_graphics, 100, (void *)&valid_message);
-    lv_timer_set_repeat_count(graphics_updater_task, -1);
-    lv_timer_reset(graphics_updater_task);
-
-    lv_timer_t *ptt_checker_task = lv_timer_create(ptt_tasks_fn, 100, NULL);
-    lv_timer_set_repeat_count(ptt_checker_task, -1);
-    lv_timer_reset(ptt_checker_task);
-
-#endif  // STEERING_WHEEL_MODE == STEERING_WHEEL_LVGL_MODE
-
     if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
-        // enter_fatal_error_mode("Primary CAN fatal error");
         Error_Handler();
     }
     if (HAL_FDCAN_Start(&hfdcan2) != HAL_OK) {
-        // enter_fatal_error_mode("Secondary CAN fatal error");
         Error_Handler();
     }
 #if WATCHDOG_ENABLED == 1
     init_watchdog();
 #endif
-    init_input_polling();
+    inputs_init();
 #if CAN_OVER_SERIAL_ENABLED == 1
     can_over_serial_init();
 #endif
@@ -412,16 +394,15 @@ int main(void) {
 #if CAN_OVER_SERIAL_ENABLED == 1
         can_over_serial_routine();
 #endif
-        refresh_graphics();
         static uint32_t last_read_inputs = 0;
 
         if ((get_current_time_ms() - last_read_inputs) > 10) {
-            read_inputs(NULL);
-            ptt_periodic_check(NULL);
+            read_inputs();
+            ptt_periodic_check();
         }
 
         if ((get_current_time_ms() - last_swap_framebuffer) > 100) {
-            update_graphics(NULL);
+            update_graphics();
             olivec_update_graphics();
             last_swap_framebuffer = get_current_time_ms();
             HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -433,17 +414,11 @@ int main(void) {
             HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
         }
 
-        static uint32_t last_sent_ecu_set_power_maps = 0;
-        if ((get_current_time_ms() - last_sent_ecu_set_power_maps) > PRIMARY_INTERVAL_ECU_SET_POWER_MAPS) {
-            last_sent_ecu_set_power_maps = get_current_time_ms();
-            send_ecu_set_power_maps(NULL);
-        }
-
-        static uint32_t last_sent_steering_wheel_version = 0;
-        if ((get_current_time_ms() - last_sent_steering_wheel_version) > PRIMARY_INTERVAL_STEERING_WHEEL_VERSION) {
-            last_sent_steering_wheel_version = get_current_time_ms();
-            send_steering_wheel_version(NULL);
-        }
+        PERIODIC_SEND(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS);
+        PERIODIC_SEND(primary, PRIMARY, steering_wheel_version, STEERING_WHEEL_VERSION);
+        PERIODIC_SEND(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
+        PERIODIC_SEND(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED);
+        PERIODIC_SEND(primary, PRIMARY, lv_set_radiator_speed, LV_SET_RADIATOR_SPEED);
 
         GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
 

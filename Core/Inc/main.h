@@ -31,18 +31,14 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "can_messages.h"
-#include "can_over_serial.h"
 #include "graphics_manager.h"
 #include "inputs/inputs.h"
 #include "led_control.h"
-#include "messages.h"
-#include "steering_config.h"
-#include "test/i2c_test.h"
-#include "test/sdram_test.h"
-#include "watchdog.h"
 
 #include <string.h>
+
+#include "test/i2c_test.h"
+#include "test/sdram_test.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
