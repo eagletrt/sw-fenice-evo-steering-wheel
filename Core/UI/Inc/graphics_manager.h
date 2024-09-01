@@ -8,4 +8,3 @@
 void update_graphics(void);
 
 #endif  // GRAPHICS_MANAGER_H
-

@@ -1,65 +1,10 @@
 #include "can_messages.h"
-#define _XOPEN_SOURCE
-#include <time.h>
 
-void send_primary_steering_wheel_version() {
-#ifdef STM32H723xx
-    struct tm timeinfo;
-    strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
-    primary_steering_wheel_version_converted_t converted = {.canlib_build_time = CANLIB_BUILD_TIME, .component_build_time = mktime(&timeinfo)};
-    STEER_CAN_PACK(primary, PRIMARY, steering_wheel_version, STEERING_WHEEL_VERSION)
+void send_set_car_status(primary_ecu_set_status_status val) {
+    primary_ecu_set_status_converted_t converted = {0};
+    converted.status                             = val;
+    STEER_CAN_PACK(primary, PRIMARY, ecu_set_status, ECU_SET_STATUS);
     can_send(&msg, true);
-#endif
-}
-
-void send_primary_ecu_set_power_maps() {
-    GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
-    primary_ecu_set_power_maps_converted_t converted = {
-        .map_power = primary_ecu_set_power_maps_last_state->map_power,
-        .reg_state = primary_ecu_set_power_maps_last_state->reg_state,
-        .sc_state  = primary_ecu_set_power_maps_last_state->sc_state,
-        .tv_state  = primary_ecu_set_power_maps_last_state->tv_state,
-    };
-    STEER_CAN_PACK(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS)
-    can_send(&msg, true);
-}
-
-// void send_hv_set_balancing_status_steering_wheel(bool set_balancing_on, uint8_t balancing_threshold) {
-    // primary_hv_set_balancing_status_steering_wheel_converted_t converted = {
-        // .set_balancing_status = set_balancing_on ? primary_hv_set_balancing_status_steering_wheel_set_balancing_status_on
-                                                //  : primary_hv_set_balancing_status_steering_wheel_set_balancing_status_off,
-        // .balancing_threshold  = balancing_threshold};
-    // STEER_CAN_PACK(primary, PRIMARY, hv_set_balancing_status_steering_wheel, HV_SET_BALANCING_STATUS_STEERING_WHEEL)
-    // can_send(&msg, true);
-// }
-
-void send_primary_hv_set_fans_status() {
-    GET_LAST_STATE(primary, hv_set_fans_status, PRIMARY, HV_SET_FANS_STATUS);
-    primary_hv_set_fans_status_converted_t converted = *primary_hv_set_fans_status_last_state;
-    STEER_CAN_PACK(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS)
-    can_send(&msg, true);
-}
-
-void send_primary_lv_set_pumps_speed() {
-    GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
-    primary_lv_set_pumps_speed_converted_t converted = *primary_lv_set_pumps_speed_last_state;
-    STEER_CAN_PACK(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED)
-    can_send(&msg, true);
-}
-
-void send_primary_lv_set_radiator_speed() {
-    GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
-    primary_lv_set_radiator_speed_converted_t converted = *primary_lv_set_radiator_speed_last_state;
-    STEER_CAN_PACK(primary, PRIMARY, lv_set_radiator_speed, LV_SET_RADIATOR_SPEED)
-    can_send(&msg, true);
-}
-
-void send_ptt_status_message() {
-    GET_LAST_STATE(primary, ecu_set_ptt_status, PRIMARY, ECU_SET_PTT_STATUS);
-    primary_ecu_set_ptt_status_converted_t converted = { 
-        .status = primary_ecu_set_ptt_status_last_state->status
-    };
-    STEER_CAN_PACK(primary, PRIMARY, ecu_set_ptt_status, ECU_SET_PTT_STATUS);
     can_send(&msg, true);
 }
 
@@ -444,4 +389,3 @@ void message_parser(uint8_t *msg, size_t msg_siz) {
         handle_secondary(&parsed_msg);
     }
 }
-

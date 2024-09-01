@@ -42,7 +42,6 @@
 #define LEFT_MANETTINO_POWER_MAP_OPTION 1
 #define LEFT_MANETTINO_TORQUE_OPTION    2
 
-
 typedef enum { RADS_AUTO, RADS_OFF, RADS_025, RADS_050, RADS_075, RADS_100, RADS_LENGTH } radiator_speed_t;
 
 typedef enum { PUMPS_AUTO, PUMPS_OFF, PUMPS_025, PUMPS_050, PUMPS_075, PUMPS_100, P_LENGTH } pumps_speed_t;
@@ -59,4 +58,3 @@ void prepare_set_car_status(void);
 bool send_set_car_status_directly(void);
 
 #endif  // CONTROLS_H
-

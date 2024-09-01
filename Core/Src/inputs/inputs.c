@@ -324,4 +324,3 @@ void read_inputs(void) {
 #endif
     }
 }
-

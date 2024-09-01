@@ -13,6 +13,9 @@ void manettino_right_actions(int dsteps) {
 }
 
 void manettino_center_actions(int dsteps) {
+    /* GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
+    primary_lv_set_cooling_aggressiveness_last_state->status += dsteps;
+    primary_lv_set_cooling_aggressiveness_last_state->status = clamp(primary_lv_set_cooling_aggressiveness_last_state->status, 0, 2); */
 }
 
 void manettino_left_actions(int dsteps) {
@@ -24,6 +27,16 @@ void manettino_left_actions(int dsteps) {
         primary_lv_set_pumps_speed_last_state->status = primary_lv_set_pumps_speed_status_auto;
     } else {
         primary_lv_set_pumps_speed_last_state->status = primary_lv_set_pumps_speed_status_manual;
+    }
+
+    GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
+    primary_lv_set_radiator_speed_last_state->radiator_speed += (dsteps * 0.1f);
+    primary_lv_set_radiator_speed_last_state->radiator_speed = fminf(primary_lv_set_radiator_speed_last_state->radiator_speed, 1.05f);
+    primary_lv_set_radiator_speed_last_state->radiator_speed = fmaxf(primary_lv_set_radiator_speed_last_state->radiator_speed, -0.15f);
+    if (primary_lv_set_radiator_speed_last_state->radiator_speed < 0.05f) {
+        primary_lv_set_radiator_speed_last_state->status = primary_lv_set_radiator_speed_status_auto;
+    } else {
+        primary_lv_set_radiator_speed_last_state->status = primary_lv_set_radiator_speed_status_manual;
     }
 }
 
@@ -68,18 +81,17 @@ void buttons_long_pressed_actions(uint8_t button) {
             primary_ecu_set_power_maps_last_state->tv_state = 1;
             break;
         }
+        case PADDLE_BOTTOM_LEFT: {
+            primary_ecu_set_power_maps_last_state->sc_state = 0;
+            break;
+        }
+        case PADDLE_TOP_LEFT: {
+            primary_ecu_set_power_maps_last_state->sc_state = 1;
+            break;
+        }
         default:
             break;
     }
-}
-
-
-void send_set_car_status(primary_ecu_set_status_status val) {
-    primary_ecu_set_status_converted_t converted = {0};
-    converted.status                             = val;
-    STEER_CAN_PACK(primary, PRIMARY, ecu_set_status, ECU_SET_STATUS);
-    can_send(&msg, true);
-    can_send(&msg, true);
 }
 
 void prepare_set_car_status(void) {
@@ -132,4 +144,3 @@ bool send_set_car_status_directly(void) {
     }
     return retval;
 }
-

@@ -20,7 +20,7 @@ bool is_pmsg_new[primary_MESSAGE_COUNT];
 bool is_smsg_new[secondary_MESSAGE_COUNT];
 bool is_imsg_new[inverters_MESSAGE_COUNT];
 
-bool ptt_button_pressed = false;
+bool ptt_button_pressed         = false;
 ptt_status_t current_ptt_status = ptt_status_OFF;
 
 void set_ptt_button_pressed(bool val) {
@@ -47,7 +47,7 @@ static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][21] = {
 
 static shutdown_circuit_component_state_t shutdown_status_lb_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
 
-static const char *debug_signal_error_labels[] = {
+/* static const char *debug_signal_error_labels[] = {
     "cell low voltage",
     "cell under voltage",
     "cell over voltage",
@@ -63,7 +63,7 @@ static const char *debug_signal_error_labels[] = {
     "feedback error",
     "feedback circuitry error",
     "eeprom communication error",
-    "eeprom write error"};
+    "eeprom write error"}; */
 
 shutdown_circuit_indexes_t last_open_shutdown_circuit(void) {
     for (int sdi = 0; sdi < SHUTDOWN_COMPONENT_SIZE; sdi++) {
@@ -521,30 +521,28 @@ void ptt_periodic_check(void) {
     GET_LAST_STATE(primary, ecu_set_ptt_status, PRIMARY, ECU_SET_PTT_STATUS);
     swoc_elem_was_updated[swoc_ptt] = 1;
     if ((primary_ecu_ptt_status_last_state->status == primary_ecu_ptt_status_status_off) && ptt_button_pressed) {
-        current_ptt_status = ptt_status_SET_ON;
+        current_ptt_status                            = ptt_status_SET_ON;
         primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_on;
         snprintf(swoc_elem_label[swoc_ptt], SWOC_STRING_LEN, "MUTE");
         swoc_elem_bg_color[swoc_ptt] = OLIVEC_COLOR_BLACK;
         swoc_elem_lb_color[swoc_ptt] = OLIVEC_COLOR_WHITE;
     } else if ((primary_ecu_ptt_status_last_state->status == primary_ecu_ptt_status_status_on) && !ptt_button_pressed) {
-        current_ptt_status = ptt_status_SET_OFF;
+        current_ptt_status                            = ptt_status_SET_OFF;
         primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_off;
         snprintf(swoc_elem_label[swoc_ptt], SWOC_STRING_LEN, "MUTE");
         swoc_elem_bg_color[swoc_ptt] = OLIVEC_COLOR_BLACK;
         swoc_elem_lb_color[swoc_ptt] = OLIVEC_COLOR_WHITE;
     } else if ((primary_ecu_ptt_status_last_state->status == primary_ecu_ptt_status_status_on) && ptt_button_pressed) {
-        current_ptt_status = ptt_status_ON;
+        current_ptt_status                            = ptt_status_ON;
         primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_on;
         snprintf(swoc_elem_label[swoc_ptt], SWOC_STRING_LEN, "TALK");
         swoc_elem_bg_color[swoc_ptt] = OLIVEC_COLOR_BLUE;
         swoc_elem_lb_color[swoc_ptt] = OLIVEC_COLOR_WHITE;
     } else if ((primary_ecu_ptt_status_last_state->status == primary_ecu_ptt_status_status_off) && !ptt_button_pressed) {
-        current_ptt_status = ptt_status_OFF;
+        current_ptt_status                            = ptt_status_OFF;
         primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_off;
         snprintf(swoc_elem_label[swoc_ptt], SWOC_STRING_LEN, "MUTE");
         swoc_elem_bg_color[swoc_ptt] = OLIVEC_COLOR_BLACK;
         swoc_elem_lb_color[swoc_ptt] = OLIVEC_COLOR_WHITE;
     }
 }
-
-

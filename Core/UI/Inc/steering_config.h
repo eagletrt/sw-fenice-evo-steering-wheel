@@ -74,7 +74,7 @@
 #define RIGHT_MANETTINO_INTERRUPT_INDEX  3
 #define NUM_INTERRUPT_PINS               4
 
-#define clamp(x, a, b) (((x) < (a)) ? (a) : (((x) > (b)) ? (b) : (x)))
+#define clamp(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
 
 #define GET_LAST_STATE(ntw, msg, NTW, MSG) \
     ntw##_##msg##_converted_t *ntw##_##msg##_last_state = (ntw##_##msg##_converted_t *)&ntw##_messages_last_state[NTW##_##MSG##_INDEX][0]
@@ -99,12 +99,15 @@
     ntw##_##msg_name##_conversion_to_raw_struct(&raw, &converted); \
     ntw##_##msg_name##_pack(msg.data, &raw, NTW##_##MSG_NAME##_BYTE_SIZE);
 
-#define PERIODIC_SEND(ntw, NTW, msg, MSG) static uint32_t last_sent_##ntw##_##msg = 0; \
-void send_##ntw##_##msg();\
-if ((get_current_time_ms() - last_sent_##ntw##_##msg) > NTW##_INTERVAL_##MSG) { \
-    last_sent_##ntw##_##msg = get_current_time_ms(); \
-    send_##ntw##_##msg(); \
-}
+#define PERIODIC_SEND(ntw, NTW, msg_name, MSG_NAME)                                           \
+    static uint32_t last_sent_##ntw##_##msg_name = 0;                                         \
+    void send_##ntw##_##msg_name();                                                           \
+    if ((get_current_time_ms() - last_sent_##ntw##_##msg_name) > NTW##_INTERVAL_##MSG_NAME) { \
+        last_sent_##ntw##_##msg_name             = get_current_time_ms();                     \
+        ntw##_##msg_name##_converted_t converted = *ntw##_##msg_name##_last_state;            \
+        STEER_CAN_PACK(ntw, NTW, msg_name, MSG_NAME)                                          \
+        can_send(&msg, true);                                                                 \
+    }
 
 typedef uint16_t can_id_t;
 

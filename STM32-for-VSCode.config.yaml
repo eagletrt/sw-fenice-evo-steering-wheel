@@ -23,12 +23,10 @@ ldscript: STM32H723ZGTx_FLASH_shifted.ld # linker script
 # Compiler definitions. The -D prefix for the compiler will be automatically added.
 cDefinitions: 
   - USE_HAL_DRIVER
-  - STM32H723xx
   - LV_LVGL_H_INCLUDE_SIMPLE
 
 cxxDefinitions: 
   - USE_HAL_DRIVER
-  - STM32H723xx
 
 asDefinitions: []
 

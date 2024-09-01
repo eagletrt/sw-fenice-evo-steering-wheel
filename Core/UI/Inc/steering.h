@@ -1,14 +1,13 @@
 #ifndef STEERING_H
 #define STEERING_H
 
-#include "steering_config.h"
-
 #include "inverters/inverters_network.h"
 #include "inverters/inverters_watchdog.h"
 #include "primary/primary_network.h"
 #include "primary/primary_watchdog.h"
 #include "secondary/secondary_network.h"
 #include "secondary/secondary_watchdog.h"
+#include "steering_config.h"
 
 #include <assert.h>
 #include <stdbool.h>
@@ -50,7 +49,6 @@ extern inverters_watchdog m_inverters_watchdog;
 void set_ptt_button_pressed(bool);
 void send_ptt_status_message();
 void ptt_periodic_check(void);
-
 
 void car_status_update(bool valid);
 void ecu_power_maps_update(bool valid);
@@ -118,5 +116,3 @@ void lv_radiator_speed_update(bool valid);
 void lv_pumps_speed_update(bool valid);
 
 #endif  // STEERING_H
-
-

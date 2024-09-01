@@ -34,11 +34,10 @@ extern "C" {
 #include "graphics_manager.h"
 #include "inputs/inputs.h"
 #include "led_control.h"
-
-#include <string.h>
-
 #include "test/i2c_test.h"
 #include "test/sdram_test.h"
+
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

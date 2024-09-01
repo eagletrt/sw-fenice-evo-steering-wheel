@@ -39,6 +39,9 @@
 #define OLIVEC_IMPLEMENTATION
 #include "olive.c"
 
+#define _XOPEN_SOURCE
+#include <time.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -73,7 +76,6 @@ extern bool secondary_can_fatal_error;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void watchdog_task_fn(void *);
 
 /* USER CODE END PFP */
 
@@ -109,43 +111,21 @@ char swoc_elem_label[swoc_elems_n][SWOC_STRING_LEN] = {
     "",      // swoc_lap_time,
     "MUTE",  // swoc_ptt,
     "",      // swoc_temp_mot,
-    "MT",   // swoc_temp_mot_name,
+    "MT",    // swoc_temp_mot_name,
     "",      // swoc_soc_hv,
     "",      // swoc_soc_lv,
     "LV",    // swoc_soc_lv_name,
     "",      // swoc_temp_inv,
     "INV",   // swoc_temp_inv_name,
     "",      // swoc_temp_hv,
-    "HV",  // swoc_temp_hv_name,
+    "HV",    // swoc_temp_hv_name,
     "",      // swoc_pt_cooling,
-    "PT",  // swoc_pt_cooling_name,
+    "PT",    // swoc_pt_cooling_name,
     "",      // swoc_regen,
     "",      // swoc_slip,
     "",      // swoc_torque,
     "",      // swoc_hv_cooling,
-    "HV",  // swoc_hv_cooling_name,
-};
-
-char swoc_desc_label[swoc_elems_n][SWOC_STRING_LEN] = {
-    "",  // swoc_sd,
-    "",  // swoc_lap_time,
-    "",  // swoc_ptt,
-    "",  // swoc_temp_mot,
-    "",  // swoc_temp_mot_name,
-    "",  // swoc_soc_hv,
-    "",  // swoc_soc_lv,
-    "",  // swoc_soc_lv_name,
-    "",  // swoc_temp_inv,
-    "",  // swoc_temp_inv_name,
-    "",  // swoc_temp_hv,
-    "",  // swoc_temp_hv_name,
-    "",  // swoc_pt_cooling,
-    "",  // swoc_pt_cooling_name,
-    "",  // swoc_regen,
-    "",  // swoc_slip,
-    "",  // swoc_torque,
-    "",  // swoc_hv_cooling,
-    "",  // swoc_hv_cooling_name,
+    "HV",    // swoc_hv_cooling_name,
 };
 
 uint32_t swoc_elem_lb_color[swoc_elems_n] = {
@@ -368,6 +348,36 @@ int main(void) {
     oc        = olivec_canvas((uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
     oc.pixels = (uint32_t *)writable_framebuffer;
 
+    GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
+    primary_ecu_set_power_maps_last_state->map_power = 1.0f;
+    primary_ecu_set_power_maps_last_state->reg_state = 1;
+    primary_ecu_set_power_maps_last_state->sc_state  = 1;
+    primary_ecu_set_power_maps_last_state->tv_state  = 1;
+
+    GET_LAST_STATE(primary, steering_wheel_version, PRIMARY, STEERING_WHEEL_VERSION);
+    struct tm timeinfo;
+    strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
+    primary_steering_wheel_version_last_state->canlib_build_time    = CANLIB_BUILD_TIME;
+    primary_steering_wheel_version_last_state->component_build_time = mktime(&timeinfo);
+
+    GET_LAST_STATE(primary, hv_set_fans_status, PRIMARY, HV_SET_FANS_STATUS);
+    primary_hv_set_fans_status_last_state->fans_override = primary_hv_set_fans_status_fans_override_off;
+    primary_hv_set_fans_status_last_state->fans_speed    = 0.0f;
+
+    GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
+    primary_lv_set_pumps_speed_last_state->status      = primary_lv_set_pumps_speed_status_auto;
+    primary_lv_set_pumps_speed_last_state->pumps_speed = 0.0f;
+
+    GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
+    primary_lv_set_radiator_speed_last_state->status         = primary_lv_set_radiator_speed_status_auto;
+    primary_lv_set_radiator_speed_last_state->radiator_speed = 0.0f;
+
+    GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
+    primary_lv_set_cooling_aggressiveness_last_state->status = primary_lv_set_cooling_aggressiveness_status_normal;
+
+    GET_LAST_STATE(primary, ecu_set_ptt_status, PRIMARY, ECU_SET_PTT_STATUS);
+    primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_off;
+
     HAL_DMA2D_Init(&hdma2d);
     HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_BACKGROUND_LAYER);
 
@@ -377,10 +387,10 @@ int main(void) {
     if (HAL_FDCAN_Start(&hfdcan2) != HAL_OK) {
         Error_Handler();
     }
+    inputs_init();
 #if WATCHDOG_ENABLED == 1
     init_watchdog();
 #endif
-    inputs_init();
 #if CAN_OVER_SERIAL_ENABLED == 1
     can_over_serial_init();
 #endif
@@ -419,6 +429,9 @@ int main(void) {
         PERIODIC_SEND(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
         PERIODIC_SEND(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED);
         PERIODIC_SEND(primary, PRIMARY, lv_set_radiator_speed, LV_SET_RADIATOR_SPEED);
+        PERIODIC_SEND(primary, PRIMARY, ecu_set_ptt_status, ECU_SET_PTT_STATUS);
+        // #define PRIMARY_INTERVAL_LV_SET_COOLING_AGGRESSIVENESS (1000U)
+        // PERIODIC_SEND(primary, PRIMARY, lv_set_cooling_aggressiveness, LV_SET_COOLING_AGGRESSIVENESS);
 
         GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
 
