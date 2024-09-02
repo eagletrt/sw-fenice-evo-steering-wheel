@@ -22,6 +22,8 @@
 #ifndef OLIVE_C_
 #define OLIVE_C_
 
+#include "steering_config.h"
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -42,11 +44,6 @@
     } while (0)
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
 #define OLIVEC_ABS(T, x)  (OLIVEC_SIGN(T, x) * (x))
-
-typedef struct {
-    size_t width, height;
-    const uint8_t *glyphs;
-} Olivec_Font;
 
 #include "steering_wheel_font_30.h"
 
@@ -71,13 +68,6 @@ static const Olivec_Font steering_wheel_font_70 = {
     .width  = Steering_wheel_70_WIDTH,
     .height = Steering_wheel_70_HEIGHT,
 };
-
-typedef struct {
-    uint32_t *pixels;
-    size_t width;
-    size_t height;
-    size_t stride;
-} Olivec_Canvas;
 
 #define OLIVEC_CANVAS_NULL     ((Olivec_Canvas){0})
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y) * (oc).stride + (x)]

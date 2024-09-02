@@ -13,6 +13,13 @@ void manettino_right_actions(int dsteps) {
 }
 
 void manettino_center_actions(int dsteps) {
+    GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
+    if (dsteps > 0) {
+        primary_ecu_set_power_maps_last_state->sc_state = 1;
+    } else {
+        primary_ecu_set_power_maps_last_state->sc_state = 0;
+    }
+    
     /* GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
     primary_lv_set_cooling_aggressiveness_last_state->status += dsteps;
     primary_lv_set_cooling_aggressiveness_last_state->status = clamp(primary_lv_set_cooling_aggressiveness_last_state->status, 0, 2); */
@@ -85,7 +92,7 @@ void buttons_long_pressed_actions(uint8_t button) {
             primary_ecu_set_power_maps_last_state->sc_state = 0;
             break;
         }
-        case PADDLE_TOP_LEFT: {
+        case PADDLE_BOTTOM_RIGHT: {
             primary_ecu_set_power_maps_last_state->sc_state = 1;
             break;
         }

@@ -10,7 +10,6 @@
 
 #define BUTTONS_N                    8
 #define MANETTINI_N                  3
-#define BUTTONS_LONG_PRESS_TIME      1000
 #define CALIBRATION_TIMEOUT_RESPONSE 3000
 
 #define MANETTINO_STEPS_N 8

@@ -82,189 +82,26 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-Olivec_Canvas oc;
-
-bool swoc_elem_was_updated[swoc_elems_n] = {
-    1,  // swoc_sd,
-    1,  // swoc_lap_time,
-    1,  // swoc_ptt,
-    2,  // swoc_temp_mot,
-    1,  // swoc_temp_mot_name,
-    1,  // swoc_soc_hv,
-    2,  // swoc_soc_lv,
-    2,  // swoc_soc_lv_name,
-    2,  // swoc_temp_inv,
-    2,  // swoc_temp_inv_name,
-    2,  // swoc_temp_hv,
-    2,  // swoc_temp_hv_name,
-    1,  // swoc_pt_cooling,
-    1,  // swoc_pt_cooling_name,
-    1,  // swoc_regen,
-    1,  // swoc_slip,
-    1,  // swoc_torque,
-    1,  // swoc_hv_cooling,
-    1,  // swoc_hv_cooling_name,
-};
-
-char swoc_elem_label[swoc_elems_n][SWOC_STRING_LEN] = {
-    "",      // swoc_sd,
-    "",      // swoc_lap_time,
-    "MUTE",  // swoc_ptt,
-    "",      // swoc_temp_mot,
-    "MT",    // swoc_temp_mot_name,
-    "",      // swoc_soc_hv,
-    "",      // swoc_soc_lv,
-    "LV",    // swoc_soc_lv_name,
-    "",      // swoc_temp_inv,
-    "INV",   // swoc_temp_inv_name,
-    "",      // swoc_temp_hv,
-    "HV",    // swoc_temp_hv_name,
-    "",      // swoc_pt_cooling,
-    "PT",    // swoc_pt_cooling_name,
-    "",      // swoc_regen,
-    "",      // swoc_slip,
-    "",      // swoc_torque,
-    "",      // swoc_hv_cooling,
-    "HV",    // swoc_hv_cooling_name,
-};
-
-uint32_t swoc_elem_lb_color[swoc_elems_n] = {
-    0xFFFFFFFF,  // swoc_sd,
-    0xFFFFFFFF,  // swoc_lap_time,
-    0xFFFFFFFF,  // swoc_ptt,
-    0xFFFFFFFF,  // swoc_temp_mot,
-    0xFFFFFFFF,  // swoc_temp_mot_name,
-    0xFFFFFFFF,  // swoc_soc_hv,
-    0xFFFFFFFF,  // swoc_soc_lv,
-    0xFFFFFFFF,  // swoc_soc_lv_name,
-    0xFFFFFFFF,  // swoc_temp_inv,
-    0xFFFFFFFF,  // swoc_temp_inv_name,
-    0xFFFFFFFF,  // swoc_temp_hv,
-    0xFFFFFFFF,  // swoc_temp_hv_name,
-    0xFFFFFFFF,  // swoc_pt_cooling,
-    0xFFFFFFFF,  // swoc_pt_cooling_name,
-    0xFFFFFFFF,  // swoc_regen,
-    0xFFFFFFFF,  // swoc_slip,
-    0xFFFFFFFF,  // swoc_torque,
-    0xFFFFFFFF,  // swoc_hv_cooling,
-    0xFFFFFFFF,  // swoc_hv_cooling_name,
-};
-
-uint32_t swoc_elem_bg_color[swoc_elems_n] = {
-    0xFF000000,  // swoc_sd,
-    0xFF000000,  // swoc_lap_time,
-    0xFF000000,  // swoc_ptt,
-    0xFF000000,  // swoc_temp_mot,
-    0xFF000000,  // swoc_temp_mot_name,
-    0xFF000000,  // swoc_soc_hv,
-    0xFF000000,  // swoc_soc_lv,
-    0xFF000000,  // swoc_soc_lv_name,
-    0xFF000000,  // swoc_temp_inv,
-    0xFF000000,  // swoc_temp_inv_name,
-    0xFF000000,  // swoc_temp_hv,
-    0xFF000000,  // swoc_temp_hv_name,
-    0xFF000000,  // swoc_pt_cooling,
-    0xFF000000,  // swoc_pt_cooling_name,
-    0xFF000000,  // swoc_regen,
-    0xFF000000,  // swoc_slip,
-    0xFF000000,  // swoc_torque,
-    0xFF000000,  // swoc_hv_cooling,
-    0xFF000000,  // swoc_hv_cooling_name,
-};
-
-const Olivec_Font *swoc_elem_font[swoc_elems_n] = {
-    &steering_wheel_font_50,  // swoc_sd,
-    &steering_wheel_font_70,  // swoc_lap_time,
-    &steering_wheel_font_70,  // swoc_ptt,
-    &steering_wheel_font_70,  // swoc_temp_mot,
-    &steering_wheel_font_30,  // swoc_temp_mot_name,
-    &steering_wheel_font_70,  // swoc_soc_hv,
-    &steering_wheel_font_70,  // swoc_soc_lv,
-    &steering_wheel_font_30,  // swoc_soc_lv_name,
-    &steering_wheel_font_70,  // swoc_temp_inv,
-    &steering_wheel_font_30,  // swoc_temp_inv_name,
-    &steering_wheel_font_70,  // swoc_temp_hv,
-    &steering_wheel_font_30,  // swoc_temp_hv_name,
-    &steering_wheel_font_70,  // swoc_pt_cooling,
-    &steering_wheel_font_30,  // swoc_pt_cooling_name,
-    &steering_wheel_font_50,  // swoc_regen,
-    &steering_wheel_font_50,  // swoc_slip,
-    &steering_wheel_font_50,  // swoc_torque,
-    &steering_wheel_font_70,  // swoc_hv_cooling,
-    &steering_wheel_font_30,  // swoc_hv_cooling_name,
-};
-
-static const size_t swoc_elem_font_size[swoc_elems_n] = {
-    1,  // swoc_sd,
-    1,  // swoc_lap_time,
-    1,  // swoc_ptt,
-    2,  // swoc_temp_mot,
-    2,  // swoc_temp_mot_name,
-    3,  // swoc_soc_hv,
-    2,  // swoc_soc_lv,
-    2,  // swoc_soc_lv_name,
-    2,  // swoc_temp_inv,
-    2,  // swoc_temp_inv_name,
-    2,  // swoc_temp_hv,
-    2,  // swoc_temp_hv_name,
-    1,  // swoc_pt_cooling,
-    2,  // swoc_pt_cooling_name,
-    1,  // swoc_regen,
-    1,  // swoc_slip,
-    1,  // swoc_torque,
-    1,  // swoc_hv_cooling,
-    2,  // swoc_hv_cooling_name,
-};
-
-typedef struct {
-    int x;
-    int y;
-    int w;
-    int h;
-} olivec_boundaries_t;
-
-static const olivec_boundaries_t swoc_elem_boundaries[swoc_elems_n] = {
-    {0, 0, 266, 90},       // swoc_sd,
-    {266, 0, 268, 90},     // swoc_lap_time,
-    {534, 0, 266, 90},     // swoc_ptt,
-    {0, 90, 178, 130},     // swoc_temp_mot,
-    {178, 90, 88, 130},    // swoc_temp_mot_name,
-    {266, 90, 268, 260},   // swoc_soc_hv,
-    {534, 90, 178, 130},   // swoc_soc_lv,
-    {712, 90, 88, 130},    // swoc_soc_lv_name,
-    {0, 220, 178, 130},    // swoc_temp_inv,
-    {178, 220, 88, 130},   // swoc_temp_inv_name,
-    {534, 220, 178, 130},  // swoc_temp_hv,
-    {712, 220, 88, 130},   // swoc_temp_hv_name,
-    {0, 350, 178, 130},    // swoc_pt_cooling,
-    {178, 350, 88, 130},   // swoc_pt_cooling_name,
-    {266, 350, 44, 130},   // swoc_regen,
-    {310, 350, 180, 130},  // swoc_slip,
-    {490, 350, 44, 130},   // swoc_torque,
-    {534, 350, 178, 130},  // swoc_hv_cooling,
-    {712, 350, 88, 130},   // swoc_hv_cooling_name,
-};
-
-void olivec_update_graphics(void) {
-    olivec_rect(oc, 0, 0, 800, 480, 0xFF000000);
+void olivec_update_graphics(steering_wheel_endurance_screen_t *scr) {
+    olivec_rect(scr->oc, 0, 0, 800, 480, 0xFF000000);
 
     for (size_t iswoc = 0; iswoc < swoc_elems_n; iswoc++) {
-        swoc_elem_was_updated[iswoc] = false;
+        scr->swoc_elem_was_updated[iswoc] = false;
         olivec_rect(
-            oc,
-            swoc_elem_boundaries[iswoc].x,
-            swoc_elem_boundaries[iswoc].y,
-            swoc_elem_boundaries[iswoc].w,
-            swoc_elem_boundaries[iswoc].h,
-            swoc_elem_bg_color[iswoc]);
+            scr->oc,
+            scr->swoc_elem_boundaries[iswoc].x,
+            scr->swoc_elem_boundaries[iswoc].y,
+            scr->swoc_elem_boundaries[iswoc].w,
+            scr->swoc_elem_boundaries[iswoc].h,
+            scr->swoc_elem_bg_color[iswoc]);
         olivec_text(
-            oc,
-            swoc_elem_label[iswoc],
-            swoc_elem_boundaries[iswoc].x + 5,
-            swoc_elem_boundaries[iswoc].y + 5,
-            *swoc_elem_font[iswoc],
-            swoc_elem_font_size[iswoc],
-            swoc_elem_lb_color[iswoc]);
+            scr->oc,
+            scr->swoc_elem_label[iswoc],
+            scr->swoc_elem_boundaries[iswoc].x + 5,
+            scr->swoc_elem_boundaries[iswoc].y + 5,
+            *(scr->swoc_elem_font[iswoc]),
+            scr->swoc_elem_font_size[iswoc],
+            scr->swoc_elem_lb_color[iswoc]);
     }
 }
 
@@ -317,6 +154,169 @@ int main(void) {
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_Delay(100);
 
+    steering_wheel_endurance_screen_t endurance_screen = {
+        .oc = {0},
+
+        .swoc_elem_was_updated =
+            {
+                1,  // swoc_sd,
+                1,  // swoc_lap_time,
+                1,  // swoc_ptt,
+                2,  // swoc_temp_mot,
+                1,  // swoc_temp_mot_name,
+                1,  // swoc_soc_hv,
+                2,  // swoc_soc_lv,
+                2,  // swoc_soc_lv_name,
+                2,  // swoc_temp_inv,
+                2,  // swoc_temp_inv_name,
+                2,  // swoc_temp_hv,
+                2,  // swoc_temp_hv_name,
+                1,  // swoc_pt_cooling,
+                1,  // swoc_pt_cooling_name,
+                1,  // swoc_regen,
+                1,  // swoc_slip,
+                1,  // swoc_torque,
+                1,  // swoc_hv_cooling,
+                1,  // swoc_hv_cooling_name,
+            },
+
+        .swoc_elem_label =
+            {
+                "",      // swoc_sd,
+                "",      // swoc_lap_time,
+                "MUTE",  // swoc_ptt,
+                "",      // swoc_temp_mot,
+                "MT",    // swoc_temp_mot_name,
+                "",      // swoc_soc_hv,
+                "",      // swoc_soc_lv,
+                "LV",    // swoc_soc_lv_name,
+                "",      // swoc_temp_inv,
+                "INV",   // swoc_temp_inv_name,
+                "",      // swoc_temp_hv,
+                "HV",    // swoc_temp_hv_name,
+                "",      // swoc_pt_cooling,
+                "PT",    // swoc_pt_cooling_name,
+                "",      // swoc_regen,
+                "",      // swoc_slip,
+                "",      // swoc_torque,
+                "",      // swoc_hv_cooling,
+                "HV",    // swoc_hv_cooling_name,
+            },
+
+        .swoc_elem_lb_color =
+            {
+                0xFFFFFFFF,  // swoc_sd,
+                0xFFFFFFFF,  // swoc_lap_time,
+                0xFFFFFFFF,  // swoc_ptt,
+                0xFFFFFFFF,  // swoc_temp_mot,
+                0xFFFFFFFF,  // swoc_temp_mot_name,
+                0xFFFFFFFF,  // swoc_soc_hv,
+                0xFFFFFFFF,  // swoc_soc_lv,
+                0xFFFFFFFF,  // swoc_soc_lv_name,
+                0xFFFFFFFF,  // swoc_temp_inv,
+                0xFFFFFFFF,  // swoc_temp_inv_name,
+                0xFFFFFFFF,  // swoc_temp_hv,
+                0xFFFFFFFF,  // swoc_temp_hv_name,
+                0xFFFFFFFF,  // swoc_pt_cooling,
+                0xFFFFFFFF,  // swoc_pt_cooling_name,
+                0xFFFFFFFF,  // swoc_regen,
+                0xFFFFFFFF,  // swoc_slip,
+                0xFFFFFFFF,  // swoc_torque,
+                0xFFFFFFFF,  // swoc_hv_cooling,
+                0xFFFFFFFF,  // swoc_hv_cooling_name,
+            },
+
+        .swoc_elem_bg_color =
+            {
+                0xFF000000,  // swoc_sd,
+                0xFF000000,  // swoc_lap_time,
+                0xFF000000,  // swoc_ptt,
+                0xFF000000,  // swoc_temp_mot,
+                0xFF000000,  // swoc_temp_mot_name,
+                0xFF000000,  // swoc_soc_hv,
+                0xFF000000,  // swoc_soc_lv,
+                0xFF000000,  // swoc_soc_lv_name,
+                0xFF000000,  // swoc_temp_inv,
+                0xFF000000,  // swoc_temp_inv_name,
+                0xFF000000,  // swoc_temp_hv,
+                0xFF000000,  // swoc_temp_hv_name,
+                0xFF000000,  // swoc_pt_cooling,
+                0xFF000000,  // swoc_pt_cooling_name,
+                0xFF000000,  // swoc_regen,
+                0xFF000000,  // swoc_slip,
+                0xFF000000,  // swoc_torque,
+                0xFF000000,  // swoc_hv_cooling,
+                0xFF000000,  // swoc_hv_cooling_name,
+            },
+
+        .swoc_elem_font =
+            {
+                &steering_wheel_font_50,  // swoc_sd,
+                &steering_wheel_font_70,  // swoc_lap_time,
+                &steering_wheel_font_70,  // swoc_ptt,
+                &steering_wheel_font_70,  // swoc_temp_mot,
+                &steering_wheel_font_30,  // swoc_temp_mot_name,
+                &steering_wheel_font_70,  // swoc_soc_hv,
+                &steering_wheel_font_70,  // swoc_soc_lv,
+                &steering_wheel_font_30,  // swoc_soc_lv_name,
+                &steering_wheel_font_70,  // swoc_temp_inv,
+                &steering_wheel_font_30,  // swoc_temp_inv_name,
+                &steering_wheel_font_70,  // swoc_temp_hv,
+                &steering_wheel_font_30,  // swoc_temp_hv_name,
+                &steering_wheel_font_70,  // swoc_pt_cooling,
+                &steering_wheel_font_30,  // swoc_pt_cooling_name,
+                &steering_wheel_font_50,  // swoc_regen,
+                &steering_wheel_font_50,  // swoc_slip,
+                &steering_wheel_font_50,  // swoc_torque,
+                &steering_wheel_font_70,  // swoc_hv_cooling,
+                &steering_wheel_font_30,  // swoc_hv_cooling_name,
+            },
+
+        .swoc_elem_font_size =
+            {
+                1,  // swoc_sd,
+                1,  // swoc_lap_time,
+                1,  // swoc_ptt,
+                2,  // swoc_temp_mot,
+                2,  // swoc_temp_mot_name,
+                3,  // swoc_soc_hv,
+                2,  // swoc_soc_lv,
+                2,  // swoc_soc_lv_name,
+                2,  // swoc_temp_inv,
+                2,  // swoc_temp_inv_name,
+                2,  // swoc_temp_hv,
+                2,  // swoc_temp_hv_name,
+                1,  // swoc_pt_cooling,
+                2,  // swoc_pt_cooling_name,
+                1,  // swoc_regen,
+                1,  // swoc_slip,
+                1,  // swoc_torque,
+                1,  // swoc_hv_cooling,
+                2,  // swoc_hv_cooling_name,
+            },
+
+        .swoc_elem_boundaries = {
+            {0, 0, 266, 90},       // swoc_sd,
+            {266, 0, 268, 90},     // swoc_lap_time,
+            {534, 0, 266, 90},     // swoc_ptt,
+            {0, 90, 178, 130},     // swoc_temp_mot,
+            {178, 90, 88, 130},    // swoc_temp_mot_name,
+            {266, 90, 268, 260},   // swoc_soc_hv,
+            {534, 90, 178, 130},   // swoc_soc_lv,
+            {712, 90, 88, 130},    // swoc_soc_lv_name,
+            {0, 220, 178, 130},    // swoc_temp_inv,
+            {178, 220, 88, 130},   // swoc_temp_inv_name,
+            {534, 220, 178, 130},  // swoc_temp_hv,
+            {712, 220, 88, 130},   // swoc_temp_hv_name,
+            {0, 350, 178, 130},    // swoc_pt_cooling,
+            {178, 350, 88, 130},   // swoc_pt_cooling_name,
+            {266, 350, 44, 130},   // swoc_regen,
+            {310, 350, 180, 130},  // swoc_slip,
+            {490, 350, 44, 130},   // swoc_torque,
+            {534, 350, 178, 130},  // swoc_hv_cooling,
+            {712, 350, 88, 130},   // swoc_hv_cooling_name,
+        }};
+
 #define I2C_TESTS 0
 #if I2C_TESTS == 1
     i2c_test_read_write_register();
@@ -345,8 +345,8 @@ int main(void) {
     static bool tson_button_pressed                  = false;
     static uint32_t tson_button_pressed_time_elapsed = 0;
 
-    oc        = olivec_canvas((uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-    oc.pixels = (uint32_t *)writable_framebuffer;
+    endurance_screen.oc        = olivec_canvas((uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
+    endurance_screen.oc.pixels = (uint32_t *)writable_framebuffer;
 
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     primary_ecu_set_power_maps_last_state->map_power = 1.0f;
@@ -405,22 +405,27 @@ int main(void) {
         can_over_serial_routine();
 #endif
         static uint32_t last_read_inputs = 0;
-
         if ((get_current_time_ms() - last_read_inputs) > 10) {
+            last_read_inputs = get_current_time_ms();
             read_inputs();
-            ptt_periodic_check();
+        }
+
+        static uint32_t last_ptt_periodic_check = 0;
+        if ((get_current_time_ms() - last_ptt_periodic_check) > 50) {
+            last_ptt_periodic_check = get_current_time_ms();
+            ptt_periodic_check(&endurance_screen);
         }
 
         if ((get_current_time_ms() - last_swap_framebuffer) > 100) {
-            update_graphics();
-            olivec_update_graphics();
             last_swap_framebuffer = get_current_time_ms();
+            update_graphics(&endurance_screen);
+            olivec_update_graphics(&endurance_screen);
             HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
-            uint32_t tmp         = active_framebuffer;
-            active_framebuffer   = writable_framebuffer;
-            writable_framebuffer = tmp;
-            oc.pixels            = (uint32_t *)writable_framebuffer;
+            uint32_t tmp               = active_framebuffer;
+            active_framebuffer         = writable_framebuffer;
+            writable_framebuffer       = tmp;
+            endurance_screen.oc.pixels = (uint32_t *)writable_framebuffer;
             HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
         }
 
@@ -440,7 +445,7 @@ int main(void) {
         } else if (!tson_button_pressed) {
             tson_button_pressed              = true;
             tson_button_pressed_time_elapsed = get_current_time_ms();
-        } else if ((get_current_time_ms() - tson_button_pressed_time_elapsed) > 1000) {
+        } else if ((get_current_time_ms() - tson_button_pressed_time_elapsed) > BUTTONS_LONG_PRESS_TIME) {
             prepare_set_car_status();
         }
 

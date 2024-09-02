@@ -13,6 +13,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 /***
  * If you change one to the other, remember to change LTDC and DMA2D config in cubeMX
@@ -73,6 +74,8 @@
 #define CENTER_MANETTINO_INTERRUPT_INDEX 2
 #define RIGHT_MANETTINO_INTERRUPT_INDEX  3
 #define NUM_INTERRUPT_PINS               4
+
+#define BUTTONS_LONG_PRESS_TIME      500
 
 #define clamp(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
 
@@ -209,10 +212,36 @@ typedef enum {
     swoc_elems_n
 } swoc_elems_t;
 
+typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+} olivec_boundaries_t;
+
+typedef struct {
+    uint32_t *pixels;
+    size_t width;
+    size_t height;
+    size_t stride;
+} Olivec_Canvas;
+
+typedef struct {
+    size_t width, height;
+    const uint8_t *glyphs;
+} Olivec_Font;
+
 #define SWOC_STRING_LEN (32U)
-extern bool swoc_elem_was_updated[swoc_elems_n];
-extern char swoc_elem_label[swoc_elems_n][SWOC_STRING_LEN];
-extern uint32_t swoc_elem_lb_color[swoc_elems_n];
-extern uint32_t swoc_elem_bg_color[swoc_elems_n];
+
+typedef struct {
+    Olivec_Canvas oc;
+    bool swoc_elem_was_updated[swoc_elems_n];
+    char swoc_elem_label[swoc_elems_n][SWOC_STRING_LEN];
+    uint32_t swoc_elem_lb_color[swoc_elems_n];
+    uint32_t swoc_elem_bg_color[swoc_elems_n];
+    const Olivec_Font *swoc_elem_font[swoc_elems_n];
+    const size_t swoc_elem_font_size[swoc_elems_n];
+    const olivec_boundaries_t swoc_elem_boundaries[swoc_elems_n];
+} steering_wheel_endurance_screen_t;
 
 #endif  // STEERING_CONFIG_H
