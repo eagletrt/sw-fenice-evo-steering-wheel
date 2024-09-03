@@ -8,6 +8,19 @@
 
 #include <math.h>
 
+/**
+ * 0 = INT1 -> buttons <br>
+ * 1 = INT2 -> left manettino<br>
+ * 2 = INT3 -> center manettino<br>
+ * 3 = INT4 -> right manettino<br>
+ * 4 = ExtraButton
+ */
+#define BUTTONS_INTERRUPT_INDEX          0
+#define LEFT_MANETTINO_INTERRUPT_INDEX   1
+#define CENTER_MANETTINO_INTERRUPT_INDEX 2
+#define RIGHT_MANETTINO_INTERRUPT_INDEX  3
+#define NUM_INTERRUPT_PINS               4
+
 #define BUTTON_MAPPING {7, 5, 3, 1, 0, 6, 4, 2}
 
 // TODO: MIGLIORARE IL DEBOUNCE SOFTWARE

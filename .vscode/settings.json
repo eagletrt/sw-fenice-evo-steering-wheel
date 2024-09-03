@@ -95,7 +95,10 @@
         "steering_wheel_font_3.h": "c",
         "steering_wheel_font_2.h": "c",
         "steering_wheel_font_50.h": "c",
-        "can_over_serial.h": "c"
+        "can_over_serial.h": "c",
+        "steering_wheel_font_70.h": "c",
+        "steering_defs.h": "c",
+        "inverter_conversions.h": "c"
     },
     "cmake.configureOnOpen": false,
     "C_Cpp.dimInactiveRegions": true,

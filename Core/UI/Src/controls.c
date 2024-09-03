@@ -19,7 +19,7 @@ void manettino_center_actions(int dsteps) {
     } else {
         primary_ecu_set_power_maps_last_state->sc_state = 0;
     }
-    
+
     /* GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
     primary_lv_set_cooling_aggressiveness_last_state->status += dsteps;
     primary_lv_set_cooling_aggressiveness_last_state->status = clamp(primary_lv_set_cooling_aggressiveness_last_state->status, 0, 2); */

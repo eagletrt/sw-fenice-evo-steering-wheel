@@ -5,6 +5,6 @@
 #include "steering.h"
 #include "steering_config.h"
 
-void update_graphics(steering_wheel_endurance_screen_t *scr);
+void update_graphics(UI_t *scr);
 
 #endif  // GRAPHICS_MANAGER_H
