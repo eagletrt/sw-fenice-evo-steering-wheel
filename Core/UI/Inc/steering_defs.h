@@ -7,6 +7,15 @@
 
 #define SWOC_STRING_LEN (32U)
 
+#define OLIVEC_COLOR_RED        (0xFFFF0000)
+#define OLIVEC_COLOR_BLUE       (0xFF0000FF)
+#define OLIVEC_COLOR_LIGHT_BLUE (0xFFADD8E6)
+#define OLIVEC_COLOR_YELLOW     (0xFFFFFF00)
+#define OLIVEC_COLOR_GREEN      (0xFF00FF00)
+#define OLIVEC_COLOR_BLACK      (0xFF000000)
+#define OLIVEC_COLOR_WHITE      (0xFFFFFFFF)
+#define OLIVEC_COLOR_PURPLE     (0xFFA020F0)
+
 #define clamp(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
 
 #define GET_LAST_STATE(ntw, msg, NTW, MSG) \

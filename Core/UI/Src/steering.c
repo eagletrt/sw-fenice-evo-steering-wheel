@@ -112,6 +112,10 @@ void update_shutdown_circuit_component(UI_t *screen, shutdown_circuit_indexes_t 
 
 void ecu_status_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
+    if (primary_ecu_status_last_state->status == primary_ecu_status_status_drive) {
+        return;
+    }
+
     screen->components[swoc_lap_time].swoc_elem_was_updated = 1;
 
     switch (primary_ecu_status_last_state->status) {
@@ -396,6 +400,23 @@ void tlm_lap_time_update(UI_t *screen, bool valid) {
 }
 
 void tlm_laps_stats_update(UI_t *screen, bool valid) {
+    GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
+    if (primary_ecu_status_last_state->status != primary_ecu_status_status_drive) {
+        return;
+    }
+
+    GET_LAST_STATE(secondary, tlm_laps_stats, SECONDARY, TLM_LAPS_STATS);
+    
+    screen->components[swoc_lap_time].swoc_elem_was_updated = 1;
+    snprintf(screen->components[swoc_lap_time].swoc_elem_label, SWOC_STRING_LEN, "%.0f", secondary_tlm_laps_stats_last_state->last_time);
+
+    if (secondary_tlm_laps_stats_last_state->last_time < secondary_tlm_laps_stats_last_state->best_time) {
+        screen->components[swoc_lap_time].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+        screen->components[swoc_lap_time].swoc_elem_bg_color = OLIVEC_COLOR_PURPLE;
+    } else {
+        screen->components[swoc_lap_time].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
+        screen->components[swoc_lap_time].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;
+    }
 }
 
 #define INVERTER_MESSAGE_UNINITIALIZED     (-100.0f)

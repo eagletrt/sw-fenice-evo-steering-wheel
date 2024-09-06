@@ -105,6 +105,10 @@ void olivec_update_graphics(UI_t *scr) {
     }
 }
 
+void white_screen(UI_t *scr) {
+    olivec_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -412,8 +416,18 @@ int main(void) {
 
         if ((get_current_time_ms() - last_swap_framebuffer) > 100) {
             last_swap_framebuffer = get_current_time_ms();
-            update_graphics(&endurance_screen);
-            olivec_update_graphics(&endurance_screen);
+            extern int button_long_pressed;
+            uint32_t button_lts = 0;
+
+            if (button_long_pressed) {
+                if (get_current_time_ms() - button_lts > 500) {
+                    button_long_pressed = 0;
+                }
+                white_screen(&endurance_screen);
+            } else {
+                update_graphics(&endurance_screen);
+                olivec_update_graphics(&endurance_screen);
+            }
             HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
             uint32_t tmp               = active_framebuffer;

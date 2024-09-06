@@ -1,11 +1,14 @@
 #include "controls.h"
 
+int button_long_pressed = 0;
+uint32_t button_lts = 0;
+
 void manettino_right_actions(int dsteps) {
     GET_LAST_STATE(primary, hv_set_fans_status, PRIMARY, HV_SET_FANS_STATUS);
     primary_hv_set_fans_status_last_state->fans_speed += (dsteps * 0.1f);
     primary_hv_set_fans_status_last_state->fans_speed = fminf(primary_hv_set_fans_status_last_state->fans_speed, 1.05f);
     primary_hv_set_fans_status_last_state->fans_speed = fmaxf(primary_hv_set_fans_status_last_state->fans_speed, -0.15f);
-    if (primary_hv_set_fans_status_last_state->fans_speed < 0.05f) {
+    if (primary_hv_set_fans_status_last_state->fans_speed < (-0.05f)) {
         primary_hv_set_fans_status_last_state->fans_override = 0;
     } else {
         primary_hv_set_fans_status_last_state->fans_override = 1;
@@ -30,7 +33,7 @@ void manettino_left_actions(int dsteps) {
     primary_lv_set_pumps_speed_last_state->pumps_speed += (dsteps * 0.1f);
     primary_lv_set_pumps_speed_last_state->pumps_speed = fminf(primary_lv_set_pumps_speed_last_state->pumps_speed, 1.05f);
     primary_lv_set_pumps_speed_last_state->pumps_speed = fmaxf(primary_lv_set_pumps_speed_last_state->pumps_speed, -0.15f);
-    if (primary_lv_set_pumps_speed_last_state->pumps_speed < 0.05f) {
+    if (primary_lv_set_pumps_speed_last_state->pumps_speed < (-0.05f)) {
         primary_lv_set_pumps_speed_last_state->status = primary_lv_set_pumps_speed_status_auto;
     } else {
         primary_lv_set_pumps_speed_last_state->status = primary_lv_set_pumps_speed_status_manual;
@@ -71,6 +74,8 @@ void buttons_released_actions(uint8_t button) {
 
 void buttons_long_pressed_actions(uint8_t button) {
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
+    button_long_pressed = true;
+    button_lts = get_current_time_ms();
     switch (button) {
         case BUTTON_BOTTOM_LEFT: {
             primary_ecu_set_power_maps_last_state->reg_state = 0;
