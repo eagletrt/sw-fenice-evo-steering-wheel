@@ -1,6 +1,6 @@
 #include "can_messages.h"
 
-void send_set_car_status(primary_ecu_set_status_status val) {
+void send_ecu_set_status(primary_ecu_set_status_status val) {
     primary_ecu_set_status_converted_t converted = {0};
     converted.status                             = val;
     STEER_CAN_PACK(primary, PRIMARY, ecu_set_status, ECU_SET_STATUS);

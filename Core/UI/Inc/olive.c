@@ -61,14 +61,6 @@ static const Olivec_Font steering_wheel_font_50 = {
     .height = Steering_wheel_50_HEIGHT,
 };
 
-#include "steering_wheel_font_70.h"
-
-static const Olivec_Font steering_wheel_font_70 = {
-    .glyphs = &steering_wheel_70_glyph[0][0],
-    .width  = Steering_wheel_70_WIDTH,
-    .height = Steering_wheel_70_HEIGHT,
-};
-
 #define OLIVEC_CANVAS_NULL     ((Olivec_Canvas){0})
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y) * (oc).stride + (x)]
 

@@ -6,3 +6,6 @@ todo.md
 image-compression.out
 .idea/**
 STM32Make.make
+.stm32env
+.vscode/settings.json
+.vscode/c_cpp_properties.json

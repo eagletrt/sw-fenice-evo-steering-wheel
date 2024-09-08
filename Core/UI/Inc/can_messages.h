@@ -17,7 +17,7 @@
 
 bool can_send(can_message_t *msg, bool to_primary_network);
 
-void send_set_car_status(primary_ecu_set_status_status val);
+void send_ecu_set_status(primary_ecu_set_status_status val);
 
 void handle_primary(can_message_t *msg);
 void handle_secondary(can_message_t *msg);

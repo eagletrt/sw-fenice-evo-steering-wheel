@@ -8,11 +8,9 @@
 #include <math.h>
 #include <stdint.h>
 
-#define BUTTONS_N                    8
-#define MANETTINI_N                  3
-#define CALIBRATION_TIMEOUT_RESPONSE 3000
-
-#define MANETTINO_STEPS_N 8
+#define BUTTONS_N           (8)
+#define MANETTINI_N         (3)
+#define MANETTINO_STEPS_N   (8)
 
 #define PADDLE_TOP_RIGHT    (2)
 #define PADDLE_TOP_LEFT     (1)
@@ -37,9 +35,9 @@
 #define BALANCING_THRESHOLD_LOW         (5)
 #define POWER_MAP_MAX                   (100)
 #define POWER_MAP_MIN                   (0)
-#define LEFT_MANETTINO_SLIP_OPTION      0
-#define LEFT_MANETTINO_POWER_MAP_OPTION 1
-#define LEFT_MANETTINO_TORQUE_OPTION    2
+#define LEFT_MANETTINO_SLIP_OPTION      (0)
+#define LEFT_MANETTINO_POWER_MAP_OPTION (1)
+#define LEFT_MANETTINO_TORQUE_OPTION    (2)
 
 typedef enum { RADS_AUTO, RADS_OFF, RADS_025, RADS_050, RADS_075, RADS_100, RADS_LENGTH } radiator_speed_t;
 
@@ -53,7 +51,7 @@ void buttons_pressed_actions(uint8_t button);
 void buttons_released_actions(uint8_t button);
 void buttons_long_pressed_actions(uint8_t button);
 
-void prepare_set_car_status(void);
+void prepare_and_send_ecu_set_status(void);
 bool send_set_car_status_directly(void);
 
 #endif  // CONTROLS_H

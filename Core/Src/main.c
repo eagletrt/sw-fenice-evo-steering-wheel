@@ -174,24 +174,24 @@ int main(void) {
                 .swoc_elem_label       = "",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 1,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){268, 2, 266, 88}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
                 .swoc_elem_label       = "MUTE",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 1,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){536, 2, 264, 88}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
                 .swoc_elem_label       = "",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 4,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){2, 92, 176, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -206,16 +206,16 @@ int main(void) {
                 .swoc_elem_label       = "",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 3,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 6,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){268, 92, 266, 258}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
                 .swoc_elem_label       = "",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 4,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){536, 92, 176, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -230,8 +230,8 @@ int main(void) {
                 .swoc_elem_label       = "",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 4,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){2, 222, 176, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -246,8 +246,8 @@ int main(void) {
                 .swoc_elem_label       = "",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 4,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){536, 222, 176, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -262,8 +262,8 @@ int main(void) {
                 .swoc_elem_label       = "",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 1,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){2, 352, 176, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -302,8 +302,8 @@ int main(void) {
                 .swoc_elem_label       = "",
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_70,
-                .swoc_elem_font_size   = 1,
+                .swoc_elem_font        = &steering_wheel_font_30,
+                .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){536, 352, 176, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -421,7 +421,7 @@ int main(void) {
 
             if (button_long_pressed) {
                 if (get_current_time_ms() - button_lts > 500) {
-                    button_long_pressed = 0;
+                    button_long_pressed = false;
                 }
                 white_screen(&endurance_screen);
             } else {
@@ -454,7 +454,7 @@ int main(void) {
             tson_button_pressed              = true;
             tson_button_pressed_time_elapsed = get_current_time_ms();
         } else if ((get_current_time_ms() - tson_button_pressed_time_elapsed) > BUTTONS_LONG_PRESS_TIME) {
-            prepare_set_car_status();
+            prepare_and_send_ecu_set_status();
         }
 
         /* USER CODE END WHILE */

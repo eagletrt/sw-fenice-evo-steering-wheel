@@ -16,6 +16,7 @@ void manettino_right_actions(int dsteps) {
 }
 
 void manettino_center_actions(int dsteps) {
+    int button_long_pressed = 0;
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     if (dsteps > 0) {
         primary_ecu_set_power_maps_last_state->sc_state = 1;
@@ -43,7 +44,7 @@ void manettino_left_actions(int dsteps) {
     primary_lv_set_radiator_speed_last_state->radiator_speed += (dsteps * 0.1f);
     primary_lv_set_radiator_speed_last_state->radiator_speed = fminf(primary_lv_set_radiator_speed_last_state->radiator_speed, 1.05f);
     primary_lv_set_radiator_speed_last_state->radiator_speed = fmaxf(primary_lv_set_radiator_speed_last_state->radiator_speed, -0.15f);
-    if (primary_lv_set_radiator_speed_last_state->radiator_speed < 0.05f) {
+    if (primary_lv_set_radiator_speed_last_state->radiator_speed < (-0.05f)) {
         primary_lv_set_radiator_speed_last_state->status = primary_lv_set_radiator_speed_status_auto;
     } else {
         primary_lv_set_radiator_speed_last_state->status = primary_lv_set_radiator_speed_status_manual;
@@ -74,30 +75,40 @@ void buttons_released_actions(uint8_t button) {
 
 void buttons_long_pressed_actions(uint8_t button) {
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
-    button_long_pressed = true;
-    button_lts = get_current_time_ms();
     switch (button) {
         case BUTTON_BOTTOM_LEFT: {
+            button_long_pressed = true;
+            button_lts = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->reg_state = 0;
             break;
         }
         case BUTTON_BOTTOM_RIGHT: {
+            button_long_pressed = true;
+            button_lts = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->tv_state = 0;
             break;
         }
         case BUTTON_TOP_LEFT: {
+            button_long_pressed = true;
+            button_lts = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->reg_state = 1;
             break;
         }
         case BUTTON_TOP_RIGHT: {
+            button_long_pressed = true;
+            button_lts = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->tv_state = 1;
             break;
         }
         case PADDLE_BOTTOM_LEFT: {
+            button_long_pressed = true;
+            button_lts = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->sc_state = 0;
             break;
         }
         case PADDLE_BOTTOM_RIGHT: {
+            button_long_pressed = true;
+            button_lts = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->sc_state = 1;
             break;
         }
@@ -106,17 +117,17 @@ void buttons_long_pressed_actions(uint8_t button) {
     }
 }
 
-void prepare_set_car_status(void) {
+void prepare_and_send_ecu_set_status(void) {
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
     switch (primary_ecu_status_last_state->status) {
         case primary_ecu_status_status_init:
         case primary_ecu_status_status_enable_inv_updates:
         case primary_ecu_status_status_check_inv_settings: {
-            send_set_car_status(primary_ecu_set_status_status_idle);
+            send_ecu_set_status(primary_ecu_set_status_status_idle);
             break;
         }
         case primary_ecu_status_status_idle: {
-            send_set_car_status(primary_ecu_set_status_status_ready);
+            send_ecu_set_status(primary_ecu_set_status_status_ready);
             break;
         }
         case primary_ecu_status_status_start_ts_precharge:
@@ -124,7 +135,7 @@ void prepare_set_car_status(void) {
             break;
         }
         case primary_ecu_status_status_wait_driver: {
-            send_set_car_status(primary_ecu_set_status_status_drive);
+            send_ecu_set_status(primary_ecu_set_status_status_drive);
             break;
         }
         case primary_ecu_status_status_enable_inv_drive:
@@ -136,12 +147,13 @@ void prepare_set_car_status(void) {
             break;
         }
         case primary_ecu_status_status_fatal_error: {
-            send_set_car_status(primary_ecu_set_status_status_idle);
+            send_ecu_set_status(primary_ecu_set_status_status_idle);
             break;
         }
     }
 }
 
+/* 
 bool send_set_car_status_directly(void) {
     GET_LAST_STATE(primary, ecu_status, PRIMARY, ECU_STATUS);
     bool retval = true;
@@ -156,3 +168,4 @@ bool send_set_car_status_directly(void) {
     }
     return retval;
 }
+ */
