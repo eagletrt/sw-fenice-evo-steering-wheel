@@ -1,7 +1,7 @@
 #include "controls.h"
 
 int button_long_pressed = 0;
-uint32_t button_lts = 0;
+uint32_t button_lts     = 0;
 
 void manettino_right_actions(int dsteps) {
     GET_LAST_STATE(primary, hv_set_fans_status, PRIMARY, HV_SET_FANS_STATUS);
@@ -77,38 +77,38 @@ void buttons_long_pressed_actions(uint8_t button) {
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     switch (button) {
         case BUTTON_BOTTOM_LEFT: {
-            button_long_pressed = true;
-            button_lts = get_current_time_ms();
+            button_long_pressed                              = true;
+            button_lts                                       = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->reg_state = 0;
             break;
         }
         case BUTTON_BOTTOM_RIGHT: {
-            button_long_pressed = true;
-            button_lts = get_current_time_ms();
+            button_long_pressed                             = true;
+            button_lts                                      = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->tv_state = 0;
             break;
         }
         case BUTTON_TOP_LEFT: {
-            button_long_pressed = true;
-            button_lts = get_current_time_ms();
+            button_long_pressed                              = true;
+            button_lts                                       = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->reg_state = 1;
             break;
         }
         case BUTTON_TOP_RIGHT: {
-            button_long_pressed = true;
-            button_lts = get_current_time_ms();
+            button_long_pressed                             = true;
+            button_lts                                      = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->tv_state = 1;
             break;
         }
         case PADDLE_BOTTOM_LEFT: {
-            button_long_pressed = true;
-            button_lts = get_current_time_ms();
+            button_long_pressed                             = true;
+            button_lts                                      = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->sc_state = 0;
             break;
         }
         case PADDLE_BOTTOM_RIGHT: {
-            button_long_pressed = true;
-            button_lts = get_current_time_ms();
+            button_long_pressed                             = true;
+            button_lts                                      = get_current_time_ms();
             primary_ecu_set_power_maps_last_state->sc_state = 1;
             break;
         }

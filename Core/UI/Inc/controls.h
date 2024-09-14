@@ -8,9 +8,9 @@
 #include <math.h>
 #include <stdint.h>
 
-#define BUTTONS_N           (8)
-#define MANETTINI_N         (3)
-#define MANETTINO_STEPS_N   (8)
+#define BUTTONS_N         (8)
+#define MANETTINI_N       (3)
+#define MANETTINO_STEPS_N (8)
 
 #define PADDLE_TOP_RIGHT    (2)
 #define PADDLE_TOP_LEFT     (1)

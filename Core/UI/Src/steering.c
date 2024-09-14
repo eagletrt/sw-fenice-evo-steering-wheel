@@ -406,7 +406,7 @@ void tlm_laps_stats_update(UI_t *screen, bool valid) {
     }
 
     GET_LAST_STATE(secondary, tlm_laps_stats, SECONDARY, TLM_LAPS_STATS);
-    
+
     screen->components[swoc_lap_time].swoc_elem_was_updated = 1;
     snprintf(screen->components[swoc_lap_time].swoc_elem_label, SWOC_STRING_LEN, "%.0f", secondary_tlm_laps_stats_last_state->last_time);
 

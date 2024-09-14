@@ -1,9 +1,12 @@
 #include "graphics_manager.h"
 
+#define OLIVEC_IMPLEMENTATION
+#include "olive.c"
+
 uint8_t *framebuffer_1 = (uint8_t *)FRAMEBUFFER1_ADDR;
 uint8_t *framebuffer_2 = (uint8_t *)FRAMEBUFFER2_ADDR;
 
-void update_graphics(UI_t *scr) {
+void sw_update_graphics_from_can_messages(UI_t *scr) {
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {
         if (is_pmsg_new[iindex]) {
             is_pmsg_new[iindex] = false;
@@ -269,7 +272,7 @@ void update_graphics(UI_t *scr) {
     }
 }
 
-void init_screen(UI_t *endurance_screen) {
+void sw_init_screen(UI_t *sw_screen) {
     UI_t endurance_screen_temp = {
         .oc         = {0},
         .components = {
@@ -428,7 +431,11 @@ void init_screen(UI_t *endurance_screen) {
         }};
 }
 
-void olivec_update_graphics(float dt, UI_t *scr) {
+void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, size_t stride) {
+    scr->oc = olivec_canvas(pixels, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
+}
+
+void sw_update_screen(float dt, UI_t *scr) {
     olivec_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
 
     for (size_t iswoc = 0; iswoc < swoc_elems_n; iswoc++) {
@@ -451,6 +458,6 @@ void olivec_update_graphics(float dt, UI_t *scr) {
     }
 }
 
-void white_screen(UI_t *scr) {
+void sw_screen_white(UI_t *scr) {
     olivec_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
 }

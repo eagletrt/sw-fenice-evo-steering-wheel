@@ -32,15 +32,13 @@
 #include "steering_config.h"
 #include "steering_types.h"
 #include "graphics_manager.h"
-#define OLIVEC_IMPLEMENTATION
-#include "olive.c"
 
 #define WIDTH 800
 #define HEIGHT 480
-static uint32_t pixels[WIDTH*HEIGHT];
+static uint32_t pixels[WIDTH*HEIGHT*4];
 
 Olivec_Canvas vc_render(float dt, UI_t *scr) {
-    olivec_update_graphics(dt, scr);
+    sw_update_screen(dt, scr);
     return scr->oc;
 }
 
@@ -63,6 +61,18 @@ static bool vc_sdl_resize_texture(SDL_Renderer *renderer, size_t new_width, size
     return true;
 }
 
+uint32_t get_current_time_ms(void) {
+    return SDL_GetTicks();
+}
+
+void openblt_reset() {
+
+}
+
+bool can_send(can_message_t *msg, bool to_primary_network) {
+    return true;
+}
+
 int main(void)
 {
     int result = 0;
@@ -70,8 +80,8 @@ int main(void)
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
 
-    UI_t endurance_screen;
-    init_screen(&endurance_screen);
+    UI_t sw_screen;
+    sw_init_screen(&sw_screen);
     
     {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) return_defer(1);
@@ -85,8 +95,8 @@ int main(void)
         Uint32 prev = SDL_GetTicks();
         bool pause = false;
 
-        endurance_screen.oc        = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
-        endurance_screen.oc.pixels = pixels;
+        sw_set_canvas(&sw_screen, pixels, WIDTH, HEIGHT, WIDTH);
+        sw_screen.oc.pixels = pixels;
 
         for (;;) {
             // Compute Delta Time
@@ -111,7 +121,7 @@ int main(void)
 
             if (!pause) {
                 // Render the texture
-                Olivec_Canvas oc_src = vc_render(dt, &endurance_screen);
+                Olivec_Canvas oc_src = vc_render(dt, &sw_screen);
                 if (oc_src.width != vc_sdl_actual_width || oc_src.height != vc_sdl_actual_height) {
                     if (!vc_sdl_resize_texture(renderer, oc_src.width, oc_src.height)) return_defer(1);
                     SDL_SetWindowSize(window, vc_sdl_actual_width, vc_sdl_actual_height);

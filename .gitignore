@@ -3,6 +3,7 @@ build/**
 todo.md
 *.srec
 *.bin
+**/*.out
 image-compression.out
 .idea/**
 STM32Make.make

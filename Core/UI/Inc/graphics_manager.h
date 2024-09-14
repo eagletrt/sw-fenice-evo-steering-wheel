@@ -5,12 +5,11 @@
 #include "steering.h"
 #include "steering_config.h"
 
-#define OLIVEC_IMPLEMENTATION
-#include "olive.c"
+void sw_init_screen(UI_t *sw_screen);
+void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, size_t stride);
 
-void update_graphics(UI_t *scr);
-void init_screen(UI_t *endurance_screen);
-void olivec_update_graphics(float dt, UI_t *scr);
-void white_screen(UI_t *scr);
+void sw_update_graphics_from_can_messages(UI_t *scr);
+void sw_update_screen(float dt, UI_t *scr);
+void sw_screen_white(UI_t *scr);
 
 #endif  // GRAPHICS_MANAGER_H
