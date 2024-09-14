@@ -36,7 +36,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#define OLIVEC_IMPLEMENTATION
 #include "olive.c"
 
 #define _XOPEN_SOURCE
@@ -81,33 +80,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-void olivec_update_graphics(UI_t *scr) {
-    olivec_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
-
-    for (size_t iswoc = 0; iswoc < swoc_elems_n; iswoc++) {
-        scr->components[iswoc].swoc_elem_was_updated = false;
-        olivec_rect(
-            scr->oc,
-            scr->components[iswoc].swoc_elem_boundaries.x,
-            scr->components[iswoc].swoc_elem_boundaries.y,
-            scr->components[iswoc].swoc_elem_boundaries.w,
-            scr->components[iswoc].swoc_elem_boundaries.h,
-            scr->components[iswoc].swoc_elem_bg_color);
-        olivec_text(
-            scr->oc,
-            scr->components[iswoc].swoc_elem_label,
-            scr->components[iswoc].swoc_elem_boundaries.x + 5,
-            scr->components[iswoc].swoc_elem_boundaries.y + 5,
-            *(scr->components[iswoc].swoc_elem_font),
-            scr->components[iswoc].swoc_elem_font_size,
-            scr->components[iswoc].swoc_elem_lb_color);
-    }
-}
-
-void white_screen(UI_t *scr) {
-    olivec_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
-}
 
 /* USER CODE END 0 */
 
@@ -158,162 +130,8 @@ int main(void) {
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_Delay(100);
 
-    UI_t endurance_screen = {
-        .oc         = {0},
-        .components = {
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_50,
-                .swoc_elem_font_size   = 1,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){2, 2, 264, 88}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){268, 2, 266, 88}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "MUTE",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 2, 264, 88}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 4,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){2, 92, 176, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "MT",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){178, 92, 86, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 6,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){268, 92, 266, 258}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 4,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 92, 176, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "LV",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){714, 92, 86, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 4,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){2, 222, 176, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "INV",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){180, 222, 86, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 4,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 222, 176, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "HV",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){714, 222, 86, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){2, 352, 176, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "PT",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){180, 352, 86, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_50,
-                .swoc_elem_font_size   = 1,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){268, 352, 42, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_50,
-                .swoc_elem_font_size   = 1,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){312, 352, 178, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_50,
-                .swoc_elem_font_size   = 1,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){492, 352, 42, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 352, 176, 128}},
-            (UI_elem_t){
-                .swoc_elem_was_updated = true,
-                .swoc_elem_label       = "HV",
-                .swoc_elem_lb_color    = 0xFFFFFFFF,
-                .swoc_elem_bg_color    = 0xFF000000,
-                .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){714, 352, 86, 128}},
-        }};
+    UI_t endurance_screen;
+    init_screen(&endurance_screen);
 
 #define I2C_TESTS 0
 #if I2C_TESTS == 1
@@ -426,7 +244,7 @@ int main(void) {
                 white_screen(&endurance_screen);
             } else {
                 update_graphics(&endurance_screen);
-                olivec_update_graphics(&endurance_screen);
+                olivec_update_graphics(0.f, &endurance_screen);
             }
             HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
