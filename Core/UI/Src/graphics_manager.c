@@ -273,7 +273,8 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
 }
 
 void sw_init_screen(UI_t *sw_screen) {
-    *sw_screen = (UI_t){
+    // TODO SIMULATOR: initialize directly the fields of sw_screen without the temporary variable
+    UI_t tmp = (UI_t){
         .oc         = {0},
         .components = {
             (UI_elem_t){
@@ -429,6 +430,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){714, 352, 86, 128}},
         }};
+    memcpy(sw_screen, &tmp, sizeof(UI_t));
 }
 
 void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, size_t stride) {
