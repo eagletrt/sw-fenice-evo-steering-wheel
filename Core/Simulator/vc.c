@@ -32,6 +32,7 @@
 #include "steering_config.h"
 #include "steering_types.h"
 #include "graphics_manager.h"
+#include "controls.h"
 
 #define WIDTH 800
 #define HEIGHT 480
@@ -93,7 +94,6 @@ int main(void)
         if (renderer == NULL) return_defer(1);
 
         Uint32 prev = SDL_GetTicks();
-        bool pause = false;
 
         sw_set_canvas(&sw_screen, pixels, WIDTH, HEIGHT, WIDTH);
         sw_screen.oc.pixels = pixels;
@@ -112,30 +112,68 @@ int main(void)
                     return_defer(0);
                 } break;
                 case SDL_KEYDOWN: {
-                    if (event.key.keysym.sym == SDLK_SPACE) pause = !pause;
+                    if (event.key.keysym.sym == SDLK_z) {
+                        manettino_left_actions(1);
+                    } else if (event.key.keysym.sym == SDLK_x) {
+                        manettino_left_actions(-1);
+                    } else if (event.key.keysym.sym == SDLK_c) {
+                        manettino_center_actions(1);
+                    } else if (event.key.keysym.sym == SDLK_v) {
+                        manettino_center_actions(-1);
+                    } else if (event.key.keysym.sym == SDLK_b) {
+                        manettino_right_actions(1);
+                    } else if (event.key.keysym.sym == SDLK_n) {
+                        manettino_right_actions(-1);
+                    } else if (event.key.keysym.sym == SDLK_w) {
+                        buttons_pressed_actions(BUTTON_TOP_LEFT);
+                    } else if (event.key.keysym.sym == SDLK_e) {
+                        buttons_pressed_actions(BUTTON_TOP_RIGHT);
+                    } else if (event.key.keysym.sym == SDLK_s) {
+                        buttons_pressed_actions(BUTTON_BOTTOM_LEFT);
+                    } else if (event.key.keysym.sym == SDLK_d) {
+                        buttons_pressed_actions(BUTTON_BOTTOM_RIGHT);
+                    } else if (event.key.keysym.sym == SDLK_q) {
+                        buttons_pressed_actions(PADDLE_TOP_LEFT);
+                    } else if (event.key.keysym.sym == SDLK_r) {
+                        buttons_pressed_actions(PADDLE_TOP_RIGHT);
+                    } else if (event.key.keysym.sym == SDLK_a) {
+                        buttons_pressed_actions(PADDLE_BOTTOM_LEFT);
+                    } else if (event.key.keysym.sym == SDLK_f) {
+                        buttons_pressed_actions(PADDLE_BOTTOM_RIGHT);
+                    } else if (event.key.keysym.sym == SDLK_h) {
+                        buttons_long_pressed_actions(PADDLE_BOTTOM_LEFT);
+                    } else if (event.key.keysym.sym == SDLK_l) {
+                        buttons_long_pressed_actions(PADDLE_BOTTOM_RIGHT);
+                    } else if (event.key.keysym.sym == SDLK_u) {
+                        buttons_long_pressed_actions(BUTTON_TOP_LEFT);
+                    } else if (event.key.keysym.sym == SDLK_i) {
+                        buttons_long_pressed_actions(BUTTON_TOP_RIGHT);
+                    } else if (event.key.keysym.sym == SDLK_j) {
+                        buttons_long_pressed_actions(BUTTON_BOTTOM_LEFT);
+                    } else if (event.key.keysym.sym == SDLK_k) {
+                        buttons_long_pressed_actions(BUTTON_BOTTOM_RIGHT);
+                    }
                 } break;
                 }
             }
 
             SDL_Rect window_rect = {0, 0, vc_sdl_actual_width, vc_sdl_actual_height};
 
-            if (!pause) {
-                // Render the texture
-                Olivec_Canvas oc_src = vc_render(dt, &sw_screen);
-                if (oc_src.width != vc_sdl_actual_width || oc_src.height != vc_sdl_actual_height) {
-                    if (!vc_sdl_resize_texture(renderer, oc_src.width, oc_src.height)) return_defer(1);
-                    SDL_SetWindowSize(window, vc_sdl_actual_width, vc_sdl_actual_height);
-                }
-                void *pixels_dst;
-                int pitch;
-                if (SDL_LockTexture(vc_sdl_texture, &window_rect, &pixels_dst, &pitch) < 0) return_defer(1);
-                for (size_t y = 0; y < vc_sdl_actual_height; ++y) {
-                    // TODO: it would be cool if Olivec_Canvas supported pitch in bytes instead of pixels
-                    // It would be more flexible and we could draw on the locked texture memory directly
-                    memcpy((char*)pixels_dst + y*pitch, oc_src.pixels + y*vc_sdl_actual_width, vc_sdl_actual_width*sizeof(uint32_t));
-                }
-                SDL_UnlockTexture(vc_sdl_texture);
+            // Render the texture
+            Olivec_Canvas oc_src = vc_render(dt, &sw_screen);
+            if (oc_src.width != vc_sdl_actual_width || oc_src.height != vc_sdl_actual_height) {
+                if (!vc_sdl_resize_texture(renderer, oc_src.width, oc_src.height)) return_defer(1);
+                SDL_SetWindowSize(window, vc_sdl_actual_width, vc_sdl_actual_height);
             }
+            void *pixels_dst;
+            int pitch;
+            if (SDL_LockTexture(vc_sdl_texture, &window_rect, &pixels_dst, &pitch) < 0) return_defer(1);
+            for (size_t y = 0; y < vc_sdl_actual_height; ++y) {
+                // TODO: it would be cool if Olivec_Canvas supported pitch in bytes instead of pixels
+                // It would be more flexible and we could draw on the locked texture memory directly
+                memcpy((char*)pixels_dst + y*pitch, oc_src.pixels + y*vc_sdl_actual_width, vc_sdl_actual_width*sizeof(uint32_t));
+            }
+            SDL_UnlockTexture(vc_sdl_texture);
 
             // Display the texture
             if (SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0) < 0) return_defer(1);
