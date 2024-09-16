@@ -56,8 +56,8 @@ typedef struct {
     uint32_t swoc_elem_lb_color;
     uint32_t swoc_elem_bg_color;
     const Olivec_Font *swoc_elem_font;
-    const size_t swoc_elem_font_size;
-    const Olivec_Boundaries swoc_elem_boundaries;
+    size_t swoc_elem_font_size;
+    Olivec_Boundaries swoc_elem_boundaries;
 } UI_elem_t;
 
 typedef struct {

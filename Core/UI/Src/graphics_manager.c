@@ -273,7 +273,7 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
 }
 
 void sw_init_screen(UI_t *sw_screen) {
-    UI_t endurance_screen_temp = {
+    *sw_screen = (UI_t){
         .oc         = {0},
         .components = {
             (UI_elem_t){

@@ -128,8 +128,8 @@ int main(void) {
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_Delay(100);
 
-    UI_t sw_screen;
-    sw_init_screen(&sw_screen);
+    UI_t *sw_screen;
+    sw_init_screen(sw_screen);
 
 #define I2C_TESTS 0
 #if I2C_TESTS == 1
@@ -159,8 +159,8 @@ int main(void) {
     static bool tson_button_pressed                  = false;
     static uint32_t tson_button_pressed_time_elapsed = 0;
 
-    sw_set_canvas(&sw_screen, (uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-    sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
+    sw_set_canvas(sw_screen, (uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
+    sw_screen->oc.pixels = (uint32_t *)writable_framebuffer;
 
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     primary_ecu_set_power_maps_last_state->map_power = 1.0f;
@@ -227,7 +227,7 @@ int main(void) {
         static uint32_t last_ptt_periodic_check = 0;
         if ((get_current_time_ms() - last_ptt_periodic_check) > 50) {
             last_ptt_periodic_check = get_current_time_ms();
-            ptt_periodic_check(&sw_screen);
+            ptt_periodic_check(sw_screen);
         }
 
         if ((get_current_time_ms() - last_swap_framebuffer) > 100) {
@@ -239,17 +239,17 @@ int main(void) {
                 if (get_current_time_ms() - button_lts > 500) {
                     button_long_pressed = false;
                 }
-                sw_screen_white(&sw_screen);
+                sw_screen_white(sw_screen);
             } else {
-                sw_update_graphics_from_can_messages(&sw_screen);
-                sw_update_screen(0.f, &sw_screen);
+                sw_update_graphics_from_can_messages(sw_screen);
+                sw_update_screen(0.f, sw_screen);
             }
             HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
             uint32_t tmp         = active_framebuffer;
             active_framebuffer   = writable_framebuffer;
             writable_framebuffer = tmp;
-            sw_screen.oc.pixels  = (uint32_t *)writable_framebuffer;
+            sw_screen->oc.pixels  = (uint32_t *)writable_framebuffer;
             HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
         }
 
