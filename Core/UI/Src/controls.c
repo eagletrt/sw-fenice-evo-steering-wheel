@@ -16,7 +16,7 @@ void manettino_right_actions(int dsteps) {
 }
 
 void manettino_center_actions(int dsteps) {
-    int button_long_pressed = 0;
+    // int button_long_pressed = 0;
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     if (dsteps > 0) {
         primary_ecu_set_power_maps_last_state->sc_state = 1;

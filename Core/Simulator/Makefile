@@ -5,7 +5,7 @@ INCLUDES = -I../UI/Inc -I../Lib/can/lib/ -I../Lib/invlib/ -lSDL2 -lm
 DEBUG_FLAGS = -g -ggdb
 
 # Source files
-SRC = vc.c \
+SRC = vc.c queue.c can.c \
     ../UI/Src/can_messages.c \
     ../UI/Src/controls.c \
     ../UI/Src/graphics_manager.c \
@@ -33,6 +33,7 @@ SRC = vc.c \
     ../Lib/can/lib/simulator/simulator_watchdog.c \
     ../Lib/invlib/inverter_conversions.c
 
+# TODO: if there is yet a.out if you type make it gives all ok even if you changed the source files
 # Output binary
 TARGET = a.out
 

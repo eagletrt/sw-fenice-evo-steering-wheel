@@ -33,12 +33,14 @@
 #include "steering_types.h"
 #include "graphics_manager.h"
 #include "controls.h"
+#include "queue.h"
 
 #define WIDTH 800
 #define HEIGHT 480
 static uint32_t pixels[WIDTH*HEIGHT*4];
 
 Olivec_Canvas vc_render(float dt, UI_t *scr) {
+    sw_update_graphics_from_can_messages(scr);
     sw_update_screen(dt, scr);
     return scr->oc;
 }
@@ -71,7 +73,45 @@ void openblt_reset() {
 }
 
 bool can_send(can_message_t *msg, bool to_primary_network) {
+    // TODO: implement can send if needed
     return true;
+}
+
+typedef struct thread_data_t {
+    can_t *can;
+    int can_id;
+} thread_data_t;
+
+thread_data_t thread_data_1, thread_data_0;
+
+can_t can_primary;
+can_t can_secondary;
+
+SDL_mutex *mtx;  // LOCK-> SDL_mutexP() , UNLOCK->SDL_mutexV()
+queue_t queue;
+
+const int NETWORK_PRIMARY   = 0;
+const int NETWORK_SECONDARY = 1;
+
+SDL_Thread *thread_id_0;
+SDL_Thread *thread_id_1;
+
+void canread(thread_data_t *thread_data) {
+    struct can_frame frame;
+    can_message_t msg;
+    while (1) {
+        can_receive(&frame, thread_data->can);
+        msg.id   = frame.can_id;
+        msg.size = frame.len;
+        memcpy(msg.data, frame.data, frame.len);
+        SDL_mutexP(mtx);
+        if (thread_data->can_id == NETWORK_PRIMARY) {
+            handle_primary(&msg);
+        } else {
+            handle_secondary(&msg);
+        }
+        SDL_mutexV(mtx);
+    }
 }
 
 int main(void)
@@ -97,6 +137,30 @@ int main(void)
 
         sw_set_canvas(&sw_screen, pixels, WIDTH, HEIGHT, WIDTH);
         sw_screen.oc.pixels = pixels;
+
+        mtx = SDL_CreateMutex();
+        queue_init(&queue);
+        can_init("vcan0", &can_primary);
+        can_init("vcan1", &can_secondary);
+
+        // queue_element_t q_element;
+        // uint16_t readMessage = 0;  // 0 = no message, 1 = message read
+
+        if (can_open_socket(&can_primary) < 0) {
+            printf("[ERR] could not open can_primary\n");
+        }
+
+        if (can_open_socket(&can_secondary) < 0) {
+            printf("[ERR] could not open can_secondary\n");
+        }
+
+        thread_data_0.can    = &can_primary;
+        thread_data_0.can_id = NETWORK_PRIMARY;
+        thread_data_1.can    = &can_secondary;
+        thread_data_1.can_id = NETWORK_SECONDARY;
+
+        thread_id_0 = SDL_CreateThread((void *)canread, "thread_0", &thread_data_0);
+        thread_id_1 = SDL_CreateThread((void *)canread, "thread_1", &thread_data_1);
 
         for (;;) {
             // Compute Delta Time
