@@ -1,8 +1,14 @@
 # Compiler and flags
+FONTDIR = ../UI/Lib/McuFont/fonts
+MFDIR = ../UI/Lib/McuFont/decoder
+include $(MFDIR)/mcufont.mk
+
 CC = gcc
 CFLAGS = -Wall
-INCLUDES = -I../UI/Inc -I../Lib/can/lib/ -I../Lib/invlib/ -lSDL2 -lm
+INCLUDES = -I../UI/Inc -I../Lib/can/lib/ -I../Lib/invlib/ -I$(FONTDIR) -I$(MFDIR) -lSDL2 -lm
 DEBUG_FLAGS = -g -ggdb
+
+BUILD_DIR = build
 
 # Source files
 SRC = vc.c queue.c can.c \
@@ -33,22 +39,33 @@ SRC = vc.c queue.c can.c \
     ../Lib/can/lib/simulator/simulator_watchdog.c \
     ../Lib/invlib/inverter_conversions.c
 
-# TODO: if there is yet a.out if you type make it gives all ok even if you changed the source files
 # Output binary
 TARGET = a.out
 
-# Build with debug option
-all: $(TARGET)
+OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(SRC)))
 
+vpath %.c ../UI/Src ../Lib/can/lib/bms ../Lib/can/lib ../Lib/can/lib/inverters ../Lib/can/lib/ivts ../Lib/can/lib/primary ../Lib/can/lib/secondary ../Lib/can/lib/simulator ../Lib/invlib
+
+all: $(TARGET)
+	@echo "Target up to date"
+
+# Build with debug options
 debug: CFLAGS += $(DEBUG_FLAGS)
 debug: $(TARGET)
 
-$(TARGET):
-	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) $(INCLUDES)
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) $(OBJ) $(MFSRC) $(INCLUDES) -o $(TARGET)
+
+$(BUILD_DIR)/%.o: %.c | $(BUILD_DIR) 
+	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDES)
+
+$(BUILD_DIR):
+	mkdir $@
 
 run: $(TARGET)
 	./$(TARGET)
 
 # Clean up build files
 clean:
-	rm $(TARGET)
+	rm -f $(TARGET)
+	rm -rf $(BUILD_DIR)
