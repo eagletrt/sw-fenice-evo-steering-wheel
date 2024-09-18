@@ -223,7 +223,6 @@ int main(void)
                             break;
                         case SDLK_a:
                             buttons_pressed_actions(PADDLE_BOTTOM_LEFT);
-                            printf("PADDLE_BOTTOM_LEFT press\n");
                             break;
                         case SDLK_f:
                             buttons_pressed_actions(PADDLE_BOTTOM_RIGHT);
@@ -246,7 +245,6 @@ int main(void)
                             break;
                         case SDLK_a:
                             buttons_long_pressed_actions(PADDLE_BOTTOM_LEFT);
-                            printf("PADDLE_BOTTOM_LEFT long press\n");
                             break;
                         case SDLK_f:
                             buttons_long_pressed_actions(PADDLE_BOTTOM_RIGHT);
