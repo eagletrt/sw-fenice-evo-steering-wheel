@@ -47,6 +47,7 @@ Olivec_Canvas vc_render(float dt, UI_t *scr) {
 
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <time.h>
 
 #define return_defer(value) do { result = (value); goto defer; } while (0)
 
@@ -127,7 +128,7 @@ int main(void)
     {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) return_defer(1);
 
-        window = SDL_CreateWindow("Olivec", 0, 0, 0, 0, 0);
+        window = SDL_CreateWindow("Olivec Simulator", 0, 0, 0, 0, 0);
         if (window == NULL) return_defer(1);
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -162,6 +163,10 @@ int main(void)
         thread_id_0 = SDL_CreateThread((void *)canread, "thread_0", &thread_data_0);
         thread_id_1 = SDL_CreateThread((void *)canread, "thread_1", &thread_data_1);
 
+        time_t press_time;
+        SDL_Keycode last_key = 0;
+        bool once = false;
+
         for (;;) {
             // Compute Delta Time
             Uint32 curr = SDL_GetTicks();
@@ -176,47 +181,108 @@ int main(void)
                     return_defer(0);
                 } break;
                 case SDL_KEYDOWN: {
-                    if (event.key.keysym.sym == SDLK_z) {
-                        manettino_left_actions(1);
-                    } else if (event.key.keysym.sym == SDLK_x) {
-                        manettino_left_actions(-1);
-                    } else if (event.key.keysym.sym == SDLK_c) {
-                        manettino_center_actions(1);
-                    } else if (event.key.keysym.sym == SDLK_v) {
-                        manettino_center_actions(-1);
-                    } else if (event.key.keysym.sym == SDLK_b) {
-                        manettino_right_actions(1);
-                    } else if (event.key.keysym.sym == SDLK_n) {
-                        manettino_right_actions(-1);
-                    } else if (event.key.keysym.sym == SDLK_w) {
-                        buttons_pressed_actions(BUTTON_TOP_LEFT);
-                    } else if (event.key.keysym.sym == SDLK_e) {
-                        buttons_pressed_actions(BUTTON_TOP_RIGHT);
-                    } else if (event.key.keysym.sym == SDLK_s) {
-                        buttons_pressed_actions(BUTTON_BOTTOM_LEFT);
-                    } else if (event.key.keysym.sym == SDLK_d) {
-                        buttons_pressed_actions(BUTTON_BOTTOM_RIGHT);
-                    } else if (event.key.keysym.sym == SDLK_q) {
-                        buttons_pressed_actions(PADDLE_TOP_LEFT);
-                    } else if (event.key.keysym.sym == SDLK_r) {
-                        buttons_pressed_actions(PADDLE_TOP_RIGHT);
-                    } else if (event.key.keysym.sym == SDLK_a) {
-                        buttons_pressed_actions(PADDLE_BOTTOM_LEFT);
-                    } else if (event.key.keysym.sym == SDLK_f) {
-                        buttons_pressed_actions(PADDLE_BOTTOM_RIGHT);
-                    } else if (event.key.keysym.sym == SDLK_h) {
-                        buttons_long_pressed_actions(PADDLE_BOTTOM_LEFT);
-                    } else if (event.key.keysym.sym == SDLK_l) {
-                        buttons_long_pressed_actions(PADDLE_BOTTOM_RIGHT);
-                    } else if (event.key.keysym.sym == SDLK_u) {
-                        buttons_long_pressed_actions(BUTTON_TOP_LEFT);
-                    } else if (event.key.keysym.sym == SDLK_i) {
-                        buttons_long_pressed_actions(BUTTON_TOP_RIGHT);
-                    } else if (event.key.keysym.sym == SDLK_j) {
-                        buttons_long_pressed_actions(BUTTON_BOTTOM_LEFT);
-                    } else if (event.key.keysym.sym == SDLK_k) {
-                        buttons_long_pressed_actions(BUTTON_BOTTOM_RIGHT);
-                    }
+                    if (last_key != event.key.keysym.sym) {
+                        last_key = event.key.keysym.sym;
+                        press_time = clock();
+                        switch(event.key.keysym.sym) {
+                        case SDLK_z:
+                            manettino_left_actions(1);
+                            break;
+                        case SDLK_x:
+                            manettino_left_actions(-1);
+                            break;
+                        case SDLK_c:
+                            manettino_center_actions(1);
+                            break;
+                        case SDLK_v:
+                            manettino_center_actions(-1);
+                            break;
+                        case SDLK_b:
+                            manettino_right_actions(1);
+                            break;
+                        case SDLK_n:
+                            manettino_right_actions(-1);
+                            break;
+                        case SDLK_w:
+                            buttons_pressed_actions(BUTTON_TOP_LEFT);
+                            break;
+                        case SDLK_e:
+                            buttons_pressed_actions(BUTTON_TOP_RIGHT);
+                            break;
+                        case SDLK_s:
+                            buttons_pressed_actions(BUTTON_BOTTOM_LEFT);
+                            break;
+                        case SDLK_d:
+                            buttons_pressed_actions(BUTTON_BOTTOM_RIGHT);
+                            break;
+                        case SDLK_q:
+                            buttons_pressed_actions(PADDLE_TOP_LEFT);
+                            break;
+                        case SDLK_r:
+                            buttons_pressed_actions(PADDLE_TOP_RIGHT);
+                            break;
+                        case SDLK_a:
+                            buttons_pressed_actions(PADDLE_BOTTOM_LEFT);
+                            printf("PADDLE_BOTTOM_LEFT press\n");
+                            break;
+                        case SDLK_f:
+                            buttons_pressed_actions(PADDLE_BOTTOM_RIGHT);
+                            break;
+                        } break;
+                    } else if (last_key == event.key.keysym.sym && (clock() - press_time) > 500 && !once) {
+                        once = true;
+                        switch(event.key.keysym.sym) {
+                        case SDLK_w:
+                            buttons_long_pressed_actions(BUTTON_TOP_LEFT);
+                            break;
+                        case SDLK_e:
+                            buttons_long_pressed_actions(BUTTON_TOP_RIGHT);
+                            break;
+                        case SDLK_s:
+                            buttons_long_pressed_actions(BUTTON_BOTTOM_LEFT);
+                            break;
+                        case SDLK_d:
+                            buttons_long_pressed_actions(BUTTON_BOTTOM_RIGHT);
+                            break;
+                        case SDLK_a:
+                            buttons_long_pressed_actions(PADDLE_BOTTOM_LEFT);
+                            printf("PADDLE_BOTTOM_LEFT long press\n");
+                            break;
+                        case SDLK_f:
+                            buttons_long_pressed_actions(PADDLE_BOTTOM_RIGHT);
+                            break;
+                        } break;
+                    } break;
+                } break;
+                case SDL_KEYUP: {
+                    last_key = 0;
+                    once = false;
+                    switch(event.key.keysym.sym) {
+                    case SDLK_w:
+                        buttons_released_actions(BUTTON_TOP_LEFT);
+                        break;
+                    case SDLK_e:
+                        buttons_released_actions(BUTTON_TOP_RIGHT);
+                        break;
+                    case SDLK_s:
+                        buttons_released_actions(BUTTON_BOTTOM_LEFT);
+                        break;
+                    case SDLK_d:
+                        buttons_released_actions(BUTTON_BOTTOM_RIGHT);
+                        break;
+                    case SDLK_q:
+                        buttons_released_actions(PADDLE_TOP_LEFT);
+                        break;
+                    case SDLK_r:
+                        buttons_released_actions(PADDLE_TOP_RIGHT);
+                        break;
+                    case SDLK_a:
+                        buttons_released_actions(PADDLE_BOTTOM_LEFT);
+                        break;
+                    case SDLK_f:
+                        buttons_released_actions(PADDLE_BOTTOM_RIGHT);
+                        break;
+                    } break;
                 } break;
                 }
             }

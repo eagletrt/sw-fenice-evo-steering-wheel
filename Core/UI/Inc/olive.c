@@ -27,6 +27,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <mcufont.h>
+
+extern const struct mf_rlefont_s mf_rlefont_Airnt32;
 
 #ifndef OLIVECDEF
 #define OLIVECDEF static inline
@@ -63,6 +66,9 @@ static const Olivec_Font steering_wheel_font_50 = {
 
 #define OLIVEC_CANVAS_NULL     ((Olivec_Canvas){0})
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y) * (oc).stride + (x)]
+
+// GLobal canvas to define McuFont callback function
+Olivec_Canvas *oc;
 
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride);
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
@@ -149,6 +155,17 @@ OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h, size_t canvas_w
 #endif  // OLIVE_C_
 
 #ifdef OLIVEC_IMPLEMENTATION
+
+static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, void *state) {
+    while (count--) {
+        olivec_blend_color(&OLIVEC_PIXEL(*oc, x, y), 0xFFFFFF | (alpha << 24));
+        x++;
+    }
+}
+
+static uint8_t char_callback(int16_t x0, int16_t y0, mf_char character, void *state) {
+    return mf_render_character(&mf_rlefont_Airnt32.font, x0, y0, character, &pixel_callback, state);
+}
 
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride) {
     Olivec_Canvas oc = {
@@ -644,6 +661,7 @@ int get_pixel(const uint8_t *bitmap, int width, int x, int y) {
 }
 
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, Olivec_Font font, size_t glyph_size, uint32_t color) {
+    /*
     for (size_t i = 0; *text; ++i, ++text) {
         int gx               = tx + i * font.width * glyph_size;
         int gy               = ty;
@@ -660,6 +678,9 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
             }
         }
     }
+    */
+
+    mf_render_aligned(&mf_rlefont_Airnt32.font, tx, ty, MF_ALIGN_LEFT, text, strlen(text), &char_callback, NULL);
 }
 
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite) {

@@ -1,5 +1,5 @@
 Debug/**
-build/**
+**/build/**
 todo.md
 *.srec
 *.bin
@@ -10,3 +10,4 @@ STM32Make.make
 .stm32env
 .vscode/settings.json
 .vscode/c_cpp_properties.json
+

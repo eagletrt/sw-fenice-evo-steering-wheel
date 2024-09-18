@@ -3,6 +3,8 @@
 #define OLIVEC_IMPLEMENTATION
 #include "olive.c"
 
+extern Olivec_Canvas *oc;
+
 uint8_t *framebuffer_1 = (uint8_t *)FRAMEBUFFER1_ADDR;
 uint8_t *framebuffer_2 = (uint8_t *)FRAMEBUFFER2_ADDR;
 
@@ -332,7 +334,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
                 .swoc_elem_font_size   = 4,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 92, 176, 128}},
+                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 92, 178, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
                 .swoc_elem_label       = "LV",
@@ -348,7 +350,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
                 .swoc_elem_font_size   = 4,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){2, 222, 176, 128}},
+                .swoc_elem_boundaries  = (Olivec_Boundaries){2, 222, 178, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
                 .swoc_elem_label       = "INV",
@@ -364,7 +366,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
                 .swoc_elem_font_size   = 4,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 222, 176, 128}},
+                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 222, 178, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
                 .swoc_elem_label       = "HV",
@@ -380,7 +382,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
                 .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){2, 352, 176, 128}},
+                .swoc_elem_boundaries  = (Olivec_Boundaries){2, 352, 178, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
                 .swoc_elem_label       = "PT",
@@ -420,7 +422,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
                 .swoc_elem_font_size   = 2,
-                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 352, 176, 128}},
+                .swoc_elem_boundaries  = (Olivec_Boundaries){536, 352, 178, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
                 .swoc_elem_label       = "HV",
@@ -435,6 +437,7 @@ void sw_init_screen(UI_t *sw_screen) {
 
 void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, size_t stride) {
     scr->oc = olivec_canvas(pixels, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
+    oc = &scr->oc;
 }
 
 void sw_update_screen(float dt, UI_t *scr) {
@@ -452,8 +455,8 @@ void sw_update_screen(float dt, UI_t *scr) {
         olivec_text(
             scr->oc,
             scr->components[iswoc].swoc_elem_label,
-            scr->components[iswoc].swoc_elem_boundaries.x + 5,
-            scr->components[iswoc].swoc_elem_boundaries.y + 5,
+            scr->components[iswoc].swoc_elem_boundaries.x + 20,
+            scr->components[iswoc].swoc_elem_boundaries.y + 35,
             *(scr->components[iswoc].swoc_elem_font),
             scr->components[iswoc].swoc_elem_font_size,
             scr->components[iswoc].swoc_elem_lb_color);
