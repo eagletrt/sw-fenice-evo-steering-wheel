@@ -293,7 +293,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font_size   = 1,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){268, 2, 266, 88}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -309,7 +309,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 4,
+                .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){2, 92, 176, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -317,7 +317,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font_size   = 1,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){178, 92, 86, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -325,7 +325,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 6,
+                .swoc_elem_font_size   = 3,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){268, 92, 266, 258}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -333,7 +333,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 4,
+                .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){536, 92, 178, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -341,7 +341,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font_size   = 1,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){714, 92, 86, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -349,7 +349,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 4,
+                .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){2, 222, 178, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -357,7 +357,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font_size   = 1,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){180, 222, 86, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -365,7 +365,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 4,
+                .swoc_elem_font_size   = 2,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){536, 222, 178, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -373,7 +373,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font_size   = 1,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){714, 222, 86, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -389,7 +389,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font_size   = 1,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){180, 352, 86, 128}},
             (UI_elem_t){
                 .swoc_elem_was_updated = true,
@@ -429,7 +429,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2,
+                .swoc_elem_font_size   = 1,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){714, 352, 86, 128}},
         }};
     memcpy(sw_screen, &tmp, sizeof(UI_t));
@@ -456,10 +456,8 @@ void sw_update_screen(float dt, UI_t *scr) {
             scr->oc,
             scr->components[iswoc].swoc_elem_label,
             scr->components[iswoc].swoc_elem_boundaries.x + 20,
-            scr->components[iswoc].swoc_elem_boundaries.y + 35,
-            *(scr->components[iswoc].swoc_elem_font),
-            scr->components[iswoc].swoc_elem_font_size,
-            scr->components[iswoc].swoc_elem_lb_color);
+            scr->components[iswoc].swoc_elem_boundaries.y + 30,
+            scr->components[iswoc].swoc_elem_font_size);
     }
 }
 

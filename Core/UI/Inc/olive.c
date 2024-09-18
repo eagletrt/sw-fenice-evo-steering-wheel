@@ -122,7 +122,7 @@ OLIVECDEF void olivec_triangle3uv_bilinear(
     float z2,
     float z3,
     Olivec_Canvas texture);
-OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
+OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, size_t size);
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 OLIVECDEF void olivec_sprite_copy_bilinear(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
@@ -164,7 +164,10 @@ static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, v
 }
 
 static uint8_t char_callback(int16_t x0, int16_t y0, mf_char character, void *state) {
-    return mf_render_character(&mf_rlefont_Airnt32.font, x0, y0, character, &pixel_callback, state);
+    size_t size = (size_t)state;
+    struct mf_scaledfont_s scaled_font;
+    mf_scale_font(&scaled_font, &mf_rlefont_Airnt32.font, size, size);
+    return mf_render_character(&scaled_font.font, x0, y0, character, &pixel_callback, state);
 }
 
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride) {
@@ -660,7 +663,7 @@ int get_pixel(const uint8_t *bitmap, int width, int x, int y) {
     return (bitmap[byte_index] >> bit_position) & 1;
 }
 
-OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, Olivec_Font font, size_t glyph_size, uint32_t color) {
+OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, size_t size) {
     /*
     for (size_t i = 0; *text; ++i, ++text) {
         int gx               = tx + i * font.width * glyph_size;
@@ -680,7 +683,7 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
     }
     */
 
-    mf_render_aligned(&mf_rlefont_Airnt32.font, tx, ty, MF_ALIGN_LEFT, text, strlen(text), &char_callback, NULL);
+    mf_render_aligned(&mf_rlefont_Airnt32.font, tx, ty, MF_ALIGN_LEFT, text, strlen(text), &char_callback, size);
 }
 
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite) {
