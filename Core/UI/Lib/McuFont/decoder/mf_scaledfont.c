@@ -4,8 +4,8 @@ struct scaled_renderstate
 {
     mf_pixel_callback_t orig_callback;
     void *orig_state;
-    uint8_t x_scale;
-    uint8_t y_scale;
+    float x_scale;
+    float y_scale;
     int16_t x0;
     int16_t y0;
 };
@@ -62,7 +62,7 @@ static uint8_t scaled_render_character(const struct mf_font_s *font,
 
 void mf_scale_font(struct mf_scaledfont_s *newfont,
                    const struct mf_font_s *basefont,
-                   uint8_t x_scale, uint8_t y_scale)
+                   float x_scale, float y_scale)
 {
     newfont->font = *basefont;
     newfont->basefont = basefont;
