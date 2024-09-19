@@ -157,8 +157,13 @@ OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h, size_t canvas_w
 #ifdef OLIVEC_IMPLEMENTATION
 
 static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, void *state) {
+    struct scaled_renderstate *rstate = state;
+    bool is_1 = rstate->x_scale == 1.0f && rstate->y_scale == 1.0f;
     while (count--) {
         olivec_blend_color(&OLIVEC_PIXEL(*oc, x, y), 0xFFFFFF | (alpha << 24));
+        if (!is_1) {
+            olivec_blend_color(&OLIVEC_PIXEL(*oc, x+1, y), 0xFFFFFF | (alpha << 24));
+        }
         x++;
     }
 }

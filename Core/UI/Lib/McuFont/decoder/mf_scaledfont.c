@@ -1,15 +1,5 @@
 #include "mf_scaledfont.h"
 
-struct scaled_renderstate
-{
-    mf_pixel_callback_t orig_callback;
-    void *orig_state;
-    float x_scale;
-    float y_scale;
-    int16_t x0;
-    int16_t y0;
-};
-
 static void scaled_pixel_callback(int16_t x, int16_t y, uint8_t count,
                                   uint8_t alpha, void *state)
 {
