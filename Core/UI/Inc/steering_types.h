@@ -39,6 +39,11 @@ typedef struct {
 } Olivec_Boundaries;
 
 typedef struct {
+    int x;
+    int y;
+} Olivec_Margins;
+
+typedef struct {
     uint32_t *pixels;
     size_t width;
     size_t height;
@@ -58,6 +63,8 @@ typedef struct {
     const Olivec_Font *swoc_elem_font;
     const float swoc_elem_font_size;
     const Olivec_Boundaries swoc_elem_boundaries;
+    const Olivec_Margins swoc_elem_margins;
+    uint8_t swoc_elem_align;
 } UI_elem_t;
 
 typedef struct {
