@@ -48,22 +48,6 @@ extern const struct mf_rlefont_s mf_rlefont_Airnt32;
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
 #define OLIVEC_ABS(T, x)  (OLIVEC_SIGN(T, x) * (x))
 
-#include "steering_wheel_font_30.h"
-
-static const Olivec_Font steering_wheel_font_30 = {
-    .glyphs = &steering_wheel_30_glyph[0][0],
-    .width  = Steering_wheel_30_WIDTH,
-    .height = Steering_wheel_30_HEIGHT,
-};
-
-#include "steering_wheel_font_50.h"
-
-static const Olivec_Font steering_wheel_font_50 = {
-    .glyphs = &steering_wheel_50_glyph[0][0],
-    .width  = Steering_wheel_50_WIDTH,
-    .height = Steering_wheel_50_HEIGHT,
-};
-
 #define OLIVEC_CANVAS_NULL     ((Olivec_Canvas){0})
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y) * (oc).stride + (x)]
 
