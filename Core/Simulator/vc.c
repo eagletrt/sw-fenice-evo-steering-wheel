@@ -29,15 +29,16 @@
 // $ clang -fno-builtin --target=wasm32 --no-standard-libraries -Wl,--no-entry -Wl,--export=render -Wl,--allow-undefined -o demo.wasm -DVC_PLATFORM=VC_WASM_PLATFORM demo.c
 // ```
 
-#include "steering_config.h"
-#include "steering_types.h"
-#include "graphics_manager.h"
-#include "controls.h"
 #include "queue.h"
 
-#define WIDTH 800
+#include "controls.h"
+#include "graphics_manager.h"
+#include "steering_config.h"
+#include "steering_types.h"
+
+#define WIDTH  800
 #define HEIGHT 480
-static uint32_t pixels[WIDTH*HEIGHT*4];
+static uint32_t pixels[WIDTH * HEIGHT * 4];
 
 Olivec_Canvas vc_render(float dt, UI_t *scr) {
     sw_update_graphics_from_can_messages(scr);
@@ -45,23 +46,28 @@ Olivec_Canvas vc_render(float dt, UI_t *scr) {
     return scr->oc;
 }
 
-#include <stdio.h>
 #include <SDL2/SDL.h>
+#include <stdio.h>
 #include <time.h>
 
-#define return_defer(value) do { result = (value); goto defer; } while (0)
+#define return_defer(value) \
+    do {                    \
+        result = (value);   \
+        goto defer;         \
+    } while (0)
 
 static SDL_Texture *vc_sdl_texture = NULL;
-static size_t vc_sdl_actual_width = 0;
+static size_t vc_sdl_actual_width  = 0;
 static size_t vc_sdl_actual_height = 0;
 
-static bool vc_sdl_resize_texture(SDL_Renderer *renderer, size_t new_width, size_t new_height)
-{
-    if (vc_sdl_texture != NULL) SDL_DestroyTexture(vc_sdl_texture);
-    vc_sdl_actual_width = new_width;
+static bool vc_sdl_resize_texture(SDL_Renderer *renderer, size_t new_width, size_t new_height) {
+    if (vc_sdl_texture != NULL)
+        SDL_DestroyTexture(vc_sdl_texture);
+    vc_sdl_actual_width  = new_width;
     vc_sdl_actual_height = new_height;
-    vc_sdl_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, vc_sdl_actual_width, vc_sdl_actual_height);
-    if (vc_sdl_texture == NULL) return false;
+    vc_sdl_texture       = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, vc_sdl_actual_width, vc_sdl_actual_height);
+    if (vc_sdl_texture == NULL)
+        return false;
     return true;
 }
 
@@ -70,7 +76,6 @@ uint32_t get_current_time_ms(void) {
 }
 
 void openblt_reset() {
-
 }
 
 bool can_send(can_message_t *msg, bool to_primary_network) {
@@ -115,24 +120,26 @@ void canread(thread_data_t *thread_data) {
     }
 }
 
-int main(void)
-{
+int main(void) {
     int result = 0;
 
-    SDL_Window *window = NULL;
+    SDL_Window *window     = NULL;
     SDL_Renderer *renderer = NULL;
 
     UI_t sw_screen;
     sw_init_screen(&sw_screen);
-    
+
     {
-        if (SDL_Init(SDL_INIT_VIDEO) < 0) return_defer(1);
+        if (SDL_Init(SDL_INIT_VIDEO) < 0)
+            return_defer(1);
 
         window = SDL_CreateWindow("Olivec Simulator", 0, 0, 0, 0, 0);
-        if (window == NULL) return_defer(1);
+        if (window == NULL)
+            return_defer(1);
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-        if (renderer == NULL) return_defer(1);
+        if (renderer == NULL)
+            return_defer(1);
 
         Uint32 prev = SDL_GetTicks();
 
@@ -165,123 +172,127 @@ int main(void)
 
         time_t press_time;
         SDL_Keycode last_key = 0;
-        bool once = false;
+        bool once            = false;
 
         for (;;) {
             // Compute Delta Time
             Uint32 curr = SDL_GetTicks();
-            float dt = (curr - prev)/1000.f;
-            prev = curr;
+            float dt    = (curr - prev) / 1000.f;
+            prev        = curr;
 
             // Flush the events
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
                 switch (event.type) {
-                case SDL_QUIT: {
-                    return_defer(0);
-                } break;
-                case SDL_KEYDOWN: {
-                    if (last_key != event.key.keysym.sym) {
-                        last_key = event.key.keysym.sym;
-                        press_time = clock();
-                        switch(event.key.keysym.sym) {
-                        case SDLK_z:
-                            manettino_left_actions(1);
-                            break;
-                        case SDLK_x:
-                            manettino_left_actions(-1);
-                            break;
-                        case SDLK_c:
-                            manettino_center_actions(1);
-                            break;
-                        case SDLK_v:
-                            manettino_center_actions(-1);
-                            break;
-                        case SDLK_b:
-                            manettino_right_actions(1);
-                            break;
-                        case SDLK_n:
-                            manettino_right_actions(-1);
-                            break;
-                        case SDLK_w:
-                            buttons_pressed_actions(BUTTON_TOP_LEFT);
-                            break;
-                        case SDLK_e:
-                            buttons_pressed_actions(BUTTON_TOP_RIGHT);
-                            break;
-                        case SDLK_s:
-                            buttons_pressed_actions(BUTTON_BOTTOM_LEFT);
-                            break;
-                        case SDLK_d:
-                            buttons_pressed_actions(BUTTON_BOTTOM_RIGHT);
-                            break;
-                        case SDLK_q:
-                            buttons_pressed_actions(PADDLE_TOP_LEFT);
-                            break;
-                        case SDLK_r:
-                            buttons_pressed_actions(PADDLE_TOP_RIGHT);
-                            break;
-                        case SDLK_a:
-                            buttons_pressed_actions(PADDLE_BOTTOM_LEFT);
-                            break;
-                        case SDLK_f:
-                            buttons_pressed_actions(PADDLE_BOTTOM_RIGHT);
-                            break;
-                        } break;
-                    } else if (last_key == event.key.keysym.sym && (clock() - press_time) > 500 && !once) {
-                        once = true;
-                        switch(event.key.keysym.sym) {
-                        case SDLK_w:
-                            buttons_long_pressed_actions(BUTTON_TOP_LEFT);
-                            break;
-                        case SDLK_e:
-                            buttons_long_pressed_actions(BUTTON_TOP_RIGHT);
-                            break;
-                        case SDLK_s:
-                            buttons_long_pressed_actions(BUTTON_BOTTOM_LEFT);
-                            break;
-                        case SDLK_d:
-                            buttons_long_pressed_actions(BUTTON_BOTTOM_RIGHT);
-                            break;
-                        case SDLK_a:
-                            buttons_long_pressed_actions(PADDLE_BOTTOM_LEFT);
-                            break;
-                        case SDLK_f:
-                            buttons_long_pressed_actions(PADDLE_BOTTOM_RIGHT);
-                            break;
-                        } break;
+                    case SDL_QUIT: {
+                        return_defer(0);
                     } break;
-                } break;
-                case SDL_KEYUP: {
-                    last_key = 0;
-                    once = false;
-                    switch(event.key.keysym.sym) {
-                    case SDLK_w:
-                        buttons_released_actions(BUTTON_TOP_LEFT);
-                        break;
-                    case SDLK_e:
-                        buttons_released_actions(BUTTON_TOP_RIGHT);
-                        break;
-                    case SDLK_s:
-                        buttons_released_actions(BUTTON_BOTTOM_LEFT);
-                        break;
-                    case SDLK_d:
-                        buttons_released_actions(BUTTON_BOTTOM_RIGHT);
-                        break;
-                    case SDLK_q:
-                        buttons_released_actions(PADDLE_TOP_LEFT);
-                        break;
-                    case SDLK_r:
-                        buttons_released_actions(PADDLE_TOP_RIGHT);
-                        break;
-                    case SDLK_a:
-                        buttons_released_actions(PADDLE_BOTTOM_LEFT);
-                        break;
-                    case SDLK_f:
-                        buttons_released_actions(PADDLE_BOTTOM_RIGHT);
+                    case SDL_KEYDOWN: {
+                        if (last_key != event.key.keysym.sym) {
+                            last_key   = event.key.keysym.sym;
+                            press_time = clock();
+                            switch (event.key.keysym.sym) {
+                                case SDLK_z:
+                                    manettino_left_actions(1);
+                                    break;
+                                case SDLK_x:
+                                    manettino_left_actions(-1);
+                                    break;
+                                case SDLK_c:
+                                    manettino_center_actions(1);
+                                    break;
+                                case SDLK_v:
+                                    manettino_center_actions(-1);
+                                    break;
+                                case SDLK_b:
+                                    manettino_right_actions(1);
+                                    break;
+                                case SDLK_n:
+                                    manettino_right_actions(-1);
+                                    break;
+                                case SDLK_w:
+                                    buttons_pressed_actions(BUTTON_TOP_LEFT);
+                                    break;
+                                case SDLK_e:
+                                    buttons_pressed_actions(BUTTON_TOP_RIGHT);
+                                    break;
+                                case SDLK_s:
+                                    buttons_pressed_actions(BUTTON_BOTTOM_LEFT);
+                                    break;
+                                case SDLK_d:
+                                    buttons_pressed_actions(BUTTON_BOTTOM_RIGHT);
+                                    break;
+                                case SDLK_q:
+                                    buttons_pressed_actions(PADDLE_TOP_LEFT);
+                                    break;
+                                case SDLK_r:
+                                    buttons_pressed_actions(PADDLE_TOP_RIGHT);
+                                    break;
+                                case SDLK_a:
+                                    buttons_pressed_actions(PADDLE_BOTTOM_LEFT);
+                                    break;
+                                case SDLK_f:
+                                    buttons_pressed_actions(PADDLE_BOTTOM_RIGHT);
+                                    break;
+                            }
+                            break;
+                        } else if (last_key == event.key.keysym.sym && (clock() - press_time) > 500 && !once) {
+                            once = true;
+                            switch (event.key.keysym.sym) {
+                                case SDLK_w:
+                                    buttons_long_pressed_actions(BUTTON_TOP_LEFT);
+                                    break;
+                                case SDLK_e:
+                                    buttons_long_pressed_actions(BUTTON_TOP_RIGHT);
+                                    break;
+                                case SDLK_s:
+                                    buttons_long_pressed_actions(BUTTON_BOTTOM_LEFT);
+                                    break;
+                                case SDLK_d:
+                                    buttons_long_pressed_actions(BUTTON_BOTTOM_RIGHT);
+                                    break;
+                                case SDLK_a:
+                                    buttons_long_pressed_actions(PADDLE_BOTTOM_LEFT);
+                                    break;
+                                case SDLK_f:
+                                    buttons_long_pressed_actions(PADDLE_BOTTOM_RIGHT);
+                                    break;
+                            }
+                            break;
+                        }
                         break;
                     } break;
-                } break;
+                    case SDL_KEYUP: {
+                        last_key = 0;
+                        once     = false;
+                        switch (event.key.keysym.sym) {
+                            case SDLK_w:
+                                buttons_released_actions(BUTTON_TOP_LEFT);
+                                break;
+                            case SDLK_e:
+                                buttons_released_actions(BUTTON_TOP_RIGHT);
+                                break;
+                            case SDLK_s:
+                                buttons_released_actions(BUTTON_BOTTOM_LEFT);
+                                break;
+                            case SDLK_d:
+                                buttons_released_actions(BUTTON_BOTTOM_RIGHT);
+                                break;
+                            case SDLK_q:
+                                buttons_released_actions(PADDLE_TOP_LEFT);
+                                break;
+                            case SDLK_r:
+                                buttons_released_actions(PADDLE_TOP_RIGHT);
+                                break;
+                            case SDLK_a:
+                                buttons_released_actions(PADDLE_BOTTOM_LEFT);
+                                break;
+                            case SDLK_f:
+                                buttons_released_actions(PADDLE_BOTTOM_RIGHT);
+                                break;
+                        }
+                        break;
+                    } break;
                 }
             }
 
@@ -290,38 +301,46 @@ int main(void)
             // Render the texture
             Olivec_Canvas oc_src = vc_render(dt, &sw_screen);
             if (oc_src.width != vc_sdl_actual_width || oc_src.height != vc_sdl_actual_height) {
-                if (!vc_sdl_resize_texture(renderer, oc_src.width, oc_src.height)) return_defer(1);
+                if (!vc_sdl_resize_texture(renderer, oc_src.width, oc_src.height))
+                    return_defer(1);
                 SDL_SetWindowSize(window, vc_sdl_actual_width, vc_sdl_actual_height);
             }
             void *pixels_dst;
             int pitch;
-            if (SDL_LockTexture(vc_sdl_texture, &window_rect, &pixels_dst, &pitch) < 0) return_defer(1);
+            if (SDL_LockTexture(vc_sdl_texture, &window_rect, &pixels_dst, &pitch) < 0)
+                return_defer(1);
             for (size_t y = 0; y < vc_sdl_actual_height; ++y) {
                 // TODO: it would be cool if Olivec_Canvas supported pitch in bytes instead of pixels
                 // It would be more flexible and we could draw on the locked texture memory directly
-                memcpy((char*)pixels_dst + y*pitch, oc_src.pixels + y*vc_sdl_actual_width, vc_sdl_actual_width*sizeof(uint32_t));
+                memcpy((char *)pixels_dst + y * pitch, oc_src.pixels + y * vc_sdl_actual_width, vc_sdl_actual_width * sizeof(uint32_t));
             }
             SDL_UnlockTexture(vc_sdl_texture);
 
             // Display the texture
-            if (SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0) < 0) return_defer(1);
-            if (SDL_RenderClear(renderer) < 0) return_defer(1);
-            if (SDL_RenderCopy(renderer, vc_sdl_texture, &window_rect, &window_rect) < 0) return_defer(1);
+            if (SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0) < 0)
+                return_defer(1);
+            if (SDL_RenderClear(renderer) < 0)
+                return_defer(1);
+            if (SDL_RenderCopy(renderer, vc_sdl_texture, &window_rect, &window_rect) < 0)
+                return_defer(1);
             SDL_RenderPresent(renderer);
         }
     }
 
 defer:
     switch (result) {
-    case 0:
-        printf("OK\n");
-        break;
-    default:
-        fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
+        case 0:
+            printf("OK\n");
+            break;
+        default:
+            fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
     }
-    if (vc_sdl_texture) SDL_DestroyTexture(vc_sdl_texture);
-    if (renderer) SDL_DestroyRenderer(renderer);
-    if (window) SDL_DestroyWindow(window);
+    if (vc_sdl_texture)
+        SDL_DestroyTexture(vc_sdl_texture);
+    if (renderer)
+        SDL_DestroyRenderer(renderer);
+    if (window)
+        SDL_DestroyWindow(window);
     SDL_Quit();
     return result;
 }

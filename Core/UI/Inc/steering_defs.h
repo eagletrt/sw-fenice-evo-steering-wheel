@@ -18,7 +18,7 @@
 #define OLIVEC_COLOR_WHITE      (0xFFFFFFFF)
 #define OLIVEC_COLOR_PURPLE     (0xFFA020F0)
 
-#else 
+#else
 
 #define OLIVEC_COLOR_RED        (0xFF0000FF)
 #define OLIVEC_COLOR_BLUE       (0xFFFF0000)

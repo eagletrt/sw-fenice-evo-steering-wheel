@@ -475,7 +475,7 @@ void sw_init_screen(UI_t *sw_screen) {
 
 void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, size_t stride) {
     scr->oc = olivec_canvas(pixels, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-    oc = &scr->oc;
+    oc      = &scr->oc;
 }
 
 void sw_update_screen(float dt, UI_t *scr) {

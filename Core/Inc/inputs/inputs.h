@@ -21,7 +21,8 @@
 #define RIGHT_MANETTINO_INTERRUPT_INDEX  3
 #define NUM_INTERRUPT_PINS               4
 
-#define BUTTON_MAPPING {7, 5, 3, 1, 0, 6, 4, 2}
+#define BUTTON_MAPPING \
+    { 7, 5, 3, 1, 0, 6, 4, 2 }
 
 // TODO: MIGLIORARE IL DEBOUNCE SOFTWARE
 #define MANETTINO_DEBOUNCE 250
@@ -33,9 +34,12 @@
 #define MANETTINO_DEBOUNCE_VALUE 255  // value to be ignored
 #define MANETTINO_INVALID_VALUE  0xFF
 
-#define MANETTINO_RIGHT_VALS  {253, 251, 239, 127, 191, 223, 247, 254}
-#define MANETTINO_CENTER_VALS {239, 247, 251, 254, 223, 191, 127, 253}
-#define MANETTINO_LEFT_VALS   {127, 191, 247, 251, 253, 254, 239, 223}
+#define MANETTINO_RIGHT_VALS \
+    { 253, 251, 239, 127, 191, 223, 247, 254 }
+#define MANETTINO_CENTER_VALS \
+    { 239, 247, 251, 254, 223, 191, 127, 253 }
+#define MANETTINO_LEFT_VALS \
+    { 127, 191, 247, 251, 253, 254, 239, 223 }
 
 void inputs_init(void);
 void read_inputs(void);
