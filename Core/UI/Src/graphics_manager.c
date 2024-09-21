@@ -315,7 +315,7 @@ void sw_init_screen(UI_t *sw_screen) {
                 .swoc_elem_lb_color    = 0xFFFFFFFF,
                 .swoc_elem_bg_color    = 0xFF000000,
                 .swoc_elem_font        = &steering_wheel_font_30,
-                .swoc_elem_font_size   = 2.0,
+                .swoc_elem_font_size   = 2.4,
                 .swoc_elem_boundaries  = (Olivec_Boundaries){2, 92, 176, 128},
                 .swoc_elem_margins     = (Olivec_Margins){88, 37},
                 .swoc_elem_align       = MF_ALIGN_CENTER},
