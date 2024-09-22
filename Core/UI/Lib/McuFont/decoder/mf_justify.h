@@ -15,6 +15,11 @@ enum mf_align_t
     MF_ALIGN_RIGHT
 };
 
+struct mf_size_and_color_s {
+    float size;
+    uint32_t color;
+};
+
 /* Callback for rendering a single character.
  * x0:          Left edge of the target position of character.
  * y0:          Upper edge of the target position of character.
