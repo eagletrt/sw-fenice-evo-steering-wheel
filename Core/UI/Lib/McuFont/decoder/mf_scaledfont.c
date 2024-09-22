@@ -37,12 +37,15 @@ static uint8_t scaled_render_character(const struct mf_font_s *font,
     struct scaled_renderstate rstate;
     uint8_t basewidth;
 
+    struct size_and_color *ud = (struct size_and_color *)state;
+
     rstate.orig_callback = callback;
     rstate.orig_state = state;
     rstate.x_scale = sfont->x_scale;
     rstate.y_scale = sfont->y_scale;
     rstate.x0 = x0;
     rstate.y0 = y0;
+    rstate.color = ud->color;
 
     basewidth = sfont->basefont->render_character(sfont->basefont, 0, 0,
                             character, scaled_pixel_callback, &rstate);
@@ -52,7 +55,7 @@ static uint8_t scaled_render_character(const struct mf_font_s *font,
 
 void mf_scale_font(struct mf_scaledfont_s *newfont,
                    const struct mf_font_s *basefont,
-                   float x_scale, float y_scale)
+                   float x_scale, float y_scale, uint32_t color)
 {
     newfont->font = *basefont;
     newfont->basefont = basefont;
@@ -69,5 +72,6 @@ void mf_scale_font(struct mf_scaledfont_s *newfont,
 
     newfont->x_scale = x_scale;
     newfont->y_scale = y_scale;
+    newfont->color = color;
 }
 

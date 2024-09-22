@@ -14,6 +14,7 @@ struct mf_scaledfont_s
     const struct mf_font_s *basefont;
     float x_scale;
     float y_scale;
+    uint32_t color;
 };
 
 struct scaled_renderstate
@@ -24,10 +25,16 @@ struct scaled_renderstate
     float y_scale;
     int16_t x0;
     int16_t y0;
+    uint32_t color;
+};
+
+struct size_and_color {
+    float size;
+    uint32_t color;
 };
 
 MF_EXTERN void mf_scale_font(struct mf_scaledfont_s *newfont,
                              const struct mf_font_s *basefont,
-                             float x_scale, float y_scale);
+                             float x_scale, float y_scale, uint32_t color);
 
 #endif
