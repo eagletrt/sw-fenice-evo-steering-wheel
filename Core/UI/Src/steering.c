@@ -227,18 +227,18 @@ void hv_soc_estimation_update(UI_t *screen, bool valid) {
     screen->components[swoc_soc_hv].swoc_elem_was_updated = true;
 
     if (soc < SOC_HV_CRITICAL_THRESHOLD) {
-        screen->components[swoc_soc_hv].swoc_elem_bg_color = OLIVEC_COLOR_RED;
-        screen->components[swoc_soc_hv].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+        screen->components[swoc_soc_hv].swoc_elem_bg_color      = OLIVEC_COLOR_RED;
+        screen->components[swoc_soc_hv].swoc_elem_lb_color      = OLIVEC_COLOR_BLACK;
         screen->components[swoc_soc_hv_name].swoc_elem_bg_color = OLIVEC_COLOR_RED;
         screen->components[swoc_soc_hv_name].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
     } else if (soc < SOC_HV_ALERT_THRESHOLD) {
-        screen->components[swoc_soc_hv].swoc_elem_bg_color = OLIVEC_COLOR_YELLOW;
-        screen->components[swoc_soc_hv].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+        screen->components[swoc_soc_hv].swoc_elem_bg_color      = OLIVEC_COLOR_YELLOW;
+        screen->components[swoc_soc_hv].swoc_elem_lb_color      = OLIVEC_COLOR_BLACK;
         screen->components[swoc_soc_hv_name].swoc_elem_bg_color = OLIVEC_COLOR_YELLOW;
         screen->components[swoc_soc_hv_name].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
     } else {
-        screen->components[swoc_soc_hv].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;
-        screen->components[swoc_soc_hv].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+        screen->components[swoc_soc_hv].swoc_elem_bg_color      = OLIVEC_COLOR_GREEN;
+        screen->components[swoc_soc_hv].swoc_elem_lb_color      = OLIVEC_COLOR_BLACK;
         screen->components[swoc_soc_hv_name].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;
         screen->components[swoc_soc_hv_name].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
     }

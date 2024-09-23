@@ -154,9 +154,9 @@ static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, v
 }
 
 static uint8_t char_callback(int16_t x0, int16_t y0, mf_char character, void *state) {
-    struct size_and_color* ud = (struct size_and_color *)state;
+    float size = ((struct size_and_color *)state)->size;
     struct mf_scaledfont_s scaled_font;
-    mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, ud->size, ud->size, ud->color);
+    mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, size, size);
     return mf_render_character(&scaled_font.font, x0, y0, character, &pixel_callback, state);
 }
 
@@ -676,9 +676,8 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, u
         .size = size,
         .color = color,
     };
-    float *size_ptr = &size;
     struct mf_scaledfont_s scaled_font;
-    mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, mf_data.size, mf_data.size, mf_data.color);
+    mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, size, size);
 
     mf_render_aligned(&scaled_font.font, tx, ty, align, text, strlen(text), &char_callback, (void *)&mf_data);
 }
