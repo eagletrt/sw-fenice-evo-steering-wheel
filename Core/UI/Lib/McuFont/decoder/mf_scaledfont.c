@@ -6,9 +6,9 @@ static void scaled_pixel_callback(int16_t x, int16_t y, uint8_t count,
     struct scaled_renderstate *rstate = state;
     uint8_t dy;
 
-    count *= rstate->x_scale;
-    x = rstate->x0 + x * rstate->x_scale;
-    y = rstate->y0 + y * rstate->y_scale;
+    count = round((float)count * rstate->x_scale);
+    x = rstate->x0 + round((float)x * rstate->x_scale);
+    y = rstate->y0 + round((float)y * rstate->y_scale);
 
     for (dy = 0; dy < rstate->y_scale; dy++)
     {
@@ -57,13 +57,13 @@ void mf_scale_font(struct mf_scaledfont_s *newfont,
     newfont->font = *basefont;
     newfont->basefont = basefont;
 
-    newfont->font.width *= x_scale;
-    newfont->font.height *= y_scale;
-    newfont->font.baseline_x *= x_scale;
-    newfont->font.baseline_y *= y_scale;
-    newfont->font.min_x_advance *= x_scale;
-    newfont->font.max_x_advance *= x_scale;
-    newfont->font.line_height *= y_scale;
+    newfont->font.width = round((float)newfont->font.width * x_scale);
+    newfont->font.height = round((float)newfont->font.height * y_scale);
+    newfont->font.baseline_x = round((float)newfont->font.baseline_x * x_scale);
+    newfont->font.baseline_y = round((float)newfont->font.baseline_y * y_scale);
+    newfont->font.min_x_advance = round((float)newfont->font.min_x_advance * x_scale);
+    newfont->font.max_x_advance = round((float)newfont->font.max_x_advance * x_scale);
+    newfont->font.line_height = round((float)newfont->font.line_height * y_scale);
     newfont->font.character_width = &scaled_character_width;
     newfont->font.render_character = &scaled_render_character;
 

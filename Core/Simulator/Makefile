@@ -40,7 +40,7 @@ SRC = vc.c queue.c can.c \
     ../Lib/invlib/inverter_conversions.c
 
 # Output binary
-TARGET = a.out
+TARGET = simulator.out
 
 OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(SRC)))
 
