@@ -138,12 +138,17 @@ OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h, size_t canvas_w
 
 #endif  // OLIVE_C_
 
+
 #ifdef OLIVEC_IMPLEMENTATION
 
 static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, void *state) {
-    struct size_and_color *rstate = state;
-    bool is_1 = rstate->size == 1.0;
+    struct font_color_s *rstate = state;
+    bool is_1 = rstate->font->x_scale == 1.0;
+    int max_count = count;
     while (count--) {
+        if (count <= 5 || count >= max_count - 5) {
+            alpha = 0x23;
+        }
         olivec_blend_color(&OLIVEC_PIXEL(*oc, x, y), rstate->color | (alpha << 24));
         // TODO: find a better way to fill holes in scaled fonts
         if (!is_1) {
@@ -154,7 +159,7 @@ static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, v
 }
 
 static uint8_t char_callback(int16_t x0, int16_t y0, mf_char character, void *state) {
-    float size = ((struct size_and_color *)state)->size;
+    float size = ((struct font_color_s *)state)->font->x_scale;
     struct mf_scaledfont_s scaled_font;
     mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, size, size);
     return mf_render_character(&scaled_font.font, x0, y0, character, &pixel_callback, state);
@@ -672,12 +677,12 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, u
         }
     }
     */
-    struct size_and_color mf_data = (struct size_and_color){
-        .size = size,
-        .color = color,
-    };
     struct mf_scaledfont_s scaled_font;
     mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, size, size);
+    struct font_color_s mf_data = (struct font_color_s){
+        .font = &scaled_font,
+        .color = color,
+    };
 
     mf_render_aligned(&scaled_font.font, tx, ty, align, text, strlen(text), &char_callback, (void *)&mf_data);
 }

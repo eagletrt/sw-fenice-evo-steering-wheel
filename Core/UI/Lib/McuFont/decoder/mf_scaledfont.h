@@ -6,6 +6,7 @@
 #define _MF_SCALEDFONT_H_
 
 #include "mf_font.h"
+#include <math.h>
 
 struct mf_scaledfont_s
 {
@@ -26,8 +27,8 @@ struct scaled_renderstate
     int16_t y0;
 };
 
-struct size_and_color {
-    float size;
+struct font_color_s {
+    struct mf_scaledfont_s* font;
     uint32_t color;
 };
 

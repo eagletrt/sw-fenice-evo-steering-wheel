@@ -96,6 +96,11 @@ void update_shutdown_circuit_component(UI_t *screen, shutdown_circuit_indexes_t 
             // shutdown was opened
         }
         strcpy(screen->components[swoc_sd].swoc_elem_label, shutdown_labels[last_opend_index]);
+        if (strlen(shutdown_labels[last_opend_index]) > 10) {
+            screen->components[swoc_sd].swoc_elem_font_size = 0.6;
+        } else {
+            screen->components[swoc_sd].swoc_elem_font_size = 1.2;
+        }
         screen->components[swoc_sd].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
         screen->components[swoc_sd].swoc_elem_bg_color = OLIVEC_COLOR_RED;
         global_shutdown_status                         = SC_OPEN;
@@ -105,9 +110,10 @@ void update_shutdown_circuit_component(UI_t *screen, shutdown_circuit_indexes_t 
         // shutdown was closed
     }
     strcpy(screen->components[swoc_sd].swoc_elem_label, "OK");
-    screen->components[swoc_sd].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
-    screen->components[swoc_sd].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;
-    global_shutdown_status                         = SC_CLOSE;
+    screen->components[swoc_sd].swoc_elem_font_size = 1.2;
+    screen->components[swoc_sd].swoc_elem_lb_color  = OLIVEC_COLOR_BLACK;
+    screen->components[swoc_sd].swoc_elem_bg_color  = OLIVEC_COLOR_GREEN;
+    global_shutdown_status                          = SC_CLOSE;
 }
 
 void ecu_status_update(UI_t *screen, bool valid) {
@@ -171,7 +177,7 @@ void ecu_power_maps_update(UI_t *screen, bool valid) {
     screen->components[swoc_slip].swoc_elem_was_updated   = 1;
     snprintf(screen->components[swoc_torque].swoc_elem_label, SWOC_STRING_LEN, "T");
     snprintf(screen->components[swoc_regen].swoc_elem_label, SWOC_STRING_LEN, "R");
-    snprintf(screen->components[swoc_slip].swoc_elem_label, SWOC_STRING_LEN, "SLIP");
+    snprintf(screen->components[swoc_slip].swoc_elem_label, SWOC_STRING_LEN, "S");
 
     if (primary_ecu_power_maps_last_state->reg_state /* && primary_ecu_control_status_last_state->control_enabled */) {
         screen->components[swoc_regen].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;

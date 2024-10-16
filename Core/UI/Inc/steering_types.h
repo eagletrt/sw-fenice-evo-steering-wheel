@@ -61,7 +61,7 @@ typedef struct {
     char swoc_elem_label[SWOC_STRING_LEN];
     uint32_t swoc_elem_lb_color;
     uint32_t swoc_elem_bg_color;
-    const float swoc_elem_font_size;
+    float swoc_elem_font_size;
     const Olivec_Boundaries swoc_elem_boundaries;
     const Olivec_Margins swoc_elem_margins;
     uint8_t swoc_elem_align;
