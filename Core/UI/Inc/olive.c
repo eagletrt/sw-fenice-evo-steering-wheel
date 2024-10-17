@@ -24,10 +24,10 @@
 
 #include "steering_config.h"
 
+#include <mcufont.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <mcufont.h>
 
 extern const struct mf_rlefont_s mf_rlefont_KonexyFont32;
 
@@ -138,13 +138,12 @@ OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h, size_t canvas_w
 
 #endif  // OLIVE_C_
 
-
 #ifdef OLIVEC_IMPLEMENTATION
 
 static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, void *state) {
     struct font_color_s *rstate = state;
-    bool is_1 = rstate->font->x_scale == 1.0;
-    int max_count = count;
+    bool is_1                   = rstate->font->x_scale == 1.0;
+    int max_count               = count;
     while (count--) {
         if (count <= 5 || count >= max_count - 5) {
             alpha = 0x23;
@@ -152,7 +151,7 @@ static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, v
         olivec_blend_color(&OLIVEC_PIXEL(*oc, x, y), rstate->color | (alpha << 24));
         // TODO: find a better way to fill holes in scaled fonts
         if (!is_1) {
-            olivec_blend_color(&OLIVEC_PIXEL(*oc, x+1, y), rstate->color | (alpha << 24));
+            olivec_blend_color(&OLIVEC_PIXEL(*oc, x + 1, y), rstate->color | (alpha << 24));
         }
         x++;
     }
@@ -233,11 +232,11 @@ OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, 
 
 // TODO: custom pixel formats
 // Maybe we can store pixel format info in Olivec_Canvas
-#define OLIVEC_RED(color)       (((color) & 0x000000FF) >> (8 * 0))
-#define OLIVEC_GREEN(color)     (((color) & 0x0000FF00) >> (8 * 1))
-#define OLIVEC_BLUE(color)      (((color) & 0x00FF0000) >> (8 * 2))
-#define OLIVEC_ALPHA(color)     (((color) & 0xFF000000) >> (8 * 3))
-#define OLIVEC_RGBA(r, g, b, a) ((((r) & 0xFF) << (8 * 0)) | (((g) & 0xFF) << (8 * 1)) | (((b) & 0xFF) << (8 * 2)) | (((a) & 0xFF) << (8 * 3)))
+#define OLIVEC_RED(color)       (((color)&0x000000FF) >> (8 * 0))
+#define OLIVEC_GREEN(color)     (((color)&0x0000FF00) >> (8 * 1))
+#define OLIVEC_BLUE(color)      (((color)&0x00FF0000) >> (8 * 2))
+#define OLIVEC_ALPHA(color)     (((color)&0xFF000000) >> (8 * 3))
+#define OLIVEC_RGBA(r, g, b, a) ((((r)&0xFF) << (8 * 0)) | (((g)&0xFF) << (8 * 1)) | (((b)&0xFF) << (8 * 2)) | (((a)&0xFF) << (8 * 3)))
 
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2) {
     uint32_t r1 = OLIVEC_RED(*c1);
@@ -680,7 +679,7 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, u
     struct mf_scaledfont_s scaled_font;
     mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, size, size);
     struct font_color_s mf_data = (struct font_color_s){
-        .font = &scaled_font,
+        .font  = &scaled_font,
         .color = color,
     };
 
