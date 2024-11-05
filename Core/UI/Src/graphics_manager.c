@@ -38,11 +38,11 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
                     break;
                 }
                 case PRIMARY_HV_DEBUG_SIGNALS_FRAME_ID: {
-                    hv_debug_signals_update(scr, is_pmsg_valid[iindex]);
+                    // hv_debug_signals_update(scr, is_pmsg_valid[iindex]);
                     break;
                 }
-                case PRIMARY_HV_TOTAL_VOLTAGE_FRAME_ID: {
-                    hv_total_voltage_update(scr, is_pmsg_valid[iindex]);
+                case PRIMARY_HV_TS_VOLTAGE_FRAME_ID: {
+                    hv_ts_voltage_update(scr, is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_HV_CURRENT_FRAME_ID: {
@@ -65,8 +65,8 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
                     hv_feedback_misc_voltage_update(scr, is_pmsg_valid[iindex]);
                     break;
                 }
-                case PRIMARY_HV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
-                    hv_feedback_sd_voltage_update(scr, is_pmsg_valid[iindex]);
+                case PRIMARY_HV_FEEDBACK_ANALOG_SD_FRAME_ID: {
+                    hv_feedback_analog_sd_update(scr, is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_HV_BALANCING_STATUS_FRAME_ID: {

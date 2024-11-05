@@ -220,7 +220,7 @@ void hv_debug_signals_update(UI_t *screen, bool valid) {
 void hv_cells_voltage_stats_update(UI_t *screen, bool valid) {
 }
 
-void hv_total_voltage_update(UI_t *screen, bool valid) {
+void hv_ts_voltage_update(UI_t *screen, bool valid) {
 }
 
 void hv_current_update(UI_t *screen, bool valid) {
@@ -314,13 +314,11 @@ void hv_feedback_ts_voltage_update(UI_t *screen, bool valid) {
     // update_shutdown_circuit_component(screen, shutdown_circuit_feedbacks_status_feedback_airn_gate_index, primary_hv_feedback_ts_voltage_last_state->airn_gate > 2.5f);
 }
 
-void hv_feedback_sd_voltage_update(UI_t *screen, bool valid) {
-    GET_LAST_STATE(primary, hv_feedback_sd_voltage, PRIMARY, HV_FEEDBACK_SD_VOLTAGE);
-    update_shutdown_circuit_component(screen, shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_sd_voltage_last_state->sd_in > 1.5f);
-    update_shutdown_circuit_component(
-        screen, shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_sd_voltage_last_state->sd_end > 1.5f);
-    update_shutdown_circuit_component(
-        screen, shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_sd_voltage_last_state->sd_out > 1.5f);
+void hv_feedback_analog_sd_update(UI_t *screen, bool valid) {
+    GET_LAST_STATE(primary, hv_feedback_analog_sd, PRIMARY, HV_FEEDBACK_ANALOG_SD);
+    update_shutdown_circuit_component(screen, shutdown_circuit_feedbacks_status_feedback_sd_in_index, primary_hv_feedback_analog_sd_last_state->sd_in > 1.5f);
+    update_shutdown_circuit_component(screen, shutdown_circuit_feedbacks_status_feedback_sd_end_index, primary_hv_feedback_analog_sd_last_state->sd_end > 1.5f);
+    update_shutdown_circuit_component(screen, shutdown_circuit_feedbacks_status_feedback_sd_out_index, primary_hv_feedback_analog_sd_last_state->sd_out > 1.5f);
 }
 
 void ecu_feedbacks_update(UI_t *screen, bool valid) {
@@ -375,6 +373,7 @@ void lv_cells_temp_stats_update(UI_t *screen, bool valid) {
 void hv_status_update(UI_t *screen, bool valid) {
 }
 
+// TODO: remove or reimplement
 void hv_fans_override_status_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(primary, hv_fans_status, PRIMARY, HV_FANS_STATUS);
 

@@ -43,19 +43,19 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case PRIMARY_HV_DEBUG_SIGNALS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_debug_signals, HV_DEBUG_SIGNALS, is_pmsg, true);
+            // STEER_CAN_UNPACK(primary, PRIMARY, hv_debug_signals, HV_DEBUG_SIGNALS, is_pmsg, true);
             break;
         }
         case PRIMARY_HV_CELLS_VOLTAGE_STATS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_voltage_stats, HV_CELLS_VOLTAGE_STATS, is_pmsg, true);
+            // STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_voltage_stats, HV_CELLS_VOLTAGE_STATS, is_pmsg, true);
             break;
         }
         case PRIMARY_HV_STATUS_FRAME_ID: {
             STEER_CAN_UNPACK(primary, PRIMARY, hv_status, HV_STATUS, is_pmsg, true);
             break;
         }
-        case PRIMARY_HV_TOTAL_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_total_voltage, HV_TOTAL_VOLTAGE, is_pmsg, true);
+        case PRIMARY_HV_TS_VOLTAGE_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_ts_voltage, HV_TS_VOLTAGE, is_pmsg, true);
             break;
         }
         case PRIMARY_HV_CURRENT_FRAME_ID: {
@@ -63,7 +63,7 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case PRIMARY_HV_CELLS_TEMP_STATS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_temp_stats, HV_CELLS_TEMP_STATS, is_pmsg, true);
+            // STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_temp_stats, HV_CELLS_TEMP_STATS, is_pmsg, true);
             break;
         }
         case PRIMARY_HV_ERRORS_FRAME_ID: {
@@ -75,7 +75,7 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case PRIMARY_HV_FANS_STATUS_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_status, HV_FANS_STATUS, is_pmsg, true);
+            // STEER_CAN_UNPACK(primary, PRIMARY, hv_fans_status, HV_FANS_STATUS, is_pmsg, true);
             break;
         }
         case PRIMARY_HV_FEEDBACK_STATUS_FRAME_ID: {
@@ -87,15 +87,15 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case PRIMARY_HV_FEEDBACK_TS_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_ts_voltage, HV_FEEDBACK_TS_VOLTAGE, is_pmsg, true);
+            // STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_ts_voltage, HV_FEEDBACK_TS_VOLTAGE, is_pmsg, true);
             break;
         }
         case PRIMARY_HV_FEEDBACK_MISC_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_misc_voltage, HV_FEEDBACK_MISC_VOLTAGE, is_pmsg, true);
+            // STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_misc_voltage, HV_FEEDBACK_MISC_VOLTAGE, is_pmsg, true);
             break;
         }
-        case PRIMARY_HV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_sd_voltage, HV_FEEDBACK_SD_VOLTAGE, is_pmsg, true);
+        case PRIMARY_HV_FEEDBACK_ANALOG_SD_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_analog_sd, HV_FEEDBACK_ANALOG_SD, is_pmsg, true);
             break;
         }
         case PRIMARY_LV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
