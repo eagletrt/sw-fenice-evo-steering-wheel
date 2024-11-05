@@ -29,7 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-extern const struct mf_rlefont_s mf_rlefont_KonexyFont32;
+extern const struct mf_rlefont_s mf_rlefont_KonexyFont72;
 
 #ifndef OLIVECDEF
 #define OLIVECDEF static inline
@@ -160,7 +160,7 @@ static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, v
 static uint8_t char_callback(int16_t x0, int16_t y0, mf_char character, void *state) {
     float size = ((struct font_color_s *)state)->font->x_scale;
     struct mf_scaledfont_s scaled_font;
-    mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, size, size);
+    mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont72.font, size, size);
     return mf_render_character(&scaled_font.font, x0, y0, character, &pixel_callback, state);
 }
 
@@ -232,11 +232,11 @@ OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, 
 
 // TODO: custom pixel formats
 // Maybe we can store pixel format info in Olivec_Canvas
-#define OLIVEC_RED(color)       (((color)&0x000000FF) >> (8 * 0))
-#define OLIVEC_GREEN(color)     (((color)&0x0000FF00) >> (8 * 1))
-#define OLIVEC_BLUE(color)      (((color)&0x00FF0000) >> (8 * 2))
-#define OLIVEC_ALPHA(color)     (((color)&0xFF000000) >> (8 * 3))
-#define OLIVEC_RGBA(r, g, b, a) ((((r)&0xFF) << (8 * 0)) | (((g)&0xFF) << (8 * 1)) | (((b)&0xFF) << (8 * 2)) | (((a)&0xFF) << (8 * 3)))
+#define OLIVEC_RED(color)       (((color) & 0x000000FF) >> (8 * 0))
+#define OLIVEC_GREEN(color)     (((color) & 0x0000FF00) >> (8 * 1))
+#define OLIVEC_BLUE(color)      (((color) & 0x00FF0000) >> (8 * 2))
+#define OLIVEC_ALPHA(color)     (((color) & 0xFF000000) >> (8 * 3))
+#define OLIVEC_RGBA(r, g, b, a) ((((r) & 0xFF) << (8 * 0)) | (((g) & 0xFF) << (8 * 1)) | (((b) & 0xFF) << (8 * 2)) | (((a) & 0xFF) << (8 * 3)))
 
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2) {
     uint32_t r1 = OLIVEC_RED(*c1);
@@ -677,7 +677,7 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, u
     }
     */
     struct mf_scaledfont_s scaled_font;
-    mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont32.font, size, size);
+    mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont72.font, size, size);
     struct font_color_s mf_data = (struct font_color_s){
         .font  = &scaled_font,
         .color = color,

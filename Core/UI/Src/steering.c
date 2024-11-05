@@ -97,9 +97,9 @@ void update_shutdown_circuit_component(UI_t *screen, shutdown_circuit_indexes_t 
         }
         strcpy(screen->components[swoc_sd].swoc_elem_label, shutdown_labels[last_opend_index]);
         if (strlen(shutdown_labels[last_opend_index]) > 10) {
-            screen->components[swoc_sd].swoc_elem_font_size = 0.6;
+            screen->components[swoc_sd].swoc_elem_font_size = 0.2;
         } else {
-            screen->components[swoc_sd].swoc_elem_font_size = 1.2;
+            screen->components[swoc_sd].swoc_elem_font_size = 0.5;
         }
         screen->components[swoc_sd].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
         screen->components[swoc_sd].swoc_elem_bg_color = OLIVEC_COLOR_RED;
@@ -110,7 +110,7 @@ void update_shutdown_circuit_component(UI_t *screen, shutdown_circuit_indexes_t 
         // shutdown was closed
     }
     strcpy(screen->components[swoc_sd].swoc_elem_label, "OK");
-    screen->components[swoc_sd].swoc_elem_font_size = 1.2;
+    screen->components[swoc_sd].swoc_elem_font_size = 0.5;
     screen->components[swoc_sd].swoc_elem_lb_color  = OLIVEC_COLOR_BLACK;
     screen->components[swoc_sd].swoc_elem_bg_color  = OLIVEC_COLOR_GREEN;
     global_shutdown_status                          = SC_CLOSE;

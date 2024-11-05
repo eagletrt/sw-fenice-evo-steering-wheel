@@ -1,2 +1,2 @@
 
-#include "KonexyFont32.c"
+#include "KonexyFont72.c"

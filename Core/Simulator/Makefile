@@ -25,9 +25,9 @@ SRC = vc.c queue.c can.c \
     ../Lib/can/lib/inverters/inverters_network.c \
     ../Lib/can/lib/inverters/inverters_utils.c \
     ../Lib/can/lib/inverters/inverters_watchdog.c \
-    ../Lib/can/lib/ivts/ivts_network.c \
-    ../Lib/can/lib/ivts/ivts_utils.c \
-    ../Lib/can/lib/ivts/ivts_watchdog.c \
+    ../Lib/invlib/can/lib/ivts/ivts_network.c \
+    ../Lib/invlib/can/lib/ivts/ivts_utils.c \
+    ../Lib/invlib/can/lib/ivts/ivts_watchdog.c \
     ../Lib/can/lib/primary/primary_network.c \
     ../Lib/can/lib/primary/primary_utils.c \
     ../Lib/can/lib/primary/primary_watchdog.c \
@@ -44,7 +44,7 @@ TARGET = simulator.out
 
 OBJ = $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(SRC)))
 
-vpath %.c ../UI/Src ../Lib/can/lib/bms ../Lib/can/lib ../Lib/can/lib/inverters ../Lib/can/lib/ivts ../Lib/can/lib/primary ../Lib/can/lib/secondary ../Lib/can/lib/simulator ../Lib/invlib
+vpath %.c ../UI/Src ../Lib/can/lib/bms ../Lib/can/lib ../Lib/can/lib/inverters ../Lib/invlib/can/lib/ivts ../Lib/can/lib/primary ../Lib/can/lib/secondary ../Lib/can/lib/simulator ../Lib/invlib
 
 all: $(TARGET)
 	@echo "Target up to date"
