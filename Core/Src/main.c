@@ -174,9 +174,11 @@ int main(void) {
     primary_steering_wheel_version_last_state->canlib_build_time    = CANLIB_BUILD_TIME;
     primary_steering_wheel_version_last_state->component_build_time = mktime(&timeinfo);
 
+    /*
     GET_LAST_STATE(primary, hv_set_fans_status, PRIMARY, HV_SET_FANS_STATUS);
     primary_hv_set_fans_status_last_state->fans_override = primary_hv_set_fans_status_fans_override_off;
     primary_hv_set_fans_status_last_state->fans_speed    = 0.0f;
+    */
 
     GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
     primary_lv_set_pumps_speed_last_state->status      = primary_lv_set_pumps_speed_status_auto;
@@ -213,6 +215,7 @@ int main(void) {
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
+    sw_screen_white(&sw_screen);
 
     while (1) {
 #if CAN_OVER_SERIAL_ENABLED == 1
@@ -255,7 +258,7 @@ int main(void) {
 
         PERIODIC_SEND(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS);
         PERIODIC_SEND(primary, PRIMARY, steering_wheel_version, STEERING_WHEEL_VERSION);
-        PERIODIC_SEND(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
+        // PERIODIC_SEND(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
         PERIODIC_SEND(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED);
         PERIODIC_SEND(primary, PRIMARY, lv_set_radiator_speed, LV_SET_RADIATOR_SPEED);
         PERIODIC_SEND(primary, PRIMARY, ecu_set_ptt_status, ECU_SET_PTT_STATUS);

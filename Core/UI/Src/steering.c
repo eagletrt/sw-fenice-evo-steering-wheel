@@ -399,6 +399,15 @@ void odometer_update(UI_t *screen, bool valid) {
 }
 
 void steer_angle_update(UI_t *screen, bool valid) {
+    GET_LAST_STATE(secondary, steer_angle, SECONDARY, STEER_ANGLE);
+    screen->components[18].swoc_elem_was_updated = 1;
+    snprintf(screen->components[18].swoc_elem_label, SWOC_STRING_LEN, "%.1f", secondary_steer_angle_last_state->angle);
+    screen->components[18].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
+    screen->components[18].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;
+
+    screen->components[19].swoc_elem_was_updated = 1;
+    screen->components[19].swoc_elem_lb_color    = OLIVEC_COLOR_WHITE;
+    screen->components[19].swoc_elem_bg_color    = OLIVEC_COLOR_BLACK;
 }
 
 void tlm_network_interface_update(UI_t *screen, bool valid) {

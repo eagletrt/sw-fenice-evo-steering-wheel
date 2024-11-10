@@ -42,6 +42,7 @@ static uint32_t pixels[WIDTH * HEIGHT * 4];
 
 Olivec_Canvas vc_render(float dt, UI_t *scr) {
     sw_update_graphics_from_can_messages(scr);
+    sw_screen_white(scr);
     sw_update_screen(dt, scr);
     return scr->oc;
 }

@@ -74,7 +74,7 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
                     break;
                 }
                 case PRIMARY_HV_FANS_STATUS_FRAME_ID: {
-                    hv_fans_override_status_update(scr, is_pmsg_valid[iindex]);
+                    // hv_fans_override_status_update(scr, is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_HV_CELLS_VOLTAGE_STATS_FRAME_ID: {
@@ -446,13 +446,13 @@ void sw_init_screen(UI_t *sw_screen) {
                         .swoc_elem_label       = "",
                         .swoc_elem_lb_color    = 0xFFFFFFFF,
                         .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 1.0,
+                        .swoc_elem_font_size   = 0.6,
                         .swoc_elem_boundaries  = (Olivec_Boundaries){536, 352, 178, 128},
                         .swoc_elem_margins     = (Olivec_Margins){89, 20},
                         .swoc_elem_align       = MF_ALIGN_CENTER},
             (UI_elem_t){// HV COOLING LABEL
                         .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "HV",
+                        .swoc_elem_label       = "ANG",
                         .swoc_elem_lb_color    = 0xFFFFFFFF,
                         .swoc_elem_bg_color    = 0xFF000000,
                         .swoc_elem_font_size   = 0.4,
@@ -469,8 +469,6 @@ void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, siz
 }
 
 void sw_update_screen(float dt, UI_t *scr) {
-    olivec_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
-
     for (size_t iswoc = 0; iswoc < swoc_elems_n; iswoc++) {
         scr->components[iswoc].swoc_elem_was_updated = false;
         olivec_rect(
@@ -494,4 +492,40 @@ void sw_update_screen(float dt, UI_t *scr) {
 
 void sw_screen_white(UI_t *scr) {
     olivec_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
+}
+
+void sw_print_debug_info(UI_t *scr, char *text1, char *text2, float size1, float size2) {
+    scr->components[18].swoc_elem_was_updated = false;
+    olivec_rect(
+        scr->oc,
+        scr->components[18].swoc_elem_boundaries.x,
+        scr->components[18].swoc_elem_boundaries.y,
+        scr->components[18].swoc_elem_boundaries.w,
+        scr->components[18].swoc_elem_boundaries.h,
+        scr->components[18].swoc_elem_bg_color);
+    olivec_text(
+        scr->oc,
+        text1,
+        scr->components[18].swoc_elem_boundaries.x + scr->components[18].swoc_elem_margins.x,
+        scr->components[18].swoc_elem_boundaries.y + scr->components[18].swoc_elem_margins.y,
+        scr->components[18].swoc_elem_lb_color,
+        size1,
+        scr->components[18].swoc_elem_align);
+
+    scr->components[19].swoc_elem_was_updated = false;
+    olivec_rect(
+        scr->oc,
+        scr->components[19].swoc_elem_boundaries.x,
+        scr->components[19].swoc_elem_boundaries.y,
+        scr->components[19].swoc_elem_boundaries.w,
+        scr->components[19].swoc_elem_boundaries.h,
+        scr->components[19].swoc_elem_bg_color);
+    olivec_text(
+        scr->oc,
+        text2,
+        scr->components[19].swoc_elem_boundaries.x + scr->components[19].swoc_elem_margins.x,
+        scr->components[19].swoc_elem_boundaries.y + scr->components[19].swoc_elem_margins.y,
+        scr->components[19].swoc_elem_lb_color,
+        size2,
+        scr->components[19].swoc_elem_align);
 }

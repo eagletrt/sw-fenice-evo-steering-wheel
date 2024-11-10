@@ -11,5 +11,6 @@ void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, siz
 void sw_update_graphics_from_can_messages(UI_t *scr);
 void sw_update_screen(float dt, UI_t *scr);
 void sw_screen_white(UI_t *scr);
+void sw_print_debug_info(UI_t *scr, char *text1, char *text2, float size1, float size2);
 
 #endif  // GRAPHICS_MANAGER_H
