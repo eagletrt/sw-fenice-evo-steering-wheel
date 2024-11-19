@@ -127,6 +127,8 @@ int main(void) {
     SDL_Window *window     = NULL;
     SDL_Renderer *renderer = NULL;
 
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+
     UI_t sw_screen;
     sw_init_screen(&sw_screen);
 
