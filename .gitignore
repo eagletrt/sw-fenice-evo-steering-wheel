@@ -10,4 +10,5 @@ STM32Make.make
 .stm32env
 .vscode/settings.json
 .vscode/c_cpp_properties.json
-
+.cache/**
+compile_commands.json
