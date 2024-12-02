@@ -63,7 +63,7 @@ void handle_primary(can_message_t *msg) {
             break;
         }
         case PRIMARY_HV_CELLS_TEMP_STATS_FRAME_ID: {
-            // STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_temp_stats, HV_CELLS_TEMP_STATS, is_pmsg, true);
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_cells_temp_stats, HV_CELLS_TEMP_STATS, is_pmsg, true);
             break;
         }
         case PRIMARY_HV_ERRORS_FRAME_ID: {
