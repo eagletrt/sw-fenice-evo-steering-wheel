@@ -452,7 +452,7 @@ void sw_init_screen(UI_t *sw_screen) {
                         .swoc_elem_align       = MF_ALIGN_CENTER},
             (UI_elem_t){// HV COOLING LABEL
                         .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "Dt",
+                        .swoc_elem_label       = "LAP",
                         .swoc_elem_lb_color    = 0xFFFFFFFF,
                         .swoc_elem_bg_color    = 0xFF000000,
                         .swoc_elem_font_size   = 0.4,

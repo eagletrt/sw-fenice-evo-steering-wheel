@@ -407,6 +407,7 @@ void tlm_network_interface_update(UI_t *screen, bool valid) {
 void imu_acceleration_update(UI_t *screen, bool valid) {
 }
 
+float last_lap = 0;
 void tlm_lap_time_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(secondary, tlm_laps_stats, SECONDARY, TLM_LAPS_STATS);
     screen->components[18].swoc_elem_was_updated = 1;
@@ -417,12 +418,18 @@ void tlm_lap_time_update(UI_t *screen, bool valid) {
         screen->components[18].swoc_elem_bg_color = OLIVEC_COLOR_PURPLE;
         screen->components[19].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
         screen->components[19].swoc_elem_bg_color = OLIVEC_COLOR_PURPLE;
+    } else if (secondary_tlm_laps_stats_last_state->last_time <= last_lap) {
+        screen->components[18].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+        screen->components[18].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;
+        screen->components[19].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+        screen->components[19].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;
     } else {
-        screen->components[18].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
-        screen->components[18].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;
-        screen->components[19].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
-        screen->components[19].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;
+        screen->components[18].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+        screen->components[18].swoc_elem_bg_color = OLIVEC_COLOR_YELLOW;
+        screen->components[19].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+        screen->components[19].swoc_elem_bg_color = OLIVEC_COLOR_YELLOW;
     }
+    last_lap = secondary_tlm_laps_stats_last_state->last_time;
 }
 
 void tlm_laps_stats_update(UI_t *screen, bool valid) {
