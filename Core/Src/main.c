@@ -188,8 +188,10 @@ int main(void) {
     primary_lv_set_radiator_speed_last_state->status         = primary_lv_set_radiator_speed_status_auto;
     primary_lv_set_radiator_speed_last_state->radiator_speed = 0.0f;
 
+    /*
     GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
     primary_lv_set_cooling_aggressiveness_last_state->status = primary_lv_set_cooling_aggressiveness_status_normal;
+    */
 
     GET_LAST_STATE(primary, ecu_set_ptt_status, PRIMARY, ECU_SET_PTT_STATUS);
     primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_off;
