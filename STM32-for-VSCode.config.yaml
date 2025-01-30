@@ -83,9 +83,8 @@ includeDirectories:
   - Core/Lib/invlib
   - Core/Lib/can/lib
   - Core/Lib/micro-libs/min-heap/inc
-  - Core/UI/Lib/McuFont/decoder
-  - Core/UI/Lib/McuFont/fonts
-
+  - Core/Lib/sw-lib-graphics/inc
+  - Core/Lib/sw-lib-graphics/libs/sw-lib-font/inc
 
 
 # Files that should be included in the compilation.
@@ -146,15 +145,9 @@ sourceFiles:
   - Core/Lib/can/lib/inverters/inverters_watchdog.c
   - Core/Lib/micro-libs/min-heap/src/*.c
   - Core/Lib/invlib/inverter_conversions.c
-  - Core/UI/Lib/McuFont/decoder/*.c
-  - Core/UI/Lib/McuFont/decoder/mf_encoding.c
-  - Core/UI/Lib/McuFont/decoder/mf_font.c
-  - Core/UI/Lib/McuFont/decoder/mf_justify.c
-  - Core/UI/Lib/McuFont/decoder/mf_kerning.c
-  - Core/UI/Lib/McuFont/decoder/mf_rlefont.c
-  - Core/UI/Lib/McuFont/decoder/mf_bwfont.c
-  - Core/UI/Lib/McuFont/decoder/mf_scaledfont.c
-  - Core/UI/Lib/McuFont/decoder/mf_wordwrap.c
+  - Core/Lib/sw-lib-graphics/src/graphics.c
+  - Core/Lib/sw-lib-graphics/libs/sw-lib-font/src/font.c
+  - Core/Lib/sw-lib-graphics/libs/sw-lib-font/src/text.c
 
 
 # When no makefile is present it will show a warning pop-up.

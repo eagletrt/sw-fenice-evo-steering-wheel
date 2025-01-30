@@ -30,6 +30,8 @@
 #include "ltdc.h"
 #include "memorymap.h"
 #include "octospi.h"
+#include "steering_config.h"
+#include "stm32h7xx_hal.h"
 #include "tim.h"
 #include "usart.h"
 
@@ -38,6 +40,8 @@
 
 #define _XOPEN_SOURCE
 #include <time.h>
+
+#include "graphics.h"
 
 /* USER CODE END Includes */
 
@@ -78,6 +82,25 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+uint32_t active_framebuffer                      = FRAMEBUFFER1_ADDR;
+uint32_t writable_framebuffer                    = FRAMEBUFFER2_ADDR;
+
+void draw_pixel(int x, int y, uint32_t color) {
+    ((uint32_t *)writable_framebuffer)[y * SCREEN_WIDTH + x] = color;
+}
+
+void draw_rectangle(int x, int y, int w, int h, uint32_t color) {
+    for(int x1 = x; x1 < x + w; x1++) {
+        for(int y1 = y; y1 < y + h; y1++) {
+            draw_pixel(x1, y1, color);
+        }
+    }
+}
+
+void clear_screen() {
+    draw_rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0xffffffff);
+}
 
 /* USER CODE END 0 */
 
@@ -128,8 +151,8 @@ int main(void) {
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_Delay(100);
 
-    UI_t sw_screen;
-    sw_init_screen(&sw_screen);
+    // UI_t sw_screen;
+    // sw_init_screen(&sw_screen);
 
 #define I2C_TESTS 0
 #if I2C_TESTS == 1
@@ -153,14 +176,12 @@ int main(void) {
   }
 #endif
 
-    uint32_t active_framebuffer                      = FRAMEBUFFER1_ADDR;
-    uint32_t writable_framebuffer                    = FRAMEBUFFER2_ADDR;
     uint32_t last_swap_framebuffer                   = HAL_GetTick();
     static bool tson_button_pressed                  = false;
     static uint32_t tson_button_pressed_time_elapsed = 0;
 
-    sw_set_canvas(&sw_screen, (uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-    sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
+    // sw_set_canvas(&sw_screen, (uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
+    // sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
 
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     primary_ecu_set_power_maps_last_state->map_power = 1.0f;
@@ -217,7 +238,46 @@ int main(void) {
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    sw_screen_white(&sw_screen);
+    // sw_screen_white(&sw_screen);
+
+    
+   struct ColorRange ranges[] = {
+        {0.0f, 0.20f, 0x00FF00, 0x000000},
+        {0.21f, 0.60f, 0xFFFF00, 0x000000},
+        {0.61f, 200.0f, 0xFF0000, 0xFFFFFF}
+    };
+
+    struct Thresholds thresholds[] = {
+        {ranges, 3}
+    };
+
+    
+    struct Label l1;
+    create_label(&l1, "XD", (struct Coords){310, 95}, 0.4, CENTER);
+    struct Value v1;
+    create_value(&v1, 51, true, (struct Coords){140, 80}, 0.7, CENTER, (union Colors){ .colors = thresholds}, THRESHOLDS);
+
+    struct Value v2;
+    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, 0.7, CENTER, (union Colors){ .slider = (struct Slider){0xff000000, 0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
+
+    struct Label l2;
+    create_label(&l2, "PROVA", (struct Coords){196, 80}, 0.7, CENTER);
+
+    struct Value v3;
+    create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, 0.7, CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
+    
+    struct Box boxes[] = {
+        { 0x1, { 2, 2, 397, 237 }, 0xff000000, 0xffffffff, &l1, &v1 },
+        { 0x2, { 401, 2, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v2 },
+        { 0x3, { 2, 241, 397, 237 }, 0xff000000, 0xffffffff, &l2, NULL },
+        { 0x4, { 401, 241, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v3 }
+    };
+    
+    uint32_t last_time = HAL_GetTick();
+    int dir = 1;
+
+    uint32_t delta_write = 0;
+    uint32_t delta_set_framebuffer = 0;
 
     while (1) {
 #if CAN_OVER_SERIAL_ENABLED == 1
@@ -232,7 +292,7 @@ int main(void) {
         static uint32_t last_ptt_periodic_check = 0;
         if ((get_current_time_ms() - last_ptt_periodic_check) > 50) {
             last_ptt_periodic_check = get_current_time_ms();
-            ptt_periodic_check(&sw_screen);
+            // ptt_periodic_check(&sw_screen);
         }
 
         if ((get_current_time_ms() - last_swap_framebuffer) > 100) {
@@ -244,18 +304,41 @@ int main(void) {
                 if (get_current_time_ms() - button_lts > 500) {
                     button_long_pressed = false;
                 }
-                sw_screen_white(&sw_screen);
+                // sw_screen_white(&sw_screen);
             } else {
-                sw_update_graphics_from_can_messages(&sw_screen);
-                sw_update_screen(0.f, &sw_screen);
+                // sw_update_graphics_from_can_messages(&sw_screen);
+                // sw_update_screen(0.f, &sw_screen);
+
+                uint32_t start_write = HAL_GetTick();
+
+                get_box(boxes, 4, 0x1)->value->value = (float) delta_write / 1000;
+                get_box(boxes, 4, 0x4)->value->value = (float) delta_set_framebuffer / 1000;
+    
+                render_interface(boxes, 4, draw_pixel, draw_rectangle, clear_screen);
+                if (HAL_GetTick() - last_time > 70)
+                {
+                    struct Box *box = get_box(boxes, 4, 0x2);
+                    box->value->value += dir;
+                    if (box->value->value > 199)
+                        dir = -1;
+                    else if (box->value->value < 2)
+                        dir = 1;
+                }
+
+                delta_write = HAL_GetTick() - start_write;
             }
+
+            uint32_t start_swap = HAL_GetTick();
+            
             HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
             uint32_t tmp         = active_framebuffer;
             active_framebuffer   = writable_framebuffer;
             writable_framebuffer = tmp;
-            sw_screen.oc.pixels  = (uint32_t *)writable_framebuffer;
+            // sw_screen.oc.pixels  = (uint32_t *)writable_framebuffer;
             HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
+
+            delta_set_framebuffer = HAL_GetTick() - start_swap;
         }
 
         PERIODIC_SEND(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS);

@@ -31,7 +31,6 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "graphics_manager.h"
 #include "inputs/inputs.h"
 #include "led_control.h"
 #include "test/i2c_test.h"
