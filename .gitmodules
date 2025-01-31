@@ -1,10 +1,13 @@
 [submodule "steering/micro-libs"]
-	path = Core/Lib/micro-libs
-	url = git@github.com:eagletrt/micro-libs.git
+    path = Core/Lib/micro-libs
+    url = git@github.com:eagletrt/micro-libs.git
 [submodule "steering/can"]
-	path = Core/Lib/can
-	url = git@github.com:eagletrt/can.git
-	branch = build-evo
+    path = Core/Lib/can
+    url = git@github.com:eagletrt/can.git
+    branch = build-evo
 [submodule "Core/Lib/invlib"]
-	path = Core/Lib/invlib
-	url = git@github.com:eagletrt/invlib.git
+    path = Core/Lib/invlib
+    url = git@github.com:eagletrt/invlib.git
+[submodule "Core/Lib/sw-lib-graphics"]
+    path = Core/Lib/sw-lib-graphics
+    url = git@github.com:Bridiro/sw-lib-graphics.git
