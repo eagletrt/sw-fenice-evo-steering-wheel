@@ -32,6 +32,7 @@
 #include "octospi.h"
 #include "steering_config.h"
 #include "stm32h7xx_hal.h"
+#include "stm32h7xx_hal_dma2d.h"
 #include "tim.h"
 #include "usart.h"
 
@@ -83,19 +84,50 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint32_t active_framebuffer                      = FRAMEBUFFER1_ADDR;
-uint32_t writable_framebuffer                    = FRAMEBUFFER2_ADDR;
+uint32_t active_framebuffer = FRAMEBUFFER1_ADDR;
+uint32_t writable_framebuffer = FRAMEBUFFER2_ADDR;
+
+void DMA2D_M2M_Copy(uint32_t src, uint32_t dest, uint16_t width, uint16_t height) {
+    hdma2d.Init.Mode         = DMA2D_M2M;
+    hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
+    hdma2d.Init.OutputOffset = 0;
+
+    HAL_DMA2D_Init(&hdma2d);
+
+    hdma2d.LayerCfg[1].InputColorMode = DMA2D_INPUT_ARGB8888;
+    hdma2d.LayerCfg[1].InputOffset    = 0;
+
+    HAL_DMA2D_ConfigLayer(&hdma2d, 1);
+
+    HAL_DMA2D_Start(&hdma2d, src, dest, width, height);
+    HAL_DMA2D_PollForTransfer(&hdma2d, 10);
+}
+
+void DMA2D_R2M_Fill(uint32_t dest, uint32_t color, uint16_t width, uint16_t height) {
+    hdma2d.Init.Mode         = DMA2D_R2M;
+    hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
+    hdma2d.Init.OutputOffset = 0;
+
+    HAL_DMA2D_Init(&hdma2d);
+
+    HAL_DMA2D_Start(&hdma2d, color, dest, width, height);
+    HAL_DMA2D_PollForTransfer(&hdma2d, 10);
+}
 
 void draw_pixel(int x, int y, uint32_t color) {
     ((uint32_t *)writable_framebuffer)[y * SCREEN_WIDTH + x] = color;
 }
 
 void draw_rectangle(int x, int y, int w, int h, uint32_t color) {
+    /*
     for(int x1 = x; x1 < x + w; x1++) {
         for(int y1 = y; y1 < y + h; y1++) {
             draw_pixel(x1, y1, color);
         }
     }
+    */
+
+    DMA2D_R2M_Fill(writable_framebuffer + (y * SCREEN_HEIGHT + x), color, w, h);
 }
 
 void clear_screen() {
@@ -253,18 +285,18 @@ int main(void) {
 
     
     struct Label l1;
-    create_label(&l1, "XD", (struct Coords){310, 95}, 0.4, CENTER);
+    create_label(&l1, "XD", (struct Coords){310, 95}, 1, CENTER);
     struct Value v1;
-    create_value(&v1, 51, true, (struct Coords){140, 80}, 0.7, CENTER, (union Colors){ .colors = thresholds}, THRESHOLDS);
+    create_value(&v1, 51, true, (struct Coords){140, 80}, 1.2, CENTER, (union Colors){ .colors = thresholds}, THRESHOLDS);
 
     struct Value v2;
-    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, 0.7, CENTER, (union Colors){ .slider = (struct Slider){0xff000000, 0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
+    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, 1.2, CENTER, (union Colors){ .slider = (struct Slider){0xff000000, 0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
 
     struct Label l2;
-    create_label(&l2, "PROVA", (struct Coords){196, 80}, 0.7, CENTER);
+    create_label(&l2, "PROVA", (struct Coords){196, 80}, 1.2, CENTER);
 
     struct Value v3;
-    create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, 0.7, CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
+    create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, 1.2, CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
     
     struct Box boxes[] = {
         { 0x1, { 2, 2, 397, 237 }, 0xff000000, 0xffffffff, &l1, &v1 },
@@ -313,7 +345,8 @@ int main(void) {
 
                 get_box(boxes, 4, 0x1)->value->value = (float) delta_write / 1000;
                 get_box(boxes, 4, 0x4)->value->value = (float) delta_set_framebuffer / 1000;
-    
+
+                hdma2d.Init.Mode = DMA2D_R2M;
                 render_interface(boxes, 4, draw_pixel, draw_rectangle, clear_screen);
                 if (HAL_GetTick() - last_time > 70)
                 {
@@ -329,8 +362,8 @@ int main(void) {
             }
 
             uint32_t start_swap = HAL_GetTick();
-            
-            HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
+            DMA2D_M2M_Copy(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
+            // HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
             uint32_t tmp         = active_framebuffer;
             active_framebuffer   = writable_framebuffer;
