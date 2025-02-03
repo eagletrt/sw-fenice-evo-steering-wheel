@@ -87,7 +87,7 @@ void SystemClock_Config(void);
 uint32_t active_framebuffer = FRAMEBUFFER1_ADDR;
 uint32_t writable_framebuffer = FRAMEBUFFER2_ADDR;
 
-void DMA2D_M2M_Copy(uint32_t src, uint32_t dest, uint16_t width, uint16_t height) {
+void dma2d_m2m(uint32_t src, uint32_t dest, uint16_t width, uint16_t height) {
     hdma2d.Init.Mode         = DMA2D_M2M;
     hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
     hdma2d.Init.OutputOffset = 0;
@@ -103,10 +103,10 @@ void DMA2D_M2M_Copy(uint32_t src, uint32_t dest, uint16_t width, uint16_t height
     HAL_DMA2D_PollForTransfer(&hdma2d, 10);
 }
 
-void DMA2D_R2M_Fill(uint32_t dest, uint32_t color, uint16_t width, uint16_t height) {
+void dma2d_r2m(uint32_t dest, uint32_t color, uint16_t width, uint16_t height) {
     hdma2d.Init.Mode         = DMA2D_R2M;
     hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
-    hdma2d.Init.OutputOffset = 0;
+    hdma2d.Init.OutputOffset = SCREEN_WIDTH - width;
 
     HAL_DMA2D_Init(&hdma2d);
 
@@ -127,7 +127,7 @@ void draw_rectangle(int x, int y, int w, int h, uint32_t color) {
     }
     */
 
-    DMA2D_R2M_Fill(writable_framebuffer + (y * SCREEN_HEIGHT + x), color, w, h);
+    dma2d_r2m(writable_framebuffer + (y * SCREEN_HEIGHT + x) * 4, color, w, h);
 }
 
 void clear_screen() {
@@ -362,7 +362,7 @@ int main(void) {
             }
 
             uint32_t start_swap = HAL_GetTick();
-            DMA2D_M2M_Copy(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
+            dma2d_m2m(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
             uint32_t tmp         = active_framebuffer;
