@@ -112,6 +112,7 @@ void dma2d_r2m(uint32_t dest, uint32_t color, uint16_t width, uint16_t height) {
 
     HAL_DMA2D_Start(&hdma2d, color, dest, width, height);
     HAL_DMA2D_PollForTransfer(&hdma2d, 10);
+    HAL_Delay(5);
 }
 
 void draw_pixel(int x, int y, uint32_t color) {
@@ -127,7 +128,7 @@ void draw_rectangle(int x, int y, int w, int h, uint32_t color) {
     }
     */
 
-    dma2d_r2m(writable_framebuffer + (y * SCREEN_HEIGHT + x) * 4, color, w, h);
+    dma2d_r2m(writable_framebuffer + (x + y * SCREEN_WIDTH) * 4, color, w, h);
 }
 
 void clear_screen() {
@@ -274,9 +275,9 @@ int main(void) {
 
     
    struct ColorRange ranges[] = {
-        {0.0f, 0.20f, 0x00FF00, 0x000000},
-        {0.21f, 0.60f, 0xFFFF00, 0x000000},
-        {0.61f, 200.0f, 0xFF0000, 0xFFFFFF}
+        {0.0f, 0.10f, 0x00FF00, 0x000000},
+        {0.11f, 0.20f, 0xFFFF00, 0x000000},
+        {0.21f, 200.0f, 0xFF0000, 0xFFFFFF}
     };
 
     struct Thresholds thresholds[] = {
@@ -285,24 +286,24 @@ int main(void) {
 
     
     struct Label l1;
-    create_label(&l1, "XD", (struct Coords){310, 95}, 1, CENTER);
+    create_label(&l1, "XD", (struct Coords){310, 95}, 1.3, CENTER);
     struct Value v1;
-    create_value(&v1, 51, true, (struct Coords){140, 80}, 1.2, CENTER, (union Colors){ .colors = thresholds}, THRESHOLDS);
+    create_value(&v1, 51, true, (struct Coords){140, 80}, 2.0, CENTER, (union Colors){ .colors = thresholds}, THRESHOLDS);
 
     struct Value v2;
-    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, 1.2, CENTER, (union Colors){ .slider = (struct Slider){0xff000000, 0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
+    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, 2.0, CENTER, (union Colors){ .slider = (struct Slider){0xff000000, 0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
 
     struct Label l2;
-    create_label(&l2, "PROVA", (struct Coords){196, 80}, 1.2, CENTER);
+    create_label(&l2, "PROVA", (struct Coords){196, 80}, 2.0, CENTER);
 
     struct Value v3;
-    create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, 1.2, CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
+    create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, 2.0, CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
     
     struct Box boxes[] = {
-        { 0x1, { 2, 2, 397, 237 }, 0xff000000, 0xffffffff, &l1, &v1 },
-        { 0x2, { 401, 2, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v2 },
-        { 0x3, { 2, 241, 397, 237 }, 0xff000000, 0xffffffff, &l2, NULL },
-        { 0x4, { 401, 241, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v3 }
+        { 1, 0x1, { 2, 2, 397, 237 }, 0xff000000, 0xffffffff, &l1, &v1 },
+        { 1, 0x2, { 401, 2, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v2 },
+        { 1, 0x3, { 2, 241, 397, 237 }, 0xff000000, 0xffffffff, &l2, NULL },
+        { 1, 0x4, { 401, 241, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v3 }
     };
     
     uint32_t last_time = HAL_GetTick();
@@ -310,7 +311,7 @@ int main(void) {
 
     uint32_t delta_write = 0;
     uint32_t delta_set_framebuffer = 0;
-
+    
     while (1) {
 #if CAN_OVER_SERIAL_ENABLED == 1
         can_over_serial_routine();
@@ -327,7 +328,7 @@ int main(void) {
             // ptt_periodic_check(&sw_screen);
         }
 
-        if ((get_current_time_ms() - last_swap_framebuffer) > 100) {
+        if ((get_current_time_ms() - last_swap_framebuffer) > 10) {
             last_swap_framebuffer = get_current_time_ms();
             extern int button_long_pressed;
             uint32_t button_lts = 0;
@@ -336,7 +337,7 @@ int main(void) {
                 if (get_current_time_ms() - button_lts > 500) {
                     button_long_pressed = false;
                 }
-                // sw_screen_white(&sw_screen);
+                clear_screen();
             } else {
                 // sw_update_graphics_from_can_messages(&sw_screen);
                 // sw_update_screen(0.f, &sw_screen);
@@ -344,14 +345,16 @@ int main(void) {
                 uint32_t start_write = HAL_GetTick();
 
                 get_box(boxes, 4, 0x1)->value->value = (float) delta_write / 1000;
+                get_box(boxes, 4, 0x1)->updated = 1;
                 get_box(boxes, 4, 0x4)->value->value = (float) delta_set_framebuffer / 1000;
+                get_box(boxes, 4, 0x4)->updated = 1;
 
-                hdma2d.Init.Mode = DMA2D_R2M;
-                render_interface(boxes, 4, draw_pixel, draw_rectangle, clear_screen);
+                render_interface(boxes, 4, draw_pixel, draw_rectangle);
                 if (HAL_GetTick() - last_time > 70)
                 {
                     struct Box *box = get_box(boxes, 4, 0x2);
                     box->value->value += dir;
+                    box->updated = 1;
                     if (box->value->value > 199)
                         dir = -1;
                     else if (box->value->value < 2)
