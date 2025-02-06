@@ -274,7 +274,7 @@ int main(void) {
     // sw_screen_white(&sw_screen);
 
     
-   struct ColorRange ranges[] = {
+   struct Threshold ranges[] = {
         {0.0f, 0.10f, 0x00FF00, 0x000000},
         {0.11f, 0.20f, 0xFFFF00, 0x000000},
         {0.21f, 200.0f, 0xFF0000, 0xFFFFFF}
@@ -288,10 +288,10 @@ int main(void) {
     struct Label l1;
     create_label(&l1, "XD", (struct Coords){310, 95}, 1.3, CENTER);
     struct Value v1;
-    create_value(&v1, 51, true, (struct Coords){140, 80}, 2.0, CENTER, (union Colors){ .colors = thresholds}, THRESHOLDS);
+    create_value(&v1, 51, true, (struct Coords){140, 80}, 2.0, CENTER, (union Colors){ .thresholds = thresholds}, THRESHOLDS);
 
     struct Value v2;
-    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, 2.0, CENTER, (union Colors){ .slider = (struct Slider){0xff000000, 0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
+    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, 2.0, CENTER, (union Colors){ .slider = (struct Slider){0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
 
     struct Label l2;
     create_label(&l2, "PROVA", (struct Coords){196, 80}, 2.0, CENTER);
