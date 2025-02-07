@@ -145,9 +145,9 @@ sourceFiles:
   - Core/Lib/can/lib/inverters/inverters_watchdog.c
   - Core/Lib/micro-libs/min-heap/src/*.c
   - Core/Lib/invlib/inverter_conversions.c
-  - Core/Lib/sw-libgraphics/src/graphics.c
+  - Core/Lib/sw-libgraphics/src/libgraphics.c
   - Core/Lib/sw-libgraphics/libs/sw-libfont/src/font.c
-  - Core/Lib/sw-libgraphics/libs/sw-libfont/src/text.c
+  - Core/Lib/sw-libgraphics/libs/sw-libfont/src/libfont.c
 
 
 # When no makefile is present it will show a warning pop-up.

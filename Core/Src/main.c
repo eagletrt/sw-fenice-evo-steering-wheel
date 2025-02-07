@@ -42,7 +42,7 @@
 #define _XOPEN_SOURCE
 #include <time.h>
 
-#include "graphics.h"
+#include "libgraphics.h"
 
 /* USER CODE END Includes */
 
