@@ -83,8 +83,8 @@ includeDirectories:
   - Core/Lib/invlib
   - Core/Lib/can/lib
   - Core/Lib/micro-libs/min-heap/inc
-  - Core/Lib/sw-lib-graphics/inc
-  - Core/Lib/sw-lib-graphics/libs/sw-lib-font/inc
+  - Core/Lib/sw-libgraphics/inc
+  - Core/Lib/sw-libgraphics/libs/sw-libfont/inc
 
 
 # Files that should be included in the compilation.
@@ -145,9 +145,9 @@ sourceFiles:
   - Core/Lib/can/lib/inverters/inverters_watchdog.c
   - Core/Lib/micro-libs/min-heap/src/*.c
   - Core/Lib/invlib/inverter_conversions.c
-  - Core/Lib/sw-lib-graphics/src/graphics.c
-  - Core/Lib/sw-lib-graphics/libs/sw-lib-font/src/font.c
-  - Core/Lib/sw-lib-graphics/libs/sw-lib-font/src/text.c
+  - Core/Lib/sw-libgraphics/src/graphics.c
+  - Core/Lib/sw-libgraphics/libs/sw-libfont/src/font.c
+  - Core/Lib/sw-libgraphics/libs/sw-libfont/src/text.c
 
 
 # When no makefile is present it will show a warning pop-up.

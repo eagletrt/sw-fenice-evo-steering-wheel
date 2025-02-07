@@ -8,6 +8,6 @@
 [submodule "Core/Lib/invlib"]
     path = Core/Lib/invlib
     url = git@github.com:eagletrt/invlib.git
-[submodule "Core/Lib/sw-lib-graphics"]
-    path = Core/Lib/sw-lib-graphics
-    url = git@github.com:Bridiro/sw-lib-graphics.git
+[submodule "Core/Lib/sw-libgraphics"]
+	path = Core/Lib/sw-libgraphics
+	url = git@github.com:Bridiro/sw-libgraphics.git
