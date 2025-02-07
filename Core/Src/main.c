@@ -87,7 +87,7 @@ void SystemClock_Config(void);
 uint32_t active_framebuffer = FRAMEBUFFER1_ADDR;
 uint32_t writable_framebuffer = FRAMEBUFFER2_ADDR;
 
-void dma2d_m2m(uint32_t src, uint32_t dest, uint16_t width, uint16_t height) {
+void dma2d_m2m(uint32_t src, uint32_t dest, uint32_t width, uint32_t height) {
     hdma2d.Init.Mode         = DMA2D_M2M;
     hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
     hdma2d.Init.OutputOffset = 0;
@@ -103,7 +103,7 @@ void dma2d_m2m(uint32_t src, uint32_t dest, uint16_t width, uint16_t height) {
     HAL_DMA2D_PollForTransfer(&hdma2d, 10);
 }
 
-void dma2d_r2m(uint32_t dest, uint32_t color, uint16_t width, uint16_t height) {
+void dma2d_r2m(uint32_t dest, uint32_t color, uint32_t width, uint32_t height) {
     hdma2d.Init.Mode         = DMA2D_R2M;
     hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
     hdma2d.Init.OutputOffset = SCREEN_WIDTH - width;
@@ -111,8 +111,7 @@ void dma2d_r2m(uint32_t dest, uint32_t color, uint16_t width, uint16_t height) {
     HAL_DMA2D_Init(&hdma2d);
 
     HAL_DMA2D_Start(&hdma2d, color, dest, width, height);
-    HAL_DMA2D_PollForTransfer(&hdma2d, 10);
-    HAL_Delay(5);
+    HAL_DMA2D_PollForTransfer(&hdma2d, 30);
 }
 
 void draw_pixel(int x, int y, uint32_t color) {
@@ -275,9 +274,9 @@ int main(void) {
 
     
    struct Threshold ranges[] = {
-        {0.0f, 0.10f, 0x00FF00, 0x000000},
-        {0.11f, 0.20f, 0xFFFF00, 0x000000},
-        {0.21f, 200.0f, 0xFF0000, 0xFFFFFF}
+        {0.0f, 0.10000f, 0x00FF00, 0x000000},
+        {0.10001f, 0.20000f, 0xFFFF00, 0x000000},
+        {0.20001f, 200.0f, 0xFF0000, 0xFFFFFF}
     };
 
     struct Thresholds thresholds[] = {
@@ -348,9 +347,8 @@ int main(void) {
                 get_box(boxes, 4, 0x1)->updated = 1;
                 get_box(boxes, 4, 0x4)->value->value = (float) delta_set_framebuffer / 1000;
                 get_box(boxes, 4, 0x4)->updated = 1;
-
                 render_interface(boxes, 4, draw_pixel, draw_rectangle);
-                if (HAL_GetTick() - last_time > 70)
+                if (HAL_GetTick() - last_time > 30)
                 {
                     struct Box *box = get_box(boxes, 4, 0x2);
                     box->value->value += dir;
