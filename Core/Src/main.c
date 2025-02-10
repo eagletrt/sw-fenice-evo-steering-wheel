@@ -134,6 +134,11 @@ void clear_screen() {
     draw_rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0xffffffff);
 }
 
+void fix_print_interface() {
+    draw_rectangle(3, 3, 1, 1, 0x00ff0000);
+    draw_rectangle(402, 242, 1, 1, 0x00ff0000);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -347,6 +352,7 @@ int main(void) {
                 get_box(boxes, 4, 0x1)->updated = 1;
                 get_box(boxes, 4, 0x4)->value->value = (float) delta_set_framebuffer / 1000;
                 get_box(boxes, 4, 0x4)->updated = 1;
+                fix_print_interface();
                 render_interface(boxes, 4, draw_pixel, draw_rectangle);
                 if (HAL_GetTick() - last_time > 30)
                 {
