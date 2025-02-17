@@ -1,12 +1,12 @@
 #ifndef CAN_MESSAGES_H
 #define CAN_MESSAGES_H
 
-#include "inverters/inverters_network.h"
-#include "inverters/inverters_watchdog.h"
-#include "primary/primary_network.h"
-#include "primary/primary_watchdog.h"
-#include "secondary/secondary_network.h"
-#include "secondary/secondary_watchdog.h"
+#include "inverters_network.h"
+#include "inverters_watchdog.h"
+#include "primary_network.h"
+#include "primary_watchdog.h"
+#include "secondary_network.h"
+#include "secondary_watchdog.h"
 #include "steering.h"
 
 #include <assert.h>
