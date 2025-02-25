@@ -13,7 +13,7 @@ git submodule init
 git pull --recurse-submodules
 ```
 
-Then use the [stm32 vscode extension](https://marketplace.visualstudio.com/items?itemName=bmd.stm32-for-vscode) to build and flash the firmware.
+Then, using the command `platformio run` (yes you have to install platformio) you can build the firmware.
 
 ## Contributors
 
