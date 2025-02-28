@@ -114,20 +114,24 @@ void dma2d_r2m(uint32_t dest, uint32_t color, uint32_t width, uint32_t height) {
     HAL_DMA2D_PollForTransfer(&hdma2d, 30);
 }
 
-void draw_pixel(int x, int y, uint32_t color) {
-    ((uint32_t *)writable_framebuffer)[y * SCREEN_WIDTH + x] = color;
+void draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint32_t color) {
+    dma2d_r2m(writable_framebuffer + (x + y * SCREEN_WIDTH) * 4, color, w, h);
 }
 
-void draw_rectangle(int x, int y, int w, int h, uint32_t color) {
-    /*
-    for(int x1 = x; x1 < x + w; x1++) {
-        for(int y1 = y; y1 < y + h; y1++) {
-            draw_pixel(x1, y1, color);
-        }
-    }
-    */
+void draw_line(uint16_t x, uint16_t y, uint16_t lenght, uint32_t color) {
+    draw_rectangle(x, y, lenght, 1, color);
+    /* uint32_t *ptr = &((uint32_t *)writable_framebuffer)[y * SCREEN_WIDTH + x];
 
-    dma2d_r2m(writable_framebuffer + (x + y * SCREEN_WIDTH) * 4, color, w, h);
+    int i = 0;
+    for (; i + 3 < lenght; i += 4) {  // 4 pixels for iteration
+        ptr[i] = color;
+        ptr[i + 1] = color;
+        ptr[i + 2] = color;
+        ptr[i + 3] = color;
+    }
+    for (; i < lenght; i++) {  // Remaining pixels
+        ptr[i] = color;
+    } */
 }
 
 void clear_screen() {
@@ -353,7 +357,7 @@ int main(void) {
                 get_box(boxes, 4, 0x4)->value->value = (float) delta_set_framebuffer / 1000;
                 get_box(boxes, 4, 0x4)->updated = 1;
                 fix_print_interface();
-                render_interface(boxes, 4, draw_pixel, draw_rectangle);
+                render_interface(boxes, 4, draw_line, draw_rectangle);
                 if (HAL_GetTick() - last_time > 30)
                 {
                     struct Box *box = get_box(boxes, 4, 0x2);
