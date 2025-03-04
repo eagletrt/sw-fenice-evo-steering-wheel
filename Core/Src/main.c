@@ -283,9 +283,9 @@ int main(void) {
 
     
    struct Threshold ranges[] = {
-        {0.0f, 0.10000f, 0x00FF00, 0x000000},
-        {0.10001f, 0.20000f, 0xFFFF00, 0x000000},
-        {0.20001f, 200.0f, 0xFF0000, 0xFFFFFF}
+        {0.0f, 0.10000f, 0xff00ff00, 0xffffffff},
+        {0.10001f, 0.20000f, 0xffffff00, 0xff000000},
+        {0.20001f, 200.0f, 0xffff0000, 0xffffffff}
     };
 
     struct Thresholds thresholds[] = {
@@ -294,7 +294,7 @@ int main(void) {
 
     
     struct Label l1;
-    create_label(&l1, "XD", (struct Coords){310, 95}, KONEXY_110, 70, FONT_ALIGN_CENTER);
+    create_label(&l1, "s", (struct Coords){310, 95}, KONEXY_110, 70, FONT_ALIGN_CENTER);
     struct Value v1;
     create_value(&v1, 51, true, (struct Coords){140, 80}, KONEXY_110, 95, FONT_ALIGN_CENTER, (union Colors){ .thresholds = thresholds}, THRESHOLDS);
 
@@ -302,7 +302,7 @@ int main(void) {
     create_value(&v2, 51, false, (struct Coords){ 196, 80 }, KONEXY_110, 95, FONT_ALIGN_CENTER, (union Colors){ .slider = (struct Slider){0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
 
     struct Label l2;
-    create_label(&l2, "PROVA", (struct Coords){196, 80}, KONEXY_110, 95, FONT_ALIGN_CENTER);
+    create_label(&l2, "PROVA", (struct Coords){196, 80}, KONEXY_110, 85, FONT_ALIGN_CENTER);
 
     struct Value v3;
     create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, KONEXY_110, 95, FONT_ALIGN_CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
