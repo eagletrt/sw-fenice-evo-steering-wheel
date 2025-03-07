@@ -42,8 +42,8 @@ static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][21] = {
     "HVD",
     "BSPD",
     "INVC MOT",
-    "TSMS LV",
-    "TSMS HV"};
+    "TSMS",
+    "SD END"};
 
 static shutdown_circuit_component_state_t shutdown_status_lb_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
 
