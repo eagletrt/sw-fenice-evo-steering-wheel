@@ -294,18 +294,18 @@ int main(void) {
 
     
     struct Label l1;
-    create_label(&l1, "s", (struct Coords){310, 95}, KONEXY_110, 70, FONT_ALIGN_CENTER);
+    create_label(&l1, "s", (struct Coords){310, 95}, KONEXY_150, 70, FONT_ALIGN_CENTER);
     struct Value v1;
-    create_value(&v1, 51, true, (struct Coords){140, 80}, KONEXY_110, 95, FONT_ALIGN_CENTER, (union Colors){ .thresholds = thresholds}, THRESHOLDS);
+    create_value(&v1, 51, true, (struct Coords){140, 80}, KONEXY_150, 95, FONT_ALIGN_CENTER, (union Colors){ .thresholds = thresholds}, THRESHOLDS);
 
     struct Value v2;
-    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, KONEXY_110, 95, FONT_ALIGN_CENTER, (union Colors){ .slider = (struct Slider){0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
+    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, KONEXY_150, 95, FONT_ALIGN_CENTER, (union Colors){ .slider = (struct Slider){0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
 
     struct Label l2;
-    create_label(&l2, "PROVA", (struct Coords){196, 80}, KONEXY_110, 85, FONT_ALIGN_CENTER);
+    create_label(&l2, "PROVA", (struct Coords){196, 80}, KONEXY_150, 85, FONT_ALIGN_CENTER);
 
     struct Value v3;
-    create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, KONEXY_110, 95, FONT_ALIGN_CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
+    create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, KONEXY_150, 95, FONT_ALIGN_CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
     
     struct Box boxes[] = {
         { 1, 0x1, { 2, 2, 397, 237 }, 0xff000000, 0xffffffff, &l1, &v1 },
