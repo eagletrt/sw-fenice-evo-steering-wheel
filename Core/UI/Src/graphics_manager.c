@@ -469,9 +469,10 @@ void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, siz
 }
 
 void sw_update_screen(float dt, UI_t *scr) {
+    olivec_fix_dma2d(scr->oc);
     for (size_t iswoc = 0; iswoc < swoc_elems_n; iswoc++) {
         scr->components[iswoc].swoc_elem_was_updated = false;
-        olivec_rect(
+        olivec_dma2d_rect(
             scr->oc,
             scr->components[iswoc].swoc_elem_boundaries.x,
             scr->components[iswoc].swoc_elem_boundaries.y,
@@ -491,12 +492,12 @@ void sw_update_screen(float dt, UI_t *scr) {
 }
 
 void sw_screen_white(UI_t *scr) {
-    olivec_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
+    olivec_dma2d_rect(scr->oc, 0, 0, 800, 480, 0xFFFFFFFF);
 }
 
 void sw_print_debug_info(UI_t *scr, char *text1, char *text2, float size1, float size2) {
     scr->components[18].swoc_elem_was_updated = false;
-    olivec_rect(
+    olivec_dma2d_rect(
         scr->oc,
         scr->components[18].swoc_elem_boundaries.x,
         scr->components[18].swoc_elem_boundaries.y,
@@ -513,7 +514,7 @@ void sw_print_debug_info(UI_t *scr, char *text1, char *text2, float size1, float
         scr->components[18].swoc_elem_align);
 
     scr->components[19].swoc_elem_was_updated = false;
-    olivec_rect(
+    olivec_dma2d_rect(
         scr->oc,
         scr->components[19].swoc_elem_boundaries.x,
         scr->components[19].swoc_elem_boundaries.y,
