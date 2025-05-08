@@ -75,7 +75,7 @@ void das_errors_update(UI_t *screen, bool valid);
 
 void hv_feedback_ts_voltage_update(UI_t *screen, bool valid);
 void hv_feedback_misc_voltage_update(UI_t *screen, bool valid);
-void hv_feedback_analog_sd_update(UI_t *screen, bool valid);
+void hv_feedback_sd_voltage_update(UI_t *screen, bool valid);
 
 void lv_feedback_sd_voltage_update(UI_t *screen, bool valid);
 void lv_feedback_ts_voltage_update(UI_t *screen, bool valid);

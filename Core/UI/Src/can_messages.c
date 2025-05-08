@@ -94,8 +94,8 @@ void handle_primary(can_message_t *msg) {
             // STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_misc_voltage, HV_FEEDBACK_MISC_VOLTAGE, is_pmsg, true);
             break;
         }
-        case PRIMARY_HV_FEEDBACK_ANALOG_SD_FRAME_ID: {
-            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_analog_sd, HV_FEEDBACK_ANALOG_SD, is_pmsg, true);
+        case PRIMARY_HV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
+            STEER_CAN_UNPACK(primary, PRIMARY, hv_feedback_sd_voltage, HV_FEEDBACK_SD_VOLTAGE, is_pmsg, true);
             break;
         }
         case PRIMARY_LV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {

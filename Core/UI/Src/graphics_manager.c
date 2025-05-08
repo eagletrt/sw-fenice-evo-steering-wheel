@@ -65,8 +65,8 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
                     hv_feedback_misc_voltage_update(scr, is_pmsg_valid[iindex]);
                     break;
                 }
-                case PRIMARY_HV_FEEDBACK_ANALOG_SD_FRAME_ID: {
-                    hv_feedback_analog_sd_update(scr, is_pmsg_valid[iindex]);
+                case PRIMARY_HV_FEEDBACK_SD_VOLTAGE_FRAME_ID: {
+                    hv_feedback_sd_voltage_update(scr, is_pmsg_valid[iindex]);
                     break;
                 }
                 case PRIMARY_HV_BALANCING_STATUS_FRAME_ID: {
