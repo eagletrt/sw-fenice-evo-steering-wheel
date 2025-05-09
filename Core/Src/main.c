@@ -39,6 +39,8 @@
 #define _XOPEN_SOURCE
 #include <time.h>
 
+#include "dma2d_utils.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -249,7 +251,7 @@ int main(void) {
                 sw_update_graphics_from_can_messages(&sw_screen);
                 sw_update_screen(0.f, &sw_screen);
             }
-            HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
+            dma2d_m2m(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
             uint32_t tmp         = active_framebuffer;
             active_framebuffer   = writable_framebuffer;

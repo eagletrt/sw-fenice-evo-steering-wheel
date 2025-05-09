@@ -23,6 +23,7 @@
 #define OLIVE_C_
 
 #include "steering_config.h"
+#include "dma2d_utils.h"
 
 #include <mcufont.h>
 #include <stdbool.h>
@@ -50,6 +51,7 @@ extern const struct mf_rlefont_s mf_rlefont_KonexyFont72;
 
 #define OLIVEC_CANVAS_NULL     ((Olivec_Canvas){0})
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y) * (oc).stride + (x)]
+#define OLIVEC_PIXEL_ADDRESS(oc, x, y) (uint32_t) (&(oc).pixels[(y) * (oc).stride + (x)])
 
 // GLobal canvas to define McuFont callback function
 Olivec_Canvas *oc;
@@ -60,6 +62,8 @@ OLIVECDEF bool olivec_in_bounds(Olivec_Canvas oc, int x, int y);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
 OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color);
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color);
+OLIVECDEF void olivec_fix_dma2d(Olivec_Canvas oc);
+OLIVECDEF void olivec_dma2d_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color);
 OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t thiccness, uint32_t color);
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color);
 OLIVECDEF void olivec_ellipse(Olivec_Canvas oc, int cx, int cy, int rx, int ry, uint32_t color);
@@ -279,6 +283,15 @@ OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_
             olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
         }
     }
+}
+
+OLIVECDEF void olivec_fix_dma2d(Olivec_Canvas oc) {
+    olivec_dma2d_rect(oc, 3, 3, 1, 1, 0x00ff0000);
+    olivec_dma2d_rect(oc, 402, 242, 1, 1, 0x0000ff00);
+}
+
+OLIVECDEF void olivec_dma2d_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color) {
+    dma2d_r2m(OLIVEC_PIXEL_ADDRESS(oc, x, y), color, w, h);
 }
 
 OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t t, uint32_t color) {
