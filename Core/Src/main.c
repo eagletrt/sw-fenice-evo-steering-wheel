@@ -42,7 +42,7 @@
 #define _XOPEN_SOURCE
 #include <time.h>
 
-#include "libgraphics.h"
+#include "libraster-api.h"
 
 /* USER CODE END Includes */
 
@@ -282,32 +282,31 @@ int main(void) {
     // sw_screen_white(&sw_screen);
 
     
-   struct Threshold ranges[] = {
-        {0.0f, 0.10000f, 0xff00ff00, 0xffffffff},
-        {0.10001f, 0.20000f, 0xffffff00, 0xff000000},
-        {0.20001f, 200.0f, 0xffff0000, 0xffffffff}
+    Threshold ranges[] = {
+        { 0.0f, 50.0f, 0x00FF00, 0x000000 },
+        { 50.1f, 100.0f, 0xFFFF00, 0x000000 },
+        { 100.1f, 200.0f, 0xFF0000, 0xFFFFFF }
     };
 
-    struct Thresholds thresholds[] = {
-        {ranges, 3}
+    Thresholds thresholds[] = {
+        { ranges, 3 }
     };
 
-    
-    struct Label l1;
-    create_label(&l1, "s", (struct Coords){310, 95}, KONEXY_150, 70, FONT_ALIGN_CENTER);
-    struct Value v1;
-    create_value(&v1, 51, true, (struct Coords){140, 80}, KONEXY_150, 95, FONT_ALIGN_CENTER, (union Colors){ .thresholds = thresholds}, THRESHOLDS);
+    Label l1;
+    create_label(&l1, "XD", (Coords){ 310, 95 }, KONEXY_120, 40, FONT_ALIGN_CENTER);
+    Value v1;
+    create_value(&v1, 51, false, (Coords){ 140, 80 }, KONEXY_120, 70, FONT_ALIGN_CENTER, (Colors){ .thresholds = thresholds }, THRESHOLDS);
 
-    struct Value v2;
-    create_value(&v2, 51, false, (struct Coords){ 196, 80 }, KONEXY_150, 95, FONT_ALIGN_CENTER, (union Colors){ .slider = (struct Slider){0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3}}, SLIDER);
+    Value v2;
+    create_value(&v2, 51, true, (Coords){ 196, 80 }, KONEXY_120, 70, FONT_ALIGN_CENTER, (Colors){ .slider = (Slider){ 0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3 } }, SLIDER);
 
-    struct Label l2;
-    create_label(&l2, "PROVA", (struct Coords){196, 80}, KONEXY_150, 85, FONT_ALIGN_CENTER);
+    Label l2;
+    create_label(&l2, "PROVA", (Coords){ 196, 80 }, KONEXY_120, 70, FONT_ALIGN_CENTER);
 
-    struct Value v3;
-    create_value(&v3, 51.0, true, (struct Coords){ 196, 80 }, KONEXY_150, 95, FONT_ALIGN_CENTER, (union Colors){ .interpolation = (struct LinearInterpolation){0xff00ff00, 0xffff0000, 0.0, 0.61}}, INTERPOLATION);
-    
-    struct Box boxes[] = {
+    Value v3;
+    create_value(&v3, 51.0, true, (Coords){ 196, 80 }, KONEXY_120, 70, FONT_ALIGN_CENTER, (Colors){ .interpolation = (LinearInterpolation){ 0xff000000, 0xff00ff00, 0.0, 200.0 } }, INTERPOLATION);
+
+    Box boxes[] = {
         { 1, 0x1, { 2, 2, 397, 237 }, 0xff000000, 0xffffffff, &l1, &v1 },
         { 1, 0x2, { 401, 2, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v2 },
         { 1, 0x3, { 2, 241, 397, 237 }, 0xff000000, 0xffffffff, &l2, NULL },
@@ -360,7 +359,7 @@ int main(void) {
                 render_interface(boxes, 4, draw_line, draw_rectangle);
                 if (HAL_GetTick() - last_time > 30)
                 {
-                    struct Box *box = get_box(boxes, 4, 0x2);
+                    Box *box = get_box(boxes, 4, 0x2);
                     box->value->value += dir;
                     box->updated = 1;
                     if (box->value->value > 199)
