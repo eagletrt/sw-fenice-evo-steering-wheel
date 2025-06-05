@@ -42,7 +42,10 @@
 #define _XOPEN_SOURCE
 #include <time.h>
 
+#include "graphics_manager.h"
+#include "graphic_callbacks.h"
 #include "libraster-api.h"
+#include "graphic_callbacks.h"
 
 /* USER CODE END Includes */
 
@@ -83,65 +86,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-uint32_t active_framebuffer = FRAMEBUFFER1_ADDR;
-uint32_t writable_framebuffer = FRAMEBUFFER2_ADDR;
-
-void dma2d_m2m(uint32_t src, uint32_t dest, uint32_t width, uint32_t height) {
-    hdma2d.Init.Mode         = DMA2D_M2M;
-    hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
-    hdma2d.Init.OutputOffset = 0;
-
-    HAL_DMA2D_Init(&hdma2d);
-
-    hdma2d.LayerCfg[1].InputColorMode = DMA2D_INPUT_ARGB8888;
-    hdma2d.LayerCfg[1].InputOffset    = 0;
-
-    HAL_DMA2D_ConfigLayer(&hdma2d, 1);
-
-    HAL_DMA2D_Start(&hdma2d, src, dest, width, height);
-    HAL_DMA2D_PollForTransfer(&hdma2d, 10);
-}
-
-void dma2d_r2m(uint32_t dest, uint32_t color, uint32_t width, uint32_t height) {
-    hdma2d.Init.Mode         = DMA2D_R2M;
-    hdma2d.Init.ColorMode    = DMA2D_OUTPUT_ARGB8888;
-    hdma2d.Init.OutputOffset = SCREEN_WIDTH - width;
-
-    HAL_DMA2D_Init(&hdma2d);
-
-    HAL_DMA2D_Start(&hdma2d, color, dest, width, height);
-    HAL_DMA2D_PollForTransfer(&hdma2d, 30);
-}
-
-void draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint32_t color) {
-    dma2d_r2m(writable_framebuffer + (x + y * SCREEN_WIDTH) * 4, color, w, h);
-}
-
-void draw_line(uint16_t x, uint16_t y, uint16_t lenght, uint32_t color) {
-    draw_rectangle(x, y, lenght, 1, color);
-    /* uint32_t *ptr = &((uint32_t *)writable_framebuffer)[y * SCREEN_WIDTH + x];
-
-    int i = 0;
-    for (; i + 3 < lenght; i += 4) {  // 4 pixels for iteration
-        ptr[i] = color;
-        ptr[i + 1] = color;
-        ptr[i + 2] = color;
-        ptr[i + 3] = color;
-    }
-    for (; i < lenght; i++) {  // Remaining pixels
-        ptr[i] = color;
-    } */
-}
-
-void clear_screen() {
-    draw_rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0xffffffff);
-}
-
-void fix_print_interface() {
-    draw_rectangle(3, 3, 1, 1, 0x00ff0000);
-    draw_rectangle(402, 242, 1, 1, 0x00ff0000);
-}
 
 /* USER CODE END 0 */
 
@@ -207,7 +151,7 @@ int main(void) {
     sdram_test_simple_write();
 #endif
 
-#if 0  // Green screen
+#if 0 // Green screen
   uint8_t *display_buffer = (uint8_t *)SDRAM_BASE_ADDRESS;
   for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
     display_buffer[4 * icell] = 0xFF;
@@ -217,23 +161,23 @@ int main(void) {
   }
 #endif
 
-    uint32_t last_swap_framebuffer                   = HAL_GetTick();
-    static bool tson_button_pressed                  = false;
+    uint32_t last_swap_framebuffer = HAL_GetTick();
+    static bool tson_button_pressed = false;
     static uint32_t tson_button_pressed_time_elapsed = 0;
 
-    // sw_set_canvas(&sw_screen, (uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-    // sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
+    Box sw_screen;
+    sw_init_screen(&sw_screen);
 
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     primary_ecu_set_power_maps_last_state->map_power = 1.0f;
     primary_ecu_set_power_maps_last_state->reg_state = 1;
-    primary_ecu_set_power_maps_last_state->sc_state  = 1;
-    primary_ecu_set_power_maps_last_state->tv_state  = 1;
+    primary_ecu_set_power_maps_last_state->sc_state = 1;
+    primary_ecu_set_power_maps_last_state->tv_state = 1;
 
     GET_LAST_STATE(primary, steering_wheel_version, PRIMARY, STEERING_WHEEL_VERSION);
     struct tm timeinfo;
     strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
-    primary_steering_wheel_version_last_state->canlib_build_time    = CANLIB_BUILD_TIME;
+    primary_steering_wheel_version_last_state->canlib_build_time = CANLIB_BUILD_TIME;
     primary_steering_wheel_version_last_state->component_build_time = mktime(&timeinfo);
 
     /*
@@ -243,11 +187,11 @@ int main(void) {
     */
 
     GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
-    primary_lv_set_pumps_speed_last_state->status      = primary_lv_set_pumps_speed_status_auto;
+    primary_lv_set_pumps_speed_last_state->status = primary_lv_set_pumps_speed_status_auto;
     primary_lv_set_pumps_speed_last_state->pumps_speed = 0.0f;
 
     GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
-    primary_lv_set_radiator_speed_last_state->status         = primary_lv_set_radiator_speed_status_auto;
+    primary_lv_set_radiator_speed_last_state->status = primary_lv_set_radiator_speed_status_auto;
     primary_lv_set_radiator_speed_last_state->radiator_speed = 0.0f;
 
     /*
@@ -279,46 +223,7 @@ int main(void) {
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    // sw_screen_white(&sw_screen);
 
-    
-    Threshold ranges[] = {
-        { 0.0f, 50.0f, 0x00FF00, 0x000000 },
-        { 50.1f, 100.0f, 0xFFFF00, 0x000000 },
-        { 100.1f, 200.0f, 0xFF0000, 0xFFFFFF }
-    };
-
-    Thresholds thresholds[] = {
-        { ranges, 3 }
-    };
-
-    Label l1;
-    create_label(&l1, "XD", (Coords){ 310, 95 }, KONEXY_120, 40, FONT_ALIGN_CENTER);
-    Value v1;
-    create_value(&v1, 51, false, (Coords){ 140, 80 }, KONEXY_120, 70, FONT_ALIGN_CENTER, (Colors){ .thresholds = thresholds }, THRESHOLDS);
-
-    Value v2;
-    create_value(&v2, 51, true, (Coords){ 196, 80 }, KONEXY_120, 70, FONT_ALIGN_CENTER, (Colors){ .slider = (Slider){ 0xff00ff00, ANCHOR_BOTTOM, 0, 200, 3 } }, SLIDER);
-
-    Label l2;
-    create_label(&l2, "PROVA", (Coords){ 196, 80 }, KONEXY_120, 70, FONT_ALIGN_CENTER);
-
-    Value v3;
-    create_value(&v3, 51.0, true, (Coords){ 196, 80 }, KONEXY_120, 70, FONT_ALIGN_CENTER, (Colors){ .interpolation = (LinearInterpolation){ 0xff000000, 0xff00ff00, 0.0, 200.0 } }, INTERPOLATION);
-
-    Box boxes[] = {
-        { 1, 0x1, { 2, 2, 397, 237 }, 0xff000000, 0xffffffff, &l1, &v1 },
-        { 1, 0x2, { 401, 2, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v2 },
-        { 1, 0x3, { 2, 241, 397, 237 }, 0xff000000, 0xffffffff, &l2, NULL },
-        { 1, 0x4, { 401, 241, 397, 237 }, 0xff000000, 0xffffffff, NULL, &v3 }
-    };
-    
-    uint32_t last_time = HAL_GetTick();
-    int dir = 1;
-
-    uint32_t delta_write = 0;
-    uint32_t delta_set_framebuffer = 0;
-    
     while (1) {
 #if CAN_OVER_SERIAL_ENABLED == 1
         can_over_serial_routine();
@@ -332,7 +237,7 @@ int main(void) {
         static uint32_t last_ptt_periodic_check = 0;
         if ((get_current_time_ms() - last_ptt_periodic_check) > 50) {
             last_ptt_periodic_check = get_current_time_ms();
-            // ptt_periodic_check(&sw_screen);
+            ptt_periodic_check(&sw_screen);
         }
 
         if ((get_current_time_ms() - last_swap_framebuffer) > 10) {
@@ -346,42 +251,12 @@ int main(void) {
                 }
                 clear_screen();
             } else {
-                // sw_update_graphics_from_can_messages(&sw_screen);
-                // sw_update_screen(0.f, &sw_screen);
-
-                uint32_t start_write = HAL_GetTick();
-
-                get_box(boxes, 4, 0x1)->value->value = (float) delta_write / 1000;
-                get_box(boxes, 4, 0x1)->updated = 1;
-                get_box(boxes, 4, 0x4)->value->value = (float) delta_set_framebuffer / 1000;
-                get_box(boxes, 4, 0x4)->updated = 1;
+                sw_update_graphics_from_can_messages(&sw_screen);
                 fix_print_interface();
-                render_interface(boxes, 4, draw_line, draw_rectangle);
-                if (HAL_GetTick() - last_time > 30)
-                {
-                    Box *box = get_box(boxes, 4, 0x2);
-                    box->value->value += dir;
-                    box->updated = 1;
-                    if (box->value->value > 199)
-                        dir = -1;
-                    else if (box->value->value < 2)
-                        dir = 1;
-                }
-
-                delta_write = HAL_GetTick() - start_write;
+                render_interface(&sw_screen, swoc_elems_n, draw_line, draw_rectangle);
             }
 
-            uint32_t start_swap = HAL_GetTick();
-            dma2d_m2m(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
-            // HAL_DMA2D_Start(&hdma2d, writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
-            // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
-            uint32_t tmp         = active_framebuffer;
-            active_framebuffer   = writable_framebuffer;
-            writable_framebuffer = tmp;
-            // sw_screen.oc.pixels  = (uint32_t *)writable_framebuffer;
-            HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
-
-            delta_set_framebuffer = HAL_GetTick() - start_swap;
+            swap_framebuffers();
         }
 
         PERIODIC_SEND(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS);
@@ -398,7 +273,7 @@ int main(void) {
         if (tson_pin_state == GPIO_PIN_SET) {
             tson_button_pressed = false;
         } else if (!tson_button_pressed) {
-            tson_button_pressed              = true;
+            tson_button_pressed = true;
             tson_button_pressed_time_elapsed = get_current_time_ms();
         } else if ((get_current_time_ms() - tson_button_pressed_time_elapsed) > BUTTONS_LONG_PRESS_TIME) {
             prepare_and_send_ecu_set_status();
@@ -416,8 +291,8 @@ int main(void) {
   * @retval None
   */
 void SystemClock_Config(void) {
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
     /** Supply configuration update enable
   */
@@ -433,22 +308,22 @@ void SystemClock_Config(void) {
     /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-    RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState            = RCC_HSE_ON;
-    RCC_OscInitStruct.HSIState            = RCC_HSI_DIV1;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
     RCC_OscInitStruct.HSICalibrationValue = 64;
-    RCC_OscInitStruct.CSIState            = RCC_CSI_ON;
+    RCC_OscInitStruct.CSIState = RCC_CSI_ON;
     RCC_OscInitStruct.CSICalibrationValue = 16;
-    RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM            = 6;
-    RCC_OscInitStruct.PLL.PLLN            = 137;
-    RCC_OscInitStruct.PLL.PLLP            = 1;
-    RCC_OscInitStruct.PLL.PLLQ            = 5;
-    RCC_OscInitStruct.PLL.PLLR            = 2;
-    RCC_OscInitStruct.PLL.PLLRGE          = RCC_PLL1VCIRANGE_2;
-    RCC_OscInitStruct.PLL.PLLVCOSEL       = RCC_PLL1VCOWIDE;
-    RCC_OscInitStruct.PLL.PLLFRACN        = 4096;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 6;
+    RCC_OscInitStruct.PLL.PLLN = 137;
+    RCC_OscInitStruct.PLL.PLLP = 1;
+    RCC_OscInitStruct.PLL.PLLQ = 5;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLFRACN = 4096;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         Error_Handler();
     }
@@ -457,9 +332,9 @@ void SystemClock_Config(void) {
   */
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
                                   RCC_CLOCKTYPE_D1PCLK1;
-    RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.SYSCLKDivider  = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.AHBCLKDivider  = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
     RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;

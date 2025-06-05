@@ -16,17 +16,17 @@
 
 #define LED_N 6
 
-#define RED   (uint8_t)4
+#define RED (uint8_t)4
 #define GREEN (uint8_t)3
-#define BLUE  (uint8_t)5
+#define BLUE (uint8_t)5
 
-#define LED_CONTROL_REGISTER                0x02
+#define LED_CONTROL_REGISTER 0x02
 #define PATTERN_GENERATION_CONTROL_REGISTER 0x0F
-#define PATTERN_GENERATION_FADE_REGISTER    0x10
-#define PATTERN_GENERATION_RGB_1            0X11
-#define PATTERN_GENERATION_RGB_2            0X12
-#define PATTERN_GENERATION_RGB_3            0X13
-#define PATTERN_GENERATION_RGB_4            0X14
+#define PATTERN_GENERATION_FADE_REGISTER 0x10
+#define PATTERN_GENERATION_RGB_1 0X11
+#define PATTERN_GENERATION_RGB_2 0X12
+#define PATTERN_GENERATION_RGB_3 0X13
+#define PATTERN_GENERATION_RGB_4 0X14
 /* Control register:
 
 Enable Mode and Reset
@@ -56,17 +56,17 @@ Fade-Rate 0 Exponential Time-Constant Setting
 110 = 2s
 111 = 4s */
 
-#define COLOR_WHITE  ((uint32_t)0xFFFFFF)
-#define COLOR_BLACK  ((uint32_t)0x000000)
-#define COLOR_RED    ((uint32_t)0xFF0000)
+#define COLOR_WHITE ((uint32_t)0xFFFFFF)
+#define COLOR_BLACK ((uint32_t)0x000000)
+#define COLOR_RED ((uint32_t)0xFF0000)
 #define COLOR_ORANGE ((uint32_t)0xFFA500)
 #define COLOR_YELLOW ((uint32_t)0xFFFF00)
-#define COLOR_GREEN  ((uint32_t)0x00FF00)
-#define COLOR_BLUE   ((uint32_t)0x0000FF)
+#define COLOR_GREEN ((uint32_t)0x00FF00)
+#define COLOR_BLUE ((uint32_t)0x0000FF)
 #define COLOR_PURPLE ((uint32_t)0x800080)
-#define COLOR_OFF    ((uint32_t)0x000000)
-#define KTD2052A     ((uint8_t)0b11101000)
-#define KTD2052C     ((uint8_t)0b11101010)
+#define COLOR_OFF ((uint32_t)0x000000)
+#define KTD2052A ((uint8_t)0b11101000)
+#define KTD2052C ((uint8_t)0b11101010)
 
 extern uint8_t reply[2];
 

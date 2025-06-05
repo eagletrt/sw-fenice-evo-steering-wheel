@@ -10,67 +10,20 @@ typedef enum {
 
 typedef enum {
     swoc_sd = 0,
-    swoc_lap_time,
+    swoc_status,
     swoc_ptt,
     swoc_temp_mot,
-    swoc_temp_mot_name,
     swoc_soc_hv,
     swoc_soc_lv,
-    swoc_soc_lv_name,
     swoc_temp_inv,
-    swoc_temp_inv_name,
-    swoc_soc_hv_name,
     swoc_temp_hv,
-    swoc_temp_hv_name,
     swoc_pt_cooling,
-    swoc_pt_cooling_name,
     swoc_regen,
     swoc_slip,
     swoc_torque,
-    swoc_hv_cooling,
-    swoc_hv_cooling_name,
+    swoc_lap_time,
     swoc_elems_n
 } swoc_elems_t;
-
-typedef struct {
-    int x;
-    int y;
-    int w;
-    int h;
-} Olivec_Boundaries;
-
-typedef struct {
-    int x;
-    int y;
-} Olivec_Margins;
-
-typedef struct {
-    uint32_t *pixels;
-    size_t width;
-    size_t height;
-    size_t stride;
-} Olivec_Canvas;
-
-typedef struct {
-    size_t width, height;
-    const uint8_t *glyphs;
-} Olivec_Font;
-
-typedef struct {
-    bool swoc_elem_was_updated;
-    char swoc_elem_label[SWOC_STRING_LEN];
-    uint32_t swoc_elem_lb_color;
-    uint32_t swoc_elem_bg_color;
-    float swoc_elem_font_size;
-    const Olivec_Boundaries swoc_elem_boundaries;
-    const Olivec_Margins swoc_elem_margins;
-    uint8_t swoc_elem_align;
-} UI_elem_t;
-
-typedef struct {
-    Olivec_Canvas oc;
-    UI_elem_t components[swoc_elems_n];
-} UI_t;
 
 typedef uint16_t can_id_t;
 

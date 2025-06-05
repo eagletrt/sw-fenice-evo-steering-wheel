@@ -15,6 +15,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "libraster.h"
+
 #define STEERING_ANGLE_RANGE_LOW  (-150)
 #define STEERING_ANGLE_RANGE_HIGH (150u)
 #define APPS_RANGE_LOW            (0u)
@@ -47,75 +49,75 @@ extern inverters_watchdog m_inverters_watchdog;
 #endif
 
 void set_ptt_button_pressed(bool);
-void ptt_periodic_check(UI_t *screen);
+void ptt_periodic_check(Box *screen);
 
 /****
  * Update graphics from can messages
  */
 
-void ecu_status_update(UI_t *screen, bool valid);
-void ecu_power_maps_update(UI_t *screen, bool valid);
-void angular_velocity_update(UI_t *screen, bool valid);
-void vehicle_speed_update(UI_t *screen, bool valid);
-void ecu_feedbacks_update(UI_t *screen, bool valid);
-void ecu_errors_update(UI_t *screen, bool valid);
+void ecu_status_update(Box *screen, bool valid);
+void ecu_power_maps_update(Box *screen, bool valid);
+void angular_velocity_update(Box *screen, bool valid);
+void vehicle_speed_update(Box *screen, bool valid);
+void ecu_feedbacks_update(Box *screen, bool valid);
+void ecu_errors_update(Box *screen, bool valid);
 
-void hv_debug_signals_update(UI_t *screen, bool valid);
-void hv_cells_voltage_stats_update(UI_t *screen, bool valid);
-void hv_ts_voltage_update(UI_t *screen, bool valid);
-void hv_current_update(UI_t *screen, bool valid);
-void hv_soc_estimation_update(UI_t *screen, bool valid);
-void lv_soc_estimation_update(UI_t *screen, bool valid);
-void hv_cells_temp_stats_update(UI_t *screen, bool valid);
-void hv_errors_update(UI_t *screen, bool valid);
-void hv_cell_balancing_status_update(UI_t *screen, bool valid);
-void hv_feedbacks_status_update(UI_t *screen, bool valid);
-void debug_hv_feedbacks_status_update(UI_t *screen, bool valid);
-void das_errors_update(UI_t *screen, bool valid);
+void hv_debug_signals_update(Box *screen, bool valid);
+void hv_cells_voltage_stats_update(Box *screen, bool valid);
+void hv_ts_voltage_update(Box *screen, bool valid);
+void hv_current_update(Box *screen, bool valid);
+void hv_soc_estimation_update(Box *screen, bool valid);
+void lv_soc_estimation_update(Box *screen, bool valid);
+void hv_cells_temp_stats_update(Box *screen, bool valid);
+void hv_errors_update(Box *screen, bool valid);
+void hv_cell_balancing_status_update(Box *screen, bool valid);
+void hv_feedbacks_status_update(Box *screen, bool valid);
+void debug_hv_feedbacks_status_update(Box *screen, bool valid);
+void das_errors_update(Box *screen, bool valid);
 
-void hv_feedback_ts_voltage_update(UI_t *screen, bool valid);
-void hv_feedback_misc_voltage_update(UI_t *screen, bool valid);
-void hv_feedback_analog_sd_update(UI_t *screen, bool valid);
+void hv_feedback_ts_voltage_update(Box *screen, bool valid);
+void hv_feedback_misc_voltage_update(Box *screen, bool valid);
+void hv_feedback_analog_sd_update(Box *screen, bool valid);
 
-void lv_feedback_sd_voltage_update(UI_t *screen, bool valid);
-void lv_feedback_ts_voltage_update(UI_t *screen, bool valid);
-void lv_feedback_enclosure_voltage_update(UI_t *screen, bool valid);
-void lv_errors_update(UI_t *screen, bool valid);
-void lv_currents_update(UI_t *screen, bool valid);
-void lv_total_voltage_update(UI_t *screen, bool valid);
-void lv_cells_voltage_update(UI_t *screen, bool valid);
-void lv_cells_voltage_stats_update(UI_t *screen, bool valid);
-void lv_cells_temp_update(UI_t *screen, bool valid);
-void lv_cells_temp_stats_update(UI_t *screen, bool valid);
-void lv_cooling_aggressiveness_update(UI_t *screen, bool valid);
+void lv_feedback_sd_voltage_update(Box *screen, bool valid);
+void lv_feedback_ts_voltage_update(Box *screen, bool valid);
+void lv_feedback_enclosure_voltage_update(Box *screen, bool valid);
+void lv_errors_update(Box *screen, bool valid);
+void lv_currents_update(Box *screen, bool valid);
+void lv_total_voltage_update(Box *screen, bool valid);
+void lv_cells_voltage_update(Box *screen, bool valid);
+void lv_cells_voltage_stats_update(Box *screen, bool valid);
+void lv_cells_temp_update(Box *screen, bool valid);
+void lv_cells_temp_stats_update(Box *screen, bool valid);
+void lv_cooling_aggressiveness_update(Box *screen, bool valid);
 
-void hv_status_update(UI_t *screen, bool valid);
-void hv_fans_override_status_update(UI_t *screen, bool valid);
-void tlm_status_update(UI_t *screen, bool valid);
+void hv_status_update(Box *screen, bool valid);
+void hv_fans_override_status_update(Box *screen, bool valid);
+void tlm_status_update(Box *screen, bool valid);
 
-void odometer_update(UI_t *screen, bool valid);
-void steer_angle_update(UI_t *screen, bool valid);
-void tlm_network_interface_update(UI_t *screen, bool valid);
-void imu_acceleration_update(UI_t *screen, bool valid);
-void tlm_lap_time_update(UI_t *screen, bool valid);
-void tlm_laps_stats_update(UI_t *screen, bool valid);
-void inv_l_rcv_update(UI_t *screen, bool valid);
-void inv_r_rcv_update(UI_t *screen, bool valid);
+void odometer_update(Box *screen, bool valid);
+void steer_angle_update(Box *screen, bool valid);
+void tlm_network_interface_update(Box *screen, bool valid);
+void imu_acceleration_update(Box *screen, bool valid);
+void tlm_lap_time_update(Box *screen, bool valid);
+void tlm_laps_stats_update(Box *screen, bool valid);
+void inv_l_rcv_update(Box *screen, bool valid);
+void inv_r_rcv_update(Box *screen, bool valid);
 
-void irts_fl_update(UI_t *screen, bool valid);
-void irts_fr_update(UI_t *screen, bool valid);
-void irts_rl_update(UI_t *screen, bool valid);
-void irts_rr_update(UI_t *screen, bool valid);
-void pedal_throttle_update(UI_t *screen, bool valid);
-void pedal_brakes_pressure_update(UI_t *screen, bool valid);
+void irts_fl_update(Box *screen, bool valid);
+void irts_fr_update(Box *screen, bool valid);
+void irts_rl_update(Box *screen, bool valid);
+void irts_rr_update(Box *screen, bool valid);
+void pedal_throttle_update(Box *screen, bool valid);
+void pedal_brakes_pressure_update(Box *screen, bool valid);
 
-void ecu_version_update(UI_t *screen, bool valid);
-void lv_version_update(UI_t *screen, bool valid);
-void hv_cellboard_version_update(UI_t *screen, bool valid);
-void hv_mainboard_version_update(UI_t *screen, bool valid);
-void tlm_version_update(UI_t *screen, bool valid);
-void control_status_update(UI_t *screen, bool valid);
-void lv_radiator_speed_update(UI_t *screen, bool valid);
-void lv_pumps_speed_update(UI_t *screen, bool valid);
+void ecu_version_update(Box *screen, bool valid);
+void lv_version_update(Box *screen, bool valid);
+void hv_cellboard_version_update(Box *screen, bool valid);
+void hv_mainboard_version_update(Box *screen, bool valid);
+void tlm_version_update(Box *screen, bool valid);
+void control_status_update(Box *screen, bool valid);
+void lv_radiator_speed_update(Box *screen, bool valid);
+void lv_pumps_speed_update(Box *screen, bool valid);
 
 #endif  // STEERING_H
