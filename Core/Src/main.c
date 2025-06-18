@@ -224,6 +224,8 @@ int main(void) {
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
 
+    uint8_t __attribute__((aligned(32))) alphas[150*150];
+
     while (1) {
 #if CAN_OVER_SERIAL_ENABLED == 1
         can_over_serial_routine();
@@ -253,7 +255,7 @@ int main(void) {
             } else {
                 sw_update_graphics_from_can_messages(&sw_screen);
                 fix_print_interface();
-                render_interface(&sw_screen, swoc_elems_n, draw_line, draw_rectangle);
+                render_interface(&sw_screen, swoc_elems_n, copy_batch, alphas, draw_rectangle);
             }
 
             swap_framebuffers();

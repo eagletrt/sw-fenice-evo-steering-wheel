@@ -272,13 +272,13 @@ void sw_update_graphics_from_can_messages(Box *scr) {
 void sw_init_screen(Box *sw_screen) {
     // TODO SIMULATOR: initialize directly the fields of sw_screen without the temporary variable
     Label shutdown_l;
-    create_label(&shutdown_l, "", (Coords){ 132, 30 }, KONEXY_120, 20, FONT_ALIGN_CENTER);
+    create_label(&shutdown_l, "", (Coords){ 132, 30 }, FONT_KONEXY, 20, FONT_ALIGN_CENTER);
 
     Label status_l;
-    create_label(&status_l, "", (Coords){ 132, 19 }, KONEXY_120, 20, FONT_ALIGN_CENTER);
+    create_label(&status_l, "", (Coords){ 132, 19 }, FONT_KONEXY, 20, FONT_ALIGN_CENTER);
 
     Label ptt_l;
-    create_label(&ptt_l, "MUTE", (Coords){ 132, 19 }, KONEXY_120, 20, FONT_ALIGN_CENTER);
+    create_label(&ptt_l, "MUTE", (Coords){ 132, 19 }, FONT_KONEXY, 20, FONT_ALIGN_CENTER);
 
     Threshold motor_ranges[] = {
         { 0.0f, 89.9f, 0x00FF00, 0x000000 },
@@ -290,9 +290,9 @@ void sw_init_screen(Box *sw_screen) {
     };
 
     Value motor_temp_v;
-    create_value(&motor_temp_v, 0, false, (Coords){ 88, 20 }, KONEXY_120, 40, FONT_ALIGN_CENTER, (Colors){ .thresholds = motor_thresholds }, THRESHOLDS);
+    create_value(&motor_temp_v, 0, false, (Coords){ 88, 20 }, FONT_KONEXY, 40, FONT_ALIGN_CENTER, (Colors){ .thresholds = motor_thresholds }, THRESHOLDS);
     Label motor_temp_l;
-    create_label(&motor_temp_l, "MT", (Coords){ 123, 50 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&motor_temp_l, "MT", (Coords){ 123, 50 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Threshold soc_ranges[] = {
         { 0.0f, 20.0f, 0x00FF00, 0x000000 },
@@ -303,14 +303,14 @@ void sw_init_screen(Box *sw_screen) {
         { soc_ranges, 3 }
     };
     Value soc_hv_v;
-    create_value(&soc_hv_v, 0, false, (Coords){ 133, 60 }, KONEXY_120, 80, FONT_ALIGN_CENTER, (Colors){ .thresholds = soc_thresholds }, THRESHOLDS);
+    create_value(&soc_hv_v, 0, false, (Coords){ 133, 60 }, FONT_KONEXY, 80, FONT_ALIGN_CENTER, (Colors){ .thresholds = soc_thresholds }, THRESHOLDS);
     Label soc_hv_l;
-    create_label(&soc_hv_l, "HV", (Coords){ 133, 304 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&soc_hv_l, "HV", (Coords){ 133, 304 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Value soc_lv_v;
-    create_value(&soc_lv_v, 0, false, (Coords){ 89, 20 }, KONEXY_120, 40, FONT_ALIGN_CENTER, (Colors){ .thresholds = soc_thresholds }, THRESHOLDS);
+    create_value(&soc_lv_v, 0, false, (Coords){ 89, 20 }, FONT_KONEXY, 40, FONT_ALIGN_CENTER, (Colors){ .thresholds = soc_thresholds }, THRESHOLDS);
     Label soc_lv_l;
-    create_label(&soc_lv_l, "LV", (Coords){ 221, 50 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&soc_lv_l, "LV", (Coords){ 221, 50 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Threshold inv_ranges[] = {
         { 0.0f, 66.9f, 0x00FF00, 0x000000 },
@@ -322,9 +322,9 @@ void sw_init_screen(Box *sw_screen) {
     };
 
     Value inv_temp_v;
-    create_value(&inv_temp_v, 0, false, (Coords){ 89, 20 }, KONEXY_120, 40, FONT_ALIGN_CENTER, (Colors){ .thresholds = inv_thresholds }, THRESHOLDS);
+    create_value(&inv_temp_v, 0, false, (Coords){ 89, 20 }, FONT_KONEXY, 40, FONT_ALIGN_CENTER, (Colors){ .thresholds = inv_thresholds }, THRESHOLDS);
     Label inv_temp_l;
-    create_label(&inv_temp_l, "INV", (Coords){ 221, 50 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&inv_temp_l, "INV", (Coords){ 221, 50 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Threshold hv_temp_ranges[] = {
         { 0.0f, 51.9f, 0x00FF00, 0x000000 },
@@ -336,26 +336,26 @@ void sw_init_screen(Box *sw_screen) {
     };
 
     Value hv_temp_v;
-    create_value(&hv_temp_v, 0, false, (Coords){ 89, 20 }, KONEXY_120, 40, FONT_ALIGN_CENTER, (Colors){ .thresholds = hv_temp_thresholds }, THRESHOLDS);
+    create_value(&hv_temp_v, 0, false, (Coords){ 89, 20 }, FONT_KONEXY, 40, FONT_ALIGN_CENTER, (Colors){ .thresholds = hv_temp_thresholds }, THRESHOLDS);
     Label hv_temp_l;
-    create_label(&hv_temp_l, "HV", (Coords){ 221, 50 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&hv_temp_l, "HV", (Coords){ 221, 50 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Label cooling_l;
-    create_label(&cooling_l, "", (Coords){ 132, 45 }, KONEXY_120, 35, FONT_ALIGN_CENTER);
+    create_label(&cooling_l, "", (Coords){ 132, 45 }, FONT_KONEXY, 35, FONT_ALIGN_CENTER);
 
     Label regen_l;
-    create_label(&regen_l, "R", (Coords){ 43, 50 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&regen_l, "R", (Coords){ 43, 50 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Label slip_l;
-    create_label(&slip_l, "S", (Coords){ 43, 50 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&slip_l, "S", (Coords){ 43, 50 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Label torque_l;
-    create_label(&torque_l, "T", (Coords){ 43, 50 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&torque_l, "T", (Coords){ 43, 50 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Value lap_time_v;
-    create_value(&lap_time_v, 0, true, (Coords){ 89, 25 }, KONEXY_120, 35, FONT_ALIGN_CENTER, (Colors){ .thresholds = NULL }, 0);
+    create_value(&lap_time_v, 0, true, (Coords){ 89, 25 }, FONT_KONEXY, 35, FONT_ALIGN_CENTER, (Colors){ .thresholds = NULL }, 0);
     Label lap_time_l;
-    create_label(&lap_time_l, "LAP", (Coords){ 221, 50 }, KONEXY_120, 25, FONT_ALIGN_CENTER);
+    create_label(&lap_time_l, "LAP", (Coords){ 221, 50 }, FONT_KONEXY, 25, FONT_ALIGN_CENTER);
 
     Box tmp[] = {
         { 1, swoc_sd, (Rect){ 2, 2, 264, 88 }, 0xff000000, 0xffffffff, &shutdown_l, NULL },

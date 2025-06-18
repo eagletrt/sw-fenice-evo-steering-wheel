@@ -1,0 +1,6 @@
+#ifndef RASTER_CONFIG_H
+#define RASTER_CONFIG_H
+
+#define RASTER_BATCH_GLYPHS 1
+
+#endif
