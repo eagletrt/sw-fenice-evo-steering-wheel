@@ -164,10 +164,12 @@ int main(void) {
     sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
 
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
+    /*
     primary_ecu_set_power_maps_last_state->map_power = 1.0f;
     primary_ecu_set_power_maps_last_state->reg_state = 1;
     primary_ecu_set_power_maps_last_state->sc_state  = 1;
     primary_ecu_set_power_maps_last_state->tv_state  = 1;
+    */
 
     GET_LAST_STATE(primary, steering_wheel_version, PRIMARY, STEERING_WHEEL_VERSION);
     struct tm timeinfo;
@@ -182,12 +184,16 @@ int main(void) {
     */
 
     GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
+    /*
     primary_lv_set_pumps_speed_last_state->status      = primary_lv_set_pumps_speed_status_auto;
     primary_lv_set_pumps_speed_last_state->pumps_speed = 0.0f;
+    */
 
     GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
+    /*
     primary_lv_set_radiator_speed_last_state->status         = primary_lv_set_radiator_speed_status_auto;
     primary_lv_set_radiator_speed_last_state->radiator_speed = 0.0f;
+    */
 
     /*
     GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
