@@ -144,7 +144,7 @@ int main(void) {
     sdram_test_simple_write();
 #endif
 
-#if 0  // Green screen
+#if 0 // Green screen
   uint8_t *display_buffer = (uint8_t *)SDRAM_BASE_ADDRESS;
   for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
     display_buffer[4 * icell] = 0xFF;
@@ -154,27 +154,39 @@ int main(void) {
   }
 #endif
 
-    uint32_t active_framebuffer                      = FRAMEBUFFER1_ADDR;
-    uint32_t writable_framebuffer                    = FRAMEBUFFER2_ADDR;
-    uint32_t last_swap_framebuffer                   = HAL_GetTick();
-    static bool tson_button_pressed                  = false;
+    uint32_t active_framebuffer = FRAMEBUFFER1_ADDR;
+    uint32_t writable_framebuffer = FRAMEBUFFER2_ADDR;
+    uint32_t last_swap_framebuffer = HAL_GetTick();
+    static bool tson_button_pressed = false;
     static uint32_t tson_button_pressed_time_elapsed = 0;
 
     sw_set_canvas(&sw_screen, (uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
     sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
 
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
-    /*
-    primary_ecu_set_power_maps_last_state->map_power = 1.0f;
-    primary_ecu_set_power_maps_last_state->reg_state = 1;
-    primary_ecu_set_power_maps_last_state->sc_state  = 1;
-    primary_ecu_set_power_maps_last_state->tv_state  = 1;
-    */
+    uint32_t start_poll = HAL_GetTick();
+    while (start_poll < HAL_GetTick() + 1000 && is_pmsg_new[primary_index_from_id(PRIMARY_ECU_POWER_MAPS_FRAME_ID)])
+        ;
+    float map_power = 1.0;
+    int reg_state = 1;
+    int sc_state = 1;
+    int tv_state = 1;
+    if (is_pmsg_new[primary_index_from_id(PRIMARY_ECU_POWER_MAPS_FRAME_ID)]) {
+        GET_LAST_STATE(primary, ecu_power_maps, PRIMARY, ECU_POWER_MAPS);
+        map_power = primary_ecu_power_maps_last_state->map_power;
+        reg_state = primary_ecu_power_maps_last_state->reg_state;
+        sc_state = primary_ecu_power_maps_last_state->sc_state;
+        tv_state = primary_ecu_power_maps_last_state->tv_state;
+    }
+    primary_ecu_set_power_maps_last_state->map_power = map_power;
+    primary_ecu_set_power_maps_last_state->reg_state = reg_state;
+    primary_ecu_set_power_maps_last_state->sc_state = sc_state;
+    primary_ecu_set_power_maps_last_state->tv_state = tv_state;
 
     GET_LAST_STATE(primary, steering_wheel_version, PRIMARY, STEERING_WHEEL_VERSION);
     struct tm timeinfo;
     strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
-    primary_steering_wheel_version_last_state->canlib_build_time    = CANLIB_BUILD_TIME;
+    primary_steering_wheel_version_last_state->canlib_build_time = CANLIB_BUILD_TIME;
     primary_steering_wheel_version_last_state->component_build_time = mktime(&timeinfo);
 
     /*
@@ -184,16 +196,32 @@ int main(void) {
     */
 
     GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
-    /*
-    primary_lv_set_pumps_speed_last_state->status      = primary_lv_set_pumps_speed_status_auto;
-    primary_lv_set_pumps_speed_last_state->pumps_speed = 0.0f;
-    */
+    start_poll = HAL_GetTick();
+    while (start_poll < HAL_GetTick() + 1000 && is_pmsg_new[primary_index_from_id(PRIMARY_LV_PUMPS_SPEED_FRAME_ID)])
+        ;
+    int status = primary_lv_set_pumps_speed_status_auto;
+    float pumps_speed = 0.0;
+    if (is_pmsg_new[primary_index_from_id(PRIMARY_LV_PUMPS_SPEED_FRAME_ID)]) {
+        GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
+        status = primary_lv_pumps_speed_last_state->status;
+        pumps_speed = primary_lv_pumps_speed_last_state->pumps_speed;
+    }
+    primary_lv_set_pumps_speed_last_state->status = status;
+    primary_lv_set_pumps_speed_last_state->pumps_speed = pumps_speed;
 
     GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
-    /*
-    primary_lv_set_radiator_speed_last_state->status         = primary_lv_set_radiator_speed_status_auto;
-    primary_lv_set_radiator_speed_last_state->radiator_speed = 0.0f;
-    */
+    start_poll = HAL_GetTick();
+    while (start_poll < HAL_GetTick() + 1000 && is_pmsg_new[primary_index_from_id(PRIMARY_LV_RADIATOR_SPEED_FRAME_ID)])
+        ;
+    status = primary_lv_set_radiator_speed_status_auto;
+    float radiator_speed = 0.0;
+    if (is_pmsg_new[primary_index_from_id(PRIMARY_LV_RADIATOR_SPEED_FRAME_ID)]) {
+        GET_LAST_STATE(primary, lv_radiator_speed, PRIMARY, LV_RADIATOR_SPEED);
+        status = primary_lv_radiator_speed_last_state->status;
+        radiator_speed = primary_lv_radiator_speed_last_state->radiator_speed;
+    }
+    primary_lv_set_radiator_speed_last_state->status = status;
+    primary_lv_set_radiator_speed_last_state->radiator_speed = radiator_speed;
 
     /*
     GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
@@ -258,10 +286,10 @@ int main(void) {
             }
             dma2d_m2m(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
-            uint32_t tmp         = active_framebuffer;
-            active_framebuffer   = writable_framebuffer;
+            uint32_t tmp = active_framebuffer;
+            active_framebuffer = writable_framebuffer;
             writable_framebuffer = tmp;
-            sw_screen.oc.pixels  = (uint32_t *)writable_framebuffer;
+            sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
             HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
         }
 
@@ -279,7 +307,7 @@ int main(void) {
         if (tson_pin_state == GPIO_PIN_SET) {
             tson_button_pressed = false;
         } else if (!tson_button_pressed) {
-            tson_button_pressed              = true;
+            tson_button_pressed = true;
             tson_button_pressed_time_elapsed = get_current_time_ms();
         } else if ((get_current_time_ms() - tson_button_pressed_time_elapsed) > BUTTONS_LONG_PRESS_TIME) {
             prepare_and_send_ecu_set_status();
@@ -297,8 +325,8 @@ int main(void) {
   * @retval None
   */
 void SystemClock_Config(void) {
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
     /** Supply configuration update enable
   */
@@ -314,22 +342,22 @@ void SystemClock_Config(void) {
     /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-    RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState            = RCC_HSE_ON;
-    RCC_OscInitStruct.HSIState            = RCC_HSI_DIV1;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
     RCC_OscInitStruct.HSICalibrationValue = 64;
-    RCC_OscInitStruct.CSIState            = RCC_CSI_ON;
+    RCC_OscInitStruct.CSIState = RCC_CSI_ON;
     RCC_OscInitStruct.CSICalibrationValue = 16;
-    RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM            = 6;
-    RCC_OscInitStruct.PLL.PLLN            = 137;
-    RCC_OscInitStruct.PLL.PLLP            = 1;
-    RCC_OscInitStruct.PLL.PLLQ            = 5;
-    RCC_OscInitStruct.PLL.PLLR            = 2;
-    RCC_OscInitStruct.PLL.PLLRGE          = RCC_PLL1VCIRANGE_2;
-    RCC_OscInitStruct.PLL.PLLVCOSEL       = RCC_PLL1VCOWIDE;
-    RCC_OscInitStruct.PLL.PLLFRACN        = 4096;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 6;
+    RCC_OscInitStruct.PLL.PLLN = 137;
+    RCC_OscInitStruct.PLL.PLLP = 1;
+    RCC_OscInitStruct.PLL.PLLQ = 5;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLFRACN = 4096;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         Error_Handler();
     }
@@ -338,9 +366,9 @@ void SystemClock_Config(void) {
   */
     RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
                                   RCC_CLOCKTYPE_D1PCLK1;
-    RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.SYSCLKDivider  = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.AHBCLKDivider  = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
     RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
