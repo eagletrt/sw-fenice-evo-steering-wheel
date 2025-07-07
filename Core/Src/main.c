@@ -163,9 +163,8 @@ int main(void) {
     sw_set_canvas(&sw_screen, (uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
     sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
 
-    GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     uint32_t start_poll = HAL_GetTick();
-    while (start_poll < HAL_GetTick() + 1000 && is_pmsg_new[primary_index_from_id(PRIMARY_ECU_POWER_MAPS_FRAME_ID)])
+    while (start_poll + 1000 < HAL_GetTick() && !is_pmsg_new[primary_index_from_id(PRIMARY_ECU_POWER_MAPS_FRAME_ID)])
         ;
     float map_power = 1.0;
     int reg_state = 1;
@@ -178,6 +177,7 @@ int main(void) {
         sc_state = primary_ecu_power_maps_last_state->sc_state;
         tv_state = primary_ecu_power_maps_last_state->tv_state;
     }
+    GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     primary_ecu_set_power_maps_last_state->map_power = map_power;
     primary_ecu_set_power_maps_last_state->reg_state = reg_state;
     primary_ecu_set_power_maps_last_state->sc_state = sc_state;
@@ -195,9 +195,8 @@ int main(void) {
     primary_hv_set_fans_status_last_state->fans_speed    = 0.0f;
     */
 
-    GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
     start_poll = HAL_GetTick();
-    while (start_poll < HAL_GetTick() + 1000 && is_pmsg_new[primary_index_from_id(PRIMARY_LV_PUMPS_SPEED_FRAME_ID)])
+    while (start_poll + 1000 < HAL_GetTick() && !is_pmsg_new[primary_index_from_id(PRIMARY_LV_PUMPS_SPEED_FRAME_ID)])
         ;
     int status = primary_lv_set_pumps_speed_status_auto;
     float pumps_speed = 0.0;
@@ -206,12 +205,12 @@ int main(void) {
         status = primary_lv_pumps_speed_last_state->status;
         pumps_speed = primary_lv_pumps_speed_last_state->pumps_speed;
     }
+    GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
     primary_lv_set_pumps_speed_last_state->status = status;
     primary_lv_set_pumps_speed_last_state->pumps_speed = pumps_speed;
 
-    GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
     start_poll = HAL_GetTick();
-    while (start_poll < HAL_GetTick() + 1000 && is_pmsg_new[primary_index_from_id(PRIMARY_LV_RADIATOR_SPEED_FRAME_ID)])
+    while (start_poll + 1000 < HAL_GetTick() && !is_pmsg_new[primary_index_from_id(PRIMARY_LV_RADIATOR_SPEED_FRAME_ID)])
         ;
     status = primary_lv_set_radiator_speed_status_auto;
     float radiator_speed = 0.0;
@@ -220,6 +219,7 @@ int main(void) {
         status = primary_lv_radiator_speed_last_state->status;
         radiator_speed = primary_lv_radiator_speed_last_state->radiator_speed;
     }
+    GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
     primary_lv_set_radiator_speed_last_state->status = status;
     primary_lv_set_radiator_speed_last_state->radiator_speed = radiator_speed;
 
