@@ -198,7 +198,7 @@ int main(void) {
     start_poll = HAL_GetTick();
     while (start_poll + 1000 < HAL_GetTick() && !is_pmsg_new[primary_index_from_id(PRIMARY_LV_PUMPS_SPEED_FRAME_ID)])
         ;
-    int status = primary_lv_set_pumps_speed_status_auto;
+    int status = primary_lv_set_pumps_speed_status_manual;
     float pumps_speed = 0.0;
     if (is_pmsg_new[primary_index_from_id(PRIMARY_LV_PUMPS_SPEED_FRAME_ID)]) {
         GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
@@ -212,7 +212,7 @@ int main(void) {
     start_poll = HAL_GetTick();
     while (start_poll + 1000 < HAL_GetTick() && !is_pmsg_new[primary_index_from_id(PRIMARY_LV_RADIATOR_SPEED_FRAME_ID)])
         ;
-    status = primary_lv_set_radiator_speed_status_auto;
+    status = primary_lv_set_radiator_speed_status_manual;
     float radiator_speed = 0.0;
     if (is_pmsg_new[primary_index_from_id(PRIMARY_LV_RADIATOR_SPEED_FRAME_ID)]) {
         GET_LAST_STATE(primary, lv_radiator_speed, PRIMARY, LV_RADIATOR_SPEED);
