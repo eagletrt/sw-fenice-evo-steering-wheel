@@ -31,4 +31,4 @@ void can_over_serial_routine(void) {
     }
 }
 
-#endif  // CAN_OVER_SERIAL_ENABLED
+#endif // CAN_OVER_SERIAL_ENABLED

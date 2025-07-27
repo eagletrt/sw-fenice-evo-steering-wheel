@@ -14,14 +14,14 @@ int right_child_index(int i) {
 
 void swap(int A[], int a, int b) {
     int tmp = A[a];
-    A[a]    = A[b];
-    A[b]    = tmp;
+    A[a] = A[b];
+    A[b] = tmp;
 }
 
 void max_heap_restore(int heaptree[], int i, int dim, int cmp(int index)) {
     int max = i;
-    int l   = left_child_index(i);
-    int r   = right_child_index(i);
+    int l = left_child_index(i);
+    int r = right_child_index(i);
     if (l <= dim && cmp(heaptree[l]) > cmp(heaptree[max])) {
         max = l;
     }

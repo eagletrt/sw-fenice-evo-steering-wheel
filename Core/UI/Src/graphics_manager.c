@@ -12,7 +12,7 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
     for (uint16_t iindex = 0; iindex < primary_MESSAGE_COUNT; iindex++) {
         if (is_pmsg_new[iindex]) {
             is_pmsg_new[iindex] = false;
-            can_id_t id         = primary_id_from_index(iindex);
+            can_id_t id = primary_id_from_index(iindex);
             switch (id) {
                 case PRIMARY_ECU_STATUS_FRAME_ID: {
                     ecu_status_update(scr, is_pmsg_valid[iindex]);
@@ -171,7 +171,7 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
     for (uint16_t iindex = 0; iindex < inverters_MESSAGE_COUNT; iindex++) {
         if (is_imsg_new[iindex]) {
             is_imsg_new[iindex] = false;
-            can_id_t id         = inverters_id_from_index(iindex);
+            can_id_t id = inverters_id_from_index(iindex);
             switch (id) {
                 case INVERTERS_INV_L_RCV_FRAME_ID:
                     inv_l_rcv_update(scr, is_imsg_valid[iindex]);
@@ -188,7 +188,7 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
     for (uint16_t iindex = 0; iindex < secondary_MESSAGE_COUNT; iindex++) {
         if (is_smsg_new[iindex]) {
             is_smsg_new[iindex] = false;
-            can_id_t id         = secondary_id_from_index(iindex);
+            can_id_t id = secondary_id_from_index(iindex);
             switch (id) {
                 case SECONDARY_FRONT_ANGULAR_VELOCITY_FRAME_ID: {
                     angular_velocity_update(scr, is_smsg_valid[iindex]);
@@ -259,7 +259,7 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
                     break;
                 }
                 case SECONDARY_HV_SOC_ESTIMATION_STATE_FRAME_ID: {
-                    hv_soc_estimation_update(scr, is_smsg_valid[iindex]);
+                    // hv_soc_estimation_update(scr, is_smsg_valid[iindex]);
                     break;
                 }
                 case SECONDARY_LV_SOC_ESTIMATION_STATE_FRAME_ID: {
@@ -277,195 +277,196 @@ void sw_update_graphics_from_can_messages(UI_t *scr) {
 void sw_init_screen(UI_t *sw_screen) {
     // TODO SIMULATOR: initialize directly the fields of sw_screen without the temporary variable
     UI_t tmp = (UI_t){
-        .oc         = {0},
+        .oc = { 0 },
         .components = {
-            (UI_elem_t){// SHUTDOWN STATUS
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){2, 2, 264, 88},
-                        .swoc_elem_margins     = (Olivec_Margins){132, 30},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// LAP TIME
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.5,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){268, 2, 266, 88},
-                        .swoc_elem_margins     = (Olivec_Margins){132, 19},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// PTT
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "MUTE",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.5,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){536, 2, 264, 88},
-                        .swoc_elem_margins     = (Olivec_Margins){132, 19},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// MOTOR TEMP
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 1.0,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){2, 92, 178, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){88, 20},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// MOTOR TEMP LABEL
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "MT",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){180, 92, 86, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){43, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// SOC HV
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 1.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){268, 92, 266, 194},
-                        .swoc_elem_margins     = (Olivec_Margins){133, 60},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// SOC LV
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 1.0,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){536, 92, 178, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){89, 20},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// SOC LV LABEL
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "LV",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){714, 92, 86, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){43, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// INVERTER TEMP
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 1.0,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){2, 222, 178, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){89, 20},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// INVERTER TEMP LABEL
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "INV",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){180, 222, 86, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){43, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// SOC HV LABEL
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "HV",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.5,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){268, 286, 266, 64},
-                        .swoc_elem_margins     = (Olivec_Margins){133, 10},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// HV TEMP
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 1.0,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){536, 222, 178, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){89, 20},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// HV TEMP LABEL
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "HV",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){714, 222, 86, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){43, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// PT COOLING
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 1.0,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){2, 352, 178, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){89, 20},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// PT COOLING LABEL
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "PT",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){180, 352, 86, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){43, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// REGEN STATUS
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){268, 352, 87, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){43, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// SLIP STATUS
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){357, 352, 88, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){44, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// TORQUE STATUS
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){447, 352, 87, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){43, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// HV COOLING
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.6,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){536, 352, 178, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){89, 20},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-            (UI_elem_t){// HV COOLING LABEL
-                        .swoc_elem_was_updated = true,
-                        .swoc_elem_label       = "LAP",
-                        .swoc_elem_lb_color    = 0xFFFFFFFF,
-                        .swoc_elem_bg_color    = 0xFF000000,
-                        .swoc_elem_font_size   = 0.4,
-                        .swoc_elem_boundaries  = (Olivec_Boundaries){714, 352, 86, 128},
-                        .swoc_elem_margins     = (Olivec_Margins){43, 50},
-                        .swoc_elem_align       = MF_ALIGN_CENTER},
-        }};
+            (UI_elem_t){ // SHUTDOWN STATUS
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 2, 2, 264, 88 },
+                         .swoc_elem_margins = (Olivec_Margins){ 132, 30 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // LAP TIME
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.5,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 268, 2, 266, 88 },
+                         .swoc_elem_margins = (Olivec_Margins){ 132, 19 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // PTT
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "MUTE",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.5,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 536, 2, 264, 88 },
+                         .swoc_elem_margins = (Olivec_Margins){ 132, 19 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // MOTOR TEMP
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 1.0,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 2, 92, 178, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 88, 20 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // MOTOR TEMP LABEL
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "MT",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 180, 92, 86, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 43, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // SOC HV
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 1.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 268, 92, 266, 194 },
+                         .swoc_elem_margins = (Olivec_Margins){ 133, 60 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // SOC LV
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 1.0,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 536, 92, 178, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 89, 20 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // SOC LV LABEL
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "LV",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 714, 92, 86, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 43, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // INVERTER TEMP
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 1.0,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 2, 222, 178, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 89, 20 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // INVERTER TEMP LABEL
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "INV",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 180, 222, 86, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 43, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // SOC HV LABEL
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "kmh",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.5,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 268, 286, 266, 64 },
+                         .swoc_elem_margins = (Olivec_Margins){ 133, 10 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // HV TEMP
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 1.0,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 536, 222, 178, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 89, 20 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // HV TEMP LABEL
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "HV",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 714, 222, 86, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 43, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // PT COOLING
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 1.0,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 2, 352, 178, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 89, 20 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // PT COOLING LABEL
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "PT",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 180, 352, 86, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 43, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // REGEN STATUS
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 268, 352, 87, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 43, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // SLIP STATUS
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 357, 352, 88, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 44, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // TORQUE STATUS
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 447, 352, 87, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 43, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // HV COOLING
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.6,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 536, 352, 178, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 89, 20 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+            (UI_elem_t){ // HV COOLING LABEL
+                         .swoc_elem_was_updated = true,
+                         .swoc_elem_label = "LAP",
+                         .swoc_elem_lb_color = 0xFFFFFFFF,
+                         .swoc_elem_bg_color = 0xFF000000,
+                         .swoc_elem_font_size = 0.4,
+                         .swoc_elem_boundaries = (Olivec_Boundaries){ 714, 352, 86, 128 },
+                         .swoc_elem_margins = (Olivec_Margins){ 43, 50 },
+                         .swoc_elem_align = MF_ALIGN_CENTER },
+        }
+    };
     memcpy(sw_screen, &tmp, sizeof(UI_t));
 }
 
 void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, size_t stride) {
     scr->oc = olivec_canvas(pixels, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-    oc      = &scr->oc;
+    oc = &scr->oc;
 }
 
 void sw_update_screen(float dt, UI_t *scr) {

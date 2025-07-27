@@ -35,15 +35,15 @@ void MX_I2C4_Init(void) {
     /* USER CODE BEGIN I2C4_Init 1 */
 
     /* USER CODE END I2C4_Init 1 */
-    hi2c4.Instance              = I2C4;
-    hi2c4.Init.Timing           = 0x10707DBC;
-    hi2c4.Init.OwnAddress1      = 0;
-    hi2c4.Init.AddressingMode   = I2C_ADDRESSINGMODE_7BIT;
-    hi2c4.Init.DualAddressMode  = I2C_DUALADDRESS_DISABLE;
-    hi2c4.Init.OwnAddress2      = 0;
+    hi2c4.Instance = I2C4;
+    hi2c4.Init.Timing = 0x10707DBC;
+    hi2c4.Init.OwnAddress1 = 0;
+    hi2c4.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+    hi2c4.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+    hi2c4.Init.OwnAddress2 = 0;
     hi2c4.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-    hi2c4.Init.GeneralCallMode  = I2C_GENERALCALL_DISABLE;
-    hi2c4.Init.NoStretchMode    = I2C_NOSTRETCH_DISABLE;
+    hi2c4.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+    hi2c4.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
     if (HAL_I2C_Init(&hi2c4) != HAL_OK) {
         Error_Handler();
     }
@@ -65,8 +65,8 @@ void MX_I2C4_Init(void) {
 }
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
-    GPIO_InitTypeDef GPIO_InitStruct             = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
     if (i2cHandle->Instance == I2C4) {
         /* USER CODE BEGIN I2C4_MspInit 0 */
 
@@ -75,7 +75,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
         /** Initializes the peripherals clock
   */
         PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
-        PeriphClkInitStruct.I2c4ClockSelection   = RCC_I2C4CLKSOURCE_HSI;
+        PeriphClkInitStruct.I2c4ClockSelection = RCC_I2C4CLKSOURCE_HSI;
         if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
             Error_Handler();
         }
@@ -85,10 +85,10 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
     PD12     ------> I2C4_SCL
     PD13     ------> I2C4_SDA
     */
-        GPIO_InitStruct.Pin       = GPIO_PIN_12 | GPIO_PIN_13;
-        GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
-        GPIO_InitStruct.Pull      = GPIO_NOPULL;
-        GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_13;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF4_I2C4;
         HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 

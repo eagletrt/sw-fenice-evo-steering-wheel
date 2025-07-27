@@ -96,9 +96,9 @@ int32_t MicronSteer_Init(SDRAM_HandleTypeDef *Ctx, MICRON_STEER_Context_t *pRegM
  * @retval error status
  */
 int32_t MicronSteer_ClockEnable(SDRAM_HandleTypeDef *Ctx, uint32_t Interface) {
-    Command.CommandMode            = MICRON_STEER_CLK_ENABLE_CMD;
-    Command.CommandTarget          = Interface;
-    Command.AutoRefreshNumber      = 1;
+    Command.CommandMode = MICRON_STEER_CLK_ENABLE_CMD;
+    Command.CommandTarget = Interface;
+    Command.AutoRefreshNumber = 1;
     Command.ModeRegisterDefinition = 0;
 
     /* Send the command */
@@ -117,9 +117,9 @@ int32_t MicronSteer_ClockEnable(SDRAM_HandleTypeDef *Ctx, uint32_t Interface) {
  * @retval error status
  */
 int32_t MicronSteer_Precharge(SDRAM_HandleTypeDef *Ctx, uint32_t Interface) {
-    Command.CommandMode            = MICRON_STEER_PALL_CMD;
-    Command.CommandTarget          = Interface;
-    Command.AutoRefreshNumber      = 1;
+    Command.CommandMode = MICRON_STEER_PALL_CMD;
+    Command.CommandTarget = Interface;
+    Command.AutoRefreshNumber = 1;
     Command.ModeRegisterDefinition = 0;
 
     /* Send the command */
@@ -142,9 +142,9 @@ int32_t MicronSteer_ModeRegConfig(SDRAM_HandleTypeDef *Ctx, MICRON_STEER_Context
     /* Program the external memory mode register */
     tmpmrd = (uint32_t)pRegMode->BurstLength | pRegMode->BurstType | pRegMode->CASLatency | pRegMode->OperationMode | pRegMode->WriteBurstMode;
 
-    Command.CommandMode            = MICRON_STEER_LOAD_MODE_CMD;
-    Command.CommandTarget          = pRegMode->TargetBank;
-    Command.AutoRefreshNumber      = 1;
+    Command.CommandMode = MICRON_STEER_LOAD_MODE_CMD;
+    Command.CommandTarget = pRegMode->TargetBank;
+    Command.AutoRefreshNumber = 1;
     Command.ModeRegisterDefinition = tmpmrd;
 
     /* Send the command */
@@ -180,9 +180,9 @@ int32_t MicronSteer_TimingConfig(SDRAM_HandleTypeDef *Ctx, FMC_SDRAM_TimingTypeD
  * @retval error status
  */
 int32_t MicronSteer_RefreshMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface, uint32_t RefreshMode) {
-    Command.CommandMode            = RefreshMode;
-    Command.CommandTarget          = Interface;
-    Command.AutoRefreshNumber      = 8;
+    Command.CommandMode = RefreshMode;
+    Command.CommandTarget = Interface;
+    Command.AutoRefreshNumber = 8;
     Command.ModeRegisterDefinition = 0;
 
     /* Send the command */
@@ -216,9 +216,9 @@ int32_t MicronSteer_RefreshRate(SDRAM_HandleTypeDef *Ctx, uint32_t RefreshCount)
  * @retval error status
  */
 int32_t MicronSteer_EnterPowerMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface) {
-    Command.CommandMode            = MICRON_STEER_POWERDOWN_MODE_CMD;
-    Command.CommandTarget          = Interface;
-    Command.AutoRefreshNumber      = 1;
+    Command.CommandMode = MICRON_STEER_POWERDOWN_MODE_CMD;
+    Command.CommandTarget = Interface;
+    Command.AutoRefreshNumber = 1;
     Command.ModeRegisterDefinition = 0;
 
     /* Send the command */
@@ -237,9 +237,9 @@ int32_t MicronSteer_EnterPowerMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface)
  * @retval error status
  */
 int32_t MicronSteer_ExitPowerMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface) {
-    Command.CommandMode            = MICRON_STEER_NORMAL_MODE_CMD;
-    Command.CommandTarget          = Interface;
-    Command.AutoRefreshNumber      = 1;
+    Command.CommandMode = MICRON_STEER_NORMAL_MODE_CMD;
+    Command.CommandTarget = Interface;
+    Command.AutoRefreshNumber = 1;
     Command.ModeRegisterDefinition = 0;
 
     /* Send the command */

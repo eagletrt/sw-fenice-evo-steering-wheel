@@ -43,15 +43,15 @@ extern const struct mf_rlefont_s mf_rlefont_KonexyFont72;
 #define OLIVEC_SWAP(T, a, b) \
     do {                     \
         T t = a;             \
-        a   = b;             \
-        b   = t;             \
+        a = b;               \
+        b = t;               \
     } while (0)
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
-#define OLIVEC_ABS(T, x)  (OLIVEC_SIGN(T, x) * (x))
+#define OLIVEC_ABS(T, x) (OLIVEC_SIGN(T, x) * (x))
 
-#define OLIVEC_CANVAS_NULL     ((Olivec_Canvas){0})
+#define OLIVEC_CANVAS_NULL ((Olivec_Canvas){ 0 })
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y) * (oc).stride + (x)]
-#define OLIVEC_PIXEL_ADDRESS(oc, x, y) (uint32_t) (&(oc).pixels[(y) * (oc).stride + (x)])
+#define OLIVEC_PIXEL_ADDRESS(oc, x, y) (uint32_t)(&(oc).pixels[(y) * (oc).stride + (x)])
 
 // GLobal canvas to define McuFont callback function
 Olivec_Canvas *oc;
@@ -140,14 +140,14 @@ typedef struct {
 // }
 OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h, size_t canvas_width, size_t canvas_height, Olivec_Normalized_Rect *nr);
 
-#endif  // OLIVE_C_
+#endif // OLIVE_C_
 
 #ifdef OLIVEC_IMPLEMENTATION
 
 static void pixel_callback(int16_t x, int16_t y, uint8_t count, uint8_t alpha, void *state) {
     struct font_color_s *rstate = state;
-    bool is_1                   = rstate->font->x_scale == 1.0;
-    int max_count               = count;
+    bool is_1 = rstate->font->x_scale == 1.0;
+    int max_count = count;
     while (count--) {
         if (count <= 5 || count >= max_count - 5) {
             alpha = 0x23;
@@ -171,7 +171,7 @@ static uint8_t char_callback(int16_t x0, int16_t y0, mf_char character, void *st
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride) {
     Olivec_Canvas oc = {
         .pixels = pixels,
-        .width  = width,
+        .width = width,
         .height = height,
         .stride = stride,
     };
@@ -225,21 +225,21 @@ OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h, size_t canvas_w
 }
 
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h) {
-    Olivec_Normalized_Rect nr = {0};
+    Olivec_Normalized_Rect nr = { 0 };
     if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &nr))
         return OLIVEC_CANVAS_NULL;
     oc.pixels = &OLIVEC_PIXEL(oc, nr.x1, nr.y1);
-    oc.width  = nr.x2 - nr.x1 + 1;
+    oc.width = nr.x2 - nr.x1 + 1;
     oc.height = nr.y2 - nr.y1 + 1;
     return oc;
 }
 
 // TODO: custom pixel formats
 // Maybe we can store pixel format info in Olivec_Canvas
-#define OLIVEC_RED(color)       (((color) & 0x000000FF) >> (8 * 0))
-#define OLIVEC_GREEN(color)     (((color) & 0x0000FF00) >> (8 * 1))
-#define OLIVEC_BLUE(color)      (((color) & 0x00FF0000) >> (8 * 2))
-#define OLIVEC_ALPHA(color)     (((color) & 0xFF000000) >> (8 * 3))
+#define OLIVEC_RED(color) (((color) & 0x000000FF) >> (8 * 0))
+#define OLIVEC_GREEN(color) (((color) & 0x0000FF00) >> (8 * 1))
+#define OLIVEC_BLUE(color) (((color) & 0x00FF0000) >> (8 * 2))
+#define OLIVEC_ALPHA(color) (((color) & 0xFF000000) >> (8 * 3))
 #define OLIVEC_RGBA(r, g, b, a) ((((r) & 0xFF) << (8 * 0)) | (((g) & 0xFF) << (8 * 1)) | (((b) & 0xFF) << (8 * 2)) | (((a) & 0xFF) << (8 * 3)))
 
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2) {
@@ -275,7 +275,7 @@ OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color) {
 }
 
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color) {
-    Olivec_Normalized_Rect nr = {0};
+    Olivec_Normalized_Rect nr = { 0 };
     if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &nr))
         return;
     for (int x = nr.x1; x <= nr.x2; ++x) {
@@ -296,7 +296,7 @@ OLIVECDEF void olivec_dma2d_rect(Olivec_Canvas oc, int x, int y, int w, int h, u
 
 OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t t, uint32_t color) {
     if (t == 0)
-        return;  // Nothing to render
+        return; // Nothing to render
 
     // Convert the rectangle to 2-points representation
     int x1 = x;
@@ -308,16 +308,16 @@ OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t
     if (y1 > y2)
         OLIVEC_SWAP(int, y1, y2);
 
-    olivec_rect(oc, x1 - t / 2, y1 - t / 2, (x2 - x1 + 1) + t / 2 * 2, t, color);   // Top
-    olivec_rect(oc, x1 - t / 2, y1 - t / 2, t, (y2 - y1 + 1) + t / 2 * 2, color);   // Left
-    olivec_rect(oc, x1 - t / 2, y2 + t / 2, (x2 - x1 + 1) + t / 2 * 2, -t, color);  // Bottom
-    olivec_rect(oc, x2 + t / 2, y1 - t / 2, -t, (y2 - y1 + 1) + t / 2 * 2, color);  // Right
+    olivec_rect(oc, x1 - t / 2, y1 - t / 2, (x2 - x1 + 1) + t / 2 * 2, t, color);  // Top
+    olivec_rect(oc, x1 - t / 2, y1 - t / 2, t, (y2 - y1 + 1) + t / 2 * 2, color);  // Left
+    olivec_rect(oc, x1 - t / 2, y2 + t / 2, (x2 - x1 + 1) + t / 2 * 2, -t, color); // Bottom
+    olivec_rect(oc, x2 + t / 2, y1 - t / 2, -t, (y2 - y1 + 1) + t / 2 * 2, color); // Right
 }
 
 OLIVECDEF void olivec_ellipse(Olivec_Canvas oc, int cx, int cy, int rx, int ry, uint32_t color) {
-    Olivec_Normalized_Rect nr = {0};
-    int rx1                   = rx + OLIVEC_SIGN(int, rx);
-    int ry1                   = ry + OLIVEC_SIGN(int, ry);
+    Olivec_Normalized_Rect nr = { 0 };
+    int rx1 = rx + OLIVEC_SIGN(int, rx);
+    int ry1 = ry + OLIVEC_SIGN(int, ry);
     if (!olivec_normalize_rect(cx - rx1, cy - ry1, 2 * rx1, 2 * ry1, oc.width, oc.height, &nr))
         return;
 
@@ -335,8 +335,8 @@ OLIVECDEF void olivec_ellipse(Olivec_Canvas oc, int cx, int cy, int rx, int ry, 
 }
 
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color) {
-    Olivec_Normalized_Rect nr = {0};
-    int r1                    = r + OLIVEC_SIGN(int, r);
+    Olivec_Normalized_Rect nr = { 0 };
+    int r1 = r + OLIVEC_SIGN(int, r);
     if (!olivec_normalize_rect(cx - r1, cy - r1, 2 * r1, 2 * r1, oc.width, oc.height, &nr))
         return;
 
@@ -348,13 +348,13 @@ OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t c
                     // TODO: switch to 64 bits to make the overflow less likely
                     // Also research the probability of overflow
                     int res1 = (OLIVEC_AA_RES + 1);
-                    int dx   = (x * res1 * 2 + 2 + sox * 2 - res1 * cx * 2 - res1);
-                    int dy   = (y * res1 * 2 + 2 + soy * 2 - res1 * cy * 2 - res1);
+                    int dx = (x * res1 * 2 + 2 + sox * 2 - res1 * cx * 2 - res1);
+                    int dy = (y * res1 * 2 + 2 + soy * 2 - res1 * cy * 2 - res1);
                     if (dx * dx + dy * dy <= res1 * res1 * r * r * 2 * 2)
                         count += 1;
                 }
             }
-            uint32_t alpha         = ((color & 0xFF000000) >> (3 * 8)) * count / OLIVEC_AA_RES / OLIVEC_AA_RES;
+            uint32_t alpha = ((color & 0xFF000000) >> (3 * 8)) * count / OLIVEC_AA_RES / OLIVEC_AA_RES;
             uint32_t updated_color = (color & 0x00FFFFFF) | (alpha << (3 * 8));
             olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), updated_color);
         }
@@ -420,7 +420,7 @@ OLIVECDEF uint32_t mix_colors2(uint32_t c1, uint32_t c2, int u1, int det) {
     int64_t a2 = OLIVEC_ALPHA(c2);
 
     if (det != 0) {
-        int u2     = det - u1;
+        int u2 = det - u1;
         int64_t r4 = (r1 * u2 + r2 * u1) / det;
         int64_t g4 = (g1 * u2 + g2 * u1) / det;
         int64_t b4 = (b1 * u2 + b2 * u1) / det;
@@ -450,7 +450,7 @@ OLIVECDEF uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int u1, in
     int64_t a3 = OLIVEC_ALPHA(c3);
 
     if (det != 0) {
-        int u3     = det - u1 - u2;
+        int u3 = det - u1 - u2;
         int64_t r4 = (r1 * u1 + r2 * u2 + r3 * u3) / det;
         int64_t g4 = (g1 * u1 + g2 * u2 + g3 * u3) / det;
         int64_t b4 = (b1 * u1 + b2 * u2 + b3 * u3) / det;
@@ -464,9 +464,9 @@ OLIVECDEF uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int u1, in
 
 // NOTE: we imply u3 = det - u1 - u2
 OLIVECDEF bool olivec_barycentric(int x1, int y1, int x2, int y2, int x3, int y3, int xp, int yp, int *u1, int *u2, int *det) {
-    *det   = ((x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3));
-    *u1    = ((y2 - y3) * (xp - x3) + (x3 - x2) * (yp - y3));
-    *u2    = ((y3 - y1) * (xp - x3) + (x1 - x3) * (yp - y3));
+    *det = ((x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3));
+    *u1 = ((y2 - y3) * (xp - x3) + (x3 - x2) * (yp - y3));
+    *u2 = ((y3 - y1) * (xp - x3) + (x1 - x3) * (yp - y3));
     int u3 = *det - *u1 - *u2;
     return (
         (OLIVEC_SIGN(int, *u1) == OLIVEC_SIGN(int, *det) || *u1 == 0) && (OLIVEC_SIGN(int, *u2) == OLIVEC_SIGN(int, *det) || *u2 == 0) &&
@@ -540,7 +540,7 @@ OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y
             for (int x = lx; x <= hx; ++x) {
                 int u1, u2, det;
                 if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
-                    float z                = z1 * u1 / det + z2 * u2 / det + z3 * (det - u1 - u2) / det;
+                    float z = z1 * u1 / det + z2 * u2 / det + z3 * (det - u1 - u2) / det;
                     OLIVEC_PIXEL(oc, x, y) = *(uint32_t *)&z;
                 }
             }
@@ -572,8 +572,8 @@ OLIVECDEF void olivec_triangle3uv(
             for (int x = lx; x <= hx; ++x) {
                 int u1, u2, det;
                 if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
-                    int u3   = det - u1 - u2;
-                    float z  = z1 * u1 / det + z2 * u2 / det + z3 * (det - u1 - u2) / det;
+                    int u3 = det - u1 - u2;
+                    float z = z1 * u1 / det + z2 * u2 / det + z3 * (det - u1 - u2) / det;
                     float tx = tx1 * u1 / det + tx2 * u2 / det + tx3 * u3 / det;
                     float ty = ty1 * u1 / det + ty2 * u2 / det + ty3 * u3 / det;
 
@@ -619,8 +619,8 @@ OLIVECDEF void olivec_triangle3uv_bilinear(
             for (int x = lx; x <= hx; ++x) {
                 int u1, u2, det;
                 if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
-                    int u3   = det - u1 - u2;
-                    float z  = z1 * u1 / det + z2 * u2 / det + z3 * (det - u1 - u2) / det;
+                    int u3 = det - u1 - u2;
+                    float z = z1 * u1 / det + z2 * u2 / det + z3 * (det - u1 - u2) / det;
                     float tx = tx1 * u1 / det + tx2 * u2 / det + tx3 * u3 / det;
                     float ty = ty1 * u1 / det + ty2 * u2 / det + ty3 * u3 / det;
 
@@ -636,7 +636,7 @@ OLIVECDEF void olivec_triangle3uv_bilinear(
                     if (texture_y >= (float)texture.height)
                         texture_y = texture.height - 1;
 
-                    int precision          = 100;
+                    int precision = 100;
                     OLIVEC_PIXEL(oc, x, y) = olivec_pixel_bilinear(texture, texture_x * precision, texture_y * precision, precision, precision);
                 }
             }
@@ -662,9 +662,9 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
 // Function to get the pixel at (x, y)
 int get_pixel(const uint8_t *bitmap, int width, int x, int y) {
     // int bits_per_row = (width + 7) / 8 * 8;  // Rounds up to nearest multiple of 8 bits
-    int bit_index    = y * width + x;        // Bit index in the entire bitmap
-    int byte_index   = bit_index / 8;        // Which byte contains the bit
-    int bit_position = 7 - (bit_index % 8);  // Position of the bit within that byte
+    int bit_index = y * width + x;          // Bit index in the entire bitmap
+    int byte_index = bit_index / 8;         // Which byte contains the bit
+    int bit_position = 7 - (bit_index % 8); // Position of the bit within that byte
 
     // Extract the pixel by shifting and masking
     return (bitmap[byte_index] >> bit_position) & 1;
@@ -692,7 +692,7 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, u
     struct mf_scaledfont_s scaled_font;
     mf_scale_font(&scaled_font, &mf_rlefont_KonexyFont72.font, size, size);
     struct font_color_s mf_data = (struct font_color_s){
-        .font  = &scaled_font,
+        .font = &scaled_font,
         .color = color,
     };
 
@@ -705,7 +705,7 @@ OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h,
     if (sprite.height == 0)
         return;
 
-    Olivec_Normalized_Rect nr = {0};
+    Olivec_Normalized_Rect nr = { 0 };
     if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &nr))
         return;
 
@@ -732,7 +732,7 @@ OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, 
 
     // TODO: consider introducing flip parameter instead of relying on negative width and height
     // Similar to how SDL_RenderCopyEx does that
-    Olivec_Normalized_Rect nr = {0};
+    Olivec_Normalized_Rect nr = { 0 };
     if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &nr))
         return;
 
@@ -744,8 +744,8 @@ OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, 
         ya = nr.oy2;
     for (int y = nr.y1; y <= nr.y2; ++y) {
         for (int x = nr.x1; x <= nr.x2; ++x) {
-            size_t nx              = (x - xa) * ((int)sprite.width) / w;
-            size_t ny              = (y - ya) * ((int)sprite.height) / h;
+            size_t nx = (x - xa) * ((int)sprite.width) / w;
+            size_t ny = (y - ya) * ((int)sprite.height) / h;
             OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(sprite, nx, ny);
         }
     }
@@ -801,20 +801,20 @@ OLIVECDEF void olivec_sprite_copy_bilinear(Olivec_Canvas oc, int x, int y, int w
     if (h <= 0)
         return;
 
-    Olivec_Normalized_Rect nr = {0};
+    Olivec_Normalized_Rect nr = { 0 };
     if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &nr))
         return;
 
     for (int y = nr.y1; y <= nr.y2; ++y) {
         for (int x = nr.x1; x <= nr.x2; ++x) {
-            size_t nx              = (x - nr.ox1) * sprite.width;
-            size_t ny              = (y - nr.oy1) * sprite.height;
+            size_t nx = (x - nr.ox1) * sprite.width;
+            size_t ny = (y - nr.oy1) * sprite.height;
             OLIVEC_PIXEL(oc, x, y) = olivec_pixel_bilinear(sprite, nx, ny, w, h);
         }
     }
 }
 
-#endif  // OLIVEC_IMPLEMENTATION
+#endif // OLIVEC_IMPLEMENTATION
 
 // TODO: Benchmarking
 // TODO: SIMD implementations
