@@ -20,7 +20,7 @@ bool is_pmsg_new[primary_MESSAGE_COUNT];
 bool is_smsg_new[secondary_MESSAGE_COUNT];
 bool is_imsg_new[inverters_MESSAGE_COUNT];
 
-bool ptt_button_pressed         = false;
+bool ptt_button_pressed = false;
 ptt_status_t current_ptt_status = ptt_status_OFF;
 
 void set_ptt_button_pressed(bool val) {
@@ -43,9 +43,10 @@ static char shutdown_labels[SHUTDOWN_COMPONENT_SIZE][21] = {
     "BSPD",
     "INVC MOT",
     "TSMS",
-    "SD END"};
+    "SD END"
+};
 
-static shutdown_circuit_component_state_t shutdown_status_lb_array[SHUTDOWN_COMPONENT_SIZE] = {SC_UNKNOWN};
+static shutdown_circuit_component_state_t shutdown_status_lb_array[SHUTDOWN_COMPONENT_SIZE] = { SC_UNKNOWN };
 
 /* static const char *debug_signal_error_labels[] = {
     "cell low voltage",
@@ -83,7 +84,7 @@ shutdown_circuit_indexes_t last_shutdown_element_unknown(void) {
 
 void update_shutdown_circuit_component(UI_t *screen, shutdown_circuit_indexes_t idx, bool is_close) {
     screen->components[swoc_sd].swoc_elem_was_updated = true;
-    shutdown_status_lb_array[idx]                     = is_close ? SC_CLOSE : SC_OPEN;
+    shutdown_status_lb_array[idx] = is_close ? SC_CLOSE : SC_OPEN;
     shutdown_circuit_indexes_t last_opend_index;
     if ((last_opend_index = last_shutdown_element_unknown()) != shutdown_circuit_no_element_index) {
         // devices are missing
@@ -103,7 +104,7 @@ void update_shutdown_circuit_component(UI_t *screen, shutdown_circuit_indexes_t 
         }
         screen->components[swoc_sd].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
         screen->components[swoc_sd].swoc_elem_bg_color = OLIVEC_COLOR_RED;
-        global_shutdown_status                         = SC_OPEN;
+        global_shutdown_status = SC_OPEN;
         return;
     }
     if (global_shutdown_status != SC_CLOSE) {
@@ -111,9 +112,9 @@ void update_shutdown_circuit_component(UI_t *screen, shutdown_circuit_indexes_t 
     }
     strcpy(screen->components[swoc_sd].swoc_elem_label, "OK");
     screen->components[swoc_sd].swoc_elem_font_size = 0.5;
-    screen->components[swoc_sd].swoc_elem_lb_color  = OLIVEC_COLOR_BLACK;
-    screen->components[swoc_sd].swoc_elem_bg_color  = OLIVEC_COLOR_GREEN;
-    global_shutdown_status                          = SC_CLOSE;
+    screen->components[swoc_sd].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
+    screen->components[swoc_sd].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;
+    global_shutdown_status = SC_CLOSE;
 }
 
 void ecu_status_update(UI_t *screen, bool valid) {
@@ -173,8 +174,8 @@ void ecu_power_maps_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(primary, ecu_power_maps, PRIMARY, ECU_POWER_MAPS);
     /* GET_LAST_STATE(primary, ecu_control_status, PRIMARY, ECU_CONTROL_STATUS); */
     screen->components[swoc_torque].swoc_elem_was_updated = 1;
-    screen->components[swoc_regen].swoc_elem_was_updated  = 1;
-    screen->components[swoc_slip].swoc_elem_was_updated   = 1;
+    screen->components[swoc_regen].swoc_elem_was_updated = 1;
+    screen->components[swoc_slip].swoc_elem_was_updated = 1;
     snprintf(screen->components[swoc_torque].swoc_elem_label, SWOC_STRING_LEN, "T");
     snprintf(screen->components[swoc_regen].swoc_elem_label, SWOC_STRING_LEN, "R");
     snprintf(screen->components[swoc_slip].swoc_elem_label, SWOC_STRING_LEN, "S");
@@ -206,6 +207,15 @@ void angular_velocity_update(UI_t *screen, bool valid) {
 }
 
 void vehicle_speed_update(UI_t *screen, bool valid) {
+    GET_LAST_STATE(secondary, vehicle_speed, SECONDARY, VEHICLE_SPEED);
+    float kmh = secondary_vehicle_speed_last_state->u * 3.6;
+    snprintf(screen->components[swoc_soc_hv].swoc_elem_label, SWOC_STRING_LEN, "%.0f", kmh);
+    screen->components[swoc_soc_hv].swoc_elem_was_updated = true;
+
+    screen->components[swoc_soc_hv].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;
+    screen->components[swoc_soc_hv].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
+    screen->components[swoc_soc_hv_name].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;
+    screen->components[swoc_soc_hv_name].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
 }
 
 void hv_feedback_misc_voltage_update(UI_t *screen, bool valid) {
@@ -233,18 +243,18 @@ void hv_soc_estimation_update(UI_t *screen, bool valid) {
     screen->components[swoc_soc_hv].swoc_elem_was_updated = true;
 
     if (soc < SOC_HV_CRITICAL_THRESHOLD) {
-        screen->components[swoc_soc_hv].swoc_elem_bg_color      = OLIVEC_COLOR_RED;
-        screen->components[swoc_soc_hv].swoc_elem_lb_color      = OLIVEC_COLOR_BLACK;
+        screen->components[swoc_soc_hv].swoc_elem_bg_color = OLIVEC_COLOR_RED;
+        screen->components[swoc_soc_hv].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
         screen->components[swoc_soc_hv_name].swoc_elem_bg_color = OLIVEC_COLOR_RED;
         screen->components[swoc_soc_hv_name].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
     } else if (soc < SOC_HV_ALERT_THRESHOLD) {
-        screen->components[swoc_soc_hv].swoc_elem_bg_color      = OLIVEC_COLOR_YELLOW;
-        screen->components[swoc_soc_hv].swoc_elem_lb_color      = OLIVEC_COLOR_BLACK;
+        screen->components[swoc_soc_hv].swoc_elem_bg_color = OLIVEC_COLOR_YELLOW;
+        screen->components[swoc_soc_hv].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
         screen->components[swoc_soc_hv_name].swoc_elem_bg_color = OLIVEC_COLOR_YELLOW;
         screen->components[swoc_soc_hv_name].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
     } else {
-        screen->components[swoc_soc_hv].swoc_elem_bg_color      = OLIVEC_COLOR_GREEN;
-        screen->components[swoc_soc_hv].swoc_elem_lb_color      = OLIVEC_COLOR_BLACK;
+        screen->components[swoc_soc_hv].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;
+        screen->components[swoc_soc_hv].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
         screen->components[swoc_soc_hv_name].swoc_elem_bg_color = OLIVEC_COLOR_GREEN;
         screen->components[swoc_soc_hv_name].swoc_elem_lb_color = OLIVEC_COLOR_BLACK;
     }
@@ -252,8 +262,8 @@ void hv_soc_estimation_update(UI_t *screen, bool valid) {
 
 void lv_soc_estimation_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(secondary, lv_soc_estimation_state, SECONDARY, LV_SOC_ESTIMATION_STATE);
-    float soc                                                  = secondary_lv_soc_estimation_state_last_state->soc;
-    screen->components[swoc_soc_lv].swoc_elem_was_updated      = true;
+    float soc = secondary_lv_soc_estimation_state_last_state->soc;
+    screen->components[swoc_soc_lv].swoc_elem_was_updated = true;
     screen->components[swoc_soc_lv_name].swoc_elem_was_updated = true;
     snprintf(screen->components[swoc_soc_lv].swoc_elem_label, SWOC_STRING_LEN, "%.0f", soc * 100.0f);
 
@@ -275,7 +285,7 @@ void hv_cells_temp_stats_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(primary, hv_cells_temp_stats, PRIMARY, HV_CELLS_TEMP_STATS);
     float tmax = primary_hv_cells_temp_stats_last_state->max;
     snprintf(screen->components[swoc_temp_hv].swoc_elem_label, SWOC_STRING_LEN, "%.0f", tmax);
-    screen->components[swoc_temp_hv].swoc_elem_was_updated      = true;
+    screen->components[swoc_temp_hv].swoc_elem_was_updated = true;
     screen->components[swoc_temp_hv_name].swoc_elem_was_updated = true;
 
     if (tmax > HV_TEMP_CRITICAL_THRESHOLD) {
@@ -346,7 +356,7 @@ void lv_feedback_ts_voltage_update(UI_t *screen, bool valid) {
 
 void lv_feedback_enclosure_voltage_update(UI_t *screen, bool valid) {
     // GET_LAST_STATE(primary, lv_feedback_enclosure_voltage, PRIMARY, LV_FEEDBACK_ENCLOSURE_VOLTAGE);
-    update_shutdown_circuit_component(screen, shutdown_circuit_feedbacks_invc_lid_fb_index, true);  // not available
+    update_shutdown_circuit_component(screen, shutdown_circuit_feedbacks_invc_lid_fb_index, true); // not available
 }
 
 void lv_errors_update(UI_t *screen, bool valid) {
@@ -377,7 +387,7 @@ void hv_status_update(UI_t *screen, bool valid) {
 void hv_fans_override_status_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(primary, hv_fans_status, PRIMARY, HV_FANS_STATUS);
 
-    screen->components[swoc_hv_cooling].swoc_elem_was_updated      = 1;
+    screen->components[swoc_hv_cooling].swoc_elem_was_updated = 1;
     screen->components[swoc_hv_cooling_name].swoc_elem_was_updated = 1;
     if (!primary_hv_fans_status_last_state->fans_override) {
         snprintf(screen->components[swoc_hv_cooling].swoc_elem_label, SWOC_STRING_LEN, "A");
@@ -452,22 +462,22 @@ void tlm_laps_stats_update(UI_t *screen, bool valid) {
     }
 }
 
-#define INVERTER_MESSAGE_UNINITIALIZED     (-100.0f)
+#define INVERTER_MESSAGE_UNINITIALIZED (-100.0f)
 #define INVERTER_TEMP_CONVERSION(raw_temp) (-43.23745 + 0.01073427 * raw_temp - 5.523417e-7 * pow(raw_temp, 2) + 1.330787e-11 * pow(raw_temp, 3));
 float l_motor_temp = INVERTER_MESSAGE_UNINITIALIZED;
-float l_igbt_temp  = INVERTER_MESSAGE_UNINITIALIZED;
+float l_igbt_temp = INVERTER_MESSAGE_UNINITIALIZED;
 float r_motor_temp = INVERTER_MESSAGE_UNINITIALIZED;
-float r_igbt_temp  = INVERTER_MESSAGE_UNINITIALIZED;
+float r_igbt_temp = INVERTER_MESSAGE_UNINITIALIZED;
 
 #include "inverter_conversions.h"
 
 void inv_l_rcv_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(inverters, inv_l_rcv, INVERTERS, INV_L_RCV);
 
-    l_motor_temp          = convert_t_motor(inverters_inv_l_rcv_last_state->t_motor);
+    l_motor_temp = convert_t_motor(inverters_inv_l_rcv_last_state->t_motor);
     float motor_temp_mean = (l_motor_temp + r_motor_temp) / 2.0f;
     if (r_motor_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-        screen->components[swoc_temp_mot].swoc_elem_was_updated      = 1;
+        screen->components[swoc_temp_mot].swoc_elem_was_updated = 1;
         screen->components[swoc_temp_mot_name].swoc_elem_was_updated = 1;
         snprintf(screen->components[swoc_temp_mot].swoc_elem_label, SWOC_STRING_LEN, "%.0f", motor_temp_mean);
 
@@ -485,10 +495,10 @@ void inv_l_rcv_update(UI_t *screen, bool valid) {
         screen->components[swoc_temp_mot_name].swoc_elem_bg_color = screen->components[swoc_temp_mot].swoc_elem_bg_color;
     }
 
-    l_igbt_temp          = convert_t_igbt(inverters_inv_l_rcv_last_state->t_igbt);
+    l_igbt_temp = convert_t_igbt(inverters_inv_l_rcv_last_state->t_igbt);
     float igbt_temp_mean = (l_igbt_temp + r_igbt_temp) / 2.0f;
     if (r_igbt_temp != INVERTER_MESSAGE_UNINITIALIZED) {
-        screen->components[swoc_temp_inv].swoc_elem_was_updated      = 1;
+        screen->components[swoc_temp_inv].swoc_elem_was_updated = 1;
         screen->components[swoc_temp_inv_name].swoc_elem_was_updated = 1;
         snprintf(screen->components[swoc_temp_inv].swoc_elem_label, SWOC_STRING_LEN, "%.0f", igbt_temp_mean);
 
@@ -510,7 +520,7 @@ void inv_l_rcv_update(UI_t *screen, bool valid) {
 void inv_r_rcv_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(inverters, inv_r_rcv, INVERTERS, INV_R_RCV);
     r_motor_temp = convert_t_motor(inverters_inv_r_rcv_last_state->t_motor);
-    r_igbt_temp  = convert_t_igbt(inverters_inv_r_rcv_last_state->t_igbt);
+    r_igbt_temp = convert_t_igbt(inverters_inv_r_rcv_last_state->t_igbt);
 }
 
 void irts_fl_update(UI_t *screen, bool valid) {
@@ -555,7 +565,7 @@ void lv_radiator_speed_update(UI_t *screen, bool valid) {
 void lv_pumps_speed_update(UI_t *screen, bool valid) {
     GET_LAST_STATE(primary, lv_pumps_speed, PRIMARY, LV_PUMPS_SPEED);
 
-    screen->components[swoc_pt_cooling].swoc_elem_was_updated      = 1;
+    screen->components[swoc_pt_cooling].swoc_elem_was_updated = 1;
     screen->components[swoc_pt_cooling_name].swoc_elem_was_updated = 1;
     if (primary_lv_pumps_speed_last_state->status == primary_lv_pumps_speed_status_auto) {
         snprintf(screen->components[swoc_pt_cooling].swoc_elem_label, SWOC_STRING_LEN, "A");
@@ -578,25 +588,25 @@ void ptt_periodic_check(UI_t *screen) {
     GET_LAST_STATE(primary, ecu_set_ptt_status, PRIMARY, ECU_SET_PTT_STATUS);
     screen->components[swoc_ptt].swoc_elem_was_updated = 1;
     if ((primary_ecu_ptt_status_last_state->status == primary_ecu_ptt_status_status_off) && ptt_button_pressed) {
-        current_ptt_status                            = ptt_status_SET_ON;
+        current_ptt_status = ptt_status_SET_ON;
         primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_on;
         snprintf(screen->components[swoc_ptt].swoc_elem_label, SWOC_STRING_LEN, "MUTE");
         screen->components[swoc_ptt].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;
         screen->components[swoc_ptt].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
     } else if ((primary_ecu_ptt_status_last_state->status == primary_ecu_ptt_status_status_on) && !ptt_button_pressed) {
-        current_ptt_status                            = ptt_status_SET_OFF;
+        current_ptt_status = ptt_status_SET_OFF;
         primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_off;
         snprintf(screen->components[swoc_ptt].swoc_elem_label, SWOC_STRING_LEN, "MUTE");
         screen->components[swoc_ptt].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;
         screen->components[swoc_ptt].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
     } else if ((primary_ecu_ptt_status_last_state->status == primary_ecu_ptt_status_status_on) && ptt_button_pressed) {
-        current_ptt_status                            = ptt_status_ON;
+        current_ptt_status = ptt_status_ON;
         primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_on;
         snprintf(screen->components[swoc_ptt].swoc_elem_label, SWOC_STRING_LEN, "TALK");
         screen->components[swoc_ptt].swoc_elem_bg_color = OLIVEC_COLOR_BLUE;
         screen->components[swoc_ptt].swoc_elem_lb_color = OLIVEC_COLOR_WHITE;
     } else if ((primary_ecu_ptt_status_last_state->status == primary_ecu_ptt_status_status_off) && !ptt_button_pressed) {
-        current_ptt_status                            = ptt_status_OFF;
+        current_ptt_status = ptt_status_OFF;
         primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_off;
         snprintf(screen->components[swoc_ptt].swoc_elem_label, SWOC_STRING_LEN, "MUTE");
         screen->components[swoc_ptt].swoc_elem_bg_color = OLIVEC_COLOR_BLACK;

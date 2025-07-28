@@ -35,14 +35,14 @@ void MX_DTS_Init(void) {
     /* USER CODE BEGIN DTS_Init 1 */
 
     /* USER CODE END DTS_Init 1 */
-    hdts.Instance           = DTS;
-    hdts.Init.QuickMeasure  = DTS_QUICKMEAS_DISABLE;
-    hdts.Init.RefClock      = DTS_REFCLKSEL_PCLK;
-    hdts.Init.TriggerInput  = DTS_TRIGGER_HW_NONE;
-    hdts.Init.SamplingTime  = DTS_SMP_TIME_15_CYCLE;
-    hdts.Init.Divider       = 0;
+    hdts.Instance = DTS;
+    hdts.Init.QuickMeasure = DTS_QUICKMEAS_DISABLE;
+    hdts.Init.RefClock = DTS_REFCLKSEL_PCLK;
+    hdts.Init.TriggerInput = DTS_TRIGGER_HW_NONE;
+    hdts.Init.SamplingTime = DTS_SMP_TIME_15_CYCLE;
+    hdts.Init.Divider = 0;
     hdts.Init.HighThreshold = 0x0;
-    hdts.Init.LowThreshold  = 0x0;
+    hdts.Init.LowThreshold = 0x0;
     if (HAL_DTS_Init(&hdts) != HAL_OK) {
         Error_Handler();
     }

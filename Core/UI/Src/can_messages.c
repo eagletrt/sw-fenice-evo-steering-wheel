@@ -1,8 +1,8 @@
 #include "can_messages.h"
 
 void send_ecu_set_status(primary_ecu_set_status_status val) {
-    primary_ecu_set_status_converted_t converted = {0};
-    converted.status                             = val;
+    primary_ecu_set_status_converted_t converted = { 0 };
+    converted.status = val;
     STEER_CAN_PACK(primary, PRIMARY, ecu_set_status, ECU_SET_STATUS);
     can_send(&msg, true);
     can_send(&msg, true);
@@ -184,12 +184,12 @@ void handle_primary(can_message_t *msg) {
             inverters_inv_l_rcv_converted_t *last_state =
                 (inverters_inv_l_rcv_converted_t *)&inverters_messages_last_state[inverters_index_from_id(msg->id)][0];
             if (converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
-                last_state->t_motor                                                  = converted.t_motor;
-                is_imsg_new[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)]   = true;
+                last_state->t_motor = converted.t_motor;
+                is_imsg_new[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)] = true;
                 is_imsg_valid[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)] = true;
             } else if (converted.rcv_mux == INVERTERS_INV_L_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
-                last_state->t_igbt                                                   = converted.t_igbt;
-                is_imsg_new[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)]   = true;
+                last_state->t_igbt = converted.t_igbt;
+                is_imsg_new[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)] = true;
                 is_imsg_valid[inverters_index_from_id(INVERTERS_INV_L_RCV_FRAME_ID)] = true;
             }
             break;
@@ -202,12 +202,12 @@ void handle_primary(can_message_t *msg) {
             inverters_inv_r_rcv_converted_t *last_state =
                 (inverters_inv_r_rcv_converted_t *)&inverters_messages_last_state[inverters_index_from_id(msg->id)][0];
             if (converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_49_T_MOTOR_CHOICE) {
-                last_state->t_motor                                                  = converted.t_motor;
-                is_imsg_new[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)]   = true;
+                last_state->t_motor = converted.t_motor;
+                is_imsg_new[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)] = true;
                 is_imsg_valid[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)] = true;
             } else if (converted.rcv_mux == INVERTERS_INV_R_RCV_RCV_MUX_ID_4A_T_IGBT_CHOICE) {
-                last_state->t_igbt                                                   = converted.t_igbt;
-                is_imsg_new[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)]   = true;
+                last_state->t_igbt = converted.t_igbt;
+                is_imsg_new[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)] = true;
                 is_imsg_valid[inverters_index_from_id(INVERTERS_INV_R_RCV_FRAME_ID)] = true;
             }
             break;
@@ -369,18 +369,18 @@ void handle_secondary(can_message_t *msg) {
 }
 
 void message_parser(uint8_t *msg, size_t msg_siz) {
-    msg[msg_siz]  = 0;
+    msg[msg_siz] = 0;
     uint32_t msgi = 0, msgl = 0;
-    uint8_t msg_data[8] = {0};
-    msgi                = strtol((char *)msg, NULL, 16);
-    msgl                = strtol((char *)msg + 2, NULL, 16);
+    uint8_t msg_data[8] = { 0 };
+    msgi = strtol((char *)msg, NULL, 16);
+    msgl = strtol((char *)msg + 2, NULL, 16);
     for (size_t i = 0; i < 8; ++i) {
-        char m[3]   = {msg[6 + i * 2], msg[6 + i * 2 + 1], 0};
+        char m[3] = { msg[6 + i * 2], msg[6 + i * 2 + 1], 0 };
         msg_data[i] = strtol(m, NULL, 16);
     }
     can_message_t parsed_msg = {
-        .id   = msgl,
-        .size = 0,  // unused
+        .id = msgl,
+        .size = 0, // unused
     };
     memcpy(&parsed_msg.data, msg_data, 8);
     if (msgi == 0) {

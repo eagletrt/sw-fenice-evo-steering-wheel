@@ -81,10 +81,10 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority) {
   + ClockDivision = 0
   + Counter direction = Up
   */
-    htim4.Init.Period        = (1000000U / 1000U) - 1U;
-    htim4.Init.Prescaler     = uwPrescalerValue;
+    htim4.Init.Period = (1000000U / 1000U) - 1U;
+    htim4.Init.Prescaler = uwPrescalerValue;
     htim4.Init.ClockDivision = 0;
-    htim4.Init.CounterMode   = TIM_COUNTERMODE_UP;
+    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
 
     if (HAL_TIM_Base_Init(&htim4) == HAL_OK) {
         /* Start the TIM time Base generation in interrupt mode */
