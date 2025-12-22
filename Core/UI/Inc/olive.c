@@ -22,8 +22,8 @@
 #ifndef OLIVE_C_
 #define OLIVE_C_
 
-#include "steering_config.h"
 #include "dma2d_utils.h"
+#include "steering_config.h"
 
 #include <mcufont.h>
 #include <stdbool.h>
@@ -49,9 +49,9 @@ extern const struct mf_rlefont_s mf_rlefont_KonexyFont72;
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
 #define OLIVEC_ABS(T, x)  (OLIVEC_SIGN(T, x) * (x))
 
-#define OLIVEC_CANVAS_NULL     ((Olivec_Canvas){0})
-#define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y) * (oc).stride + (x)]
-#define OLIVEC_PIXEL_ADDRESS(oc, x, y) (uint32_t) (&(oc).pixels[(y) * (oc).stride + (x)])
+#define OLIVEC_CANVAS_NULL             ((Olivec_Canvas){0})
+#define OLIVEC_PIXEL(oc, x, y)         (oc).pixels[(y) * (oc).stride + (x)]
+#define OLIVEC_PIXEL_ADDRESS(oc, x, y) (uint32_t)(&(oc).pixels[(y) * (oc).stride + (x)])
 
 // GLobal canvas to define McuFont callback function
 Olivec_Canvas *oc;

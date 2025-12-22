@@ -28,7 +28,6 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "ltdc.h"
-#include "memorymap.h"
 #include "octospi.h"
 #include "tim.h"
 #include "usart.h"
@@ -37,9 +36,9 @@
 /* USER CODE BEGIN Includes */
 
 #define _XOPEN_SOURCE
-#include <time.h>
-
 #include "dma2d_utils.h"
+
+#include <time.h>
 
 /* USER CODE END Includes */
 
@@ -74,6 +73,7 @@ extern bool secondary_can_fatal_error;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -91,6 +91,17 @@ int main(void) {
     /* USER CODE BEGIN 1 */
 
     /* USER CODE END 1 */
+
+    /* MPU Configuration--------------------------------------------------------*/
+    MPU_Config();
+
+    /* Enable the CPU Cache */
+
+    /* Enable I-Cache---------------------------------------------------------*/
+    SCB_EnableICache();
+
+    /* Enable D-Cache---------------------------------------------------------*/
+    SCB_EnableDCache();
 
     /* MCU Configuration--------------------------------------------------------*/
 
@@ -237,7 +248,7 @@ int main(void) {
             ptt_periodic_check(&sw_screen);
         }
 
-        if ((get_current_time_ms() - last_swap_framebuffer) > 100) {
+        if ((get_current_time_ms() - last_swap_framebuffer) > 50) {
             last_swap_framebuffer = get_current_time_ms();
             extern int button_long_pressed;
             uint32_t button_lts = 0;
@@ -364,6 +375,33 @@ uint32_t get_current_time_ms(void) {
 }
 
 /* USER CODE END 4 */
+
+/* MPU Configuration */
+
+void MPU_Config(void) {
+    MPU_Region_InitTypeDef MPU_InitStruct = {0};
+
+    /* Disables the MPU */
+    HAL_MPU_Disable();
+
+    /** Initializes and configures the Region and the memory to be protected
+  */
+    MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
+    MPU_InitStruct.Number           = MPU_REGION_NUMBER0;
+    MPU_InitStruct.BaseAddress      = 0xC0000000;
+    MPU_InitStruct.Size             = MPU_REGION_SIZE_8MB;
+    MPU_InitStruct.SubRegionDisable = 0x0;
+    MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+    MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
+    MPU_InitStruct.IsShareable      = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsBufferable     = MPU_ACCESS_BUFFERABLE;
+
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
+    /* Enables the MPU */
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
