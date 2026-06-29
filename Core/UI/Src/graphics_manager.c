@@ -468,7 +468,7 @@ void sw_set_canvas(UI_t *scr, uint32_t *pixels, size_t width, size_t height, siz
 }
 
 void sw_update_screen(float dt, UI_t *scr) {
-    olivec_fix_dma2d(scr->oc);
+    // olivec_fix_dma2d(scr->oc);
     for (size_t iswoc = 0; iswoc < swoc_elems_n; iswoc++) {
         scr->components[iswoc].swoc_elem_was_updated = false;
         olivec_dma2d_rect(

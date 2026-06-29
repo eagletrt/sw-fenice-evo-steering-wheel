@@ -172,8 +172,7 @@ int main(void) {
     static bool tson_button_pressed                  = false;
     static uint32_t tson_button_pressed_time_elapsed = 0;
 
-    sw_set_canvas(&sw_screen, (uint32_t *)writable_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-    sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
+    sw_set_canvas(&sw_screen, (uint32_t *)active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
 
     GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
     primary_ecu_set_power_maps_last_state->map_power = 1.0f;
@@ -231,6 +230,8 @@ int main(void) {
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     sw_screen_white(&sw_screen);
+    sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
+    sw_screen_white(&sw_screen);
 
     while (1) {
 #if CAN_OVER_SERIAL_ENABLED == 1
@@ -262,7 +263,7 @@ int main(void) {
                 sw_update_graphics_from_can_messages(&sw_screen);
                 sw_update_screen(0.f, &sw_screen);
             }
-            dma2d_m2m(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
+            // dma2d_m2m(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
             // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
             uint32_t tmp         = active_framebuffer;
             active_framebuffer   = writable_framebuffer;
@@ -342,8 +343,8 @@ void SystemClock_Config(void) {
 
     /** Initializes the CPU, AHB and APB buses clocks
   */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
-                                  RCC_CLOCKTYPE_D1PCLK1;
+    RCC_ClkInitStruct.ClockType      = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
+                                       RCC_CLOCKTYPE_D1PCLK1;
     RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.SYSCLKDivider  = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.AHBCLKDivider  = RCC_HCLK_DIV2;

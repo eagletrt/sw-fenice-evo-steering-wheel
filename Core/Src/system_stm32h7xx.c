@@ -391,7 +391,7 @@ void SystemCoreClockUpdate(void) {
 
                         hsivalue = (HSI_VALUE >> ((RCC->CR & RCC_CR_HSIDIV) >> 3));
                         pllvco   = ((float_t)hsivalue / (float_t)pllm) *
-                                 ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1 / (float_t)0x2000) + (float_t)1);
+                                   ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1 / (float_t)0x2000) + (float_t)1);
 
                         break;
 
@@ -408,7 +408,7 @@ void SystemCoreClockUpdate(void) {
                     default:
                         hsivalue = (HSI_VALUE >> ((RCC->CR & RCC_CR_HSIDIV) >> 3));
                         pllvco   = ((float_t)hsivalue / (float_t)pllm) *
-                                 ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1 / (float_t)0x2000) + (float_t)1);
+                                   ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1 / (float_t)0x2000) + (float_t)1);
                         break;
                 }
                 pllp                = (((RCC->PLL1DIVR & RCC_PLL1DIVR_P1) >> 9) + 1U);
