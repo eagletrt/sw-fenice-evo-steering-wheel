@@ -22,12 +22,6 @@
 
 /* USER CODE BEGIN 0 */
 
-volatile bool dma2d_transfer_completed = true;
-
-void dma2dtransfer_completed(DMA2D_HandleTypeDef *hdma2d) {
-    dma2d_transfer_completed = true;
-}
-
 /* USER CODE END 0 */
 
 DMA2D_HandleTypeDef hdma2d;
@@ -59,11 +53,6 @@ void MX_DMA2D_Init(void) {
         Error_Handler();
     }
     /* USER CODE BEGIN DMA2D_Init 2 */
-
-    HAL_StatusTypeDef register_callback_res = HAL_DMA2D_RegisterCallback(&hdma2d, HAL_DMA2D_TRANSFERCOMPLETE_CB_ID, dma2dtransfer_completed);
-    if (register_callback_res != HAL_OK) {
-        Error_Handler();
-    }
 
     /* USER CODE END DMA2D_Init 2 */
 }

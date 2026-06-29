@@ -19,24 +19,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "fdcan.h"
+#include "stm32h7xx_hal_fdcan.h"
 
 /* USER CODE BEGIN 0 */
 
-device_t primary_can_device;
-device_t secondary_can_device;
-uint8_t _raw[primary_MAX_STRUCT_SIZE_RAW];
-uint8_t _converted[primary_MAX_STRUCT_SIZE_CONVERSION];
-
-#if CANSNIFFER_ENABLED == 1
-extern cansniffer_elem_t *primary_cansniffer_buffer;
-extern cansniffer_elem_t *secondary_cansniffer_buffer;
-#endif
-
-void _CAN_Init_primary();
-void _CAN_Init_secondary();
-
-bool primary_can_fatal_error   = false;
-bool secondary_can_fatal_error = false;
+#include "can-communications-api.h"
 
 /* USER CODE END 0 */
 
@@ -84,9 +71,12 @@ void MX_FDCAN1_Init(void) {
         Error_Handler();
     }
     /* USER CODE BEGIN FDCAN1_Init 2 */
-    _CAN_Init_primary();
 
     /* USER CODE END FDCAN1_Init 2 */
+    HAL_FDCAN_Start(&hfdcan1);
+    HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+    HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
+
 }
 /* FDCAN2 init function */
 void MX_FDCAN2_Init(void) {
@@ -129,7 +119,6 @@ void MX_FDCAN2_Init(void) {
         Error_Handler();
     }
     /* USER CODE BEGIN FDCAN2_Init 2 */
-    _CAN_Init_secondary();
 
     /* USER CODE END FDCAN2_Init 2 */
 }
@@ -264,223 +253,127 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
 
 /* USER CODE BEGIN 1 */
 
-/**
- * @brief Create the CAN filter for the primary CAN network
- * @param f A CAN_FilterTypeDef in which to store the filter data
- * */
-void _CAN_Init_primary() {
-    FDCAN_FilterTypeDef f = {0};
-    f.IdType              = FDCAN_STANDARD_ID;
-    f.FilterIndex         = 0;
-    f.FilterType          = FDCAN_FILTER_RANGE;
-    f.FilterConfig        = FDCAN_FILTER_TO_RXFIFO0;
-    f.FilterID1           = 0;
-    f.FilterID2           = ((1U << 11) - 1) << 8;
-    f.IsCalibrationMsg    = 0;
-    f.RxBufferIndex       = 0;
-
-    HAL_FDCAN_ConfigFilter(&hfdcan1, &f);
-    HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
-}
-
-/**
- * @brief Create the CAN filter for the secondary CAN network
- * @param f A CAN_FilterTypeDef in which to store the filter data
- * */
-void _CAN_Init_secondary() {
-    FDCAN_FilterTypeDef f = {0};
-    f.IdType              = FDCAN_STANDARD_ID;
-    f.FilterIndex         = 0;
-    f.FilterType          = FDCAN_FILTER_RANGE;
-    f.FilterConfig        = FDCAN_FILTER_TO_RXFIFO1;
-    f.FilterID1           = 0;
-    f.FilterID2           = ((1U << 11) - 1) << 8;
-    f.IsCalibrationMsg    = 0;
-    f.RxBufferIndex       = 0;
-    HAL_FDCAN_ConfigFilter(&hfdcan2, &f);
-    HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
-}
-
-void _can_wait(FDCAN_HandleTypeDef *nwk) {
-    uint32_t start_timestamp = HAL_GetTick();
-    while (HAL_FDCAN_GetTxFifoFreeLevel(nwk) == 0)
-        if (HAL_GetTick() > start_timestamp + 5)
-            return;
-}
-
-bool can_send(can_message_t *msg, bool to_primary_network) {
-    FDCAN_HandleTypeDef *nwk = to_primary_network ? &hfdcan1 : &hfdcan2;
-
-    uint32_t dlc_len = 0;
-    switch (msg->size) {
-        case 0:
-            dlc_len = FDCAN_DLC_BYTES_0;
-            break;
-        case 1:
-            dlc_len = FDCAN_DLC_BYTES_1;
-            break;
-        case 2:
-            dlc_len = FDCAN_DLC_BYTES_2;
-            break;
-        case 3:
-            dlc_len = FDCAN_DLC_BYTES_3;
-            break;
-        case 4:
-            dlc_len = FDCAN_DLC_BYTES_4;
-            break;
-        case 5:
-            dlc_len = FDCAN_DLC_BYTES_5;
-            break;
-        case 6:
-            dlc_len = FDCAN_DLC_BYTES_6;
-            break;
-        case 7:
-            dlc_len = FDCAN_DLC_BYTES_7;
-            break;
-        case 8:
-            dlc_len = FDCAN_DLC_BYTES_8;
-            break;
-    }
-
+enum CanCommunicationReturnCode fdcan_send_primary(const struct CanCommunicationFrame *frame) {
     FDCAN_TxHeaderTypeDef header = {
-        .Identifier          = msg->id,
-        .IdType              = FDCAN_STANDARD_ID,
-        .TxFrameType         = FDCAN_DATA_FRAME,
-        .DataLength          = dlc_len,
+        .Identifier = frame->id,
+        .IdType = FDCAN_STANDARD_ID,
+        .TxFrameType = FDCAN_DATA_FRAME,
         .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
-        .BitRateSwitch       = FDCAN_BRS_OFF,
-        .FDFormat            = FDCAN_CLASSIC_CAN,
-        .TxEventFifoControl  = FDCAN_STORE_TX_EVENTS,
-        .MessageMarker       = 0,
+        .BitRateSwitch = FDCAN_BRS_OFF,
+        .FDFormat = FDCAN_CLASSIC_CAN,
+        .TxEventFifoControl = FDCAN_STORE_TX_EVENTS,
+        .MessageMarker = 0
     };
 
-    _can_wait(nwk);
-
-    HAL_StatusTypeDef result = HAL_FDCAN_AddMessageToTxFifoQ(nwk, &header, msg->data);
-    return result == HAL_OK;
-}
-
-void HAL_FDCAN_ErrorCallback(FDCAN_HandleTypeDef *hfdcan) {
-    if (hfdcan == &hfdcan1) {
-#ifdef STEERING_LOG_ENABLED
-        print("CAN0 error %" PRIu32 "\n", (uint32_t)hfdcan->ErrorCode);
-#endif
-    } else {
-#ifdef STEERING_LOG_ENABLED
-        print("CAN1 error %" PRIu32 "\n", (uint32_t)hfdcan->ErrorCode);
-#endif
+    switch (frame->length) {
+        case 0:
+            header.DataLength = FDCAN_DLC_BYTES_0;
+            break;
+        case 1:
+            header.DataLength = FDCAN_DLC_BYTES_1;
+            break;
+        case 2:
+            header.DataLength = FDCAN_DLC_BYTES_2;
+            break;
+        case 3:
+            header.DataLength = FDCAN_DLC_BYTES_3;
+            break;
+        case 4:
+            header.DataLength = FDCAN_DLC_BYTES_4;
+            break;
+        case 5:
+            header.DataLength = FDCAN_DLC_BYTES_5;
+            break;
+        case 6:
+            header.DataLength = FDCAN_DLC_BYTES_6;
+            break;
+        case 7:
+            header.DataLength = FDCAN_DLC_BYTES_7;
+            break;
+        case 8:
+            header.DataLength = FDCAN_DLC_BYTES_8;
+            break;
+        default:
+            return CAN_COMMUNICATION_RC_INVALID_LENGTH;
     }
+
+    if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &header, frame->data) != HAL_OK) {
+        return CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
+    }
+    return CAN_COMMUNICATION_RC_OK;
 }
 
-/**
- * @brief     HAL callback for RX on FIFO0
- */
+enum CanCommunicationReturnCode fdcan_send_secondary(const struct CanCommunicationFrame *frame) {
+    FDCAN_TxHeaderTypeDef header = {
+        .Identifier = frame->id,
+        .IdType = FDCAN_STANDARD_ID,
+        .TxFrameType = FDCAN_DATA_FRAME,
+        .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
+        .BitRateSwitch = FDCAN_BRS_OFF,
+        .FDFormat = FDCAN_CLASSIC_CAN,
+        .TxEventFifoControl = FDCAN_STORE_TX_EVENTS,
+        .MessageMarker = 0
+    };
+
+    switch (frame->length) {
+        case 0:
+            header.DataLength = FDCAN_DLC_BYTES_0;
+            break;
+        case 1:
+            header.DataLength = FDCAN_DLC_BYTES_1;
+            break;
+        case 2:
+            header.DataLength = FDCAN_DLC_BYTES_2;
+            break;
+        case 3:
+            header.DataLength = FDCAN_DLC_BYTES_3;
+            break;
+        case 4:
+            header.DataLength = FDCAN_DLC_BYTES_4;
+            break;
+        case 5:
+            header.DataLength = FDCAN_DLC_BYTES_5;
+            break;
+        case 6:
+            header.DataLength = FDCAN_DLC_BYTES_6;
+            break;
+        case 7:
+            header.DataLength = FDCAN_DLC_BYTES_7;
+            break;
+        case 8:
+            header.DataLength = FDCAN_DLC_BYTES_8;
+            break;
+        default:
+            return CAN_COMMUNICATION_RC_INVALID_LENGTH;
+    }
+
+    if (HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan2, &header, frame->data) != HAL_OK) {
+        return CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
+    }
+    return CAN_COMMUNICATION_RC_OK;
+}
+
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs) {
     if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != RESET) {
-        FDCAN_RxHeaderTypeDef header = {0};
-        can_message_t msg;
+        FDCAN_RxHeaderTypeDef header = { 0 };
+        struct CanCommunicationFrame msg = { 0 };
         HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
         HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
-
-#if CAN_LOG_ENABLED
-        uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO0);
-        print("RX Fifo0 fill level %" PRIu32 "\n", fill_level);
-#endif
-
-        msg.id   = header.Identifier;
-        msg.size = 0;
-
-        switch (header.DataLength) {
-            case FDCAN_DLC_BYTES_0:
-                msg.size = 0;
-                break;
-            case FDCAN_DLC_BYTES_1:
-                msg.size = 1;
-                break;
-            case FDCAN_DLC_BYTES_2:
-                msg.size = 2;
-                break;
-            case FDCAN_DLC_BYTES_3:
-                msg.size = 3;
-                break;
-            case FDCAN_DLC_BYTES_4:
-                msg.size = 4;
-                break;
-            case FDCAN_DLC_BYTES_5:
-                msg.size = 5;
-                break;
-            case FDCAN_DLC_BYTES_6:
-                msg.size = 6;
-                break;
-            case FDCAN_DLC_BYTES_7:
-                msg.size = 7;
-                break;
-            case FDCAN_DLC_BYTES_8:
-                msg.size = 8;
-                break;
-        }
-
-        if (hfdcan == &hfdcan1) {
-            handle_primary(&msg);
-        } else if (hfdcan == &hfdcan2) {
-            handle_secondary(&msg);
-        }
+        msg.id = header.Identifier;
+        msg.length = (uint8_t)(header.DataLength >> 16U);
+        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
     }
 }
 
-/**
- * @brief     HAL callback for RX on FIFO1
- */
 void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs) {
     if ((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != RESET) {
-        FDCAN_RxHeaderTypeDef header;
-        can_message_t msg;
+        FDCAN_RxHeaderTypeDef header = { 0 };
+        struct CanCommunicationFrame msg = { 0 };
         HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, msg.data);
         HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
-
-#if CAN_LOG_ENABLED
-        uint32_t fill_level = HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO1);
-        print("RX Fifo1 fill level %" PRIu32 "\n", fill_level);
-#endif
-
-        msg.id   = header.Identifier;
-        msg.size = 0;
-
-        switch (header.DataLength) {
-            case FDCAN_DLC_BYTES_0:
-                msg.size = 0;
-                break;
-            case FDCAN_DLC_BYTES_1:
-                msg.size = 1;
-                break;
-            case FDCAN_DLC_BYTES_2:
-                msg.size = 2;
-                break;
-            case FDCAN_DLC_BYTES_3:
-                msg.size = 3;
-                break;
-            case FDCAN_DLC_BYTES_4:
-                msg.size = 4;
-                break;
-            case FDCAN_DLC_BYTES_5:
-                msg.size = 5;
-                break;
-            case FDCAN_DLC_BYTES_6:
-                msg.size = 6;
-                break;
-            case FDCAN_DLC_BYTES_7:
-                msg.size = 7;
-                break;
-            case FDCAN_DLC_BYTES_8:
-                msg.size = 8;
-                break;
-        }
-
-        if (hfdcan == &hfdcan1) {
-            handle_primary(&msg);
-        } else if (hfdcan == &hfdcan2) {
-            handle_secondary(&msg);
-        }
+        msg.id = header.Identifier;
+        msg.length = (uint8_t)(header.DataLength >> 16U);
+        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
     }
 }
 

@@ -35,10 +35,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#define _XOPEN_SOURCE
-#include "dma2d_utils.h"
-
-#include <time.h>
+#include <stdbool.h>
+#include "can-communications-api.h"
+#include "can-communications-router-api.h"
 
 /* USER CODE END Includes */
 
@@ -60,14 +59,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
-#if CANSNIFFER_ENABLED == 1
-extern cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT];
-extern cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT];
-#endif
-
-extern bool primary_can_fatal_error;
-extern bool secondary_can_fatal_error;
 
 /* USER CODE END PV */
 
@@ -136,161 +127,62 @@ int main(void) {
     MX_FMAC_Init();
     /* USER CODE BEGIN 2 */
 
-    HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
-    // HAL_GPIO_WritePin(LCD_BL_DIM_GPIO_Port, LCD_BL_DIM_Pin, GPIO_PIN_SET);
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-    HAL_Delay(100);
-
-    UI_t sw_screen;
-    sw_init_screen(&sw_screen);
-
-#define I2C_TESTS 0
-#if I2C_TESTS == 1
-    i2c_test_read_write_register();
-#endif
-#define SDRAM_TESTS 0
-#if SDRAM_TESTS == 1
-    sdram_test_write_all();
-    sdram_test_long_arrays();
-    sdram_test_end_of_memory();
-    sdram_test_simple_write();
-#endif
-
-#if 0  // Green screen
-  uint8_t *display_buffer = (uint8_t *)SDRAM_BASE_ADDRESS;
-  for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
-    display_buffer[4 * icell] = 0xFF;
-    display_buffer[4 * icell + 1] = 0xFF;
-    display_buffer[4 * icell + 2] = 0x00;
-    display_buffer[4 * icell + 3] = 0x00;
-  }
-#endif
-
-    uint32_t active_framebuffer                      = FRAMEBUFFER1_ADDR;
-    uint32_t writable_framebuffer                    = FRAMEBUFFER2_ADDR;
-    uint32_t last_swap_framebuffer                   = HAL_GetTick();
     static bool tson_button_pressed                  = false;
     static uint32_t tson_button_pressed_time_elapsed = 0;
 
-    sw_set_canvas(&sw_screen, (uint32_t *)active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-
-    GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
-    primary_ecu_set_power_maps_last_state->map_power = 1.0f;
-    primary_ecu_set_power_maps_last_state->reg_state = 1;
-    primary_ecu_set_power_maps_last_state->sc_state  = 1;
-    primary_ecu_set_power_maps_last_state->tv_state  = 1;
-
+    /*
     GET_LAST_STATE(primary, steering_wheel_version, PRIMARY, STEERING_WHEEL_VERSION);
     struct tm timeinfo;
     strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
     primary_steering_wheel_version_last_state->canlib_build_time    = CANLIB_BUILD_TIME;
     primary_steering_wheel_version_last_state->component_build_time = mktime(&timeinfo);
-
-    /*
-    GET_LAST_STATE(primary, hv_set_fans_status, PRIMARY, HV_SET_FANS_STATUS);
-    primary_hv_set_fans_status_last_state->fans_override = primary_hv_set_fans_status_fans_override_off;
-    primary_hv_set_fans_status_last_state->fans_speed    = 0.0f;
     */
 
-    GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
-    primary_lv_set_pumps_speed_last_state->status      = primary_lv_set_pumps_speed_status_auto;
-    primary_lv_set_pumps_speed_last_state->pumps_speed = 0.0f;
+    struct CanCommunicationsNetworkConfig config[CAN_COMMUNICATION_NETWORK_COUNT] = {
+        [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
+            .send = fdcan_send_primary,
+            .on_receive = can_communications_router_api_receive_primary,
+            .cs_enter = __disable_irq,
+            .cs_exit = __enable_irq,
+        },
+        [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
+            .send = fdcan_send_secondary,
+            .on_receive = can_communications_router_api_receive_secondary,
+            .cs_enter = __disable_irq,
+            .cs_exit = __enable_irq,
+        },
+    };
 
-    GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
-    primary_lv_set_radiator_speed_last_state->status         = primary_lv_set_radiator_speed_status_auto;
-    primary_lv_set_radiator_speed_last_state->radiator_speed = 0.0f;
+    can_communications_api_init(config);
 
-    /*
-    GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
-    primary_lv_set_cooling_aggressiveness_last_state->status = primary_lv_set_cooling_aggressiveness_status_normal;
-    */
+    HAL_FDCAN_Start(&hfdcan1);
+    HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+    HAL_FDCAN_ActivateNotification(&hfdcan1, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
 
-    GET_LAST_STATE(primary, ecu_set_ptt_status, PRIMARY, ECU_SET_PTT_STATUS);
-    primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_off;
+    HAL_FDCAN_Start(&hfdcan2);
+    HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
+    HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
 
-    HAL_DMA2D_Init(&hdma2d);
-    HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_BACKGROUND_LAYER);
-
-    if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_FDCAN_Start(&hfdcan2) != HAL_OK) {
-        Error_Handler();
-    }
-    inputs_init();
-#if WATCHDOG_ENABLED == 1
-    init_watchdog();
-#endif
-#if CAN_OVER_SERIAL_ENABLED == 1
-    can_over_serial_init();
-#endif
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    sw_screen_white(&sw_screen);
-    sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
-    sw_screen_white(&sw_screen);
-
     while (1) {
-#if CAN_OVER_SERIAL_ENABLED == 1
-        can_over_serial_routine();
-#endif
-        static uint32_t last_read_inputs = 0;
-        if ((get_current_time_ms() - last_read_inputs) > 10) {
-            last_read_inputs = get_current_time_ms();
-            read_inputs();
-        }
-
-        static uint32_t last_ptt_periodic_check = 0;
-        if ((get_current_time_ms() - last_ptt_periodic_check) > 50) {
-            last_ptt_periodic_check = get_current_time_ms();
-            ptt_periodic_check(&sw_screen);
-        }
-
-        if ((get_current_time_ms() - last_swap_framebuffer) > 50) {
-            last_swap_framebuffer = get_current_time_ms();
-            extern int button_long_pressed;
-            uint32_t button_lts = 0;
-
-            if (button_long_pressed) {
-                if (get_current_time_ms() - button_lts > 500) {
-                    button_long_pressed = false;
-                }
-                sw_screen_white(&sw_screen);
-            } else {
-                sw_update_graphics_from_can_messages(&sw_screen);
-                sw_update_screen(0.f, &sw_screen);
-            }
-            // dma2d_m2m(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
-            // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
-            uint32_t tmp         = active_framebuffer;
-            active_framebuffer   = writable_framebuffer;
-            writable_framebuffer = tmp;
-            sw_screen.oc.pixels  = (uint32_t *)writable_framebuffer;
-            HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
-        }
-
-        PERIODIC_SEND(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS);
-        PERIODIC_SEND(primary, PRIMARY, steering_wheel_version, STEERING_WHEEL_VERSION);
-        // PERIODIC_SEND(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
-        // PERIODIC_SEND(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED);
-        // PERIODIC_SEND(primary, PRIMARY, lv_set_radiator_speed, LV_SET_RADIATOR_SPEED);
-        PERIODIC_SEND(primary, PRIMARY, ecu_set_ptt_status, ECU_SET_PTT_STATUS);
-        // #define PRIMARY_INTERVAL_LV_SET_COOLING_AGGRESSIVENESS (1000U)
-        // PERIODIC_SEND(primary, PRIMARY, lv_set_cooling_aggressiveness, LV_SET_COOLING_AGGRESSIVENESS);
-
         GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
 
         if (tson_pin_state == GPIO_PIN_SET) {
             tson_button_pressed = false;
         } else if (!tson_button_pressed) {
             tson_button_pressed              = true;
-            tson_button_pressed_time_elapsed = get_current_time_ms();
-        } else if ((get_current_time_ms() - tson_button_pressed_time_elapsed) > BUTTONS_LONG_PRESS_TIME) {
-            prepare_and_send_ecu_set_status();
+            tson_button_pressed_time_elapsed = HAL_GetTick();
+        } else if ((HAL_GetTick() - tson_button_pressed_time_elapsed) > 2500) {
         }
+
+        can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY);
+        can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_SECONDARY);
+        can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_PRIMARY);
+        can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_SECONDARY);
 
         /* USER CODE END WHILE */
 

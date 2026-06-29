@@ -12,3 +12,4 @@ STM32Make.make
 .vscode/c_cpp_properties.json
 .cache/**
 compile_commands.json
+.pio

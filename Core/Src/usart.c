@@ -22,8 +22,6 @@
 
 /* USER CODE BEGIN 0 */
 
-bool serial_received = false;
-
 /* USER CODE END 0 */
 
 UART_HandleTypeDef hlpuart1;
@@ -130,24 +128,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
 
 /* USER CODE BEGIN 1 */
 
-void activate_usart_it(uint8_t *dataptr, uint32_t data_size) {
-    HAL_UART_Receive_IT(&hlpuart1, dataptr, data_size);
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *uart_handle) {
-    if (uart_handle == &hlpuart1) {
-        serial_received = true;
-    }
-}
-
 /* UART Trasmit */
-void print(const char *fmt, ...) {
-    char buff[256];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buff, sizeof(buff), fmt, args);
-    va_end(args);
-    HAL_UART_Transmit(&hlpuart1, (uint8_t *)buff, strlen(buff), 250);
-}
 
 /* USER CODE END 1 */
