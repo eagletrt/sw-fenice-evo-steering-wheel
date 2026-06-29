@@ -39,6 +39,7 @@
 #include "can-communications-router-api.h"
 #include "can-primary-api.h"
 #include "wheelstate.h"
+
 #include <stdbool.h>
 
 /* USER CODE END Includes */
@@ -180,14 +181,19 @@ int main(void) {
             tson_button_pressed              = true;
             tson_button_pressed_time_elapsed = HAL_GetTick();
         } else if ((HAL_GetTick() - tson_button_pressed_time_elapsed) > 2500) {
-            struct CanCommunicationFrame frame = { 0 };
-            union CanPrimaryMessages message = { 0 };
+            struct CanCommunicationFrame frame                 = {0};
+            union CanPrimaryMessages message                   = {0};
             message.steering_wheel_set_ecu_status.targetstatus = wheel_state_get_tson();
-            frame.id = CAN_PRIMARY_MESSAGE_FRAME_ID_STEERING_WHEEL_SET_ECU_STATUS;
-            frame.length = can_primary_byte_size_steering_wheel_set_ecu_status;
+            frame.id                                           = CAN_PRIMARY_MESSAGE_FRAME_ID_STEERING_WHEEL_SET_ECU_STATUS;
+            frame.length                                       = can_primary_byte_size_steering_wheel_set_ecu_status;
             if (can_primary_api_serialize_from_id(frame.id, &message, frame.data) != -1) {
                 can_communications_api_add_to_tx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame);
             }
+        }
+
+        if (wheel_state_get_request_reset()) {
+            // reset mcu
+            NVIC_SystemReset();
         }
 
         can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY);

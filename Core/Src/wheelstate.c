@@ -9,3 +9,11 @@ enum CanPrimarySteeringWheelSetEcuStatusTargetstatus wheel_state_get_tson() {
 void wheel_state_set_tson(enum CanPrimarySteeringWheelSetEcuStatusTargetstatus target_status) {
     wheel_state.target_status = target_status;
 }
+
+void wheel_state_set_request_reset() {
+    wheel_state.request_reset = true;
+}
+
+bool wheel_state_get_request_reset() {
+    return wheel_state.request_reset;
+}
