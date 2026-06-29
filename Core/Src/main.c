@@ -35,9 +35,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include <stdbool.h>
 #include "can-communications-api.h"
 #include "can-communications-router-api.h"
+#include "can-primary-api.h"
+#include "wheelstate.h"
+#include <stdbool.h>
 
 /* USER CODE END Includes */
 
@@ -139,18 +141,20 @@ int main(void) {
     */
 
     struct CanCommunicationsNetworkConfig config[CAN_COMMUNICATION_NETWORK_COUNT] = {
-        [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
-            .send = fdcan_send_primary,
-            .on_receive = can_communications_router_api_receive_primary,
-            .cs_enter = __disable_irq,
-            .cs_exit = __enable_irq,
-        },
-        [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
-            .send = fdcan_send_secondary,
-            .on_receive = can_communications_router_api_receive_secondary,
-            .cs_enter = __disable_irq,
-            .cs_exit = __enable_irq,
-        },
+        [CAN_COMMUNICATION_NETWORK_PRIMARY] =
+            {
+                .send       = fdcan_send_primary,
+                .on_receive = can_communications_router_api_receive_primary,
+                .cs_enter   = __disable_irq,
+                .cs_exit    = __enable_irq,
+            },
+        [CAN_COMMUNICATION_NETWORK_SECONDARY] =
+            {
+                .send       = fdcan_send_secondary,
+                .on_receive = can_communications_router_api_receive_secondary,
+                .cs_enter   = __disable_irq,
+                .cs_exit    = __enable_irq,
+            },
     };
 
     can_communications_api_init(config);
@@ -162,7 +166,6 @@ int main(void) {
     HAL_FDCAN_Start(&hfdcan2);
     HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
     HAL_FDCAN_ActivateNotification(&hfdcan2, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
-
 
     /* USER CODE END 2 */
 
@@ -177,6 +180,14 @@ int main(void) {
             tson_button_pressed              = true;
             tson_button_pressed_time_elapsed = HAL_GetTick();
         } else if ((HAL_GetTick() - tson_button_pressed_time_elapsed) > 2500) {
+            struct CanCommunicationFrame frame = { 0 };
+            union CanPrimaryMessages message = { 0 };
+            message.steering_wheel_set_ecu_status.targetstatus = wheel_state_get_tson();
+            frame.id = CAN_PRIMARY_MESSAGE_FRAME_ID_STEERING_WHEEL_SET_ECU_STATUS;
+            frame.length = can_primary_byte_size_steering_wheel_set_ecu_status;
+            if (can_primary_api_serialize_from_id(frame.id, &message, frame.data) != -1) {
+                can_communications_api_add_to_tx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame);
+            }
         }
 
         can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY);
