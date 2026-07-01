@@ -130,7 +130,7 @@ int main(void) {
     MX_FMAC_Init();
     /* USER CODE BEGIN 2 */
 
-    static bool tson_button_pressed                  = false;
+    static bool tson_button_pressed = false;
     static uint32_t tson_button_pressed_time_elapsed = 0;
 
     /*
@@ -142,20 +142,18 @@ int main(void) {
     */
 
     struct CanCommunicationsNetworkConfig config[CAN_COMMUNICATION_NETWORK_COUNT] = {
-        [CAN_COMMUNICATION_NETWORK_PRIMARY] =
-            {
-                .send       = fdcan_send_primary,
-                .on_receive = can_communications_router_api_receive_primary,
-                .cs_enter   = __disable_irq,
-                .cs_exit    = __enable_irq,
-            },
-        [CAN_COMMUNICATION_NETWORK_SECONDARY] =
-            {
-                .send       = fdcan_send_secondary,
-                .on_receive = can_communications_router_api_receive_secondary,
-                .cs_enter   = __disable_irq,
-                .cs_exit    = __enable_irq,
-            },
+        [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
+            .send = fdcan_send_primary,
+            .on_receive = can_communications_router_api_receive_primary,
+            .cs_enter = __disable_irq,
+            .cs_exit = __enable_irq,
+        },
+        [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
+            .send = fdcan_send_secondary,
+            .on_receive = can_communications_router_api_receive_secondary,
+            .cs_enter = __disable_irq,
+            .cs_exit = __enable_irq,
+        },
     };
 
     can_communications_api_init(config);
@@ -178,14 +176,14 @@ int main(void) {
         if (tson_pin_state == GPIO_PIN_SET) {
             tson_button_pressed = false;
         } else if (!tson_button_pressed) {
-            tson_button_pressed              = true;
+            tson_button_pressed = true;
             tson_button_pressed_time_elapsed = HAL_GetTick();
         } else if ((HAL_GetTick() - tson_button_pressed_time_elapsed) > 2500) {
-            struct CanCommunicationFrame frame                 = {0};
-            union CanPrimaryMessages message                   = {0};
+            struct CanCommunicationFrame frame = { 0 };
+            union CanPrimaryMessages message = { 0 };
             message.steering_wheel_set_ecu_status.targetstatus = wheel_state_get_tson();
-            frame.id                                           = CAN_PRIMARY_MESSAGE_FRAME_ID_STEERING_WHEEL_SET_ECU_STATUS;
-            frame.length                                       = can_primary_byte_size_steering_wheel_set_ecu_status;
+            frame.id = CAN_PRIMARY_MESSAGE_FRAME_ID_STEERING_WHEEL_SET_ECU_STATUS;
+            frame.length = can_primary_byte_size_steering_wheel_set_ecu_status;
             if (can_primary_api_serialize_from_id(frame.id, &message, frame.data) != -1) {
                 can_communications_api_add_to_tx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame);
             }
@@ -201,6 +199,8 @@ int main(void) {
         can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_PRIMARY);
         can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_SECONDARY);
 
+        wheel_state_periodically_send_identity(HAL_GetTick());
+
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -213,8 +213,8 @@ int main(void) {
   * @retval None
   */
 void SystemClock_Config(void) {
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
     /** Supply configuration update enable
   */
@@ -230,33 +230,33 @@ void SystemClock_Config(void) {
     /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-    RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState            = RCC_HSE_ON;
-    RCC_OscInitStruct.HSIState            = RCC_HSI_DIV1;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
     RCC_OscInitStruct.HSICalibrationValue = 64;
-    RCC_OscInitStruct.CSIState            = RCC_CSI_ON;
+    RCC_OscInitStruct.CSIState = RCC_CSI_ON;
     RCC_OscInitStruct.CSICalibrationValue = 16;
-    RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM            = 6;
-    RCC_OscInitStruct.PLL.PLLN            = 137;
-    RCC_OscInitStruct.PLL.PLLP            = 1;
-    RCC_OscInitStruct.PLL.PLLQ            = 5;
-    RCC_OscInitStruct.PLL.PLLR            = 2;
-    RCC_OscInitStruct.PLL.PLLRGE          = RCC_PLL1VCIRANGE_2;
-    RCC_OscInitStruct.PLL.PLLVCOSEL       = RCC_PLL1VCOWIDE;
-    RCC_OscInitStruct.PLL.PLLFRACN        = 4096;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 6;
+    RCC_OscInitStruct.PLL.PLLN = 137;
+    RCC_OscInitStruct.PLL.PLLP = 1;
+    RCC_OscInitStruct.PLL.PLLQ = 5;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLFRACN = 4096;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         Error_Handler();
     }
 
     /** Initializes the CPU, AHB and APB buses clocks
   */
-    RCC_ClkInitStruct.ClockType      = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
-                                       RCC_CLOCKTYPE_D1PCLK1;
-    RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.SYSCLKDivider  = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.AHBCLKDivider  = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
+                                  RCC_CLOCKTYPE_D1PCLK1;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
     RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
@@ -289,24 +289,24 @@ uint32_t get_current_time_ms(void) {
 /* MPU Configuration */
 
 void MPU_Config(void) {
-    MPU_Region_InitTypeDef MPU_InitStruct = {0};
+    MPU_Region_InitTypeDef MPU_InitStruct = { 0 };
 
     /* Disables the MPU */
     HAL_MPU_Disable();
 
     /** Initializes and configures the Region and the memory to be protected
   */
-    MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
-    MPU_InitStruct.Number           = MPU_REGION_NUMBER0;
-    MPU_InitStruct.BaseAddress      = 0xC0000000;
-    MPU_InitStruct.Size             = MPU_REGION_SIZE_8MB;
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+    MPU_InitStruct.BaseAddress = 0xC0000000;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_8MB;
     MPU_InitStruct.SubRegionDisable = 0x0;
-    MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
     MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-    MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
-    MPU_InitStruct.IsShareable      = MPU_ACCESS_SHAREABLE;
-    MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
-    MPU_InitStruct.IsBufferable     = MPU_ACCESS_BUFFERABLE;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
 
     HAL_MPU_ConfigRegion(&MPU_InitStruct);
     /* Enables the MPU */
