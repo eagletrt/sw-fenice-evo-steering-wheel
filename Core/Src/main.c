@@ -35,10 +35,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#define _XOPEN_SOURCE
-#include "dma2d_utils.h"
-
-#include <time.h>
+#include "fsm.h"
+#include "parameters-api.h"
+#include "post.h"
+#include "screen-api.h"
+#include "ui-data-api.h"
+#include "can-communications-router-api.h"
 
 /* USER CODE END Includes */
 
@@ -49,6 +51,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define MAIN_INPUTS_POLL_PERIOD_MS (10U)
 
 /* USER CODE END PD */
 
@@ -61,14 +65,6 @@
 
 /* USER CODE BEGIN PV */
 
-#if CANSNIFFER_ENABLED == 1
-extern cansniffer_elem_t primary_cansniffer_buffer[primary_MESSAGE_COUNT];
-extern cansniffer_elem_t secondary_cansniffer_buffer[secondary_MESSAGE_COUNT];
-#endif
-
-extern bool primary_can_fatal_error;
-extern bool secondary_can_fatal_error;
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -80,6 +76,43 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/*!
+ * \brief Mirror a parameter transition into the UI snapshot.
+ *
+ * \param parameter_id Parameter that changed.
+ * \param value New value of the parameter.
+ */
+static void prv_main_sync_parameter_to_ui(enum InputsSharedParameterID parameter_id, uint8_t value) {
+    struct UIData *ui_data = ui_data_api_get();
+    switch (parameter_id) {
+        case INPUTS_SHARED_PARAMETER_ID_POWER:
+            ui_data->power = value;
+            break;
+        case INPUTS_SHARED_PARAMETER_ID_REGEN:
+            ui_data->regen = value;
+            break;
+        case INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING:
+            ui_data->torque = value;
+            break;
+        case INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL:
+            ui_data->slip_on = value;
+            break;
+        default:
+            break;
+    }
+}
+
+bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
+    // TODO: broadcast every transition on CAN
+
+    if (!parameters_api_is_shared(parameter_id)) {
+        return true;
+    }
+
+    prv_main_sync_parameter_to_ui(parameter_id, value);
+    return screen_api_on_parameter_change(parameter_id, value) == SCREEN_RC_OK;
+}
 
 /* USER CODE END 0 */
 
@@ -110,7 +143,9 @@ int main(void) {
 
     /* USER CODE BEGIN Init */
 
-    /* USER CODE END Init */
+    fsm_state_t current_state = FSM_STATE_INIT;
+
+        /* USER CODE END Init */
 
     /* Configure the system clock */
     SystemClock_Config();
@@ -137,161 +172,51 @@ int main(void) {
     /* USER CODE BEGIN 2 */
 
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
-    // HAL_GPIO_WritePin(LCD_BL_DIM_GPIO_Port, LCD_BL_DIM_Pin, GPIO_PIN_SET);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-    HAL_Delay(100);
 
-    UI_t sw_screen;
-    sw_init_screen(&sw_screen);
+    fdcan_start();
+    i2c_inputs_init();
+    i2c_leds_init();
 
-#define I2C_TESTS 0
-#if I2C_TESTS == 1
-    i2c_test_read_write_register();
-#endif
-#define SDRAM_TESTS 0
-#if SDRAM_TESTS == 1
-    sdram_test_write_all();
-    sdram_test_long_arrays();
-    sdram_test_end_of_memory();
-    sdram_test_simple_write();
-#endif
+    struct PostInitData post_init_data = {
+        .leds_transmit = i2c_leds_transmit,
+        .parameters_on_change = main_on_parameter_change,
+        .can_network_configs = {
+            [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
+                .cs_enter = __disable_irq,
+                .cs_exit = __enable_irq,
+                .on_receive = can_communications_router_api_receive_primary,
+                .send = fdcan_send_primary,
+            },
+            [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
+                .cs_enter = __disable_irq,
+                .cs_exit = __enable_irq,
+                .on_receive = can_communications_router_api_receive_secondary,
+                .send = fdcan_send_secondary,
+            },
+        },
+        .draw_rectangle = ltdc_draw_rectangle,
+    };
 
-#if 0  // Green screen
-  uint8_t *display_buffer = (uint8_t *)SDRAM_BASE_ADDRESS;
-  for (uint32_t icell = 0; icell < SCREEN_HEIGHT * SCREEN_WIDTH; ++icell) {
-    display_buffer[4 * icell] = 0xFF;
-    display_buffer[4 * icell + 1] = 0xFF;
-    display_buffer[4 * icell + 2] = 0x00;
-    display_buffer[4 * icell + 3] = 0x00;
-  }
-#endif
+    current_state = fsm_run_state(current_state, &post_init_data);
 
-    uint32_t active_framebuffer                      = FRAMEBUFFER1_ADDR;
-    uint32_t writable_framebuffer                    = FRAMEBUFFER2_ADDR;
-    uint32_t last_swap_framebuffer                   = HAL_GetTick();
-    static bool tson_button_pressed                  = false;
-    static uint32_t tson_button_pressed_time_elapsed = 0;
-
-    sw_set_canvas(&sw_screen, (uint32_t *)active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH);
-
-    GET_LAST_STATE(primary, ecu_set_power_maps, PRIMARY, ECU_SET_POWER_MAPS);
-    primary_ecu_set_power_maps_last_state->map_power = 1.0f;
-    primary_ecu_set_power_maps_last_state->reg_state = 1;
-    primary_ecu_set_power_maps_last_state->sc_state  = 1;
-    primary_ecu_set_power_maps_last_state->tv_state  = 1;
-
-    GET_LAST_STATE(primary, steering_wheel_version, PRIMARY, STEERING_WHEEL_VERSION);
-    struct tm timeinfo;
-    strptime(__DATE__ " " __TIME__, "%b %d %Y %H:%M:%S", &timeinfo);
-    primary_steering_wheel_version_last_state->canlib_build_time    = CANLIB_BUILD_TIME;
-    primary_steering_wheel_version_last_state->component_build_time = mktime(&timeinfo);
-
-    /*
-    GET_LAST_STATE(primary, hv_set_fans_status, PRIMARY, HV_SET_FANS_STATUS);
-    primary_hv_set_fans_status_last_state->fans_override = primary_hv_set_fans_status_fans_override_off;
-    primary_hv_set_fans_status_last_state->fans_speed    = 0.0f;
-    */
-
-    GET_LAST_STATE(primary, lv_set_pumps_speed, PRIMARY, LV_SET_PUMPS_SPEED);
-    primary_lv_set_pumps_speed_last_state->status      = primary_lv_set_pumps_speed_status_auto;
-    primary_lv_set_pumps_speed_last_state->pumps_speed = 0.0f;
-
-    GET_LAST_STATE(primary, lv_set_radiator_speed, PRIMARY, LV_SET_RADIATOR_SPEED);
-    primary_lv_set_radiator_speed_last_state->status         = primary_lv_set_radiator_speed_status_auto;
-    primary_lv_set_radiator_speed_last_state->radiator_speed = 0.0f;
-
-    /*
-    GET_LAST_STATE(primary, lv_set_cooling_aggressiveness, PRIMARY, LV_SET_COOLING_AGGRESSIVENESS);
-    primary_lv_set_cooling_aggressiveness_last_state->status = primary_lv_set_cooling_aggressiveness_status_normal;
-    */
-
-    GET_LAST_STATE(primary, ecu_set_ptt_status, PRIMARY, ECU_SET_PTT_STATUS);
-    primary_ecu_set_ptt_status_last_state->status = primary_ecu_set_ptt_status_status_off;
-
-    HAL_DMA2D_Init(&hdma2d);
-    HAL_DMA2D_ConfigLayer(&hdma2d, DMA2D_BACKGROUND_LAYER);
-
-    if (HAL_FDCAN_Start(&hfdcan1) != HAL_OK) {
-        Error_Handler();
-    }
-    if (HAL_FDCAN_Start(&hfdcan2) != HAL_OK) {
-        Error_Handler();
-    }
-    inputs_init();
-#if WATCHDOG_ENABLED == 1
-    init_watchdog();
-#endif
-#if CAN_OVER_SERIAL_ENABLED == 1
-    can_over_serial_init();
-#endif
+    struct FsmData fsm_data = { 0 };
+    uint32_t last_inputs_poll_tick = 0U;
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
-    sw_screen_white(&sw_screen);
-    sw_screen.oc.pixels = (uint32_t *)writable_framebuffer;
-    sw_screen_white(&sw_screen);
-
     while (1) {
-#if CAN_OVER_SERIAL_ENABLED == 1
-        can_over_serial_routine();
-#endif
-        static uint32_t last_read_inputs = 0;
-        if ((get_current_time_ms() - last_read_inputs) > 10) {
-            last_read_inputs = get_current_time_ms();
-            read_inputs();
+        fsm_data.tick = HAL_GetTick();
+
+        if (fsm_data.tick - last_inputs_poll_tick >= MAIN_INPUTS_POLL_PERIOD_MS) {
+            last_inputs_poll_tick = fsm_data.tick;
+            i2c_inputs_poll(fsm_data.tick);
+            gpio_inputs_poll(fsm_data.tick);
         }
 
-        static uint32_t last_ptt_periodic_check = 0;
-        if ((get_current_time_ms() - last_ptt_periodic_check) > 50) {
-            last_ptt_periodic_check = get_current_time_ms();
-            ptt_periodic_check(&sw_screen);
-        }
-
-        if ((get_current_time_ms() - last_swap_framebuffer) > 50) {
-            last_swap_framebuffer = get_current_time_ms();
-            extern int button_long_pressed;
-            uint32_t button_lts = 0;
-
-            if (button_long_pressed) {
-                if (get_current_time_ms() - button_lts > 500) {
-                    button_long_pressed = false;
-                }
-                sw_screen_white(&sw_screen);
-            } else {
-                sw_update_graphics_from_can_messages(&sw_screen);
-                sw_update_screen(0.f, &sw_screen);
-            }
-            // dma2d_m2m(writable_framebuffer, active_framebuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
-            // memcpy((uint8_t*) writable_framebuffer, (uint8_t*) active_framebuffer, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
-            uint32_t tmp         = active_framebuffer;
-            active_framebuffer   = writable_framebuffer;
-            writable_framebuffer = tmp;
-            sw_screen.oc.pixels  = (uint32_t *)writable_framebuffer;
-            HAL_LTDC_SetAddress(&hltdc, active_framebuffer, LTDC_LAYER_1);
-        }
-
-        PERIODIC_SEND(primary, PRIMARY, ecu_set_power_maps, ECU_SET_POWER_MAPS);
-        PERIODIC_SEND(primary, PRIMARY, steering_wheel_version, STEERING_WHEEL_VERSION);
-        // PERIODIC_SEND(primary, PRIMARY, hv_set_fans_status, HV_SET_FANS_STATUS);
-        // PERIODIC_SEND(primary, PRIMARY, lv_set_pumps_speed, LV_SET_PUMPS_SPEED);
-        // PERIODIC_SEND(primary, PRIMARY, lv_set_radiator_speed, LV_SET_RADIATOR_SPEED);
-        PERIODIC_SEND(primary, PRIMARY, ecu_set_ptt_status, ECU_SET_PTT_STATUS);
-        // #define PRIMARY_INTERVAL_LV_SET_COOLING_AGGRESSIVENESS (1000U)
-        // PERIODIC_SEND(primary, PRIMARY, lv_set_cooling_aggressiveness, LV_SET_COOLING_AGGRESSIVENESS);
-
-        GPIO_PinState tson_pin_state = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin);
-
-        if (tson_pin_state == GPIO_PIN_SET) {
-            tson_button_pressed = false;
-        } else if (!tson_button_pressed) {
-            tson_button_pressed              = true;
-            tson_button_pressed_time_elapsed = get_current_time_ms();
-        } else if ((get_current_time_ms() - tson_button_pressed_time_elapsed) > BUTTONS_LONG_PRESS_TIME) {
-            prepare_and_send_ecu_set_status();
-        }
-
+        current_state = fsm_run_state(current_state, &fsm_data);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -359,21 +284,6 @@ void SystemClock_Config(void) {
 }
 
 /* USER CODE BEGIN 4 */
-
-void openblt_reset(void) {
-#ifdef STEERING_LOG_ENABLED
-    print("Resetting for open blt\n");
-#endif
-    HAL_NVIC_SystemReset();
-}
-
-void system_reset(void) {
-    HAL_NVIC_SystemReset();
-}
-
-uint32_t get_current_time_ms(void) {
-    return HAL_GetTick();
-}
 
 /* USER CODE END 4 */
 

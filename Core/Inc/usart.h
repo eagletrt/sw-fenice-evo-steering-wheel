@@ -30,8 +30,6 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
-#include <stdarg.h>
-
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef hlpuart1;
@@ -43,9 +41,7 @@ extern UART_HandleTypeDef hlpuart1;
 void MX_LPUART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-void can_via_serial_init(void);
-void can_via_serial_routine(void);
-void print(const char *fmt, ...);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -1,6 +1,0 @@
-{
-    "cmake.sourceDirectory": "/home/gmazzucchi/ssd/eagle/volante/fenice-evo-steering-wheel/Core/UI",
-    "files.associations": {
-        "primary_watchdog.h": "c"
-    }
-}

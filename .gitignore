@@ -12,3 +12,6 @@ STM32Make.make
 .vscode/c_cpp_properties.json
 .cache/**
 compile_commands.json
+.pio/**
+tools/generated/**
+tools/.fonts.json.sha256

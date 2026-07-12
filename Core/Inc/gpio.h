@@ -40,6 +40,16 @@ void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+/*!
+ * \brief Poll the direct-GPIO inputs and feed them to the inputs module.
+ *
+ * \details Intended to be called from the main loop every ~10 ms, together
+ *     with i2c_inputs_poll.
+ *
+ * \param current_tick_ms Current tick count in milliseconds.
+ */
+void gpio_inputs_poll(uint32_t current_tick_ms);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

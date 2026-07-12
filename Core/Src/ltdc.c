@@ -21,6 +21,23 @@
 #include "ltdc.h"
 
 /* USER CODE BEGIN 0 */
+
+#include "dma2d.h"
+#include "screen.h"
+
+/*!
+ * \brief Framebuffer scanned by the LTDC, at the start of the external SDRAM.
+ *
+ * \details The raster renders incrementally (only boxes flagged as updated
+ *     are redrawn), so a single framebuffer is used and rectangles are
+ *     drawn straight into the displayed surface. The SDRAM region is
+ *     configured as non-cacheable by MPU_Config, so no cache maintenance
+ *     is needed between the CPU/DMA2D writes and the LTDC reads.
+ */
+#define LTDC_FRAMEBUFFER_ADDRESS (0xC0000000U)
+
+static uint32_t *const draw_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER_ADDRESS;
+
 /* USER CODE END 0 */
 
 LTDC_HandleTypeDef hltdc;
@@ -287,5 +304,10 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef *ltdcHandle) {
 }
 
 /* USER CODE BEGIN 1 */
+
+enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
+    dma2d_draw_rectangle(draw_framebuffer, x, y, w, h, color);
+    return RASTER_RC_OK;
+}
 
 /* USER CODE END 1 */
