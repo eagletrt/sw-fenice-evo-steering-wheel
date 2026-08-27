@@ -78,8 +78,11 @@ enum ScreenReturnCode screen_api_update(uint32_t tick) {
         screen_handler.popup_visible = false;
     }
 
-    if (raster_api_render(&screen_handler.raster) != RASTER_RC_OK) {
-        return SCREEN_RC_ERROR;
+    if (screen_api_should_redraw(screen_handler.raster.interface, screen_handler.raster.box_count)) {
+        if (raster_api_render(&screen_handler.raster) != RASTER_RC_OK) {
+            return SCREEN_RC_ERROR;
+        }
+        return SCREEN_RC_RENDERED;
     }
     return SCREEN_RC_OK;
 }
@@ -214,4 +217,18 @@ enum ScreenReturnCode screen_api_sync_data(const struct UIData *ui_data) {
     }
 
     return return_code;
+}
+
+bool screen_api_should_redraw(struct Box *boxes, uint16_t count) {
+    if (boxes == NULL) {
+        return false;
+    }
+
+    for (uint16_t i = 0U; i < count; i++) {
+        if (boxes[i].updated) {
+            return true;
+        }
+    }
+
+    return false;
 }

@@ -16,6 +16,7 @@ It also handles **buttons** and **3 rotary switches (manettini)** for user input
 - `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules (FSM, inputs, parameters, LEDs, CAN communications, dashboard/popup/screen UI).
 - `Core/Src/steering/drivers/`, `Core/Inc/steering/drivers/`: hardware-agnostic device drivers (MCP23017 GPIO expander, KTD2052 LED controller, Micron SDRAM).
 - Everything else in `Core/` is CubeMX-generated peripheral code; the hardware glue that wires peripherals to the application modules lives in its user-code sections.
+- `assets/fsm/fsm.dot`: source of truth for the FSM. Regenerate `fsm.c`/`fsm.h` with `./scripts/generate_fsm.sh assets/fsm/fsm.dot` (requires the `gv_fsm` gem), then re-apply the user-code sections.
 
 ## Development
 

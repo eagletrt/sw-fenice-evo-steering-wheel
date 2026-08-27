@@ -57,7 +57,8 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
  *
  * \param tick Current tick count in milliseconds, used for popup timeout checks.
  *
- * \retval SCREEN_RC_OK if the screen was updated successfully.
+ * \retval SCREEN_RC_OK if the screen was updated but nothing had to be redrawn.
+ * \retval SCREEN_RC_RENDERED if the screen was updated and the raster redrew at least one box.
  * \retval SCREEN_RC_ERROR if an error occurred during update.
  */
 enum ScreenReturnCode screen_api_update(uint32_t tick);
@@ -191,5 +192,15 @@ enum ScreenReturnCode screen_api_set_tire_temperatures(int16_t front_left, int16
  * \retval SCREEN_RC_OK on success.
  */
 enum ScreenReturnCode screen_api_set_motor_temperatures(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right);
+
+/*!
+ * \brief Check if any of the given boxes needs to be redrawn.
+ *
+ * \param boxes Pointer to an array of Box structures to check.
+ * \param count Number of boxes in the array.
+ *
+ * \return true if any box needs to be redrawn, false otherwise.
+ */
+bool screen_api_should_redraw(struct Box *boxes, uint16_t count);
 
 #endif // SCREEN_API_H

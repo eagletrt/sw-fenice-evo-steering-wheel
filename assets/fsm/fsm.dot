@@ -1,0 +1,55 @@
+digraph "steering_wheel_fsm" {
+    bgcolor="white"
+    layout="dot"
+    center=true
+    concentrate=false
+
+    init [
+        style="filled"
+        color="#66ff66"
+        fillcolor="#c1ffc1"
+    ]
+
+    idle
+    flash
+
+    error [
+        style="filled"
+        color="#ff6666"
+        fillcolor="#ffc1c1"
+    ]
+
+    autonomous
+
+    // ========================
+    // Init transitions
+    // ========================
+    init -> idle  [label="init_done"]
+    init -> error [label="init_error"]
+
+    // ========================
+    // Idle transitions
+    // ========================
+    idle -> autonomous  [label="autonomous_enable"]
+    idle -> flash       [label="start_flash"]
+    idle -> error       [label="error_detected"]
+    idle -> idle
+
+    // ========================
+    // Autonomous transitions
+    // ========================
+    autonomous -> idle  [label="autonomous_disable"]
+    autonomous -> error [label="error_detected"]
+
+    // ========================
+    // Flash transitions
+    // ========================
+    flash -> flash
+    flash -> idle  [label="flash_done"]
+    flash -> error [label="error_detected"]
+
+    // ========================
+    // Error transitions
+    // ========================
+    error -> error
+}

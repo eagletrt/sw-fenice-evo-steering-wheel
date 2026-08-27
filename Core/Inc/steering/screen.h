@@ -17,6 +17,7 @@
  */
 enum ScreenReturnCode {
     SCREEN_RC_OK,           /*!< Operation completed successfully */
+    SCREEN_RC_RENDERED,     /*!< The screen was rendered successfully */
     SCREEN_RC_NULL_POINTER, /*!< A required pointer argument was NULL */
     SCREEN_RC_ERROR,        /*!< An error occurred during the operation */
 };
