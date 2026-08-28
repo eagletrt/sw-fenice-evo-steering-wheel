@@ -26,17 +26,21 @@
 #include "screen.h"
 
 /*!
- * \brief Framebuffer scanned by the LTDC, at the start of the external SDRAM.
+ * \brief The two framebuffers scanned by the LTDC, in the external SDRAM.
  *
- * \details The raster renders incrementally (only boxes flagged as updated
- *     are redrawn), so a single framebuffer is used and rectangles are
- *     drawn straight into the displayed surface. The SDRAM region is
- *     configured as non-cacheable by MPU_Config, so no cache maintenance
- *     is needed between the CPU/DMA2D writes and the LTDC reads.
+ * \details The wheel double-buffers: the raster renders into
+ *     draw_framebuffer while the LTDC scans display_framebuffer, and the
+ *     two are swapped once a frame has been fully drawn. Both live in the
+ *     external SDRAM, 2 MB apart, which leaves room for the 800*480*4 =
+ *     1'536'000 bytes each one needs. The SDRAM region is configured as
+ *     non-cacheable by MPU_Config, so no cache maintenance is needed
+ *     between the CPU/DMA2D writes and the LTDC reads.
  */
-#define LTDC_FRAMEBUFFER_ADDRESS (0xC0000000U)
+#define LTDC_FRAMEBUFFER1_ADDRESS (0xC0000000U)
+#define LTDC_FRAMEBUFFER2_ADDRESS (0xC0200000U)
 
-static uint32_t *const draw_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER_ADDRESS;
+static uint32_t *display_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER1_ADDRESS;
+static uint32_t *draw_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER2_ADDRESS;
 
 /* USER CODE END 0 */
 
@@ -81,7 +85,7 @@ void MX_LTDC_Init(void) {
     pLayerCfg.Alpha0          = 0;
     pLayerCfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_CA;
     pLayerCfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_CA;
-    pLayerCfg.FBStartAdress   = 0xC0000000;
+    pLayerCfg.FBStartAdress   = LTDC_FRAMEBUFFER1_ADDRESS;
     pLayerCfg.ImageWidth      = 800;
     pLayerCfg.ImageHeight     = 480;
     pLayerCfg.Backcolor.Blue  = 0;
@@ -305,9 +309,38 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef *ltdcHandle) {
 
 /* USER CODE BEGIN 1 */
 
+void ltdc_swap_framebuffers(void) {
+    dma2d_draw_drain();
+
+    uint32_t *temp = display_framebuffer;
+    display_framebuffer = draw_framebuffer;
+    draw_framebuffer = temp;
+
+    __HAL_LTDC_LAYER(&hltdc, 0)->CFBAR = (uint32_t)display_framebuffer;
+    __HAL_LTDC_RELOAD_CONFIG(&hltdc);
+
+    /* Seed the new draw buffer with the currently-visible frame so partial
+     * renders after this point overlay changes on the frame the user is
+     * looking at, not on stale content left in the back buffer. */
+    (void)dma2d_enqueue_framebuffer_copy(draw_framebuffer, display_framebuffer);
+}
+
 enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
-    dma2d_draw_rectangle(draw_framebuffer, x, y, w, h, color);
-    return RASTER_RC_OK;
+    if (w == 0 || h == 0 || x >= (int)SCREEN_WIDTH || y >= (int)SCREEN_HEIGHT) {
+        return RASTER_RC_OK;
+    }
+    if (x + w > SCREEN_WIDTH) {
+        w = (int)SCREEN_WIDTH - x;
+    }
+    if (y + h > SCREEN_HEIGHT) {
+        h = (int)SCREEN_HEIGHT - y;
+    }
+
+    return dma2d_enqueue_rectangle(draw_framebuffer, x, y, w, h, color);
+}
+
+enum RasterReturnCode ltdc_clear_screen(void) {
+    return dma2d_enqueue_rectangle(draw_framebuffer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (struct Color){ .argb = 0xFF000000 });
 }
 
 /* USER CODE END 1 */

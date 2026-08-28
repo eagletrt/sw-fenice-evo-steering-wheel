@@ -33,6 +33,7 @@ EAGLETRT_STATIC const struct ParameterMeta parameters_api_meta[INPUTS_SHARED_PAR
     [INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG] = { .is_toggle = true, .is_shared = true },
     [INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] = { .is_toggle = true, .is_shared = true },
     [INPUTS_SHARED_PARAMETER_ID_PTT] = { .is_toggle = true, .is_shared = false },
+    [INPUTS_SHARED_PARAMETER_ID_TS_ON] = { .is_toggle = true, .is_shared = false },
 };
 
 /*!
@@ -165,6 +166,14 @@ enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID but
                        ? INPUTS_RC_OK
                        : INPUTS_RC_ERROR;
         }
+        case INPUTS_SHARED_BUTTON_ID_TS_ON: {
+            // Momentary: the ECU wants the request asserted for as long as
+            // the driver holds the button, so press/release drive it
+            // directly instead of toggling.
+            return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_TS_ON, 1U) == PARAMETERS_RC_OK
+                       ? INPUTS_RC_OK
+                       : INPUTS_RC_ERROR;
+        }
         default:
             return INPUTS_RC_OK;
     }
@@ -182,6 +191,11 @@ enum InputsReturnCode parameters_api_handle_button_release(enum InputsSharedButt
             *released = false;
 
             return prv_recompute_ptt() == PARAMETERS_RC_OK
+                       ? INPUTS_RC_OK
+                       : INPUTS_RC_ERROR;
+        }
+        case INPUTS_SHARED_BUTTON_ID_TS_ON: {
+            return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_TS_ON, 0U) == PARAMETERS_RC_OK
                        ? INPUTS_RC_OK
                        : INPUTS_RC_ERROR;
         }

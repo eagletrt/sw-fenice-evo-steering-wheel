@@ -43,7 +43,7 @@ static void prv_fdcan_config_rx(FDCAN_HandleTypeDef *hfdcan, uint32_t fifo, uint
         .FilterType = FDCAN_FILTER_RANGE,
         .FilterConfig = fifo,
         .FilterID1 = 0,
-        .FilterID2 = ((1U << 11U) - 1U) << 8U,
+        .FilterID2 = (1U << 11U) - 1U,
         .IsCalibrationMsg = 0,
         .RxBufferIndex = 0,
     };

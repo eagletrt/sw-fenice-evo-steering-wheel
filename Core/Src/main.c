@@ -41,6 +41,8 @@
 #include "screen-api.h"
 #include "ui-data-api.h"
 #include "can-communications-router-api.h"
+#include "identity-api.h"
+#include "can-primary.h"
 
 /* USER CODE END Includes */
 
@@ -103,8 +105,51 @@ static void prv_main_sync_parameter_to_ui(enum InputsSharedParameterID parameter
     }
 }
 
+/*!
+ * \brief Map the wheel FSM state onto the status signal of SteeringWheelFsm.
+ *
+ * \param state The current FSM state.
+ *
+ * \return The matching CanPrimarySteeringwheelfsmStatus value.
+ */
+static enum CanPrimarySteeringwheelfsmStatus prv_main_fsm_status(fsm_state_t state) {
+    switch (state) {
+        case FSM_STATE_IDLE:
+            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE;
+        case FSM_STATE_ERROR:
+            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR;
+        case FSM_STATE_FLASH:
+            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_FLASH;
+        case FSM_STATE_AUTONOMOUS:
+            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_AUTONOMOUS;
+        case FSM_STATE_INIT:
+        default:
+            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_INIT;
+    }
+}
+
+/*!
+ * \brief Queue every cyclic frame the wheel owes the bus this tick.
+ *
+ * \details Called just before the FSM runs, so anything queued here is
+ *     drained by the process_tx pass inside the same iteration.
+ *
+ * \param state The current FSM state, broadcast as our identity status.
+ * \param tick Current tick in milliseconds.
+ */
+static void prv_main_broadcast_can(fsm_state_t state, uint32_t tick) {
+    EAGLETRT_API_UNUSED(can_communications_router_api_process_tx_periodic(tick));
+    EAGLETRT_API_UNUSED(identity_api_periodically_send_state(prv_main_fsm_status(state), tick));
+    EAGLETRT_API_UNUSED(identity_api_periodically_send_version(tick));
+    EAGLETRT_API_UNUSED(identity_api_periodically_send_libcan_version(tick));
+}
+
 bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
-    // TODO: broadcast every transition on CAN
+    // Every transition goes on the bus, shared with the UI or not: TS-on
+    // and PTT are exactly the two that never reach the popup.
+    if (can_communications_router_api_on_parameter_change(parameter_id, value) != CAN_COMMUNICATION_RC_OK) {
+        return false;
+    }
 
     if (!parameters_api_is_shared(parameter_id)) {
         return true;
@@ -201,6 +246,7 @@ int main(void) {
     current_state = fsm_run_state(current_state, &post_init_data);
 
     struct FsmData fsm_data = { 0 };
+    fsm_data.swap_framebuffers = ltdc_swap_framebuffers;
     uint32_t last_inputs_poll_tick = 0U;
 
     /* USER CODE END 2 */
@@ -215,6 +261,8 @@ int main(void) {
             i2c_inputs_poll(fsm_data.tick);
             gpio_inputs_poll(fsm_data.tick);
         }
+
+        prv_main_broadcast_can(current_state, fsm_data.tick);
 
         current_state = fsm_run_state(current_state, &fsm_data);
         /* USER CODE END WHILE */

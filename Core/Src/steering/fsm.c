@@ -145,10 +145,15 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
 
         switch (screen_api_update(fsm_data->tick)) {
             case SCREEN_RC_OK:
-            case SCREEN_RC_RENDERED:
-                // This wheel drives a single framebuffer in SDRAM, so a
-                // completed render needs no buffer swap.
                 break;
+            case SCREEN_RC_RENDERED: {
+                if (fsm_data->swap_framebuffers == NULL) {
+                    next_state = FSM_STATE_ERROR;
+                    break;
+                }
+                fsm_data->swap_framebuffers();
+                break;
+            }
 
             case SCREEN_RC_ERROR:
             case SCREEN_RC_NULL_POINTER:

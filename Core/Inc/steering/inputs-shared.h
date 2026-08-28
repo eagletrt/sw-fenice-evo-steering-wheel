@@ -11,9 +11,9 @@
  *     - the taxonomy of physical inputs (knob and button IDs), consumed by
  *       the inputs module;
  *     - the full list of parameters managed by the parameters module. Some
- *       are forwarded to the UI popup, others (like PTT) only drive
- *       hardware side effects. parameters_api_is_shared is the source of
- *       truth on which is which.
+ *       are forwarded to the UI popup, others (like PTT and TS_ON) only
+ *       drive hardware side effects and the CAN broadcast.
+ *       parameters_api_is_shared is the source of truth on which is which.
  *
  *     Raw button/knob events never reach the UI: they are mapped to
  *     parameter changes by the parameters module and only the resulting
@@ -73,6 +73,7 @@ enum InputsSharedParameterID {
     INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG,    /*!< Telemetry log toggle */
     INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL,   /*!< Launch control toggle */
     INPUTS_SHARED_PARAMETER_ID_PTT,              /*!< Push-To-Talk toggle */
+    INPUTS_SHARED_PARAMETER_ID_TS_ON,            /*!< TS-on request, held while the button is pressed */
     INPUTS_SHARED_PARAMETER_ID_COUNT,
 };
 

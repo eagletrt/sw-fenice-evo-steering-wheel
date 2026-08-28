@@ -12,6 +12,7 @@
 #include "leds-api.h"
 #include "parameters-api.h"
 #include "can-communications-api.h"
+#include "identity-api.h"
 #include "screen-api.h"
 
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
@@ -48,6 +49,10 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     }
 
     if (can_communications_api_init(post_init_data->can_network_configs) != CAN_COMMUNICATION_RC_OK) {
+        ret_code = POST_RC_ERROR;
+    }
+
+    if (identity_api_init() != IDENTITY_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 
