@@ -21,6 +21,7 @@
 #include "label.h"
 #include "colors.h"
 #include "style.h"
+#include <stdint.h>
 
 #define DASHBOARD_COLOR_PRIMARY (STYLE_DARK_GRAY)
 #define DASHBOARD_COLOR_SECONDARY (STYLE_WHITE)
@@ -68,7 +69,7 @@ enum DashboardReturnCode {
  *     The ordering only matters for traversal in dashboard_api_init; consumers
  *     never index by raw integer.
  */
-enum DashboardFieldId {
+enum DashboardFieldId : uint8_t {
     DASHBOARD_FIELD_DASHBOARD_BACKGROUND, /*!< Background box covering the whole dashboard */
     DASHBOARD_FIELD_SCENARIO_HEADER,      /*!< "SCENARIO" header, left strip top */
     DASHBOARD_FIELD_REGEN_BACKGROUND,     /*!< Background box for the regen slot */

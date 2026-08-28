@@ -212,17 +212,17 @@ EAGLETRT_STATIC enum UIDataVehicleState prv_router_api_map_vehicle_state(uint8_t
  * \brief Largest of four temperatures, rounded to the nearest degree.
  *
  * \details The dashboard shows a single number per group, and the one that
- *     matters to the driver is the hottest corner.
+ *     matters to the driver is the hottest inverter.
  *
- * \param a First temperature, in °C.
- * \param b Second temperature, in °C.
- * \param c Third temperature, in °C.
- * \param d Fourth temperature, in °C.
+ * \param front_left  First temperature, in °C.
+ * \param front_right Second temperature, in °C.
+ * \param rear_left   Third temperature, in °C.
+ * \param rear_right  Fourth temperature, in °C.
  *
  * \return The largest of the four, as a whole number of °C.
  */
-EAGLETRT_STATIC int16_t prv_router_api_hottest(float a, float b, float c, float d) {
-    float max = EAGLETRT_API_MAX(EAGLETRT_API_MAX(a, b), EAGLETRT_API_MAX(c, d));
+EAGLETRT_STATIC int16_t prv_router_api_hottest(float front_left, float front_right, float rear_left, float rear_right) {
+    float max = EAGLETRT_API_MAX(EAGLETRT_API_MAX(front_left, front_right), EAGLETRT_API_MAX(rear_left, rear_right));
     return (int16_t)max;
 }
 

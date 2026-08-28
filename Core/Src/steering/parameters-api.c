@@ -213,13 +213,13 @@ enum InputsReturnCode parameters_api_handle_knob(const enum InputsSharedKnobID k
         case INPUTS_SHARED_KNOB_ID_FRONT_RIGHT:
             parameter_id = INPUTS_SHARED_PARAMETER_ID_REGEN;
             break;
-        case INPUTS_SHARED_KNOB_ID_SIDE_LEFT:
+        case INPUTS_SHARED_KNOB_ID_FRONT_CENTER:
             parameter_id = INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING;
             break;
         default:
             return INPUTS_RC_OK;
     }
-    int16_t candidate = (int16_t)parameters_handler.values[parameter_id] + (int16_t)delta;
+    int16_t candidate = parameters_handler.values[parameter_id] + delta;
     if (prv_parameters_api_apply_value(parameter_id, prv_parameters_api_clamp_to_allowed(parameter_id, candidate)) != PARAMETERS_RC_OK) {
         return INPUTS_RC_ERROR;
     }

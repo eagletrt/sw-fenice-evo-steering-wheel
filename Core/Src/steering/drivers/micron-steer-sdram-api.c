@@ -2,6 +2,8 @@
 #include "micron-steer-sdram-api.h"
 #include "eagletrt.h"
 
+#define AUTO_REFRESH_NUMBER (8U) /*!< Number of auto-refresh commands to issue */
+
 /*!
  * \brief Enables the clock for the MicronSteer SDRAM
  *
@@ -86,7 +88,7 @@ EAGLETRT_STATIC enum MicronSteerSdramReturnCode prv_micron_steer_sdram_api_refre
         return MICRON_STEER_SDRAM_RC_ERROR;
     }
 
-    constexpr uint32_t auto_refresh_number = 8; // Number of auto-refresh commands to issue
+    constexpr uint32_t auto_refresh_number = AUTO_REFRESH_NUMBER; // Number of auto-refresh commands to issue
 
     struct MicronSteerSdramCommand command = {
         .command_mode = MICRON_STEER_SDRAM_AUTOREFRESH_MODE_CMD,

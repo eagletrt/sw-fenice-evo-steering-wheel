@@ -154,11 +154,11 @@ enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
 
     for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
         const struct DashboardFieldLayout *field_layout = &prv_dashboard_layout[i];
-        const struct Color bg = { .argb = field_layout->background_argb };
+        const struct Color background = { .argb = field_layout->background_argb };
 
         // used by background-only boxes
         if (field_layout->initial_text == NULL) {
-            if (box_api_init(&handler->boxes[i], i, field_layout->rect, bg, NULL) != RASTER_RC_OK) {
+            if (box_api_init(&handler->boxes[i], i, field_layout->rect, background, NULL) != RASTER_RC_OK) {
                 return DASHBOARD_RC_ERROR;
             }
             continue;
@@ -173,7 +173,7 @@ enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
         if (label_api_init(&handler->labels[i], handler->text[i], offset_x, offset_y, &font_inter, field_layout->font_size, FONT_ALIGN_CENTER, text_color) != RASTER_RC_OK) {
             return DASHBOARD_RC_ERROR;
         }
-        if (box_api_init(&handler->boxes[i], i, field_layout->rect, bg, &handler->labels[i]) != RASTER_RC_OK) {
+        if (box_api_init(&handler->boxes[i], i, field_layout->rect, background, &handler->labels[i]) != RASTER_RC_OK) {
             return DASHBOARD_RC_ERROR;
         }
     }
@@ -285,10 +285,11 @@ enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler 
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
+    constexpr int32_t divider = 1000;
     const char sign = (delta_ms < 0) ? '-' : '+';
     int32_t magnitude = (delta_ms < 0) ? -delta_ms : delta_ms;
-    int32_t integer = magnitude / 1000;
-    int32_t decimal = magnitude % 1000;
+    int32_t integer = magnitude / divider;
+    int32_t decimal = magnitude % divider;
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP_DELTA, "%c%" PRId32 ".%03" PRId32, sign, integer, decimal);
     return DASHBOARD_RC_OK;
 }
