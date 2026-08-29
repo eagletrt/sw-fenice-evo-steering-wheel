@@ -221,6 +221,25 @@ enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler
     return DASHBOARD_RC_OK;
 }
 
+enum DashboardReturnCode dashboard_api_set_ptt(struct DashboardHandler *handler, bool active) {
+    if (handler == NULL) {
+        return DASHBOARD_RC_NULL_POINTER;
+    }
+
+    const uint32_t color = active ? DASHBOARD_COLOR_PTT : DASHBOARD_COLOR_PRIMARY;
+    struct Box *box = &handler->boxes[DASHBOARD_FIELD_SCENARIO_HEADER];
+    if (box->color.argb == color) {
+        return DASHBOARD_RC_OK;
+    }
+
+    /* Only the fill changes, so nothing marks the box dirty for us the way
+     * a text change would - do it here or the raster skips the redraw. */
+    box->color.argb = color;
+    box->updated = true;
+
+    return DASHBOARD_RC_OK;
+}
+
 enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler, uint8_t percent) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;

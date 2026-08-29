@@ -20,7 +20,7 @@ Functions and types have been generated with prefix "fsm_"
 
 /*** USER CODE BEGIN MACROS ***/
 
-#include "leds.h"
+#include <stdint.h>
 
 /*** USER CODE END MACROS ***/
 

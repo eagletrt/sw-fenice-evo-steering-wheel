@@ -114,6 +114,10 @@ enum ScreenReturnCode screen_api_set_slip(bool slip_on) {
     return prv_screen_api_forward_return_code(dashboard_api_set_slip(&screen_handler.dashboard, slip_on));
 }
 
+enum ScreenReturnCode screen_api_set_ptt(bool active) {
+    return prv_screen_api_forward_return_code(dashboard_api_set_ptt(&screen_handler.dashboard, active));
+}
+
 enum ScreenReturnCode screen_api_set_soc(uint8_t percent) {
     return prv_screen_api_forward_return_code(dashboard_api_set_soc(&screen_handler.dashboard, percent));
 }
@@ -189,6 +193,9 @@ enum ScreenReturnCode screen_api_sync_data(const struct UIData *ui_data) {
         return_code = SCREEN_RC_ERROR;
     }
     if (screen_api_set_slip(ui_data->slip_on != 0U) != SCREEN_RC_OK) {
+        return_code = SCREEN_RC_ERROR;
+    }
+    if (screen_api_set_ptt(ui_data->ptt != 0U) != SCREEN_RC_OK) {
         return_code = SCREEN_RC_ERROR;
     }
 

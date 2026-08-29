@@ -111,6 +111,9 @@ EAGLETRT_STATIC void prv_main_sync_parameter_to_ui(enum InputsSharedParameterID 
         case INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL:
             ui_data->slip_on = value;
             break;
+        case INPUTS_SHARED_PARAMETER_ID_PTT:
+            ui_data->ptt = value;
+            break;
         default:
             break;
     }
@@ -172,16 +175,19 @@ EAGLETRT_STATIC void prv_main_broadcast_can(fsm_state_t state, uint32_t tick) {
 bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
     // Every transition goes on the bus, shared with the UI or not: TS-on
     // and PTT are exactly the two that never reach the popup.
-    logger_api_log(LOGGER_LEVEL_DEBUG, "Parameter %d changed to %d", parameter_id, value);
     if (can_communications_router_api_on_parameter_change(parameter_id, value) != CAN_COMMUNICATION_RC_OK) {
         return false;
     }
+
+    // Every parameter reaches the dashboard; parameters_api_is_shared only
+    // decides which ones additionally raise the popup. PTT is the case that
+    // matters: it never pops up, but it does tint the SCENARIO header.
+    prv_main_sync_parameter_to_ui(parameter_id, value);
 
     if (!parameters_api_is_shared(parameter_id)) {
         return true;
     }
 
-    prv_main_sync_parameter_to_ui(parameter_id, value);
     return screen_api_on_parameter_change(parameter_id, value) == SCREEN_RC_OK;
 }
 
@@ -250,10 +256,8 @@ int main(void) {
 
     fdcan_start();
     i2c_inputs_init();
-    // i2c_leds_init();
 
     struct PostInitData post_init_data = {
-        .leds_transmit = i2c_leds_transmit,
         .parameters_on_change = main_on_parameter_change,
         .can_network_configs = {
             [CAN_COMMUNICATION_NETWORK_PRIMARY] = {

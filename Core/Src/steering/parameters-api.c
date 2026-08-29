@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include "parameters-api.h"
-#include "leds-api.h"
 #include "eagletrt-api.h"
 
 EAGLETRT_STATIC struct ParametersHandler parameters_handler;
@@ -50,28 +49,6 @@ EAGLETRT_STATIC uint8_t prv_parameters_api_clamp_to_allowed(const enum InputsSha
 }
 
 /*!
- * \brief Apply the effect of a parameter change to the hardware, if any.
- *
- * \param parameter_id The parameter that changed, used to determine what effect to apply.
- * \param new_value The new value of the parameter, already clamped to the valid range
- */
-EAGLETRT_STATIC void prv_parameters_api_apply_effect(const enum InputsSharedParameterID parameter_id, uint8_t new_value) {
-    switch (parameter_id) {
-        case INPUTS_SHARED_PARAMETER_ID_PTT: {
-            if (new_value) {
-                leds_api_save_pattern();
-                leds_api_set_ptt_pattern();
-            } else {
-                leds_api_restore_pattern();
-            }
-            leds_api_show();
-        }
-        default:
-            break;
-    }
-}
-
-/*!
  * \brief Apply an already-clamped value and notify the caller if it changed.
  *
  * \param parameter_id The parameter being set, used to determine the old value and what effect to apply.
@@ -85,7 +62,6 @@ EAGLETRT_STATIC enum ParametersReturnCode prv_parameters_api_apply_value(const e
         return PARAMETERS_RC_OK;
     }
     parameters_handler.values[parameter_id] = new_value;
-    prv_parameters_api_apply_effect(parameter_id, new_value);
     if (!parameters_handler.on_change(parameter_id, new_value)) {
         return PARAMETERS_RC_ERROR;
     }

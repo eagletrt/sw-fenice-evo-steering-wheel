@@ -8,13 +8,13 @@ It works on a **STM32H723ZG** microcontroller placed on a custom PCB.
 
 ## Overview
 
-The firmware is responsible for reading data from the **CAN bus** and displaying it on an **800x480 LCD** and **6 RGB LEDs**.
+The firmware is responsible for reading data from the **CAN bus** and displaying it on an **800x480 LCD**.
 It also handles **buttons** and **3 rotary switches (manettini)** for user input in real-time, allowing the driver to interact with the system while driving.
 
 ## Codebase structure
 
 - `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules (FSM, inputs, parameters, LEDs, CAN communications, dashboard/popup/screen UI).
-- `Core/Src/steering/drivers/`, `Core/Inc/steering/drivers/`: hardware-agnostic device drivers (MCP23017 GPIO expander, KTD2052 LED controller, Micron SDRAM).
+- `Core/Src/steering/drivers/`, `Core/Inc/steering/drivers/`: hardware-agnostic device drivers (MCP23017 GPIO expander, Micron SDRAM).
 - `Core/Src/steering/can-communications-router-api.c`: the only place that knows about **libcan**. It decodes the inbound frames the dashboard renders into the UI snapshot and builds the wheel's own outbound messages (button status carrying TS-on/PTT, control maps, driver action). Identity broadcasts (FSM status, firmware and libcan versions) live in `identity-api.c`.
 - Everything else in `Core/` is CubeMX-generated peripheral code; the hardware glue that wires peripherals to the application modules lives in its user-code sections.
 - `assets/fsm/fsm.dot`: source of truth for the FSM. Regenerate `fsm.c`/`fsm.h` with `./scripts/generate_fsm.sh assets/fsm/fsm.dot` (requires the `gv_fsm` gem), then re-apply the user-code sections.

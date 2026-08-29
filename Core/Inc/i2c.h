@@ -30,8 +30,6 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
-#include "leds.h"
-
 /* USER CODE END Includes */
 
 extern I2C_HandleTypeDef hi2c4;
@@ -44,21 +42,7 @@ void MX_I2C4_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
-/*!
- * \brief Initialize the two MCP23017 GPIO expanders carrying buttons and manettini.
- *
- * \details Must be called once after MX_I2C4_Init. Calls Error_Handler on a
- *     dead or mis-addressed expander.
- */
 void i2c_inputs_init(void);
-
-/*!
- * \brief Initialize the two KTD2052 LED controllers.
- *
- * \details Must be called once after MX_I2C4_Init. Calls Error_Handler on a
- *     bus failure.
- */
-void i2c_leds_init(void);
 
 /*!
  * \brief Poll the expanders and feed raw button/knob states to the inputs module.
@@ -70,21 +54,6 @@ void i2c_leds_init(void);
  * \param current_tick_ms Current tick count in milliseconds.
  */
 void i2c_inputs_poll(uint32_t current_tick_ms);
-
-/*!
- * \brief Push the LED colors to the two KTD2052 controllers.
- *
- * \details Registered as the leds module transmit callback. Unchanged
- *     colors are skipped to keep the bus quiet.
- *
- * \param colors Array of colors, one per LED.
- * \param count Number of entries in \p colors, must be LEDS_INDEX_COUNT.
- *
- * \retval LEDS_RC_OK on success (or nothing to do).
- * \retval LEDS_RC_NULL_POINTER if \p colors is NULL.
- * \retval LEDS_RC_TRANSMISSION_ERROR on a bus failure or a wrong \p count.
- */
-enum LedsReturnCode i2c_leds_transmit(const struct LedColor *colors, uint16_t count);
 
 /* USER CODE END Prototypes */
 

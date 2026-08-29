@@ -125,6 +125,15 @@ enum ScreenReturnCode screen_api_set_torque(uint8_t value);
 enum ScreenReturnCode screen_api_set_slip(bool slip_on);
 
 /*!
+ * \brief Show or clear the push-to-talk indication on the dashboard.
+ *
+ * \param active true while push-to-talk is keyed.
+ *
+ * \retval SCREEN_RC_OK on success.
+ */
+enum ScreenReturnCode screen_api_set_ptt(bool active);
+
+/*!
  * \brief Update the HV state-of-charge percentage (large center value).
  *
  * \param percent SoC percentage to display, from 0 to 100.

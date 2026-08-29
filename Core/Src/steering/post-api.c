@@ -9,7 +9,6 @@
 
 #include "post-api.h"
 #include "inputs-api.h"
-#include "leds-api.h"
 #include "parameters-api.h"
 #include "can-communications-api.h"
 #include "identity-api.h"
@@ -17,7 +16,6 @@
 
 enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
     if (post_init_data == NULL ||
-        post_init_data->leds_transmit == NULL ||
         post_init_data->parameters_on_change == NULL ||
         post_init_data->draw_rectangle == NULL ||
         post_init_data->can_network_configs[0].on_receive == NULL ||
@@ -41,10 +39,6 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
             NULL,
             parameters_api_handle_button_release,
             parameters_api_handle_knob) != INPUTS_RC_OK) {
-        ret_code = POST_RC_ERROR;
-    }
-
-    if (leds_api_init(post_init_data->leds_transmit) != LEDS_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 

@@ -91,6 +91,21 @@ enum DashboardReturnCode dashboard_api_set_torque(struct DashboardHandler *handl
 enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler, bool slip_on);
 
 /*!
+ * \brief Tint the SCENARIO header to show push-to-talk is keyed.
+ *
+ * \details PTT has no value of its own on the dashboard, so it borrows the
+ *     header of the block it sits above: blue while the driver holds a top
+ *     paddle, back to the normal section colour on release.
+ *
+ * \param handler Dashboard to update.
+ * \param active true while push-to-talk is keyed.
+ *
+ * \retval DASHBOARD_RC_OK on success.
+ * \retval DASHBOARD_RC_NULL_POINTER if \p handler is NULL.
+ */
+enum DashboardReturnCode dashboard_api_set_ptt(struct DashboardHandler *handler, bool active);
+
+/*!
  * \brief Update the HV state-of-charge percentage (large center value).
  *
  * \param[in,out] handler Dashboard storage.

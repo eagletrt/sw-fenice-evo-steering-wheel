@@ -52,6 +52,7 @@ struct UIData {
     uint8_t regen;   /*!< 0..10 */
     uint8_t torque;  /*!< 0..10 */
     uint8_t slip_on; /*!< 0/1 (slip / traction control toggle) */
+    uint8_t ptt;     /*!< 0/1 (push-to-talk keyed) */
 
     /* Vehicle state shown in the center-top box. */
     uint8_t vehicle_state; /*!< UIDataVehicleState as a uint8_t to keep the layout packed */

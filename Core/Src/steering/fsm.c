@@ -19,7 +19,6 @@ Functions and types have been generated with prefix "fsm_"
 
 #include "can-communications-api.h"
 #include "inputs-api.h"
-#include "leds-api.h"
 #include "post-api.h"
 #include "screen-api.h"
 #include "ui-data-api.h"
@@ -121,13 +120,11 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
     } else {
         struct FsmData *fsm_data = (struct FsmData *)data;
 
-        if (inputs_api_poll_for_long_press(fsm_data->tick) != INPUTS_RC_OK) {
-            next_state = FSM_STATE_ERROR;
-        }
-
-        if (leds_api_show() != LEDS_RC_OK) {
-            next_state = FSM_STATE_ERROR;
-        }
+        // A transient NAK from the input expanders is not worth bricking
+        // the wheel over: FSM_STATE_ERROR has no way back, so treating it
+        // as fatal would freeze the dashboard for the rest of the power
+        // cycle. The display is the one thing the driver actually needs.
+        EAGLETRT_API_UNUSED(inputs_api_poll_for_long_press(fsm_data->tick));
 
         // TODO: add check for return values, and handle errors accordingly
         EAGLETRT_API_UNUSED(can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY));

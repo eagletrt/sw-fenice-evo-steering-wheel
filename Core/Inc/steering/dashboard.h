@@ -31,6 +31,7 @@
 #define DASHBOARD_COLOR_ERROR (STYLE_RED)
 #define DASHBOARD_COLOR_FAST_LAP (STYLE_MAGENTA)
 #define DASHBOARD_COLOR_COLD_TIRES (STYLE_CYAN)
+#define DASHBOARD_COLOR_PTT (STYLE_BLUE)
 
 // TODO: tune these data (and integrate S.P.E.C.)
 #define DASHBOARD_THRESHOLD_HV_SOC_PERCENT_WARNING (30U)               /* at or below this SoC is a warning */

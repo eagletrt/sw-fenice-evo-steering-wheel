@@ -23,8 +23,7 @@
 /* USER CODE BEGIN 0 */
 
 #include "inputs-api.h"
-#include "ktd2052-api.h"
-#include "leds.h"
+#include "logger-api.h"
 #include "mcp23017-api.h"
 
 #include <string.h>
@@ -34,10 +33,6 @@
 /* 8-bit (shifted) bus addresses of the two GPIO expanders. */
 #define I2C_MCP23017_DEV1_ADDRESS (0x27U << 1U) /* buttons on port B, left manettino on port A */
 #define I2C_MCP23017_DEV2_ADDRESS (0x20U << 1U) /* right manettino on port A, center manettino on port B */
-
-/* 8-bit bus addresses of the two KTD2052 LED controllers. */
-#define I2C_KTD2052_LEFT_ADDRESS (0xE8U)  /* KTD2052A: left LED triplet */
-#define I2C_KTD2052_RIGHT_ADDRESS (0xEAU) /* KTD2052C: right LED triplet */
 
 /* Rotary switches are debounced by rate-limiting their reads. */
 #define I2C_MANETTINO_DEBOUNCE_MS (100U)
@@ -75,12 +70,8 @@ struct I2cManettinoState {
 
 static struct Mcp23017Handler mcp23017_dev1;
 static struct Mcp23017Handler mcp23017_dev2;
-static struct Ktd2052Handler ktd2052_left;
-static struct Ktd2052Handler ktd2052_right;
 
 static struct I2cManettinoState manettino_states[I2C_MANETTINO_COUNT];
-static struct LedColor leds_last_colors[LEDS_INDEX_COUNT];
-static bool leds_last_colors_valid = false;
 
 /*!
  * \brief Mapping of the raw button port (MCP dev1, port B) to input button IDs.
@@ -107,7 +98,9 @@ static const struct {
  *
  * \details Each detent grounds exactly one expander line, so the raw port
  *     value has a single bit low. The value tables come from the previous
- *     firmware and encode the (scrambled) PCB routing per switch.
+ *     firmware (MANETTINO_*_VALS in old-porcs-can Core/Inc/inputs/inputs.h)
+ *     and encode the (scrambled) PCB routing per switch, so they are not
+ *     interchangeable between switches.
  */
 static const struct I2cManettinoWiring manettino_wiring[I2C_MANETTINO_COUNT] = {
     [I2C_MANETTINO_LEFT] = {
@@ -116,11 +109,11 @@ static const struct I2cManettinoWiring manettino_wiring[I2C_MANETTINO_COUNT] = {
     },
     [I2C_MANETTINO_CENTER] = {
         .knob_id = INPUTS_SHARED_KNOB_ID_FRONT_LEFT,
-        .port_values = { 253U, 251U, 239U, 127U, 191U, 223U, 247U, 254U },
+        .port_values = { 239U, 247U, 251U, 254U, 223U, 191U, 127U, 253U },
     },
     [I2C_MANETTINO_RIGHT] = {
         .knob_id = INPUTS_SHARED_KNOB_ID_FRONT_RIGHT,
-        .port_values = { 239U, 247U, 251U, 254U, 223U, 191U, 127U, 253U },
+        .port_values = { 253U, 251U, 239U, 127U, 191U, 223U, 247U, 254U },
     },
 };
 
@@ -142,16 +135,6 @@ static enum Mcp23017ReturnCode prv_i2c_mcp23017_write_register(uint8_t device_ad
         return MCP23017_RC_BUS_ERROR;
     }
     return MCP23017_RC_OK;
-}
-
-/*!
- * \brief KTD2052 register-write callback wrapping the HAL.
- */
-static enum Ktd2052ReturnCode prv_i2c_ktd2052_write_register(uint8_t device_address, uint8_t register_address, uint8_t value) {
-    if (HAL_I2C_Mem_Write(&hi2c4, device_address, register_address, 1U, &value, 1U, I2C_TRANSFER_TIMEOUT_MS) != HAL_OK) {
-        return KTD2052_RC_BUS_ERROR;
-    }
-    return KTD2052_RC_OK;
 }
 
 /*!
@@ -323,6 +306,21 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef *i2cHandle) {
 
 /* USER CODE BEGIN 1 */
 
+void i2c_scan_bus(void) {
+    logger_api_log(LOGGER_LEVEL_DEBUG, "I2C4 scan: start");
+
+    uint8_t found = 0U;
+    /* 7-bit addresses 0x08..0x77; the HAL takes the 8-bit (shifted) form. */
+    for (uint8_t address = 0x08U; address <= 0x77U; address++) {
+        if (HAL_I2C_IsDeviceReady(&hi2c4, (uint16_t)(address << 1U), 2U, I2C_TRANSFER_TIMEOUT_MS) == HAL_OK) {
+            logger_api_log(LOGGER_LEVEL_DEBUG, "I2C4 scan: ACK at 7-bit 0x%02X (8-bit 0x%02X)", address, address << 1U);
+            found++;
+        }
+    }
+
+    logger_api_log(LOGGER_LEVEL_DEBUG, "I2C4 scan: done, %u device(s)", found);
+}
+
 void i2c_inputs_init(void) {
     if (mcp23017_api_init(&mcp23017_dev1, I2C_MCP23017_DEV1_ADDRESS, prv_i2c_mcp23017_read_register, prv_i2c_mcp23017_write_register) != MCP23017_RC_OK) {
         Error_Handler();
@@ -331,16 +329,6 @@ void i2c_inputs_init(void) {
         Error_Handler();
     }
     memset(manettino_states, 0, sizeof(manettino_states));
-}
-
-void i2c_leds_init(void) {
-    if (ktd2052_api_init(&ktd2052_left, I2C_KTD2052_LEFT_ADDRESS, prv_i2c_ktd2052_write_register) != KTD2052_RC_OK) {
-        Error_Handler();
-    }
-    if (ktd2052_api_init(&ktd2052_right, I2C_KTD2052_RIGHT_ADDRESS, prv_i2c_ktd2052_write_register) != KTD2052_RC_OK) {
-        Error_Handler();
-    }
-    leds_last_colors_valid = false;
 }
 
 void i2c_inputs_poll(uint32_t current_tick_ms) {
@@ -359,34 +347,6 @@ void i2c_inputs_poll(uint32_t current_tick_ms) {
         prv_i2c_manettino_poll(I2C_MANETTINO_CENTER, &mcp23017_dev2, MCP23017_PORT_B);
         prv_i2c_manettino_poll(I2C_MANETTINO_RIGHT, &mcp23017_dev2, MCP23017_PORT_A);
     }
-}
-
-enum LedsReturnCode i2c_leds_transmit(const struct LedColor *colors, uint16_t count) {
-    if (colors == NULL) {
-        return LEDS_RC_NULL_POINTER;
-    }
-    if (count != LEDS_INDEX_COUNT) {
-        return LEDS_RC_TRANSMISSION_ERROR;
-    }
-
-    /* The strip is retransmitted every FSM tick; skip the (slow, blocking)
-     * bus traffic when nothing changed. */
-    if (leds_last_colors_valid && memcmp(colors, leds_last_colors, sizeof(leds_last_colors)) == 0) {
-        return LEDS_RC_OK;
-    }
-
-    for (uint16_t i = 0U; i < count; i++) {
-        struct Ktd2052Handler *controller = (i < LEDS_INDEX_RIGHT_0) ? &ktd2052_left : &ktd2052_right;
-        const uint8_t module = (uint8_t)(i % 3U);
-        if (ktd2052_api_set_color(controller, module, colors[i].r, colors[i].g, colors[i].b) != KTD2052_RC_OK) {
-            leds_last_colors_valid = false;
-            return LEDS_RC_TRANSMISSION_ERROR;
-        }
-    }
-
-    memcpy(leds_last_colors, colors, sizeof(leds_last_colors));
-    leds_last_colors_valid = true;
-    return LEDS_RC_OK;
 }
 
 /* USER CODE END 1 */
