@@ -128,4 +128,23 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *uartHandle) {
 
 /* USER CODE BEGIN 1 */
 
+enum PalReturnCode usart_logger_transmit(const struct PalMessage *message) {
+    if (message == NULL) {
+        return PAL_RC_NULL_POINTER;
+    }
+
+    if (message->size == 0U) {
+        return PAL_RC_OK;
+    }
+
+    // Execute blocking transmission over the USART
+    HAL_StatusTypeDef status = HAL_UART_Transmit(&hlpuart1, (uint8_t *)message->payload, (uint16_t)message->size, 100);
+
+    if (status != HAL_OK) {
+        return PAL_RC_IO_ERROR;
+    }
+
+    return PAL_RC_OK;
+}
+
 /* USER CODE END 1 */

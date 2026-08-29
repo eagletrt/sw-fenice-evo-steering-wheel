@@ -30,6 +30,8 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
+#include "pal.h"
+
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef hlpuart1;
@@ -41,6 +43,8 @@ extern UART_HandleTypeDef hlpuart1;
 void MX_LPUART1_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+enum PalReturnCode usart_logger_transmit(const struct PalMessage *message);
 
 /* USER CODE END Prototypes */
 

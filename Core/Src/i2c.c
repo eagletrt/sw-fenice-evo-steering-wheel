@@ -111,11 +111,11 @@ static const struct {
  */
 static const struct I2cManettinoWiring manettino_wiring[I2C_MANETTINO_COUNT] = {
     [I2C_MANETTINO_LEFT] = {
-        .knob_id = INPUTS_SHARED_KNOB_ID_FRONT_LEFT,
+        .knob_id = INPUTS_SHARED_KNOB_ID_FRONT_CENTER,
         .port_values = { 127U, 191U, 247U, 251U, 253U, 254U, 239U, 223U },
     },
     [I2C_MANETTINO_CENTER] = {
-        .knob_id = INPUTS_SHARED_KNOB_ID_FRONT_CENTER,
+        .knob_id = INPUTS_SHARED_KNOB_ID_FRONT_LEFT,
         .port_values = { 253U, 251U, 239U, 127U, 191U, 223U, 247U, 254U },
     },
     [I2C_MANETTINO_RIGHT] = {

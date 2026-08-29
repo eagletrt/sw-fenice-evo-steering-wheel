@@ -43,11 +43,19 @@
 #include "can-communications-router-api.h"
 #include "identity-api.h"
 #include "can-primary.h"
+#include "arena-allocator-api.h"
+#include "pal-api.h"
+#include "logger-api.h"
 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+
+#define LOGGER_ENABLED (true)          /*!< Logger status: true to enable active logging, false to mute entirely. */
+#define LOGGER_RX_CAPACITY (1U)        /*!< Receive queue depth. Set to 1 because the logger is transmit-only but needs to be > 0 because of arena allocator. */
+#define LOGGER_TX_CAPACITY (10U)       /*!< Maximum number of log message packets allowed to sit in the outbound transmission queue. */
+#define LOGGER_UART_MAX_MSG_SIZE (64U) /*!< Maximum allocation allowed for an individual log string. */
 
 /* USER CODE END PTD */
 
@@ -74,6 +82,9 @@ void SystemClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
 
+EAGLETRT_STATIC struct ArenaAllocatorHandler arena_allocator_handler;
+EAGLETRT_STATIC struct PalHandler logger_pal_handler;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -85,7 +96,7 @@ static void MPU_Config(void);
  * \param parameter_id Parameter that changed.
  * \param value New value of the parameter.
  */
-static void prv_main_sync_parameter_to_ui(enum InputsSharedParameterID parameter_id, uint8_t value) {
+EAGLETRT_STATIC void prv_main_sync_parameter_to_ui(enum InputsSharedParameterID parameter_id, uint8_t value) {
     struct UIData *ui_data = ui_data_api_get();
     switch (parameter_id) {
         case INPUTS_SHARED_PARAMETER_ID_POWER:
@@ -112,7 +123,7 @@ static void prv_main_sync_parameter_to_ui(enum InputsSharedParameterID parameter
  *
  * \return The matching CanPrimarySteeringwheelfsmStatus value.
  */
-static enum CanPrimarySteeringwheelfsmStatus prv_main_fsm_status(fsm_state_t state) {
+EAGLETRT_STATIC enum CanPrimarySteeringwheelfsmStatus prv_main_fsm_status(fsm_state_t state) {
     switch (state) {
         case FSM_STATE_IDLE:
             return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE;
@@ -128,6 +139,20 @@ static enum CanPrimarySteeringwheelfsmStatus prv_main_fsm_status(fsm_state_t sta
     }
 }
 
+EAGLETRT_STATIC void prv_main_init_logging_configuration() {
+    arena_allocator_api_init(&arena_allocator_handler);
+
+    EAGLETRT_API_UNUSED(pal_api_init(&logger_pal_handler,
+                                     LOGGER_RX_CAPACITY,
+                                     LOGGER_TX_CAPACITY,
+                                     LOGGER_UART_MAX_MSG_SIZE,
+                                     NULL,
+                                     usart_logger_transmit,
+                                     NULL,
+                                     NULL,
+                                     &arena_allocator_handler));
+}
+
 /*!
  * \brief Queue every cyclic frame the wheel owes the bus this tick.
  *
@@ -137,7 +162,7 @@ static enum CanPrimarySteeringwheelfsmStatus prv_main_fsm_status(fsm_state_t sta
  * \param state The current FSM state, broadcast as our identity status.
  * \param tick Current tick in milliseconds.
  */
-static void prv_main_broadcast_can(fsm_state_t state, uint32_t tick) {
+EAGLETRT_STATIC void prv_main_broadcast_can(fsm_state_t state, uint32_t tick) {
     EAGLETRT_API_UNUSED(can_communications_router_api_process_tx_periodic(tick));
     EAGLETRT_API_UNUSED(identity_api_periodically_send_state(prv_main_fsm_status(state), tick));
     EAGLETRT_API_UNUSED(identity_api_periodically_send_version(tick));
@@ -147,6 +172,7 @@ static void prv_main_broadcast_can(fsm_state_t state, uint32_t tick) {
 bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
     // Every transition goes on the bus, shared with the UI or not: TS-on
     // and PTT are exactly the two that never reach the popup.
+    logger_api_log(LOGGER_LEVEL_DEBUG, "Parameter %d changed to %d", parameter_id, value);
     if (can_communications_router_api_on_parameter_change(parameter_id, value) != CAN_COMMUNICATION_RC_OK) {
         return false;
     }
@@ -190,7 +216,7 @@ int main(void) {
 
     fsm_state_t current_state = FSM_STATE_INIT;
 
-        /* USER CODE END Init */
+    /* USER CODE END Init */
 
     /* Configure the system clock */
     SystemClock_Config();
@@ -216,12 +242,15 @@ int main(void) {
     MX_FMAC_Init();
     /* USER CODE BEGIN 2 */
 
+    prv_main_init_logging_configuration();
+    EAGLETRT_API_UNUSED(logger_api_init(&logger_pal_handler, LOGGER_ENABLED));
+
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 
     fdcan_start();
     i2c_inputs_init();
-    i2c_leds_init();
+    // i2c_leds_init();
 
     struct PostInitData post_init_data = {
         .leds_transmit = i2c_leds_transmit,
@@ -277,8 +306,8 @@ int main(void) {
   * @retval None
   */
 void SystemClock_Config(void) {
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
     /** Supply configuration update enable
   */
@@ -294,33 +323,33 @@ void SystemClock_Config(void) {
     /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-    RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState            = RCC_HSE_ON;
-    RCC_OscInitStruct.HSIState            = RCC_HSI_DIV1;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_CSI | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
     RCC_OscInitStruct.HSICalibrationValue = 64;
-    RCC_OscInitStruct.CSIState            = RCC_CSI_ON;
+    RCC_OscInitStruct.CSIState = RCC_CSI_ON;
     RCC_OscInitStruct.CSICalibrationValue = 16;
-    RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM            = 6;
-    RCC_OscInitStruct.PLL.PLLN            = 137;
-    RCC_OscInitStruct.PLL.PLLP            = 1;
-    RCC_OscInitStruct.PLL.PLLQ            = 5;
-    RCC_OscInitStruct.PLL.PLLR            = 2;
-    RCC_OscInitStruct.PLL.PLLRGE          = RCC_PLL1VCIRANGE_2;
-    RCC_OscInitStruct.PLL.PLLVCOSEL       = RCC_PLL1VCOWIDE;
-    RCC_OscInitStruct.PLL.PLLFRACN        = 4096;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 6;
+    RCC_OscInitStruct.PLL.PLLN = 137;
+    RCC_OscInitStruct.PLL.PLLP = 1;
+    RCC_OscInitStruct.PLL.PLLQ = 5;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLFRACN = 4096;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         Error_Handler();
     }
 
     /** Initializes the CPU, AHB and APB buses clocks
   */
-    RCC_ClkInitStruct.ClockType      = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
-                                       RCC_CLOCKTYPE_D1PCLK1;
-    RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.SYSCLKDivider  = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.AHBCLKDivider  = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
+                                  RCC_CLOCKTYPE_D1PCLK1;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
     RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
     RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
     RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
@@ -338,24 +367,24 @@ void SystemClock_Config(void) {
 /* MPU Configuration */
 
 void MPU_Config(void) {
-    MPU_Region_InitTypeDef MPU_InitStruct = {0};
+    MPU_Region_InitTypeDef MPU_InitStruct = { 0 };
 
     /* Disables the MPU */
     HAL_MPU_Disable();
 
     /** Initializes and configures the Region and the memory to be protected
   */
-    MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
-    MPU_InitStruct.Number           = MPU_REGION_NUMBER0;
-    MPU_InitStruct.BaseAddress      = 0xC0000000;
-    MPU_InitStruct.Size             = MPU_REGION_SIZE_8MB;
+    MPU_InitStruct.Enable = MPU_REGION_ENABLE;
+    MPU_InitStruct.Number = MPU_REGION_NUMBER0;
+    MPU_InitStruct.BaseAddress = 0xC0000000;
+    MPU_InitStruct.Size = MPU_REGION_SIZE_8MB;
     MPU_InitStruct.SubRegionDisable = 0x0;
-    MPU_InitStruct.TypeExtField     = MPU_TEX_LEVEL0;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
     MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
-    MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_DISABLE;
-    MPU_InitStruct.IsShareable      = MPU_ACCESS_SHAREABLE;
-    MPU_InitStruct.IsCacheable      = MPU_ACCESS_NOT_CACHEABLE;
-    MPU_InitStruct.IsBufferable     = MPU_ACCESS_BUFFERABLE;
+    MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+    MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
+    MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
+    MPU_InitStruct.IsBufferable = MPU_ACCESS_BUFFERABLE;
 
     HAL_MPU_ConfigRegion(&MPU_InitStruct);
     /* Enables the MPU */
