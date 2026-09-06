@@ -34,8 +34,20 @@
 #define I2C_MCP23017_DEV1_ADDRESS (0x27U << 1U) /* buttons on port B, left manettino on port A */
 #define I2C_MCP23017_DEV2_ADDRESS (0x20U << 1U) /* right manettino on port A, center manettino on port B */
 
-/* Rotary switches are debounced by rate-limiting their reads. */
-#define I2C_MANETTINO_DEBOUNCE_MS (100U)
+/*!
+ * \brief Gap above which a manettino sample is treated as a re-sync.
+ *
+ * \details The switches are absolute and prv_i2c_manettino_wrap_delta folds
+ *     every step onto the shortest path around the 8-position ring, so a
+ *     movement of 5..7 detents between two samples is indistinguishable from
+ *     3..1 detents the other way. Sampling every main-loop pass makes that
+ *     impossible at any human speed, but a long blocking render (the full
+ *     dashboard redraw when the popup times out) can still starve the poll.
+ *     After a gap this long the reading is adopted as the new baseline
+ *     without emitting a rotation: losing a click beats inventing a
+ *     backwards one.
+ */
+#define I2C_MANETTINO_RESYNC_GAP_MS (50U)
 
 /* Number of detents of each rotary switch. */
 #define I2C_MANETTINO_POSITION_COUNT (8U)
@@ -175,8 +187,11 @@ static int16_t prv_i2c_manettino_wrap_delta(int16_t delta) {
  * \param manettino Switch to update.
  * \param handler Expander carrying the switch.
  * \param port Expander port the switch is wired to.
+ * \param resync true to adopt the reading as a new baseline instead of
+ *     turning it into a rotation, after a gap long enough to have missed
+ *     detents.
  */
-static void prv_i2c_manettino_poll(enum I2cManettino manettino, struct Mcp23017Handler *handler, enum Mcp23017Port port) {
+static void prv_i2c_manettino_poll(enum I2cManettino manettino, struct Mcp23017Handler *handler, enum Mcp23017Port port, bool resync) {
     uint8_t port_value = 0U;
     if (mcp23017_api_read_port(handler, port, &port_value) != MCP23017_RC_OK) {
         return;
@@ -193,7 +208,9 @@ static void prv_i2c_manettino_poll(enum I2cManettino manettino, struct Mcp23017H
         return;
     }
 
-    if (!state->initialized) {
+    if (!state->initialized || resync) {
+        /* No idea how far the switch travelled while we were not looking:
+         * adopt where it is now and wait for the next real transition. */
         state->initialized = true;
         state->position = position;
         return;
@@ -340,13 +357,16 @@ void i2c_inputs_poll(uint32_t current_tick_ms) {
         }
     }
 
+    /* Sampled on every pass, not rate-limited: the codes between detents do
+     * not decode, so they are skipped for free, and reading often is what
+     * keeps a fast turn from aliasing into a backwards one. */
     static uint32_t last_manettino_poll_tick = 0U;
-    if (current_tick_ms - last_manettino_poll_tick >= I2C_MANETTINO_DEBOUNCE_MS) {
-        last_manettino_poll_tick = current_tick_ms;
-        prv_i2c_manettino_poll(I2C_MANETTINO_LEFT, &mcp23017_dev1, MCP23017_PORT_A);
-        prv_i2c_manettino_poll(I2C_MANETTINO_CENTER, &mcp23017_dev2, MCP23017_PORT_B);
-        prv_i2c_manettino_poll(I2C_MANETTINO_RIGHT, &mcp23017_dev2, MCP23017_PORT_A);
-    }
+    const bool resync = (current_tick_ms - last_manettino_poll_tick) >= I2C_MANETTINO_RESYNC_GAP_MS;
+    last_manettino_poll_tick = current_tick_ms;
+
+    prv_i2c_manettino_poll(I2C_MANETTINO_LEFT, &mcp23017_dev1, MCP23017_PORT_A, resync);
+    prv_i2c_manettino_poll(I2C_MANETTINO_CENTER, &mcp23017_dev2, MCP23017_PORT_B, resync);
+    prv_i2c_manettino_poll(I2C_MANETTINO_RIGHT, &mcp23017_dev2, MCP23017_PORT_A, resync);
 }
 
 /* USER CODE END 1 */

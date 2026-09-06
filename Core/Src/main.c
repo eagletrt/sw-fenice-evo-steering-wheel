@@ -255,6 +255,7 @@ int main(void) {
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 
     fdcan_start();
+
     i2c_inputs_init();
 
     struct PostInitData post_init_data = {
