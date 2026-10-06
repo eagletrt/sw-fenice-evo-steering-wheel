@@ -33,7 +33,7 @@
  *     wheel runs the FMC at a different clock than the new one; the value
  *     is carried over from the previous firmware.
  */
-#define FMC_MICRON_STEER_SDRAM_REFRESH_COUNT (0x0603U)
+#define FMC_MICRON_STEER_SDRAM_REFRESH_COUNT (0x05C8U)
 
 /*!
  * \brief Delay callback for the SDRAM driver, wrapping HAL_Delay.
@@ -85,7 +85,7 @@ void MX_FMC_Init(void) {
 
     /* USER CODE END FMC_Init 0 */
 
-    FMC_SDRAM_TimingTypeDef SdramTiming = {0};
+    FMC_SDRAM_TimingTypeDef SdramTiming = { 0 };
 
     /* USER CODE BEGIN FMC_Init 1 */
 
@@ -95,24 +95,24 @@ void MX_FMC_Init(void) {
   */
     hsdram1.Instance = FMC_SDRAM_DEVICE;
     /* hsdram1.Init */
-    hsdram1.Init.SDBank             = FMC_SDRAM_BANK1;
-    hsdram1.Init.ColumnBitsNumber   = FMC_SDRAM_COLUMN_BITS_NUM_8;
-    hsdram1.Init.RowBitsNumber      = FMC_SDRAM_ROW_BITS_NUM_12;
-    hsdram1.Init.MemoryDataWidth    = FMC_SDRAM_MEM_BUS_WIDTH_16;
+    hsdram1.Init.SDBank = FMC_SDRAM_BANK1;
+    hsdram1.Init.ColumnBitsNumber = FMC_SDRAM_COLUMN_BITS_NUM_8;
+    hsdram1.Init.RowBitsNumber = FMC_SDRAM_ROW_BITS_NUM_12;
+    hsdram1.Init.MemoryDataWidth = FMC_SDRAM_MEM_BUS_WIDTH_16;
     hsdram1.Init.InternalBankNumber = FMC_SDRAM_INTERN_BANKS_NUM_4;
-    hsdram1.Init.CASLatency         = FMC_SDRAM_CAS_LATENCY_3;
-    hsdram1.Init.WriteProtection    = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
-    hsdram1.Init.SDClockPeriod      = FMC_SDRAM_CLOCK_PERIOD_2;
-    hsdram1.Init.ReadBurst          = FMC_SDRAM_RBURST_ENABLE;
-    hsdram1.Init.ReadPipeDelay      = FMC_SDRAM_RPIPE_DELAY_0;
+    hsdram1.Init.CASLatency = FMC_SDRAM_CAS_LATENCY_3;
+    hsdram1.Init.WriteProtection = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
+    hsdram1.Init.SDClockPeriod = FMC_SDRAM_CLOCK_PERIOD_2;
+    hsdram1.Init.ReadBurst = FMC_SDRAM_RBURST_ENABLE;
+    hsdram1.Init.ReadPipeDelay = FMC_SDRAM_RPIPE_DELAY_1;
     /* SdramTiming */
-    SdramTiming.LoadToActiveDelay    = 2;
+    SdramTiming.LoadToActiveDelay = 2;
     SdramTiming.ExitSelfRefreshDelay = 7;
-    SdramTiming.SelfRefreshTime      = 4;
-    SdramTiming.RowCycleDelay        = 6;
-    SdramTiming.WriteRecoveryTime    = 2;
-    SdramTiming.RPDelay              = 2;
-    SdramTiming.RCDDelay             = 2;
+    SdramTiming.SelfRefreshTime = 5;
+    SdramTiming.RowCycleDelay = 7;
+    SdramTiming.WriteRecoveryTime = 3;
+    SdramTiming.RPDelay = 2;
+    SdramTiming.RCDDelay = 2;
 
     if (HAL_SDRAM_Init(&hsdram1, &SdramTiming) != HAL_OK) {
         Error_Handler();
@@ -161,25 +161,25 @@ static void HAL_FMC_MspInit(void) {
     /* USER CODE BEGIN FMC_MspInit 0 */
 
     /* USER CODE END FMC_MspInit 0 */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitTypeDef GPIO_InitStruct = { 0 };
     if (FMC_Initialized) {
         return;
     }
-    FMC_Initialized                              = 1;
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    FMC_Initialized = 1;
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
 
     /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FMC;
-    PeriphClkInitStruct.PLL2.PLL2M           = 2;
-    PeriphClkInitStruct.PLL2.PLL2N           = 50;
-    PeriphClkInitStruct.PLL2.PLL2P           = 2;
-    PeriphClkInitStruct.PLL2.PLL2Q           = 4;
-    PeriphClkInitStruct.PLL2.PLL2R           = 4;
-    PeriphClkInitStruct.PLL2.PLL2RGE         = RCC_PLL2VCIRANGE_3;
-    PeriphClkInitStruct.PLL2.PLL2VCOSEL      = RCC_PLL2VCOWIDE;
-    PeriphClkInitStruct.PLL2.PLL2FRACN       = 0;
-    PeriphClkInitStruct.FmcClockSelection    = RCC_FMCCLKSOURCE_PLL2;
+    PeriphClkInitStruct.PLL2.PLL2M = 2;
+    PeriphClkInitStruct.PLL2.PLL2N = 50;
+    PeriphClkInitStruct.PLL2.PLL2P = 2;
+    PeriphClkInitStruct.PLL2.PLL2Q = 4;
+    PeriphClkInitStruct.PLL2.PLL2R = 3;
+    PeriphClkInitStruct.PLL2.PLL2RGE = RCC_PLL2VCIRANGE_3;
+    PeriphClkInitStruct.PLL2.PLL2VCOSEL = RCC_PLL2VCOWIDE;
+    PeriphClkInitStruct.PLL2.PLL2FRACN = 0;
+    PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_PLL2;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         Error_Handler();
     }
@@ -228,48 +228,46 @@ static void HAL_FMC_MspInit(void) {
   PE1   ------> FMC_NBL1
   */
     /* GPIO_InitStruct */
-    GPIO_InitStruct.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 |
-                           GPIO_PIN_15;
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_FMC;
 
     HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
     /* GPIO_InitStruct */
-    GPIO_InitStruct.Pin       = GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3;
-    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull      = GPIO_NOPULL;
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_FMC;
 
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     /* GPIO_InitStruct */
-    GPIO_InitStruct.Pin       = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_8 | GPIO_PIN_15;
-    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull      = GPIO_NOPULL;
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_8 | GPIO_PIN_15;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_FMC;
 
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
     /* GPIO_InitStruct */
-    GPIO_InitStruct.Pin       = GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15 |
-                                GPIO_PIN_0 | GPIO_PIN_1;
-    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull      = GPIO_NOPULL;
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Pin = GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0 | GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_FMC;
 
     HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
     /* GPIO_InitStruct */
-    GPIO_InitStruct.Pin       = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0 | GPIO_PIN_1;
-    GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull      = GPIO_NOPULL;
-    GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0 | GPIO_PIN_1;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF12_FMC;
 
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
@@ -345,17 +343,13 @@ static void HAL_FMC_MspDeInit(void) {
   PE1   ------> FMC_NBL1
   */
 
-    HAL_GPIO_DeInit(
-        GPIOF,
-        GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
+    HAL_GPIO_DeInit(GPIOF, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15);
 
     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_0 | GPIO_PIN_2 | GPIO_PIN_3);
 
     HAL_GPIO_DeInit(GPIOG, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_8 | GPIO_PIN_15);
 
-    HAL_GPIO_DeInit(
-        GPIOE,
-        GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0 | GPIO_PIN_1);
+    HAL_GPIO_DeInit(GPIOE, GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0 | GPIO_PIN_1);
 
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0 | GPIO_PIN_1);
 

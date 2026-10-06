@@ -28,6 +28,7 @@ FMAC_HandleTypeDef hfmac;
 
 /* FMAC init function */
 void MX_FMAC_Init(void) {
+
     /* USER CODE BEGIN FMAC_Init 0 */
 
     /* USER CODE END FMAC_Init 0 */
@@ -45,6 +46,7 @@ void MX_FMAC_Init(void) {
 }
 
 void HAL_FMAC_MspInit(FMAC_HandleTypeDef *fmacHandle) {
+
     if (fmacHandle->Instance == FMAC) {
         /* USER CODE BEGIN FMAC_MspInit 0 */
 
@@ -62,6 +64,7 @@ void HAL_FMAC_MspInit(FMAC_HandleTypeDef *fmacHandle) {
 }
 
 void HAL_FMAC_MspDeInit(FMAC_HandleTypeDef *fmacHandle) {
+
     if (fmacHandle->Instance == FMAC) {
         /* USER CODE BEGIN FMAC_MspDeInit 0 */
 

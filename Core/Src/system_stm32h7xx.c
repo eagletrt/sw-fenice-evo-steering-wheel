@@ -154,9 +154,9 @@
    there is no need to call the 2 first functions listed above, since
    SystemCoreClock variable is updated automatically.
 */
-uint32_t SystemCoreClock           = 64000000;
-uint32_t SystemD2Clock             = 64000000;
-const uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
+uint32_t SystemCoreClock = 64000000;
+uint32_t SystemD2Clock = 64000000;
+const uint8_t D1CorePrescTable[16] = { 0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9 };
 
 /**
  * @}
@@ -381,17 +381,17 @@ void SystemCoreClockUpdate(void) {
     SYSCLK = PLL_VCO / PLLR
     */
             pllsource = (RCC->PLLCKSELR & RCC_PLLCKSELR_PLLSRC);
-            pllm      = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM1) >> 4);
+            pllm = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM1) >> 4);
             pllfracen = ((RCC->PLLCFGR & RCC_PLLCFGR_PLL1FRACEN) >> RCC_PLLCFGR_PLL1FRACEN_Pos);
-            fracn1    = (float_t)(uint32_t)(pllfracen * ((RCC->PLL1FRACR & RCC_PLL1FRACR_FRACN1) >> 3));
+            fracn1 = (float_t)(uint32_t)(pllfracen * ((RCC->PLL1FRACR & RCC_PLL1FRACR_FRACN1) >> 3));
 
             if (pllm != 0U) {
                 switch (pllsource) {
                     case RCC_PLLCKSELR_PLLSRC_HSI: /* HSI used as PLL clock source */
 
                         hsivalue = (HSI_VALUE >> ((RCC->CR & RCC_CR_HSIDIV) >> 3));
-                        pllvco   = ((float_t)hsivalue / (float_t)pllm) *
-                                   ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1 / (float_t)0x2000) + (float_t)1);
+                        pllvco = ((float_t)hsivalue / (float_t)pllm) *
+                                 ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1 / (float_t)0x2000) + (float_t)1);
 
                         break;
 
@@ -407,11 +407,11 @@ void SystemCoreClockUpdate(void) {
 
                     default:
                         hsivalue = (HSI_VALUE >> ((RCC->CR & RCC_CR_HSIDIV) >> 3));
-                        pllvco   = ((float_t)hsivalue / (float_t)pllm) *
-                                   ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1 / (float_t)0x2000) + (float_t)1);
+                        pllvco = ((float_t)hsivalue / (float_t)pllm) *
+                                 ((float_t)(uint32_t)(RCC->PLL1DIVR & RCC_PLL1DIVR_N1) + (fracn1 / (float_t)0x2000) + (float_t)1);
                         break;
                 }
-                pllp                = (((RCC->PLL1DIVR & RCC_PLL1DIVR_P1) >> 9) + 1U);
+                pllp = (((RCC->PLL1DIVR & RCC_PLL1DIVR_P1) >> 9) + 1U);
                 common_system_clock = (uint32_t)(float_t)(pllvco / (float_t)pllp);
             } else {
                 common_system_clock = 0U;

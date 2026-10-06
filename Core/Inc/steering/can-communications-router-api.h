@@ -80,4 +80,12 @@ enum CanCommunicationReturnCode can_communications_router_api_on_parameter_chang
  */
 enum CanCommunicationReturnCode can_communications_router_api_process_tx_periodic(uint32_t tick_ms);
 
+/*!
+ * \brief Check if a reset has been requested via CAN (same ID as the OpenBLT RX).
+ *
+ * \retval true if a reset has been requested.
+ * \retval false if no reset has been requested.
+ */
+bool can_communications_router_api_reset_asked(void);
+
 #endif // CAN_COMMUNICATIONS_ROUTER_API_H

@@ -24,6 +24,7 @@
 struct CanCommunicationsRouterHandler {
     uint32_t last_tick_ms_button_status; /*!< Tick of the last SteeringWheelButtonStatus. */
     uint32_t last_tick_ms_control_maps;  /*!< Tick of the last ControlMapsSet. */
+    bool reset_asked;                    /*!< True if reset has been asked for bootloader. */
 };
 
 EAGLETRT_STATIC struct CanCommunicationsRouterHandler can_communications_router_handler;
@@ -238,6 +239,11 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
     union CanPrimaryMessages decoded;
     struct UIData *ui_data = ui_data_api_get();
 
+    if (frame->id == 0x17 || frame->id == 0x18) {
+        can_communications_router_handler.reset_asked = true;
+        return CAN_COMMUNICATION_RC_OK;
+    }
+
     switch ((enum CanPrimaryMessageFrameId)frame->id) {
         case CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM:
         case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDESTIMATEDSOC:
@@ -323,4 +329,8 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_secondary(
     // Nothing the dashboard renders lives on the secondary network yet.
 
     return CAN_COMMUNICATION_RC_OK;
+}
+
+bool can_communications_router_api_reset_asked(void) {
+    return can_communications_router_handler.reset_asked;
 }

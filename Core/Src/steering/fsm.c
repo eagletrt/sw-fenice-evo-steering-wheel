@@ -23,6 +23,7 @@ Functions and types have been generated with prefix "fsm_"
 #include "screen-api.h"
 #include "ui-data-api.h"
 #include "eagletrt-api.h"
+#include "can-communications-router-api.h"
 
 /*** USER CODE END MACROS ***/
 
@@ -119,6 +120,10 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
         next_state = FSM_STATE_ERROR;
     } else {
         struct FsmData *fsm_data = (struct FsmData *)data;
+
+        if (can_communications_router_api_reset_asked()) {
+            fsm_data->reset();
+        }
 
         // A transient NAK from the input expanders is not worth bricking
         // the wheel over: FSM_STATE_ERROR has no way back, so treating it

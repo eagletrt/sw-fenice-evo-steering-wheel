@@ -28,6 +28,7 @@ DTS_HandleTypeDef hdts;
 
 /* DTS init function */
 void MX_DTS_Init(void) {
+
     /* USER CODE BEGIN DTS_Init 0 */
 
     /* USER CODE END DTS_Init 0 */
@@ -35,14 +36,14 @@ void MX_DTS_Init(void) {
     /* USER CODE BEGIN DTS_Init 1 */
 
     /* USER CODE END DTS_Init 1 */
-    hdts.Instance           = DTS;
-    hdts.Init.QuickMeasure  = DTS_QUICKMEAS_DISABLE;
-    hdts.Init.RefClock      = DTS_REFCLKSEL_PCLK;
-    hdts.Init.TriggerInput  = DTS_TRIGGER_HW_NONE;
-    hdts.Init.SamplingTime  = DTS_SMP_TIME_15_CYCLE;
-    hdts.Init.Divider       = 0;
+    hdts.Instance = DTS;
+    hdts.Init.QuickMeasure = DTS_QUICKMEAS_DISABLE;
+    hdts.Init.RefClock = DTS_REFCLKSEL_PCLK;
+    hdts.Init.TriggerInput = DTS_TRIGGER_HW_NONE;
+    hdts.Init.SamplingTime = DTS_SMP_TIME_15_CYCLE;
+    hdts.Init.Divider = 0;
     hdts.Init.HighThreshold = 0x0;
-    hdts.Init.LowThreshold  = 0x0;
+    hdts.Init.LowThreshold = 0x0;
     if (HAL_DTS_Init(&hdts) != HAL_OK) {
         Error_Handler();
     }
@@ -52,6 +53,7 @@ void MX_DTS_Init(void) {
 }
 
 void HAL_DTS_MspInit(DTS_HandleTypeDef *dtsHandle) {
+
     if (dtsHandle->Instance == DTS) {
         /* USER CODE BEGIN DTS_MspInit 0 */
 
@@ -69,6 +71,7 @@ void HAL_DTS_MspInit(DTS_HandleTypeDef *dtsHandle) {
 }
 
 void HAL_DTS_MspDeInit(DTS_HandleTypeDef *dtsHandle) {
+
     if (dtsHandle->Instance == DTS) {
         /* USER CODE BEGIN DTS_MspDeInit 0 */
 

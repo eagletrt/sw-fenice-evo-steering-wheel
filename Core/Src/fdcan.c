@@ -102,6 +102,7 @@ FDCAN_HandleTypeDef hfdcan2;
 
 /* FDCAN1 init function */
 void MX_FDCAN1_Init(void) {
+
     /* USER CODE BEGIN FDCAN1_Init 0 */
 
     /* USER CODE END FDCAN1_Init 0 */
@@ -148,6 +149,7 @@ void MX_FDCAN1_Init(void) {
 }
 /* FDCAN2 init function */
 void MX_FDCAN2_Init(void) {
+
     /* USER CODE BEGIN FDCAN2_Init 0 */
 
     /* USER CODE END FDCAN2_Init 0 */
@@ -196,6 +198,7 @@ void MX_FDCAN2_Init(void) {
 static uint32_t HAL_RCC_FDCAN_CLK_ENABLED = 0;
 
 void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
+
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
     if (fdcanHandle->Instance == FDCAN1) {
@@ -276,6 +279,7 @@ void HAL_FDCAN_MspInit(FDCAN_HandleTypeDef *fdcanHandle) {
 }
 
 void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef *fdcanHandle) {
+
     if (fdcanHandle->Instance == FDCAN1) {
         /* USER CODE BEGIN FDCAN1_MspDeInit 0 */
 

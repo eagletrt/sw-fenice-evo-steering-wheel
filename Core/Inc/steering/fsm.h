@@ -66,12 +66,14 @@ typedef void transition_func_t(fsm_state_data_t *data);
 /*** USER CODE BEGIN TYPES ***/
 
 typedef void (*fsm_swap_framebuffers_callback)(void);
+typedef void (*fsm_reset)(void);
 
 /*!
  * \brief This struct contains the data needed by the FSM to operate and call other modules successfully. It is passed as an argument to all state and transition functions.
  */
 struct FsmData {
     fsm_swap_framebuffers_callback swap_framebuffers; /*!< Callback function to swap framebuffers. */
+    fsm_reset reset;                                  /*!< Callback function to reset the system. */
     uint32_t tick;                                    /*!< Current tick. */
 };
 

@@ -18,19 +18,18 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
 #include "dac.h"
 #include "dma2d.h"
 #include "dts.h"
 #include "fdcan.h"
 #include "fmac.h"
-#include "fmc.h"
-#include "gpio.h"
 #include "i2c.h"
+#include "usart.h"
 #include "ltdc.h"
 #include "octospi.h"
 #include "tim.h"
-#include "usart.h"
+#include "gpio.h"
+#include "fmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -198,6 +197,7 @@ bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t
   * @retval int
   */
 int main(void) {
+
     /* USER CODE BEGIN 1 */
 
     /* USER CODE END 1 */
@@ -253,6 +253,7 @@ int main(void) {
 
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+    HAL_Delay(100);
 
     fdcan_start();
 
@@ -281,6 +282,7 @@ int main(void) {
 
     struct FsmData fsm_data = { 0 };
     fsm_data.swap_framebuffers = ltdc_swap_framebuffers;
+    fsm_data.reset = NVIC_SystemReset;
     uint32_t last_inputs_poll_tick = 0U;
 
     /* USER CODE END 2 */
@@ -350,8 +352,7 @@ void SystemClock_Config(void) {
 
     /** Initializes the CPU, AHB and APB buses clocks
   */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 |
-                                  RCC_CLOCKTYPE_D1PCLK1;
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 | RCC_CLOCKTYPE_D3PCLK1 | RCC_CLOCKTYPE_D1PCLK1;
     RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
     RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
     RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
@@ -384,7 +385,7 @@ void MPU_Config(void) {
     MPU_InitStruct.BaseAddress = 0xC0000000;
     MPU_InitStruct.Size = MPU_REGION_SIZE_8MB;
     MPU_InitStruct.SubRegionDisable = 0x0;
-    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
+    MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
     MPU_InitStruct.AccessPermission = MPU_REGION_FULL_ACCESS;
     MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
     MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;

@@ -7,5 +7,5 @@ if ! [ -d .git ]; then
     exit 1
 fi
 
-clang-format -i Core/Src/*.c && clang-format -i Core/Inc/*.h && clang-format -i Core/UI/**/*.c
+clang-format -i Core/Src/*.c && clang-format -i Core/Inc/*.h && clang-format -i Core/Src/steering/*.c && clang-format -i Core/Inc/steering/*.h
 

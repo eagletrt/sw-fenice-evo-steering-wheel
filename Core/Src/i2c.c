@@ -227,6 +227,7 @@ I2C_HandleTypeDef hi2c4;
 
 /* I2C4 init function */
 void MX_I2C4_Init(void) {
+
     /* USER CODE BEGIN I2C4_Init 0 */
 
     /* USER CODE END I2C4_Init 0 */
@@ -264,6 +265,7 @@ void MX_I2C4_Init(void) {
 }
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
+
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = { 0 };
     if (i2cHandle->Instance == I2C4) {
@@ -300,6 +302,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef *i2cHandle) {
 }
 
 void HAL_I2C_MspDeInit(I2C_HandleTypeDef *i2cHandle) {
+
     if (i2cHandle->Instance == I2C4) {
         /* USER CODE BEGIN I2C4_MspDeInit 0 */
 
