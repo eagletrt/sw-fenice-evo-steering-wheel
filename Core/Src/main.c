@@ -187,7 +187,7 @@ bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t
         return true;
     }
 
-    return screen_api_on_parameter_change(parameter_id, value) == SCREEN_RC_OK;
+    return screen_api_on_parameter_change(parameter_id, value, HAL_GetTick()) == SCREEN_RC_OK;
 }
 
 /* USER CODE END 0 */

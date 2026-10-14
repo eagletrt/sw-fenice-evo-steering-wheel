@@ -18,11 +18,13 @@
 
 EAGLETRT_STATIC struct ScreenHandler screen_handler;
 
-enum ScreenReturnCode screen_api_on_parameter_change(const enum InputsSharedParameterID parameter_id, uint8_t value) {
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+enum ScreenReturnCode screen_api_on_parameter_change(const enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick) {
     // Called from the parameters on-change path: only update the popup state
     // here. The raster interface swap is performed by screen_update in the
-    // FSM idle loop.
-    if (popup_api_show(&screen_handler.popup, parameter_id, value, screen_handler.last_event_tick) != POPUP_RC_OK) {
+    // FSM idle loop. The timeout starts from the change itself, not from the
+    // last render: renders can be late or not running at all.
+    if (popup_api_show(&screen_handler.popup, parameter_id, value, tick) != POPUP_RC_OK) {
         return SCREEN_RC_ERROR;
     }
     return SCREEN_RC_OK;
@@ -39,7 +41,6 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
         return SCREEN_RC_ERROR;
     }
     screen_handler.popup_visible = false;
-    screen_handler.last_event_tick = 0U;
 
     return SCREEN_RC_OK;
 }
@@ -60,8 +61,6 @@ EAGLETRT_STATIC void prv_screen_api_dirty_all(struct Box *boxes, uint16_t count)
 }
 
 enum ScreenReturnCode screen_api_update(uint32_t tick) {
-    screen_handler.last_event_tick = tick;
-
     bool popup_active = popup_api_is_active(&screen_handler.popup, tick);
 
     if (popup_active && !screen_handler.popup_visible) {

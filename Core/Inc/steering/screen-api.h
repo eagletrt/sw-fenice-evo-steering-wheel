@@ -24,17 +24,18 @@
 /*!
  * \brief Handle a parameter change event by showing the popup overlay.
  *
- * \details Stamps the current tick and refreshes the popup labels. The
- *     raster interface swap is deferred to screen_update so that rendering
- *     stays out of the input-handling path.
+ * \details Stamps \p tick as the start of the popup timeout and refreshes
+ *     the popup labels. The raster interface swap is deferred to
+ *     screen_update so that rendering stays out of the input-handling path.
  *
  * \param parameter_id The parameter that was changed.
  * \param value The new value of the parameter.
+ * \param tick Time of the change in milliseconds (the popup timeout starts here).
  *
  * \retval SCREEN_RC_OK on success.
  * \retval SCREEN_RC_ERROR on failure.
  */
-enum ScreenReturnCode screen_api_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value);
+enum ScreenReturnCode screen_api_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick);
 
 /*!
  * \brief Initialize the screen interface.

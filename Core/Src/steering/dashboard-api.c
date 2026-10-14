@@ -145,6 +145,26 @@ EAGLETRT_STATIC void prv_dashboard_api_format_field(struct DashboardHandler *han
     handler->boxes[field_id].updated = true;
 }
 
+/*!
+ * \brief Set the text colour of a field, flagging the box only on a real change.
+ *
+ * \details Threshold colours are applied after the text. Today a colour change
+ *     always comes with a text change, but a colour can also depend on something
+ *     the text doesn't show (staleness, a limit from another message), and then
+ *     nothing else would mark the box dirty and the raster would skip it.
+ *
+ * \param[in,out] handler  Dashboard storage.
+ * \param[in]     field_id Field whose label colour is set.
+ * \param[in]     argb     New label colour.
+ */
+EAGLETRT_STATIC void prv_dashboard_api_set_label_color(struct DashboardHandler *handler, enum DashboardFieldId field_id, uint32_t argb) {
+    if (handler->labels[field_id].color.argb == argb) {
+        return;
+    }
+    handler->labels[field_id].color.argb = argb;
+    handler->boxes[field_id].updated = true;
+}
+
 enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
@@ -248,11 +268,11 @@ enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler,
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_SOC, "%" PRIu8 "%%", percent);
 
     if (percent <= DASHBOARD_THRESHOLD_HV_SOC_PERCENT_ERROR) {
-        handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_ERROR;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_ERROR);
     } else if (percent <= DASHBOARD_THRESHOLD_HV_SOC_PERCENT_WARNING) {
-        handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_WARNING;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_WARNING);
     } else {
-        handler->labels[DASHBOARD_FIELD_HV_SOC].color.argb = DASHBOARD_COLOR_SECONDARY;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_SECONDARY);
     }
 
     return DASHBOARD_RC_OK;
@@ -265,11 +285,11 @@ enum DashboardReturnCode dashboard_api_set_hv_temperature(struct DashboardHandle
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_TEMPERATURE, "%" PRId16 "°C", celsius);
 
     if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_ERROR) {
-        handler->labels[DASHBOARD_FIELD_HV_TEMPERATURE].color.argb = DASHBOARD_COLOR_ERROR;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_COLOR_ERROR);
     } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_WARNING) {
-        handler->labels[DASHBOARD_FIELD_HV_TEMPERATURE].color.argb = DASHBOARD_COLOR_WARNING;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_COLOR_WARNING);
     } else {
-        handler->labels[DASHBOARD_FIELD_HV_TEMPERATURE].color.argb = DASHBOARD_COLOR_SECONDARY;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_COLOR_SECONDARY);
     }
 
     return DASHBOARD_RC_OK;
@@ -282,11 +302,11 @@ enum DashboardReturnCode dashboard_api_set_inverter_temperature(struct Dashboard
     prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_INVERTER, "%" PRId16 "°C", celsius);
 
     if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INVERTER_TEMPERATURE_CELSIUS_ERROR) {
-        handler->labels[DASHBOARD_FIELD_INVERTER].color.argb = DASHBOARD_COLOR_ERROR;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_INVERTER, DASHBOARD_COLOR_ERROR);
     } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INVERTER_TEMPERATURE_CELSIUS_WARNING) {
-        handler->labels[DASHBOARD_FIELD_INVERTER].color.argb = DASHBOARD_COLOR_WARNING;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_INVERTER, DASHBOARD_COLOR_WARNING);
     } else {
-        handler->labels[DASHBOARD_FIELD_INVERTER].color.argb = DASHBOARD_COLOR_SECONDARY;
+        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_INVERTER, DASHBOARD_COLOR_SECONDARY);
     }
 
     return DASHBOARD_RC_OK;
@@ -385,10 +405,10 @@ enum DashboardReturnCode dashboard_api_set_tire_temperatures(struct DashboardHan
     }
     prv_dashboard_api_set_temperature_quad(handler, DASHBOARD_FIELD_TIRES_FRONT_LEFT, DASHBOARD_FIELD_TIRES_FRONT_RIGHT, DASHBOARD_FIELD_TIRES_REAR_LEFT, DASHBOARD_FIELD_TIRES_REAR_RIGHT, front_left, front_right, rear_left, rear_right);
 
-    handler->labels[DASHBOARD_FIELD_TIRES_FRONT_LEFT].color.argb = prv_dashboard_api_tire_temp_color(front_left);
-    handler->labels[DASHBOARD_FIELD_TIRES_FRONT_RIGHT].color.argb = prv_dashboard_api_tire_temp_color(front_right);
-    handler->labels[DASHBOARD_FIELD_TIRES_REAR_LEFT].color.argb = prv_dashboard_api_tire_temp_color(rear_left);
-    handler->labels[DASHBOARD_FIELD_TIRES_REAR_RIGHT].color.argb = prv_dashboard_api_tire_temp_color(rear_right);
+    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_TIRES_FRONT_LEFT, prv_dashboard_api_tire_temp_color(front_left));
+    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_TIRES_FRONT_RIGHT, prv_dashboard_api_tire_temp_color(front_right));
+    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_TIRES_REAR_LEFT, prv_dashboard_api_tire_temp_color(rear_left));
+    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_TIRES_REAR_RIGHT, prv_dashboard_api_tire_temp_color(rear_right));
 
     return DASHBOARD_RC_OK;
 }
@@ -399,10 +419,10 @@ enum DashboardReturnCode dashboard_api_set_motor_temperatures(struct DashboardHa
     }
     prv_dashboard_api_set_temperature_quad(handler, DASHBOARD_FIELD_MOTORS_FRONT_LEFT, DASHBOARD_FIELD_MOTORS_FRONT_RIGHT, DASHBOARD_FIELD_MOTORS_REAR_LEFT, DASHBOARD_FIELD_MOTORS_REAR_RIGHT, front_left, front_right, rear_left, rear_right);
 
-    handler->labels[DASHBOARD_FIELD_MOTORS_FRONT_LEFT].color.argb = prv_dashboard_api_motor_temp_color(front_left);
-    handler->labels[DASHBOARD_FIELD_MOTORS_FRONT_RIGHT].color.argb = prv_dashboard_api_motor_temp_color(front_right);
-    handler->labels[DASHBOARD_FIELD_MOTORS_REAR_LEFT].color.argb = prv_dashboard_api_motor_temp_color(rear_left);
-    handler->labels[DASHBOARD_FIELD_MOTORS_REAR_RIGHT].color.argb = prv_dashboard_api_motor_temp_color(rear_right);
+    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_MOTORS_FRONT_LEFT, prv_dashboard_api_motor_temp_color(front_left));
+    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_MOTORS_FRONT_RIGHT, prv_dashboard_api_motor_temp_color(front_right));
+    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_MOTORS_REAR_LEFT, prv_dashboard_api_motor_temp_color(rear_left));
+    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_MOTORS_REAR_RIGHT, prv_dashboard_api_motor_temp_color(rear_right));
 
     return DASHBOARD_RC_OK;
 }

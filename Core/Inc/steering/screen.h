@@ -26,8 +26,7 @@ enum ScreenReturnCode {
  * \brief Main screen handler structure
  */
 struct ScreenHandler {
-    uint32_t last_event_tick; /*!< Timestamp of the last screen event, in milliseconds */
-    bool popup_visible;       /*!< Whether the popup interface is currently mounted on the raster */
+    bool popup_visible; /*!< Whether the popup interface is currently mounted on the raster */
 
     struct RasterHandler raster;       /*!< Handler for raster operations */
     struct DashboardHandler dashboard; /*!< Main always-on interface (telemetry, scenario, lap) */

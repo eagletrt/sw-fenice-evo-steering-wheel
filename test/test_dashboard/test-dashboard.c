@@ -13,6 +13,9 @@
 
 struct DashboardHandler dashboard_handler;
 
+/* Private helper, reachable because the test build defines EAGLETRT_STATIC as empty. */
+void prv_dashboard_api_set_label_color(struct DashboardHandler *handler, enum DashboardFieldId field_id, uint32_t argb);
+
 void setUp(void) {
     memset(&dashboard_handler, 0, sizeof(dashboard_handler));
     dashboard_api_init(&dashboard_handler);
@@ -322,6 +325,38 @@ void test_dashboard_set_ptt_null_handler(void) {
 /*! \} */
 
 /*!
+ * \defgroup dashboard_label_color Tests for threshold colour changes
+ * \{
+ */
+
+void test_dashboard_label_color_change_flags_box(void) {
+    prv_dashboard_api_set_label_color(&dashboard_handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_ERROR);
+    TEST_ASSERT_EQUAL_UINT32(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb);
+    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated, "A colour-only change must flag the box, or the raster skips the redraw");
+}
+
+void test_dashboard_label_color_same_value_does_not_flag(void) {
+    prv_dashboard_api_set_label_color(&dashboard_handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_ERROR);
+    dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated = false;
+
+    prv_dashboard_api_set_label_color(&dashboard_handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_ERROR);
+
+    TEST_ASSERT_FALSE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated);
+}
+
+void test_dashboard_threshold_crossing_recolors_and_flags(void) {
+    dashboard_api_set_soc(&dashboard_handler, 80U);
+    dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated = false;
+
+    dashboard_api_set_soc(&dashboard_handler, DASHBOARD_THRESHOLD_HV_SOC_PERCENT_ERROR);
+
+    TEST_ASSERT_EQUAL_UINT32(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb);
+    TEST_ASSERT_TRUE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated);
+}
+
+/*! \} */
+
+/*!
  * \defgroup dashboard_no_op Tests for the no-op skip optimization
  * \{
  */
@@ -399,6 +434,10 @@ int main(void) {
     RUN_TEST(test_dashboard_set_ptt_unchanged_does_not_re_flag);
     RUN_TEST(test_dashboard_set_ptt_only_touches_scenario_header);
     RUN_TEST(test_dashboard_set_ptt_null_handler);
+
+    RUN_TEST(test_dashboard_label_color_change_flags_box);
+    RUN_TEST(test_dashboard_label_color_same_value_does_not_flag);
+    RUN_TEST(test_dashboard_threshold_crossing_recolors_and_flags);
 
     RUN_TEST(test_dashboard_setter_does_not_re_flag_when_value_unchanged);
     RUN_TEST(test_dashboard_setter_flags_on_real_change);
