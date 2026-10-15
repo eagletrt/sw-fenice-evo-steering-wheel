@@ -190,6 +190,17 @@ bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t
     return screen_api_on_parameter_change(parameter_id, value, HAL_GetTick()) == SCREEN_RC_OK;
 }
 
+// bootloader code
+static void VectorBase_Config(void) {
+    /* The constant array with vectors of the vector table is declared externally in the
+     * c-startup code.
+     */
+    extern const unsigned long g_pfnVectors[];
+
+    /* Remap the vector table to where the vector table is located for this program. */
+    SCB->VTOR = (unsigned long)&g_pfnVectors[0];
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -199,7 +210,7 @@ bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t
 int main(void) {
 
     /* USER CODE BEGIN 1 */
-
+    VectorBase_Config(); // bootloader code
     /* USER CODE END 1 */
 
     /* MPU Configuration--------------------------------------------------------*/
