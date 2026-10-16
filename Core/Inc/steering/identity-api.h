@@ -6,8 +6,7 @@
  *
  * \brief Public API for the steering wheel identity broadcast.
  *
- * \details Each periodic sender is a no-op until the matching libcan cycle
- *     time has elapsed, so they are cheap to call on every FSM tick. All
+ * \details The scheduler calls each sender at its libcan cycle time. All
  *     frames are queued on the primary network through
  *     can_communications_api_add_to_tx_buffer and flushed by the usual
  *     process_tx drain.
@@ -39,34 +38,19 @@ enum IdentityReturnCode identity_api_init(void);
 enum IdentityReturnCode identity_api_send_state(enum CanPrimarySteeringwheelfsmStatus status);
 
 /*!
- * \brief Periodically send state identity informations.
+ * \brief Queue the firmware version (SteeringWheelVersion + VersionInfo).
  *
- * \param status The current steering wheel FSM status.
- * \param tick_ms The current tick, in milliseconds.
- *
- * \retval IDENTITY_RC_OK if the identity information was sent successfully.
- * \retval IDENTITY_RC_ERROR if there was an error sending the identity information.
+ * \retval IDENTITY_RC_OK if the frames were queued.
+ * \retval IDENTITY_RC_ERROR if there was an error queuing them.
  */
-enum IdentityReturnCode identity_api_periodically_send_state(enum CanPrimarySteeringwheelfsmStatus status, uint32_t tick_ms);
+enum IdentityReturnCode identity_api_send_version(void);
 
 /*!
- * \brief Periodically send version identity informations.
+ * \brief Queue the libcan version (SteeringWheelLibcanVersion + LibcanVersionInfo).
  *
- * \param tick_ms The current tick, in milliseconds.
- *
- * \retval IDENTITY_RC_OK if the identity information was sent successfully.
- * \retval IDENTITY_RC_ERROR if there was an error sending the identity information.
+ * \retval IDENTITY_RC_OK if the frames were queued.
+ * \retval IDENTITY_RC_ERROR if there was an error queuing them.
  */
-enum IdentityReturnCode identity_api_periodically_send_version(uint32_t tick_ms);
-
-/*!
- * \brief Periodically send libcan version identity informations.
- *
- * \param tick_ms The current tick, in milliseconds.
- *
- * \retval IDENTITY_RC_OK if the identity information was sent successfully.
- * \retval IDENTITY_RC_ERROR if there was an error sending the identity information.
- */
-enum IdentityReturnCode identity_api_periodically_send_libcan_version(uint32_t tick_ms);
+enum IdentityReturnCode identity_api_send_libcan_version(void);
 
 #endif // IDENTITY_API_H

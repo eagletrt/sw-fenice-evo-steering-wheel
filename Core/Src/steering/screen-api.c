@@ -21,8 +21,8 @@ EAGLETRT_STATIC struct ScreenHandler screen_handler;
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 enum ScreenReturnCode screen_api_on_parameter_change(const enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick) {
     // Called from the parameters on-change path: only update the popup state
-    // here. The raster interface swap is performed by screen_update in the
-    // FSM idle loop. The timeout starts from the change itself, not from the
+    // here. The raster interface swap is performed by screen_api_update in
+    // the render task. The timeout starts from the change itself, not from the
     // last render: renders can be late or not running at all.
     if (popup_api_show(&screen_handler.popup, parameter_id, value, tick) != POPUP_RC_OK) {
         return SCREEN_RC_ERROR;

@@ -7,9 +7,9 @@
  * \brief Snapshot of every value the dashboard renders.
  *
  * \details A single struct holds every value the dashboard shows. Producers
- *     (the CAN router once canlib is wired in, the parameter on-change
- *     handler, the FSM state mirror in main) write the fields whenever new
- *     data arrives; the FSM idle loop reads them once per tick and pushes
+ *     (the CAN router, the parameter on-change handler) write the fields
+ *     whenever new data arrives; the scheduler render task reads them once
+ *     per frame and pushes
  *     any deltas into the dashboard through screen_api_sync_data. Setters
  *     are no-ops when nothing changed, so polling the struct every tick is
  *     cheap.

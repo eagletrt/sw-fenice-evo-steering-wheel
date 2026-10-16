@@ -17,11 +17,7 @@ Functions and types have been generated with prefix "fsm_"
 
 /*** USER CODE BEGIN MACROS ***/
 
-#include "can-communications-api.h"
-#include "inputs-api.h"
 #include "post-api.h"
-#include "screen-api.h"
-#include "ui-data-api.h"
 #include "eagletrt-api.h"
 #include "can-communications-router-api.h"
 
@@ -121,45 +117,16 @@ fsm_state_t fsm_do_idle(fsm_state_data_t *data) {
     } else {
         struct FsmData *fsm_data = (struct FsmData *)data;
 
-        if (can_communications_router_api_reset_asked()) {
+        // Inputs, CAN and rendering run as their own scheduler tasks; the
+        // FSM only decides what state the wheel is in.
+        if (can_communications_router_api_reset_asked() && fsm_data->reset != NULL) {
             fsm_data->reset();
         }
 
-        // A transient NAK from the input expanders is not worth bricking
-        // the wheel over: FSM_STATE_ERROR has no way back, so treating it
-        // as fatal would freeze the dashboard for the rest of the power
-        // cycle. The display is the one thing the driver actually needs.
-        EAGLETRT_API_UNUSED(inputs_api_poll_for_long_press(fsm_data->tick));
-
-        // TODO: add check for return values, and handle errors accordingly
-        EAGLETRT_API_UNUSED(can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_PRIMARY));
-        EAGLETRT_API_UNUSED(can_communications_api_process_rx(CAN_COMMUNICATION_NETWORK_SECONDARY));
-
-        EAGLETRT_API_UNUSED(can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_PRIMARY));
-        EAGLETRT_API_UNUSED(can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_SECONDARY));
-
-        // Pull the latest telemetry snapshot into the dashboard before the
-        // raster runs; setters are no-ops when nothing changed, so this is
-        // cheap to call every tick.
-        if (screen_api_sync_data(ui_data_api_get()) != SCREEN_RC_OK) {
+        // Set by a task that hit an unrecoverable error (e.g. the render
+        // task when the screen fails).
+        if (fsm_data->error_detected) {
             next_state = FSM_STATE_ERROR;
-        }
-
-        switch (screen_api_update(fsm_data->tick)) {
-            case SCREEN_RC_OK:
-                break;
-            case SCREEN_RC_RENDERED: {
-                if (fsm_data->swap_framebuffers == NULL) {
-                    next_state = FSM_STATE_ERROR;
-                    break;
-                }
-                fsm_data->swap_framebuffers();
-                break;
-            }
-
-            case SCREEN_RC_ERROR:
-            case SCREEN_RC_NULL_POINTER:
-                next_state = FSM_STATE_ERROR;
         }
     }
 

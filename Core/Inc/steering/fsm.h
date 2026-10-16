@@ -75,6 +75,7 @@ struct FsmData {
     fsm_swap_framebuffers_callback swap_framebuffers; /*!< Callback function to swap framebuffers. */
     fsm_reset reset;                                  /*!< Callback function to reset the system. */
     uint32_t tick;                                    /*!< Current tick. */
+    bool error_detected;                              /*!< Set by a task on an unrecoverable error; moves IDLE to ERROR. */
 };
 
 /*** USER CODE END TYPES ***/

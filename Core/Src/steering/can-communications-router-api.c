@@ -19,12 +19,10 @@
 #include <string.h>
 
 /*!
- * \brief Cycle-time bookkeeping for the wheel's outbound messages.
+ * \brief File-static state of the router.
  */
 struct CanCommunicationsRouterHandler {
-    uint32_t last_tick_ms_button_status; /*!< Tick of the last SteeringWheelButtonStatus. */
-    uint32_t last_tick_ms_control_maps;  /*!< Tick of the last ControlMapsSet. */
-    bool reset_asked;                    /*!< True if reset has been asked for bootloader. */
+    bool reset_asked; /*!< True if reset has been asked for bootloader. */
 };
 
 EAGLETRT_STATIC struct CanCommunicationsRouterHandler can_communications_router_handler;
@@ -62,16 +60,7 @@ EAGLETRT_STATIC enum CanCommunicationReturnCode prv_router_api_queue_primary(
     return can_communications_api_add_to_tx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame);
 }
 
-/*!
- * \brief Build and queue SteeringWheelButtonStatus from the current parameters.
- *
- * \details Carries the two momentary requests the ECU acts on: TS-on and
- *     push-to-talk.
- *
- * \retval CAN_COMMUNICATION_RC_OK on success.
- * \retval CAN_COMMUNICATION_RC_ERROR if libcan failed to serialize.
- */
-EAGLETRT_STATIC enum CanCommunicationReturnCode prv_router_api_send_button_status(void) {
+enum CanCommunicationReturnCode can_communications_router_api_send_button_status(void) {
     union CanPrimaryMessages message;
     message.steeringwheelbuttonstatus = (struct CanPrimarySteeringwheelbuttonstatus){
         .tson = parameters_api_get(INPUTS_SHARED_PARAMETER_ID_TS_ON),
@@ -83,17 +72,7 @@ EAGLETRT_STATIC enum CanCommunicationReturnCode prv_router_api_send_button_statu
         can_primary_byte_size_steeringwheelbuttonstatus);
 }
 
-/*!
- * \brief Build and queue ControlMapsSet from the current parameters.
- *
- * \details The three maps are 0..INPUTS_SHARED_PARAMETER_NUMERIC_MAX on the
- *     wheel but normalized 0..1 floats in libcan, which re-quantizes them
- *     to the same ten steps on the wire.
- *
- * \retval CAN_COMMUNICATION_RC_OK on success.
- * \retval CAN_COMMUNICATION_RC_ERROR if libcan failed to serialize.
- */
-EAGLETRT_STATIC enum CanCommunicationReturnCode prv_router_api_send_control_maps(void) {
+enum CanCommunicationReturnCode can_communications_router_api_send_control_maps(void) {
     union CanPrimaryMessages message;
     message.controlmapsset = (struct CanPrimaryControlmapsset){
         .power = (float)parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER) / (float)INPUTS_SHARED_PARAMETER_NUMERIC_MAX,
@@ -137,13 +116,13 @@ enum CanCommunicationReturnCode can_communications_router_api_on_parameter_chang
     switch (parameter_id) {
         case INPUTS_SHARED_PARAMETER_ID_TS_ON:
         case INPUTS_SHARED_PARAMETER_ID_PTT:
-            return prv_router_api_send_button_status();
+            return can_communications_router_api_send_button_status();
 
         case INPUTS_SHARED_PARAMETER_ID_POWER:
         case INPUTS_SHARED_PARAMETER_ID_REGEN:
         case INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING:
         case INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL:
-            return prv_router_api_send_control_maps();
+            return can_communications_router_api_send_control_maps();
 
         case INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG:
             return prv_router_api_send_driver_action();
@@ -152,26 +131,6 @@ enum CanCommunicationReturnCode can_communications_router_api_on_parameter_chang
         default:
             return CAN_COMMUNICATION_RC_OK;
     }
-}
-
-enum CanCommunicationReturnCode can_communications_router_api_process_tx_periodic(uint32_t tick_ms) {
-    enum CanCommunicationReturnCode return_code = CAN_COMMUNICATION_RC_OK;
-
-    if (tick_ms - can_communications_router_handler.last_tick_ms_button_status >= (uint32_t)can_primary_cycle_time_steeringwheelbuttonstatus) {
-        can_communications_router_handler.last_tick_ms_button_status = tick_ms;
-        if (prv_router_api_send_button_status() != CAN_COMMUNICATION_RC_OK) {
-            return_code = CAN_COMMUNICATION_RC_ERROR;
-        }
-    }
-
-    if (tick_ms - can_communications_router_handler.last_tick_ms_control_maps >= (uint32_t)can_primary_cycle_time_controlmapsset) {
-        can_communications_router_handler.last_tick_ms_control_maps = tick_ms;
-        if (prv_router_api_send_control_maps() != CAN_COMMUNICATION_RC_OK) {
-            return_code = CAN_COMMUNICATION_RC_ERROR;
-        }
-    }
-
-    return return_code;
 }
 
 /*!
