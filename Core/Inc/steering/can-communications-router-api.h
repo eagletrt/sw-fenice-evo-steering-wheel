@@ -55,7 +55,7 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_secondary(
  *
  * \details Called from the parameters on-change handler so a change reaches
  *     the bus immediately instead of waiting for the next cycle time. The
- *     periodic pump keeps re-sending the same values afterwards.
+ *     scheduler keeps re-sending the same values afterwards.
  *
  * \param parameter_id The parameter that changed.
  * \param value The new value of the parameter.
@@ -67,18 +67,31 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_secondary(
 enum CanCommunicationReturnCode can_communications_router_api_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value);
 
 /*!
- * \brief Re-broadcast the wheel's cyclic messages that are due.
+ * \brief Build and queue SteeringWheelButtonStatus from the current parameters.
  *
- * \details Each message is skipped until its libcan cycle time has
- *     elapsed, so this is cheap to call on every FSM tick.
- *
- * \param tick_ms The current tick, in milliseconds.
+ * \details Carries the two momentary requests the ECU acts on: TS-on and
+ *     push-to-talk. Sent on parameter change and by the scheduler at the
+ *     libcan cycle time.
  *
  * \retval CAN_COMMUNICATION_RC_OK on success.
- * \retval CAN_COMMUNICATION_RC_QUEUE_FULL if a TX queue is saturated.
+ * \retval CAN_COMMUNICATION_RC_QUEUE_FULL if the TX queue is saturated.
  * \retval CAN_COMMUNICATION_RC_ERROR if libcan failed to serialize.
  */
-enum CanCommunicationReturnCode can_communications_router_api_process_tx_periodic(uint32_t tick_ms);
+enum CanCommunicationReturnCode can_communications_router_api_send_button_status(void);
+
+/*!
+ * \brief Build and queue ControlMapsSet from the current parameters.
+ *
+ * \details The three maps are 0..INPUTS_SHARED_PARAMETER_NUMERIC_MAX on the
+ *     wheel but normalized 0..1 floats in libcan, which re-quantizes them
+ *     to the same ten steps on the wire. Sent on parameter change and by the
+ *     scheduler at the libcan cycle time.
+ *
+ * \retval CAN_COMMUNICATION_RC_OK on success.
+ * \retval CAN_COMMUNICATION_RC_QUEUE_FULL if the TX queue is saturated.
+ * \retval CAN_COMMUNICATION_RC_ERROR if libcan failed to serialize.
+ */
+enum CanCommunicationReturnCode can_communications_router_api_send_control_maps(void);
 
 /*!
  * \brief Check if a reset has been requested via CAN (same ID as the OpenBLT RX).
