@@ -37,10 +37,7 @@ enum IdentityReturnCode {
  * \brief File-static state of the identity module.
  */
 struct IdentityHandler {
-    uint32_t build_time;                  /*!< Firmware build time, as a UNIX timestamp. */
-    uint32_t last_tick_ms_status;         /*!< Tick of the last FSM status broadcast. */
-    uint32_t last_tick_ms_version;        /*!< Tick of the last firmware version broadcast. */
-    uint32_t last_tick_ms_libcan_version; /*!< Tick of the last libcan version broadcast. */
+    uint32_t build_time; /*!< Firmware build time, as a UNIX timestamp. */
 };
 
 #endif // IDENTITY_H

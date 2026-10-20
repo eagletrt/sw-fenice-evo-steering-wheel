@@ -34,14 +34,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "fsm.h"
 #include "parameters-api.h"
-#include "post.h"
+#include "scheduler-api.h"
 #include "screen-api.h"
 #include "ui-data-api.h"
 #include "can-communications-router-api.h"
-#include "identity-api.h"
-#include "can-primary.h"
 #include "arena-allocator-api.h"
 #include "pal-api.h"
 #include "logger-api.h"
@@ -61,7 +58,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define MAIN_INPUTS_POLL_PERIOD_MS (10U)
+#define MAIN_CYCLES_PER_US_DIVIDER (1000000U) /*!< SystemCoreClock (Hz) to cycle-counter ticks per microsecond. */
 
 /* USER CODE END PD */
 
@@ -118,29 +115,6 @@ EAGLETRT_STATIC void prv_main_sync_parameter_to_ui(enum InputsSharedParameterID 
     }
 }
 
-/*!
- * \brief Map the wheel FSM state onto the status signal of SteeringWheelFsm.
- *
- * \param state The current FSM state.
- *
- * \return The matching CanPrimarySteeringwheelfsmStatus value.
- */
-EAGLETRT_STATIC enum CanPrimarySteeringwheelfsmStatus prv_main_fsm_status(fsm_state_t state) {
-    switch (state) {
-        case FSM_STATE_IDLE:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE;
-        case FSM_STATE_ERROR:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR;
-        case FSM_STATE_FLASH:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_FLASH;
-        case FSM_STATE_AUTONOMOUS:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_AUTONOMOUS;
-        case FSM_STATE_INIT:
-        default:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_INIT;
-    }
-}
-
 EAGLETRT_STATIC void prv_main_init_logging_configuration() {
     arena_allocator_api_init(&arena_allocator_handler);
 
@@ -156,19 +130,30 @@ EAGLETRT_STATIC void prv_main_init_logging_configuration() {
 }
 
 /*!
- * \brief Queue every cyclic frame the wheel owes the bus this tick.
+ * \brief Sample the I2C expanders and the GPIO buttons (scheduler inputs task).
  *
- * \details Called just before the FSM runs, so anything queued here is
- *     drained by the process_tx pass inside the same iteration.
- *
- * \param state The current FSM state, broadcast as our identity status.
  * \param tick Current tick in milliseconds.
  */
-EAGLETRT_STATIC void prv_main_broadcast_can(fsm_state_t state, uint32_t tick) {
-    EAGLETRT_API_UNUSED(can_communications_router_api_process_tx_periodic(tick));
-    EAGLETRT_API_UNUSED(identity_api_periodically_send_state(prv_main_fsm_status(state), tick));
-    EAGLETRT_API_UNUSED(identity_api_periodically_send_version(tick));
-    EAGLETRT_API_UNUSED(identity_api_periodically_send_libcan_version(tick));
+EAGLETRT_STATIC void prv_main_poll_inputs(uint32_t tick) {
+    i2c_inputs_poll(tick);
+    gpio_inputs_poll(tick);
+}
+
+/*!
+ * \brief Free-running core cycle counter, used to time the scheduler tasks.
+ */
+EAGLETRT_STATIC uint32_t prv_main_get_cycles(void) {
+    return DWT->CYCCNT;
+}
+
+/*!
+ * \brief Start the DWT cycle counter.
+ */
+EAGLETRT_STATIC void prv_main_enable_cycle_counter(void) {
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->LAR = 0xC5ACCE55U; // Cortex-M7: unlock the DWT registers
+    DWT->CYCCNT = 0U;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
 bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
@@ -187,7 +172,8 @@ bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t
         return true;
     }
 
-    return screen_api_on_parameter_change(parameter_id, value, HAL_GetTick()) == SCREEN_RC_OK;
+    // Same time base as the render task that checks the popup timeout.
+    return screen_api_on_parameter_change(parameter_id, value, scheduler_api_get_tick()) == SCREEN_RC_OK;
 }
 
 // bootloader code
@@ -231,8 +217,6 @@ int main(void) {
 
     /* USER CODE BEGIN Init */
 
-    fsm_state_t current_state = FSM_STATE_INIT;
-
     /* USER CODE END Init */
 
     /* Configure the system clock */
@@ -270,48 +254,45 @@ int main(void) {
 
     i2c_inputs_init();
 
-    struct PostInitData post_init_data = {
-        .parameters_on_change = main_on_parameter_change,
-        .can_network_configs = {
-            [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
-                .cs_enter = __disable_irq,
-                .cs_exit = __enable_irq,
-                .on_receive = can_communications_router_api_receive_primary,
-                .send = fdcan_send_primary,
+    prv_main_enable_cycle_counter();
+
+    const struct SchedulerConfig scheduler_config = {
+        .post = {
+            .parameters_on_change = main_on_parameter_change,
+            .can_network_configs = {
+                [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
+                    .cs_enter = __disable_irq,
+                    .cs_exit = __enable_irq,
+                    .on_receive = can_communications_router_api_receive_primary,
+                    .send = fdcan_send_primary,
+                },
+                [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
+                    .cs_enter = __disable_irq,
+                    .cs_exit = __enable_irq,
+                    .on_receive = can_communications_router_api_receive_secondary,
+                    .send = fdcan_send_secondary,
+                },
             },
-            [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
-                .cs_enter = __disable_irq,
-                .cs_exit = __enable_irq,
-                .on_receive = can_communications_router_api_receive_secondary,
-                .send = fdcan_send_secondary,
-            },
+            .draw_rectangle = ltdc_draw_rectangle,
         },
-        .draw_rectangle = ltdc_draw_rectangle,
+        .get_tick = HAL_GetTick,
+        .poll_inputs = prv_main_poll_inputs,
+        .swap_framebuffers = ltdc_swap_framebuffers,
+        .reset = NVIC_SystemReset,
+        .get_cycles = prv_main_get_cycles,
+        .cycles_per_us = SystemCoreClock / MAIN_CYCLES_PER_US_DIVIDER,
     };
 
-    current_state = fsm_run_state(current_state, &post_init_data);
-
-    struct FsmData fsm_data = { 0 };
-    fsm_data.swap_framebuffers = ltdc_swap_framebuffers;
-    fsm_data.reset = NVIC_SystemReset;
-    uint32_t last_inputs_poll_tick = 0U;
+    if (scheduler_api_init(&scheduler_config) != SCHEDULER_RC_OK) {
+        Error_Handler();
+    }
 
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1) {
-        fsm_data.tick = HAL_GetTick();
-
-        if (fsm_data.tick - last_inputs_poll_tick >= MAIN_INPUTS_POLL_PERIOD_MS) {
-            last_inputs_poll_tick = fsm_data.tick;
-            i2c_inputs_poll(fsm_data.tick);
-            gpio_inputs_poll(fsm_data.tick);
-        }
-
-        prv_main_broadcast_can(current_state, fsm_data.tick);
-
-        current_state = fsm_run_state(current_state, &fsm_data);
+        EAGLETRT_API_UNUSED(scheduler_api_routine());
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

@@ -8,6 +8,7 @@
 
 #include "unity.h"
 #include "popup-api.h"
+#include "screen.h"
 
 struct PopupHandler popup_handler;
 
@@ -103,6 +104,13 @@ void test_popup_api_is_active(void) {
     TEST_ASSERT_FALSE_MESSAGE(popup_handler.active, "Popup handler should be set to inactive after timeout");
 }
 
+void test_popup_api_is_active_event_stamped_after_now(void) {
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5, 105U);
+    TEST_ASSERT_TRUE_MESSAGE(popup_api_is_active(&popup_handler, 100U), "An event stamped a few ticks after 'now' just happened, it must not wrap to a huge elapsed time");
+    TEST_ASSERT_TRUE(popup_api_is_active(&popup_handler, 105U + SCREEN_POPUP_TIMEOUT_MS - 1U));
+    TEST_ASSERT_FALSE(popup_api_is_active(&popup_handler, 105U + SCREEN_POPUP_TIMEOUT_MS));
+}
+
 void test_popup_api_is_active_null_handler(void) {
     TEST_ASSERT_FALSE(popup_api_is_active(NULL, 100));
 }
@@ -162,6 +170,7 @@ int main(void) {
     RUN_TEST(test_popup_api_dismiss_null_handler);
 
     RUN_TEST(test_popup_api_is_active);
+    RUN_TEST(test_popup_api_is_active_event_stamped_after_now);
     RUN_TEST(test_popup_api_is_active_null_handler);
     RUN_TEST(test_popup_api_is_active_inactive);
 
