@@ -199,6 +199,10 @@ EAGLETRT_STATIC const struct SchedulerTask prv_scheduler_api_tasks[SCHEDULER_TAS
  * \return The current tick, in milliseconds.
  */
 EAGLETRT_STATIC uint32_t prv_scheduler_api_read_tick(void) {
+    if (scheduler_handler.config.get_tick == NULL) {
+        scheduler_handler.fsm_data.error_detected = true;
+        return 0U;
+    }
     scheduler_handler.tick = scheduler_handler.config.get_tick();
     return scheduler_handler.tick;
 }
