@@ -81,7 +81,7 @@ typedef void (*scheduler_poll_inputs_callback)(uint32_t tick_ms);
  * \brief Hardware hooks and init data handed to the scheduler.
  */
 struct SchedulerConfig {
-    struct PostInitData post;                         /*!< Passed to the FSM INIT state (POST) */
+    struct PostInitData post;                         /*!< Passed to the FSM INIT state (POST); parameters_on_change is set by the scheduler */
     scheduler_get_tick_callback get_tick;             /*!< Required: millisecond tick */
     scheduler_poll_inputs_callback poll_inputs;       /*!< Required: input sampling */
     fsm_swap_framebuffers_callback swap_framebuffers; /*!< Required: present the frame just rendered */

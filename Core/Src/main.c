@@ -34,10 +34,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "parameters-api.h"
 #include "scheduler-api.h"
-#include "screen-api.h"
-#include "ui-data-api.h"
 #include "can-communications-router-api.h"
 #include "arena-allocator-api.h"
 #include "pal-api.h"
@@ -86,35 +83,6 @@ EAGLETRT_STATIC struct PalHandler logger_pal_handler;
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-/*!
- * \brief Mirror a parameter transition into the UI snapshot.
- *
- * \param parameter_id Parameter that changed.
- * \param value New value of the parameter.
- */
-EAGLETRT_STATIC void prv_main_sync_parameter_to_ui(enum InputsSharedParameterID parameter_id, uint8_t value) {
-    struct UIData *ui_data = ui_data_api_get();
-    switch (parameter_id) {
-        case INPUTS_SHARED_PARAMETER_ID_POWER:
-            ui_data->power = value;
-            break;
-        case INPUTS_SHARED_PARAMETER_ID_REGEN:
-            ui_data->regen = value;
-            break;
-        case INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING:
-            ui_data->torque = value;
-            break;
-        case INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL:
-            ui_data->slip_on = value;
-            break;
-        case INPUTS_SHARED_PARAMETER_ID_PTT:
-            ui_data->ptt = value;
-            break;
-        default:
-            break;
-    }
-}
-
 EAGLETRT_STATIC void prv_main_init_logging_configuration() {
     arena_allocator_api_init(&arena_allocator_handler);
 
@@ -154,26 +122,6 @@ EAGLETRT_STATIC void prv_main_enable_cycle_counter(void) {
     DWT->LAR = 0xC5ACCE55U; // Cortex-M7: unlock the DWT registers
     DWT->CYCCNT = 0U;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-}
-
-bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value) {
-    // Every transition goes on the bus, shared with the UI or not: TS-on
-    // and PTT are exactly the two that never reach the popup.
-    if (can_communications_router_api_on_parameter_change(parameter_id, value) != CAN_COMMUNICATION_RC_OK) {
-        return false;
-    }
-
-    // Every parameter reaches the dashboard; parameters_api_is_shared only
-    // decides which ones additionally raise the popup. PTT is the case that
-    // matters: it never pops up, but it does tint the SCENARIO header.
-    prv_main_sync_parameter_to_ui(parameter_id, value);
-
-    if (!parameters_api_is_shared(parameter_id)) {
-        return true;
-    }
-
-    // Same time base as the render task that checks the popup timeout.
-    return screen_api_on_parameter_change(parameter_id, value, scheduler_api_get_tick()) == SCREEN_RC_OK;
 }
 
 // bootloader code
@@ -258,7 +206,6 @@ int main(void) {
 
     const struct SchedulerConfig scheduler_config = {
         .post = {
-            .parameters_on_change = main_on_parameter_change,
             .can_network_configs = {
                 [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
                     .cs_enter = __disable_irq,

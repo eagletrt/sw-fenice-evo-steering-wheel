@@ -15,10 +15,12 @@
 #include "scheduler-api.h"
 #include "can-communications-router-api.h"
 #include "can-primary.h"
+#include "inputs-api.h"
 #include "parameters-api.h"
 #include "screen.h"
 #include "screen-api.h"
 #include "tasks-api.h"
+#include "ui-data-api.h"
 #include <string.h>
 
 DEFINE_FFF_GLOBALS;
@@ -35,7 +37,6 @@ FAKE_VOID_FUNC(fake_swap_framebuffers);
 FAKE_VOID_FUNC(fake_reset);
 FAKE_VALUE_FUNC(uint32_t, fake_get_cycles);
 FAKE_VALUE_FUNC(enum RasterReturnCode, fake_draw_rectangle, uint16_t, uint16_t, uint16_t, uint16_t, struct Color);
-FAKE_VALUE_FUNC(bool, fake_on_change, enum InputsSharedParameterID, uint8_t);
 
 #define TEST_SCHEDULER_SENT_CAPACITY (512U)
 #define TEST_SCHEDULER_CYCLES_PER_US (10U)
@@ -73,11 +74,6 @@ static void prv_poll_inputs_turn_knob(uint32_t tick_ms) {
     parameters_api_handle_knob(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, 1);
 }
 
-/* Same wiring as main_on_parameter_change: stamp the popup with the scheduler tick. */
-static bool prv_on_change_show_popup(enum InputsSharedParameterID parameter_id, uint8_t value) {
-    return screen_api_on_parameter_change(parameter_id, value, scheduler_api_get_tick()) == SCREEN_RC_OK;
-}
-
 /* First tick at which libtimebase runs a task (its staggered start). */
 static uint32_t prv_task_start(enum SchedulerTaskId task_id) {
     return scheduler_handler.tasks.task_list[task_id].start;
@@ -102,6 +98,11 @@ static void prv_swap_trace(void) {
     }
 }
 
+/* Holds the top-left PTT paddle down. */
+static void prv_poll_inputs_hold_ptt(uint32_t tick_ms) {
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT, true, tick_ms);
+}
+
 static size_t prv_count_sent(uint32_t id) {
     size_t count = 0U;
     for (size_t i = 0U; i < prv_sent_count; i++) {
@@ -115,7 +116,6 @@ static size_t prv_count_sent(uint32_t id) {
 static struct SchedulerConfig prv_make_config(void) {
     return (struct SchedulerConfig){
         .post = {
-            .parameters_on_change = fake_on_change,
             .can_network_configs = {
                 [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
                     .send = prv_capture_send,
@@ -157,7 +157,6 @@ void setUp(void) {
     RESET_FAKE(fake_reset);
     RESET_FAKE(fake_get_cycles);
     RESET_FAKE(fake_draw_rectangle);
-    RESET_FAKE(fake_on_change);
     FFF_RESET_HISTORY();
 
     prv_now = 0U;
@@ -166,7 +165,6 @@ void setUp(void) {
     fake_get_tick_fake.custom_fake = prv_get_tick;
     fake_get_cycles_fake.custom_fake = prv_get_cycles;
     fake_draw_rectangle_fake.return_val = RASTER_RC_OK;
-    fake_on_change_fake.return_val = true;
 }
 
 /*!
@@ -347,7 +345,6 @@ void test_scheduler_routine_rejects_time_going_backwards(void) {
 void test_scheduler_knob_popup_shows_on_next_frame(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_turn_knob;
-    config.post.parameters_on_change = prv_on_change_show_popup;
     fake_get_tick_fake.custom_fake = prv_get_tick_flowing;
     scheduler_api_init(&config);
 
@@ -381,6 +378,31 @@ void test_scheduler_late_routine_drops_missed_runs(void) {
 
     TEST_ASSERT_EQUAL_MESSAGE(polls_before + 1U, fake_poll_inputs_fake.call_count, "A late task runs once, not once per missed trigger");
     TEST_ASSERT_TRUE(tasks_api_get_dropped_task_executions(&scheduler_handler.tasks) > 0U);
+}
+
+void test_scheduler_parameter_change_reaches_ui_bus_and_popup(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_turn_knob;
+    scheduler_api_init(&config);
+    memset(ui_data_api_get(), 0, sizeof(struct UIData));
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
+
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(1U, ui_data_api_get()->power, "The knob step must be mirrored into the UI snapshot");
+    TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET) >= 2U, "The change must go on the bus right away, on top of the cyclic send");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "A shared parameter must raise the popup");
+}
+
+void test_scheduler_ptt_tints_dashboard_without_popup(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_hold_ptt;
+    scheduler_api_init(&config);
+    memset(ui_data_api_get(), 0, sizeof(struct UIData));
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
+
+    TEST_ASSERT_EQUAL_UINT8(1U, ui_data_api_get()->ptt);
+    TEST_ASSERT_FALSE_MESSAGE(screen_handler.popup_visible, "PTT is not shared: no popup");
 }
 
 void test_scheduler_paused_task_stops_until_resumed(void) {
@@ -483,6 +505,8 @@ int main(void) {
     RUN_TEST(test_scheduler_knob_popup_shows_on_next_frame);
     RUN_TEST(test_scheduler_tasks_get_the_tick_libtimebase_acted_on);
     RUN_TEST(test_scheduler_late_routine_drops_missed_runs);
+    RUN_TEST(test_scheduler_parameter_change_reaches_ui_bus_and_popup);
+    RUN_TEST(test_scheduler_ptt_tints_dashboard_without_popup);
     RUN_TEST(test_scheduler_paused_task_stops_until_resumed);
     RUN_TEST(test_scheduler_resume_running_task_is_harmless);
     RUN_TEST(test_scheduler_pause_resume_reject_invalid_task);
