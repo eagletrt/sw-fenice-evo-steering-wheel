@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = open-blt-fenice-steering-wheel
+TARGET = fenice-evo-steering-wheel-bootloader-sw
 
 
 ######################################
