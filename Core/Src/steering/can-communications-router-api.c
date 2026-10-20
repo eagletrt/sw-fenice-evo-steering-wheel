@@ -11,7 +11,6 @@
 
 #include "can-communications-api.h"
 #include "can-primary-api.h"
-#include "can-primary.h"
 #include "eagletrt-api.h"
 #include "parameters-api.h"
 #include "ui-data-api.h"
@@ -198,7 +197,7 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
     union CanPrimaryMessages decoded;
     struct UIData *ui_data = ui_data_api_get();
 
-    if (frame->id == 0x17 || frame->id == 0x18) {
+    if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX || frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX ) {
         can_communications_router_handler.reset_asked = true;
         return CAN_COMMUNICATION_RC_OK;
     }

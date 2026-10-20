@@ -123,7 +123,11 @@ bool popup_api_is_active(struct PopupHandler *handler, uint32_t tick) {
     if (handler == NULL || !handler->active) {
         return false;
     }
-    if (tick - handler->last_event_tick >= SCREEN_POPUP_TIMEOUT_MS) {
+    // Signed difference: an event stamped slightly after \p tick (another clock,
+    // or read later in the same pass) has just happened, it must not look like
+    // ~49 days ago and dismiss the popup before it is ever drawn.
+    const int32_t elapsed_ms = (int32_t)(tick - handler->last_event_tick);
+    if (elapsed_ms >= (int32_t)SCREEN_POPUP_TIMEOUT_MS) {
         handler->active = false;
         return false;
     }

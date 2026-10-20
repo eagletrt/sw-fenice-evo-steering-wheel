@@ -58,6 +58,14 @@ void test_screen_popup_timeout_starts_at_change_not_at_last_render(void) {
     TEST_ASSERT_FALSE_MESSAGE(screen_handler.popup_visible, "Popup must go away exactly at the timeout");
 }
 
+void test_screen_popup_survives_change_stamped_after_render_tick(void) {
+    /* Field bug: the change was stamped with a fresh clock read (105) while
+     * the render in the same pass still used the tick read earlier (100). */
+    screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 105U);
+    screen_api_update(100U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "A change stamped after the render tick must still show the popup");
+}
+
 void test_screen_popup_new_change_extends_timeout(void) {
     screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 1000U);
     screen_api_update(1000U);
@@ -93,6 +101,7 @@ int main(void) {
 
     RUN_TEST(test_screen_popup_mounts_on_next_update);
     RUN_TEST(test_screen_popup_timeout_starts_at_change_not_at_last_render);
+    RUN_TEST(test_screen_popup_survives_change_stamped_after_render_tick);
     RUN_TEST(test_screen_popup_new_change_extends_timeout);
     RUN_TEST(test_screen_popup_dismiss_remounts_dashboard_dirty);
     RUN_TEST(test_screen_popup_rejects_invalid_parameter);

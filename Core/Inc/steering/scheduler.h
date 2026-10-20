@@ -91,10 +91,14 @@ struct SchedulerConfig {
 };
 
 /*!
- * \brief Execution time statistics of one task, in microseconds.
+ * \brief Execution time statistics of one task.
  *
- * \details Kept in the scheduler handler so they can be read with a
- *     debugger at any time; window_max_us is also logged and reset every
+ * \details Durations are in **microseconds**, not scheduler ticks: they come
+ *     from the free-running core cycle counter (SchedulerConfig::get_cycles,
+ *     the DWT CYCCNT on the wheel) divided by SchedulerConfig::cycles_per_us,
+ *     because a 1 ms tick is far too coarse to time a task. Kept in the
+ *     scheduler handler so they can be read with a debugger at any time;
+ *     window_max_us is also logged and reset every
  *     SCHEDULER_STATS_LOG_PERIOD_MS.
  */
 struct SchedulerTaskStats {
@@ -113,8 +117,9 @@ struct SchedulerHandler {
     struct WatchdogHandler watchdogs;                    /*!< libtimebase watchdogs (pool, no watchdog registered yet) */
     struct FsmData fsm_data;                             /*!< Data handed to the FSM states */
     fsm_state_t fsm_state;                               /*!< Current FSM state */
-    uint32_t tick;                                       /*!< Tick of the routine call being executed */
+    uint32_t tick;                                       /*!< Last tick read by libtimebase: the time base of every task */
     struct SchedulerTaskStats stats[SCHEDULER_TASK_COUNT]; /*!< Per-task timing */
+    uint16_t dropped_at_last_log;                        /*!< libtimebase dropped-runs counter at the previous stats log */
 };
 
 #endif // SCHEDULER_H

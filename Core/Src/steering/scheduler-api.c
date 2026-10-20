@@ -32,10 +32,11 @@ static_assert(SCHEDULER_TASK_COUNT <= MAX_TASKS, "libtimebase cannot hold every 
 typedef void (*scheduler_task_function)(uint32_t tick_ms);
 
 /*!
- * \brief Period and body of one task.
+ * \brief Period, start offset and body of one task.
  */
 struct SchedulerTask {
     uint16_t interval_ms;             /*!< Time between two executions */
+    uint16_t start_ms;                /*!< Delay of the first execution after init (staggering) */
     scheduler_task_function function; /*!< Task body */
 };
 
@@ -148,6 +149,13 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
     struct SchedulerTaskStats *stats = scheduler_handler.stats;
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "tasks 0-4 max us %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32, stats[0].window_max_us, stats[1].window_max_us, stats[2].window_max_us, stats[3].window_max_us, stats[4].window_max_us));
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "tasks 5-9 max us %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32, stats[5].window_max_us, stats[6].window_max_us, stats[7].window_max_us, stats[8].window_max_us, stats[9].window_max_us));
+    // Executions libtimebase skipped in this window because a task was late by
+    // more than its period. libtimebase's counter is cumulative and saturates
+    // at UINT16_MAX, after that the delta reads 0.
+    const uint16_t dropped = tasks_api_get_dropped_task_executions(&scheduler_handler.tasks);
+    const uint16_t dropped_in_window = (uint16_t)(dropped - scheduler_handler.dropped_at_last_log);
+    scheduler_handler.dropped_at_last_log = dropped;
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "tasks dropped runs %" PRIu16 " (total %" PRIu16 ")", dropped_in_window, dropped));
 
     for (uint8_t i = 0U; i < SCHEDULER_TASK_COUNT; i++) {
         stats[i].window_max_us = 0U;
@@ -155,22 +163,45 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
 }
 
 /*!
- * \brief Period and body of every task, indexed by SchedulerTaskId.
+ * \brief Period, start offset and body of every task, indexed by SchedulerTaskId.
  *
  * \details Cyclic CAN messages use their libcan cycle time.
+ *
+ *     Start offsets stagger the tasks so the slow ones don't pile up in the
+ *     same routine call. Measured on hardware (idle): every task is at the µs
+ *     level except INPUTS (~1.6 ms of blocking I2C) and STATS (~10 ms of
+ *     blocking UART), so RENDER is shifted by half the INPUTS period and STATS
+ *     away from both: with 10/20 ms periods they never meet. Staggering the
+ *     µs-level CAN tasks buys nothing measurable, they keep starting at 0.
  */
 EAGLETRT_STATIC const struct SchedulerTask prv_scheduler_api_tasks[SCHEDULER_TASK_COUNT] = {
-    [SCHEDULER_TASK_CAN_RX] = { 1U, prv_scheduler_api_task_can_rx },
-    [SCHEDULER_TASK_INPUTS] = { 10U, prv_scheduler_api_task_inputs },
-    [SCHEDULER_TASK_FSM] = { 5U, prv_scheduler_api_task_fsm },
-    [SCHEDULER_TASK_CAN_CONTROL_MAPS] = { (uint16_t)can_primary_cycle_time_controlmapsset, prv_scheduler_api_task_can_control_maps },
-    [SCHEDULER_TASK_CAN_BUTTON_STATUS] = { (uint16_t)can_primary_cycle_time_steeringwheelbuttonstatus, prv_scheduler_api_task_can_button_status },
-    [SCHEDULER_TASK_CAN_FSM_STATUS] = { (uint16_t)can_primary_cycle_time_steeringwheelfsm, prv_scheduler_api_task_can_fsm_status },
-    [SCHEDULER_TASK_CAN_VERSION] = { (uint16_t)can_primary_cycle_time_steeringwheelversion, prv_scheduler_api_task_can_version },
-    [SCHEDULER_TASK_CAN_TX] = { 1U, prv_scheduler_api_task_can_tx },
-    [SCHEDULER_TASK_RENDER] = { 20U, prv_scheduler_api_task_render },
-    [SCHEDULER_TASK_STATS] = { SCHEDULER_STATS_LOG_PERIOD_MS, prv_scheduler_api_task_stats },
+    [SCHEDULER_TASK_CAN_RX] = { 1U, 0U, prv_scheduler_api_task_can_rx },
+    [SCHEDULER_TASK_INPUTS] = { 10U, 0U, prv_scheduler_api_task_inputs },
+    [SCHEDULER_TASK_FSM] = { 5U, 0U, prv_scheduler_api_task_fsm },
+    [SCHEDULER_TASK_CAN_CONTROL_MAPS] = { (uint16_t)can_primary_cycle_time_controlmapsset, 0U, prv_scheduler_api_task_can_control_maps },
+    [SCHEDULER_TASK_CAN_BUTTON_STATUS] = { (uint16_t)can_primary_cycle_time_steeringwheelbuttonstatus, 0U, prv_scheduler_api_task_can_button_status },
+    [SCHEDULER_TASK_CAN_FSM_STATUS] = { (uint16_t)can_primary_cycle_time_steeringwheelfsm, 0U, prv_scheduler_api_task_can_fsm_status },
+    [SCHEDULER_TASK_CAN_VERSION] = { (uint16_t)can_primary_cycle_time_steeringwheelversion, 0U, prv_scheduler_api_task_can_version },
+    [SCHEDULER_TASK_CAN_TX] = { 1U, 0U, prv_scheduler_api_task_can_tx },
+    [SCHEDULER_TASK_RENDER] = { 20U, 5U, prv_scheduler_api_task_render },
+    [SCHEDULER_TASK_STATS] = { SCHEDULER_STATS_LOG_PERIOD_MS, 3U, prv_scheduler_api_task_stats },
 };
+
+/*!
+ * \brief Tick getter handed to libtimebase.
+ *
+ * \details libtimebase reads the time by itself (once per routine, and on
+ *     every API call). Caching the value here gives the tasks, and anyone
+ *     calling scheduler_api_get_tick, exactly the tick the scheduler acted on:
+ *     mixing it with a fresher read of the hardware clock makes "now" older
+ *     than an event stamped during the same routine.
+ *
+ * \return The current tick, in milliseconds.
+ */
+EAGLETRT_STATIC uint32_t prv_scheduler_api_read_tick(void) {
+    scheduler_handler.tick = scheduler_handler.config.get_tick();
+    return scheduler_handler.tick;
+}
 
 /*!
  * \brief Single libtimebase callback: runs a task body and times it.
@@ -229,16 +260,14 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
             .repeats = 0U,
             .function = prv_scheduler_api_run_task,
             .interval = prv_scheduler_api_tasks[i].interval_ms,
-            .start = 0U,
+            .start = prv_scheduler_api_tasks[i].start_ms,
         };
     }
 
-    const uint32_t tick = config->get_tick();
-    scheduler_handler.tick = tick;
-    if (tasks_api_init(&scheduler_handler.tasks, task_list, SCHEDULER_TASK_COUNT, tick) != TASKS_RC_OK) {
+    if (tasks_api_init(&scheduler_handler.tasks, task_list, SCHEDULER_TASK_COUNT, prv_scheduler_api_read_tick) != TASKS_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
-    if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, tick) != WATCHDOG_RC_OK) {
+    if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_scheduler_api_read_tick) != WATCHDOG_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
 
@@ -250,13 +279,11 @@ enum SchedulerReturnCode scheduler_api_routine(void) {
         return SCHEDULER_RC_NULL_POINTER;
     }
 
-    scheduler_handler.tick = scheduler_handler.config.get_tick();
-
     enum SchedulerReturnCode return_code = SCHEDULER_RC_OK;
-    if (tasks_api_routine(&scheduler_handler.tasks, scheduler_handler.tick) != TASKS_RC_OK) {
+    if (tasks_api_routine(&scheduler_handler.tasks) != TASKS_RC_OK) {
         return_code = SCHEDULER_RC_ERROR;
     }
-    if (watchdogs_api_routine(&scheduler_handler.watchdogs, scheduler_handler.tick) != WATCHDOG_RC_OK) {
+    if (watchdogs_api_routine(&scheduler_handler.watchdogs) != WATCHDOG_RC_OK) {
         return_code = SCHEDULER_RC_ERROR;
     }
     return return_code;
@@ -264,4 +291,23 @@ enum SchedulerReturnCode scheduler_api_routine(void) {
 
 fsm_state_t scheduler_api_get_fsm_state(void) {
     return scheduler_handler.fsm_state;
+}
+
+enum SchedulerReturnCode scheduler_api_pause_task(enum SchedulerTaskId task_id) {
+    if (task_id >= SCHEDULER_TASK_COUNT) {
+        return SCHEDULER_RC_ERROR;
+    }
+    return (tasks_api_pause_task(&scheduler_handler.tasks, task_id) == TASKS_RC_OK) ? SCHEDULER_RC_OK : SCHEDULER_RC_ERROR;
+}
+
+enum SchedulerReturnCode scheduler_api_resume_task(enum SchedulerTaskId task_id) {
+    if (task_id >= SCHEDULER_TASK_COUNT) {
+        return SCHEDULER_RC_ERROR;
+    }
+    // ENABLED from PAUSED keeps the time that was left until the next run.
+    return (tasks_api_enable_task(&scheduler_handler.tasks, task_id) == TASKS_RC_OK) ? SCHEDULER_RC_OK : SCHEDULER_RC_ERROR;
+}
+
+uint32_t scheduler_api_get_tick(void) {
+    return scheduler_handler.tick;
 }

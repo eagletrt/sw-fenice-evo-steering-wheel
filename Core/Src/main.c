@@ -172,7 +172,8 @@ bool main_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t
         return true;
     }
 
-    return screen_api_on_parameter_change(parameter_id, value, HAL_GetTick()) == SCREEN_RC_OK;
+    // Same time base as the render task that checks the popup timeout.
+    return screen_api_on_parameter_change(parameter_id, value, scheduler_api_get_tick()) == SCREEN_RC_OK;
 }
 
 // bootloader code
