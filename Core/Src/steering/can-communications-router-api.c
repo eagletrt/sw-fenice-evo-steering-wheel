@@ -142,8 +142,10 @@ enum CanCommunicationReturnCode can_communications_router_api_on_parameter_chang
 EAGLETRT_STATIC enum UIDataVehicleState prv_router_api_map_vehicle_state(uint8_t vehicle_status) {
     switch ((enum CanPrimaryEcufsmVehiclestatus)vehicle_status) {
         case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_PRECHARGE:
+            return UI_DATA_VEHICLE_STATE_PRECHARGE;
+
         case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_TSON:
-            return UI_DATA_VEHICLE_STATE_READY;
+            return UI_DATA_VEHICLE_STATE_TSON;
 
         case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_R2D:
             return UI_DATA_VEHICLE_STATE_DRIVE;
@@ -159,9 +161,11 @@ EAGLETRT_STATIC enum UIDataVehicleState prv_router_api_map_vehicle_state(uint8_t
         case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_EMERGENCY:
             return UI_DATA_VEHICLE_STATE_ERROR;
 
+        case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_DISCHARGE:
+            return UI_DATA_VEHICLE_STATE_DISCHARGE;
+
         case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_INIT:
         case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE:
-        case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_DISCHARGE:
         default:
             return UI_DATA_VEHICLE_STATE_IDLE;
     }
@@ -197,7 +201,7 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
     union CanPrimaryMessages decoded;
     struct UIData *ui_data = ui_data_api_get();
 
-    if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX || frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX ) {
+    if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX || frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX) {
         can_communications_router_handler.reset_asked = true;
         return CAN_COMMUNICATION_RC_OK;
     }

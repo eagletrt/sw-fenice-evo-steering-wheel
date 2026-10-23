@@ -39,6 +39,26 @@ extern DMA2D_HandleTypeDef hdma2d;
 
 /* USER CODE BEGIN Private defines */
 
+/*!
+ * \brief Kinds of DMA2D transfer, for the timing statistics.
+ */
+enum Dma2dOperation {
+    DMA2D_OPERATION_FILL,  /*!< Opaque rectangle fill (register to memory) */
+    DMA2D_OPERATION_BLEND, /*!< Translucent rectangle blend */
+    DMA2D_OPERATION_MASK,  /*!< A8 coverage mask blend (one label) */
+    DMA2D_OPERATION_COPY,  /*!< Full framebuffer copy */
+    DMA2D_OPERATION_COUNT,
+};
+
+/*!
+ * \brief Timing of one kind of DMA2D transfer since the last reset.
+ */
+struct Dma2dOperationStats {
+    uint32_t count;    /*!< Transfers */
+    uint32_t total_us; /*!< Sum of their durations */
+    uint32_t max_us;   /*!< Longest one */
+};
+
 /* USER CODE END Private defines */
 
 void MX_DMA2D_Init(void);
@@ -67,6 +87,20 @@ enum RasterReturnCode dma2d_enqueue_rectangle(uint32_t *framebuffer, uint16_t x,
 uint32_t dma2d_get_error_count(void);
 
 /*!
+ * \brief Transfer timings since the last dma2d_reset_stats, indexed by Dma2dOperation.
+ *
+ * \details Each transfer is timed from start to completion with the DWT cycle counter.
+ *
+ * \return Array of DMA2D_OPERATION_COUNT entries.
+ */
+const struct Dma2dOperationStats *dma2d_get_stats(void);
+
+/*!
+ * \brief Zero the transfer timings.
+ */
+void dma2d_reset_stats(void);
+
+/*!
  * \brief Waits for all queued DMA2D operations to complete.
  *
  * This function blocks until the DMA2D engine has finished processing all pending operations.
@@ -88,6 +122,30 @@ void dma2d_draw_drain(void);
  * \retval RASTER_RC_NULL_POINTER if \p dst or \p src is NULL.
  */
 enum RasterReturnCode dma2d_enqueue_framebuffer_copy(uint32_t *dst, const uint32_t *src);
+
+/*!
+ * \brief Blend one color through an A8 coverage mask into a framebuffer.
+ *
+ * \details One DMA2D memory-to-memory-with-blending transfer: the foreground
+ *     is the A8 mask (per-pixel alpha multiplied by \p color's alpha, colour
+ *     from \p color), the background and the output are the framebuffer
+ *     rectangle. Busy-waits until the transfer completes, like the rectangle
+ *     fill. The mask must be in DMA2D-readable memory and already written back
+ *     from the D-cache.
+ *
+ * \param framebuffer Destination framebuffer (stride DMA2D_FRAMEBUFFER_WIDTH).
+ * \param x Top-left X of the destination rectangle (already clipped).
+ * \param y Top-left Y of the destination rectangle (already clipped).
+ * \param w Width to blend.
+ * \param h Height to blend.
+ * \param mask First coverage byte of the rectangle.
+ * \param mask_stride Bytes between two mask rows (>= \p w).
+ * \param color Blend colour; its alpha scales the coverage.
+ *
+ * \retval RASTER_RC_OK on success.
+ * \retval RASTER_RC_NULL_POINTER if \p framebuffer or \p mask is NULL.
+ */
+enum RasterReturnCode dma2d_enqueue_mask(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *mask, uint16_t mask_stride, struct Color color);
 
 /* USER CODE END Prototypes */
 

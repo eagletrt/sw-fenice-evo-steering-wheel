@@ -31,11 +31,20 @@
  *       --screenshot <file.ppm>  run for SIMULATOR_SCREENSHOT_DELAY_MS, save the
  *                                whole window (dashboard + status strip) as a
  *                                binary PPM and exit.
+ *       --replay <from> <to>     for each step from \p from to \p to: one frame
+ *                                with telemetry step s, then one frame with
+ *                                only the ECU status changed (to s mod the
+ *                                number of statuses), SIMULATOR_REPLAY_PERIOD_MS
+ *                                apart. Consecutive frames change different
+ *                                boxes, so with --screenshot replaying 0..N must
+ *                                give the same image as N..N: any box missing
+ *                                from a back buffer shows up.
  */
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -67,7 +76,9 @@
 #define SIMULATOR_LOGGER_RX_CAPACITY (1U)      /*!< Same sizes as the wheel's logger */
 #define SIMULATOR_LOGGER_TX_CAPACITY (10U)
 #define SIMULATOR_LOGGER_MAX_MSG_SIZE (64U)
-#define SIMULATOR_SCREENSHOT_DELAY_MS (1000U)  /*!< Boot + first telemetry rendered well before this */
+#define SIMULATOR_SCREENSHOT_DELAY_MS (1000U)
+#define SIMULATOR_REPLAY_PERIOD_MS (30U)       /*!< Longer than the render period: one step per frame */
+#define SIMULATOR_MASK_SIZE (128U * 1024U)     /*!< Same scratch size as the wheel (ltdc.c) */  /*!< Boot + first telemetry rendered well before this */
 
 /*!
  * \brief Keyboard key held for each physical button (0 = not mapped).
@@ -114,12 +125,14 @@ EAGLETRT_STATIC Tigr *window;
 
 /* Double-buffered framebuffers, same convention as Core/Src/ltdc.c: the
  * window shows display_framebuffer while the raster draws into
- * draw_framebuffer; a swap flips them and seeds the new draw buffer with the
- * visible frame (the DMA2D copy on the wheel). */
+ * draw_framebuffer; a swap flips them (no copy, see simulator_swap_framebuffers). */
 EAGLETRT_STATIC TPixel simulator_framebuffer_a[SIMULATOR_DASHBOARD_WIDTH * SIMULATOR_DASHBOARD_HEIGHT];
 EAGLETRT_STATIC TPixel simulator_framebuffer_b[SIMULATOR_DASHBOARD_WIDTH * SIMULATOR_DASHBOARD_HEIGHT];
 EAGLETRT_STATIC TPixel *simulator_display_framebuffer = simulator_framebuffer_a;
 EAGLETRT_STATIC TPixel *simulator_draw_framebuffer = simulator_framebuffer_b;
+
+/* Mask scratch (AXI SRAM on the wheel). */
+EAGLETRT_STATIC uint8_t simulator_mask[SIMULATOR_MASK_SIZE];
 
 /* Input state written by the window loop, read by the scheduler inputs task. */
 EAGLETRT_STATIC bool simulator_button_held[INPUTS_SHARED_BUTTON_ID_COUNT];
@@ -188,14 +201,47 @@ EAGLETRT_STATIC enum RasterReturnCode simulator_draw_rectangle(uint16_t x, uint1
 }
 
 /*!
- * \brief Mirror of ltdc_swap_framebuffers: flip, then seed the new draw buffer.
+ * \brief Mask callback, stand-in for ltdc_draw_mask + the DMA2D A8 blend.
+ *
+ * \details Pixel alpha = coverage * color alpha / 255, blended over the draw
+ *     framebuffer; clipped to the dashboard like the wheel.
+ */
+EAGLETRT_STATIC enum RasterReturnCode simulator_draw_mask(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *mask, struct Color color) {
+    for (uint32_t row = 0U; row < h; row++) {
+        const uint32_t screen_y = (uint32_t)y + row;
+        if (screen_y >= SIMULATOR_DASHBOARD_HEIGHT) {
+            break;
+        }
+        for (uint32_t col = 0U; col < w; col++) {
+            const uint32_t screen_x = (uint32_t)x + col;
+            if (screen_x >= SIMULATOR_DASHBOARD_WIDTH) {
+                break;
+            }
+            const uint32_t a = ((uint32_t)mask[(row * w) + col] * color.a) / 255U;
+            if (a == 0U) {
+                continue;
+            }
+            TPixel *dst = &simulator_draw_framebuffer[(screen_y * SIMULATOR_DASHBOARD_WIDTH) + screen_x];
+            dst->r = (uint8_t)(((color.r * a) + (dst->r * (255U - a))) / 255U);
+            dst->g = (uint8_t)(((color.g * a) + (dst->g * (255U - a))) / 255U);
+            dst->b = (uint8_t)(((color.b * a) + (dst->b * (255U - a))) / 255U);
+            dst->a = 255;
+        }
+    }
+    return RASTER_RC_OK;
+}
+
+/*!
+ * \brief Mirror of ltdc_swap_framebuffers: flip, no copy.
+ *
+ * \details Like the wheel, the new draw buffer is one frame behind and the
+ *     screen module redraws into it what it drew last time: any mistake in
+ *     that bookkeeping shows up here as stale boxes flickering between frames.
  */
 EAGLETRT_STATIC void simulator_swap_framebuffers(void) {
     TPixel *tmp = simulator_display_framebuffer;
     simulator_display_framebuffer = simulator_draw_framebuffer;
     simulator_draw_framebuffer = tmp;
-    memcpy(simulator_draw_framebuffer, simulator_display_framebuffer,
-           (size_t)SIMULATOR_DASHBOARD_WIDTH * (size_t)SIMULATOR_DASHBOARD_HEIGHT * sizeof(TPixel));
 }
 
 /*!
@@ -434,9 +480,17 @@ EAGLETRT_STATIC int simulator_save_screenshot(const char *path) {
 
 int main(int argc, char **argv) {
     const char *screenshot_path = NULL;
+    bool replay = false;
+    uint32_t replay_step = 0U;
+    uint32_t replay_to = 0U;
+    bool replay_ecu_phase = false;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--screenshot") == 0 && (i + 1) < argc) {
             screenshot_path = argv[++i];
+        } else if (strcmp(argv[i], "--replay") == 0 && (i + 2) < argc) {
+            replay = true;
+            replay_step = (uint32_t)strtoul(argv[++i], NULL, 10);
+            replay_to = (uint32_t)strtoul(argv[++i], NULL, 10);
         }
     }
 
@@ -479,6 +533,11 @@ int main(int argc, char **argv) {
                 },
             },
             .draw_rectangle = simulator_draw_rectangle,
+            .screen_accelerators = {
+                .draw_mask = simulator_draw_mask,
+                .mask_buffer = simulator_mask,
+                .mask_size = SIMULATOR_MASK_SIZE,
+            },
         },
         .get_tick = simulator_get_tick,
         .poll_inputs = simulator_poll_inputs,
@@ -502,12 +561,24 @@ int main(int argc, char **argv) {
 
     uint32_t last_frame_ms = 0U;
     uint32_t last_feed_ms = 0U;
+    uint32_t last_replay_ms = simulator_get_tick();
     while (tigrClosed(window) == 0) {
         if (scheduler_api_routine() != SCHEDULER_RC_OK) {
             fprintf(stderr, "scheduler routine failed\n");
         }
 
         const uint32_t now = simulator_get_tick();
+        if (replay && replay_step <= replay_to && (now - last_replay_ms) >= SIMULATOR_REPLAY_PERIOD_MS) {
+            last_replay_ms = now;
+            if (!replay_ecu_phase) {
+                simulator_inject_telemetry(replay_step);
+            } else {
+                simulator_ecu_status = (uint8_t)(replay_step % (sizeof(simulator_ecu_status_names) / sizeof(simulator_ecu_status_names[0])));
+                simulator_inject_ecu_status();
+                replay_step++;
+            }
+            replay_ecu_phase = !replay_ecu_phase;
+        }
         if (simulator_feed_enabled && (now - last_feed_ms) >= SIMULATOR_FEED_PERIOD_MS) {
             last_feed_ms = now;
             simulator_inject_telemetry(simulator_feed_step++);

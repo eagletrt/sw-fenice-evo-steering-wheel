@@ -13,6 +13,7 @@
 #include "can-communications.h"
 #include "parameters.h"
 #include "raster.h"
+#include "screen.h"
 
 enum PostReturnCode {
     POST_RC_OK,    /*!< POST completed successfully. */
@@ -23,6 +24,7 @@ struct PostInitData {
     parameters_on_change_callback parameters_on_change;                                         /*!< Callback fired on every parameter transition. */
     struct CanCommunicationsNetworkConfig can_network_configs[CAN_COMMUNICATION_NETWORK_COUNT]; /*!< Configuration for each CAN network. */
     raster_draw_rectangle_callback draw_rectangle;                                              /*!< Callback function required by screen module. */
+    struct ScreenAccelerators screen_accelerators;                                              /*!< Optional screen accelerators (all NULL = none). */
 };
 
 #endif // POST_H

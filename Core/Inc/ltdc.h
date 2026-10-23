@@ -49,9 +49,9 @@ void MX_LTDC_Init(void);
  * \brief Present the freshly-drawn frame and start drawing the next one.
  *
  * \details Waits for the DMA2D to go idle, swaps the display and draw
- *     framebuffers, points the LTDC layer at the new display buffer and
- *     seeds the new draw buffer with the frame now on screen so the next
- *     partial render composes on top of what the driver is looking at.
+ *     framebuffers and points the LTDC layer at the new display buffer. The
+ *     new draw buffer is one frame behind: the screen module redraws into it
+ *     the boxes it drew last time (no full-frame copy).
  */
 void ltdc_swap_framebuffers(void);
 
@@ -79,6 +79,35 @@ enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, ui
  * \retval RASTER_RC_NULL_POINTER if the target framebuffer is NULL.
  */
 enum RasterReturnCode ltdc_clear_screen(void);
+
+/*!
+ * \brief Blend one colour through a coverage mask into the draw framebuffer.
+ *
+ * \details Registered as the raster mask callback: libraster renders a whole
+ *     label into the mask scratch and this blends it in one DMA2D transfer.
+ *     The rectangle is clipped to the screen.
+ *
+ * \param x Top-left X position in pixels.
+ * \param y Top-left Y position in pixels.
+ * \param w Width in pixels (also the mask stride).
+ * \param h Height in pixels.
+ * \param mask Coverage bytes, \p w * \p h.
+ * \param color Text colour; its alpha scales the coverage.
+ *
+ * \retval RASTER_RC_OK on success.
+ * \retval RASTER_RC_NULL_POINTER if the mask is NULL.
+ */
+enum RasterReturnCode ltdc_draw_mask(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *mask, struct Color color);
+
+/*!
+ * \brief Scratch buffer for ltdc_draw_mask (DMA2D-readable AXI SRAM).
+ */
+uint8_t *ltdc_mask_buffer(void);
+
+/*!
+ * \brief Size of the scratch returned by ltdc_mask_buffer, in bytes.
+ */
+uint32_t ltdc_mask_size(void);
 
 /* USER CODE END Prototypes */
 

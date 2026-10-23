@@ -15,6 +15,7 @@
 #include "popup-api.h"
 #include "raster-api.h"
 #include <stddef.h>
+#include <string.h>
 
 EAGLETRT_STATIC struct ScreenHandler screen_handler;
 
@@ -41,7 +42,18 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
         return SCREEN_RC_ERROR;
     }
     screen_handler.popup_visible = false;
+    memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
 
+    return SCREEN_RC_OK;
+}
+
+enum ScreenReturnCode screen_api_set_accelerators(const struct ScreenAccelerators *accelerators) {
+    if (accelerators == NULL) {
+        return SCREEN_RC_NULL_POINTER;
+    }
+    if (raster_api_set_mask(&screen_handler.raster, accelerators->draw_mask, accelerators->mask_buffer, accelerators->mask_size) != RASTER_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
     return SCREEN_RC_OK;
 }
 
@@ -60,6 +72,46 @@ EAGLETRT_STATIC void prv_screen_api_dirty_all(struct Box *boxes, uint16_t count)
     }
 }
 
+/*!
+ * \brief Render the mounted interface, keeping both framebuffers in step.
+ *
+ * \details The two framebuffers alternate on every swap, and the one about to
+ *     be drawn into is one frame behind: it misses whatever the previous
+ *     render drew into the other one. Instead of copying the whole visible
+ *     frame into it after each swap (1.5 MB through the SDRAM, ~60 ms with
+ *     the LTDC scanning the same memory), the boxes drawn last time are drawn
+ *     again here, together with the ones that changed since. Nothing renders
+ *     while nothing changed: the pending boxes simply wait for the next
+ *     change.
+ *
+ * \retval SCREEN_RC_RENDERED if a frame was drawn (the caller swaps).
+ * \retval SCREEN_RC_OK if nothing changed.
+ * \retval SCREEN_RC_ERROR if the raster failed.
+ */
+EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_render(void) {
+    struct Box *boxes = screen_handler.raster.interface;
+    const uint16_t count = screen_handler.raster.box_count;
+
+    if (!screen_api_should_redraw(boxes, count)) {
+        return SCREEN_RC_OK;
+    }
+
+    bool changed[SCREEN_MAX_BOX_COUNT];
+    for (uint16_t i = 0U; i < count; i++) {
+        changed[i] = boxes[i].updated;
+        boxes[i].updated = boxes[i].updated || screen_handler.redraw_in_back_buffer[i];
+    }
+
+    if (raster_api_render(&screen_handler.raster) != RASTER_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
+
+    // Only what changed now still misses from the other framebuffer: the
+    // boxes redrawn because of the previous render are now in both.
+    memcpy(screen_handler.redraw_in_back_buffer, changed, (size_t)count * sizeof(changed[0]));
+    return SCREEN_RC_RENDERED;
+}
+
 enum ScreenReturnCode screen_api_update(uint32_t tick) {
     bool popup_active = popup_api_is_active(&screen_handler.popup, tick);
 
@@ -67,23 +119,20 @@ enum ScreenReturnCode screen_api_update(uint32_t tick) {
         if (raster_api_set_interface(&screen_handler.raster, screen_handler.popup.boxes, POPUP_BOX_COUNT) != RASTER_RC_OK) {
             return SCREEN_RC_ERROR;
         }
+        // Everything is redrawn, in both framebuffers over two renders.
         prv_screen_api_dirty_all(screen_handler.popup.boxes, POPUP_BOX_COUNT);
+        memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
         screen_handler.popup_visible = true;
     } else if (!popup_active && screen_handler.popup_visible) {
         if (raster_api_set_interface(&screen_handler.raster, screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT) != RASTER_RC_OK) {
             return SCREEN_RC_ERROR;
         }
         prv_screen_api_dirty_all(screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT);
+        memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
         screen_handler.popup_visible = false;
     }
 
-    if (screen_api_should_redraw(screen_handler.raster.interface, screen_handler.raster.box_count)) {
-        if (raster_api_render(&screen_handler.raster) != RASTER_RC_OK) {
-            return SCREEN_RC_ERROR;
-        }
-        return SCREEN_RC_RENDERED;
-    }
-    return SCREEN_RC_OK;
+    return prv_screen_api_render();
 }
 
 /*!
@@ -155,12 +204,16 @@ EAGLETRT_STATIC const char *prv_screen_api_vehicle_state_name(uint8_t state) {
     switch ((enum UIDataVehicleState)state) {
         case UI_DATA_VEHICLE_STATE_IDLE:
             return "IDLE";
-        case UI_DATA_VEHICLE_STATE_READY:
-            return "READY";
+        case UI_DATA_VEHICLE_STATE_PRECHARGE:
+            return "PRECHARGE";
+        case UI_DATA_VEHICLE_STATE_DISCHARGE:
+            return "DISCHARGE";
+        case UI_DATA_VEHICLE_STATE_TSON:
+            return "TSON";
         case UI_DATA_VEHICLE_STATE_DRIVE:
             return "DRIVE";
         case UI_DATA_VEHICLE_STATE_AUTONOMOUS:
-            return "AUTO";
+            return "AUTONOMOUS";
         case UI_DATA_VEHICLE_STATE_FLASH:
             return "FLASH";
         case UI_DATA_VEHICLE_STATE_ERROR:

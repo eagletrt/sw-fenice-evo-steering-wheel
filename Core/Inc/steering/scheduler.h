@@ -71,6 +71,11 @@ typedef uint32_t (*scheduler_get_tick_callback)(void);
 typedef uint32_t (*scheduler_get_cycles_callback)(void);
 
 /*!
+ * \brief Log hardware-side statistics (e.g. DMA2D timings) and start a new window.
+ */
+typedef void (*scheduler_report_stats_callback)(void);
+
+/*!
  * \brief Sample every physical input and forward changes to the inputs module.
  *
  * \param tick_ms Current time in milliseconds.
@@ -88,6 +93,7 @@ struct SchedulerConfig {
     fsm_reset reset;                                  /*!< Required: system reset (bootloader request) */
     scheduler_get_cycles_callback get_cycles;         /*!< Optional: cycle counter, timing statistics are off when NULL */
     uint32_t cycles_per_us;                           /*!< Cycle counter frequency in MHz, required when get_cycles is set */
+    scheduler_report_stats_callback report_stats;     /*!< Optional: called by the stats task after the task timings */
 };
 
 /*!

@@ -31,12 +31,14 @@
  *     state needs to surface on the UI.
  */
 enum UIDataVehicleState {
-    UI_DATA_VEHICLE_STATE_IDLE,       /*!< "IDLE"   */
-    UI_DATA_VEHICLE_STATE_READY,      /*!< "READY"  */
-    UI_DATA_VEHICLE_STATE_DRIVE,      /*!< "DRIVE"  */
-    UI_DATA_VEHICLE_STATE_AUTONOMOUS, /*!< "AUTO"   */
-    UI_DATA_VEHICLE_STATE_FLASH,      /*!< "FLASH"  */
-    UI_DATA_VEHICLE_STATE_ERROR,      /*!< "ERROR"  */
+    UI_DATA_VEHICLE_STATE_IDLE,       /*!< "IDLE"       */
+    UI_DATA_VEHICLE_STATE_PRECHARGE,  /*!< "PRECHARGE"  */
+    UI_DATA_VEHICLE_STATE_DISCHARGE,  /*!< "DISCHARGE"  */
+    UI_DATA_VEHICLE_STATE_TSON,       /*!< "TSON"      */
+    UI_DATA_VEHICLE_STATE_DRIVE,      /*!< "DRIVE"      */
+    UI_DATA_VEHICLE_STATE_AUTONOMOUS, /*!< "AUTONOMOUS" */
+    UI_DATA_VEHICLE_STATE_FLASH,      /*!< "FLASH"      */
+    UI_DATA_VEHICLE_STATE_ERROR,      /*!< "ERROR"      */
     UI_DATA_VEHICLE_STATE_COUNT,
 };
 

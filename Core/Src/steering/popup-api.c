@@ -98,6 +98,11 @@ enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSha
         return POPUP_RC_ERROR;
     }
 
+    // The name box spans the whole width: redrawing it costs ~5 ms of SDRAM
+    // writes, so only when the name actually changes (the screen redraws
+    // everything anyway when the popup appears).
+    const bool name_changed = !handler->active || handler->current_parameter != parameter_id;
+
     handler->active = true;
     handler->last_event_tick = tick;
     handler->current_parameter = parameter_id;
@@ -107,7 +112,9 @@ enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSha
     prv_popup_format_value(handler, parameter_id, value);
 
     handler->boxes[0].updated = true;
-    handler->boxes[1].updated = true;
+    if (name_changed) {
+        handler->boxes[1].updated = true;
+    }
 
     return POPUP_RC_OK;
 }
