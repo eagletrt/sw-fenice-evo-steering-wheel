@@ -1,4 +1,5 @@
 import hashlib
+import json
 import logging
 import os
 import re
@@ -18,6 +19,28 @@ logging.basicConfig(level=logging.INFO, format="[libraster] %(message)s")
 logger = logging.getLogger("libraster")
 
 
+def find_generator() -> Path | None:
+    """Locate libraster's tools/generator.py.
+
+    This is needed to test local changes to the libraster without needing to push on github each time
+    """
+    found = next(Path(".pio").rglob("generator.py"), None)
+    if found is not None:
+        return found
+    for link in Path(".pio").rglob("*.pio-link"):
+        try:
+            data = json.loads(link.read_text())
+        except (OSError, ValueError):
+            continue
+        uri = data.get("spec", {}).get("uri") or ""
+        if not uri.startswith("symlink://"):
+            continue
+        candidate = Path(data.get("cwd", ".")) / uri[len("symlink://"):] / "tools" / "generator.py"
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def hash_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -27,9 +50,8 @@ def main() -> int:
         logger.warning("fonts.json not found at %s", JSON_PATH)
         return 1
 
-    try:
-        generator = next(Path(".pio").rglob("generator.py"))
-    except StopIteration:
+    generator = find_generator()
+    if generator is None:
         logger.warning("libraster generator.py not found under .pio/")
         return 1
 

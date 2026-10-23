@@ -42,6 +42,16 @@
 static uint32_t *display_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER1_ADDRESS;
 static uint32_t *draw_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER2_ADDRESS;
 
+/*!
+ * \brief Scratch where libraster renders a label's coverage before ltdc_draw_mask.
+ *
+ * \details In the AXI SRAM (RAM_D1, unused by the linker script): the DMA2D
+ *     can read it (the DTCM it can't) and the CPU writes it at full speed
+ *     through the D-cache, which is cleaned before each transfer.
+ */
+#define LTDC_MASK_ADDRESS (0x24000000U)
+#define LTDC_MASK_SIZE (128U * 1024U)
+
 /* USER CODE END 0 */
 
 LTDC_HandleTypeDef hltdc;
@@ -319,13 +329,42 @@ void ltdc_swap_framebuffers(void) {
     display_framebuffer = draw_framebuffer;
     draw_framebuffer = temp;
 
+    // swaps at next vertical blanking interval
     __HAL_LTDC_LAYER(&hltdc, 0)->CFBAR = (uint32_t)display_framebuffer;
     __HAL_LTDC_RELOAD_CONFIG(&hltdc);
 
-    /* Seed the new draw buffer with the currently-visible frame so partial
-     * renders after this point overlay changes on the frame the user is
-     * looking at, not on stale content left in the back buffer. */
-    (void)dma2d_enqueue_framebuffer_copy(draw_framebuffer, display_framebuffer);
+    /* No copy of the visible frame into the new draw buffer: the screen
+     * module redraws into it the boxes it drew last time (a full-frame copy
+     * costs ~60 ms of SDRAM bandwidth shared with the LTDC scanout). */
+}
+
+uint8_t *ltdc_mask_buffer(void) {
+    return (uint8_t *)LTDC_MASK_ADDRESS;
+}
+
+uint32_t ltdc_mask_size(void) {
+    return LTDC_MASK_SIZE;
+}
+
+enum RasterReturnCode ltdc_draw_mask(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *mask, struct Color color) {
+    if (w == 0 || h == 0 || x >= (int)SCREEN_WIDTH || y >= (int)SCREEN_HEIGHT) {
+        return RASTER_RC_OK;
+    }
+
+    /* The CPU wrote the mask through the D-cache: push it to the SRAM before
+     * the DMA2D reads it. */
+    SCB_CleanDCache_by_Addr((uint32_t *)mask, (int32_t)((uint32_t)w * h));
+
+    /* Clip right and bottom: the mask keeps its full stride. */
+    const uint16_t stride = w;
+    if (x + w > SCREEN_WIDTH) {
+        w = (int)SCREEN_WIDTH - x;
+    }
+    if (y + h > SCREEN_HEIGHT) {
+        h = (int)SCREEN_HEIGHT - y;
+    }
+
+    return dma2d_enqueue_mask(draw_framebuffer, x, y, w, h, mask, stride, color);
 }
 
 enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {

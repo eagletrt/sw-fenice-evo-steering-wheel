@@ -97,10 +97,37 @@ void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef *dma2dHandle) {
 
 /* USER CODE BEGIN 1 */
 
+#include <string.h>
+
 #define DMA2D_FRAMEBUFFER_WIDTH (800U)  /*!< Framebuffer stride, in pixels */
 #define DMA2D_FRAMEBUFFER_HEIGHT (480U) /*!< Framebuffer height, in lines */
 
 EAGLETRT_STATIC volatile uint32_t dma2d_error_counter = 0; /*!< Count of DMA2D errors (TEIF or CEIF) since boot */
+
+EAGLETRT_STATIC struct Dma2dOperationStats dma2d_stats[DMA2D_OPERATION_COUNT]; /*!< Transfer timings since the last reset */
+
+/*!
+ * \brief Start the configured transfer, wait for it and account its duration.
+ *
+ * \param operation Kind of transfer, for the statistics.
+ */
+EAGLETRT_STATIC void prv_dma2d_start_and_wait(enum Dma2dOperation operation) {
+    const uint32_t start = DWT->CYCCNT;
+    DMA2D->CR |= DMA2D_CR_START;
+    while (DMA2D->CR & DMA2D_CR_START) {
+    }
+    const uint32_t elapsed_us = (DWT->CYCCNT - start) / (SystemCoreClock / 1000000U);
+    if (DMA2D->ISR & (DMA2D_ISR_TEIF | DMA2D_ISR_CEIF)) {
+        dma2d_error_counter++;
+    }
+
+    struct Dma2dOperationStats *stats = &dma2d_stats[operation];
+    stats->count++;
+    stats->total_us += elapsed_us;
+    if (elapsed_us > stats->max_us) {
+        stats->max_us = elapsed_us;
+    }
+}
 
 enum RasterReturnCode dma2d_enqueue_rectangle(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
     if (framebuffer == NULL) {
@@ -146,14 +173,17 @@ enum RasterReturnCode dma2d_enqueue_rectangle(uint32_t *framebuffer, uint16_t x,
         DMA2D->CR = (0x2UL << DMA2D_CR_MODE_Pos);
     }
 
-    DMA2D->CR |= DMA2D_CR_START;
-    while (DMA2D->CR & DMA2D_CR_START) {
-    }
-    if (DMA2D->ISR & (DMA2D_ISR_TEIF | DMA2D_ISR_CEIF)) {
-        dma2d_error_counter++;
-    }
+    prv_dma2d_start_and_wait((color.a == 0xFF) ? DMA2D_OPERATION_FILL : DMA2D_OPERATION_BLEND);
 
     return RASTER_RC_OK;
+}
+
+const struct Dma2dOperationStats *dma2d_get_stats(void) {
+    return dma2d_stats;
+}
+
+void dma2d_reset_stats(void) {
+    memset(dma2d_stats, 0, sizeof(dma2d_stats));
 }
 
 uint32_t dma2d_get_error_count(void) {
@@ -186,12 +216,46 @@ enum RasterReturnCode dma2d_enqueue_framebuffer_copy(uint32_t *dst, const uint32
 
     DMA2D->NLR = ((uint32_t)DMA2D_FRAMEBUFFER_WIDTH << DMA2D_NLR_PL_Pos) | DMA2D_FRAMEBUFFER_HEIGHT;
     DMA2D->CR = (0x0UL << DMA2D_CR_MODE_Pos); /* M2M, no PFC, no blend */
-    DMA2D->CR |= DMA2D_CR_START;
+    prv_dma2d_start_and_wait(DMA2D_OPERATION_COPY);
+
+    return RASTER_RC_OK;
+}
+
+enum RasterReturnCode dma2d_enqueue_mask(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *mask, uint16_t mask_stride, struct Color color) {
+    if (framebuffer == NULL || mask == NULL) {
+        return RASTER_RC_NULL_POINTER;
+    }
+    if (w == 0 || h == 0 || color.a == 0) {
+        return RASTER_RC_OK; /* nothing to draw */
+    }
+
+    /* Wait for any previous transfer, then clear stale flags before starting. */
     while (DMA2D->CR & DMA2D_CR_START) {
     }
-    if (DMA2D->ISR & (DMA2D_ISR_TEIF | DMA2D_ISR_CEIF)) {
-        dma2d_error_counter++;
-    }
+    DMA2D->IFCR = DMA2D_IFCR_CTCIF | DMA2D_IFCR_CTEIF | DMA2D_IFCR_CCEIF;
+
+    uint32_t dst = (uint32_t)(framebuffer + (uint32_t)y * DMA2D_FRAMEBUFFER_WIDTH + x);
+    uint32_t oor = DMA2D_FRAMEBUFFER_WIDTH - w;
+
+    /* Foreground: the coverage mask as A8, alpha MULTIPLIED (AM = 10) by the
+     * colour's alpha, colour from FGCOLR. Background and output: the
+     * framebuffer rectangle, so the text is blended over what is there. */
+    DMA2D->FGCOLR = color.argb & 0x00FFFFFF;
+    DMA2D->FGPFCCR = DMA2D_INPUT_A8 | DMA2D_FGPFCCR_AM_1 | ((uint32_t)color.a << DMA2D_FGPFCCR_ALPHA_Pos);
+    DMA2D->FGMAR = (uint32_t)mask;
+    DMA2D->FGOR = (uint32_t)(mask_stride - w);
+
+    DMA2D->BGPFCCR = DMA2D_INPUT_ARGB8888;
+    DMA2D->BGMAR = dst;
+    DMA2D->BGOR = oor;
+
+    DMA2D->OPFCCR = DMA2D_OUTPUT_ARGB8888;
+    DMA2D->OMAR = dst;
+    DMA2D->OOR = oor;
+    DMA2D->NLR = ((uint32_t)w << DMA2D_NLR_PL_Pos) | h; // PL=width [29:16], NL=height [15:0]
+    DMA2D->CR = (0x2UL << DMA2D_CR_MODE_Pos);           /* M2M with blending */
+
+    prv_dma2d_start_and_wait(DMA2D_OPERATION_MASK);
 
     return RASTER_RC_OK;
 }

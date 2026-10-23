@@ -58,6 +58,36 @@ void test_popup_api_show_success(void) {
     
 }
 
+void test_popup_api_show_same_parameter_keeps_name_box_clean(void) {
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
+    popup_handler.boxes[0].updated = false;
+    popup_handler.boxes[1].updated = false;
+
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5, 60);
+
+    TEST_ASSERT_TRUE_MESSAGE(popup_handler.boxes[0].updated, "the value box shows the new value");
+    TEST_ASSERT_FALSE_MESSAGE(popup_handler.boxes[1].updated, "same parameter: the full-width name box must not be redrawn");
+}
+
+void test_popup_api_show_other_parameter_redraws_name_box(void) {
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
+    popup_handler.boxes[1].updated = false;
+
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_REGEN, 2, 60);
+
+    TEST_ASSERT_TRUE(popup_handler.boxes[1].updated);
+}
+
+void test_popup_api_show_after_timeout_redraws_name_box(void) {
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
+    popup_handler.boxes[1].updated = false;
+    popup_api_dismiss(&popup_handler);
+
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5, 60);
+
+    TEST_ASSERT_TRUE_MESSAGE(popup_handler.boxes[1].updated, "a popup that comes back is drawn whole");
+}
+
 void test_popup_api_show_null_handler(void) {
     enum PopupReturnCode rc = popup_api_show(NULL, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
     TEST_ASSERT_EQUAL(POPUP_RC_ERROR, rc);
@@ -163,6 +193,9 @@ int main(void) {
     RUN_TEST(test_popup_api_init_null_pointer);
 
     RUN_TEST(test_popup_api_show_success);
+    RUN_TEST(test_popup_api_show_same_parameter_keeps_name_box_clean);
+    RUN_TEST(test_popup_api_show_other_parameter_redraws_name_box);
+    RUN_TEST(test_popup_api_show_after_timeout_redraws_name_box);
     RUN_TEST(test_popup_api_show_null_handler);
     RUN_TEST(test_popup_api_show_invalid_parameter_id);
 
