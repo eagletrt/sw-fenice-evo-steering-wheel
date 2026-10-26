@@ -59,7 +59,10 @@ content changes) and CAN frames can be injected:
 | `p` | toggle a continuous telemetry feed |
 
 `--screenshot <file.ppm>` runs for one second, saves the window and exits
-(e.g. `.pio/build/simulator/program --screenshot frame.ppm`).
+(e.g. `.pio/build/simulator/program --screenshot frame.ppm`). `--replay <from> <to>` feeds
+telemetry steps `from..to`, alternating with ECU-state-only frames: with `--screenshot`,
+`--replay 0 12` and `--replay 12 12` must produce identical images (a quick check that the
+copy-free double buffering never leaves a stale box behind).
 Needs OpenGL (Cocoa on macOS, GL + X11 on Linux).
 
 ### Git hooks

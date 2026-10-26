@@ -50,7 +50,8 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
         ret_code = POST_RC_ERROR;
     }
 
-    if (screen_api_init(post_init_data->draw_rectangle) != SCREEN_RC_OK) {
+    if (screen_api_init(post_init_data->draw_rectangle) != SCREEN_RC_OK ||
+        screen_api_set_accelerators(&post_init_data->screen_accelerators) != SCREEN_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 

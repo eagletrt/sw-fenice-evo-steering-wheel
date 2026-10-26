@@ -222,6 +222,10 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
     for (uint8_t i = 0U; i < SCHEDULER_TASK_COUNT; i++) {
         stats[i].window_max_us = 0U;
     }
+
+    if (scheduler_handler.config.report_stats != NULL) {
+        scheduler_handler.config.report_stats();
+    }
 }
 
 /*!

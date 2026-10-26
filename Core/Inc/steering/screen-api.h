@@ -51,6 +51,18 @@ enum ScreenReturnCode screen_api_on_parameter_change(enum InputsSharedParameterI
 enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectangle);
 
 /*!
+ * \brief Enable the optional hardware accelerators (call after screen_api_init).
+ *
+ * \param accelerators Mask blend and frame cache callbacks; any field may be
+ *     NULL to keep the corresponding fallback (see ScreenAccelerators).
+ *
+ * \retval SCREEN_RC_OK on success.
+ * \retval SCREEN_RC_NULL_POINTER if \p accelerators is NULL.
+ * \retval SCREEN_RC_ERROR if libraster rejected the mask (callback without buffer).
+ */
+enum ScreenReturnCode screen_api_set_accelerators(const struct ScreenAccelerators *accelerators);
+
+/*!
  * \brief Update the screen state, including popup visibility and raster interface.
  *
  * \details Checks whether the popup should still be active based on the current

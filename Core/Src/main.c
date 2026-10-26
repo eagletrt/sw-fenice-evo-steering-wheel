@@ -115,6 +115,23 @@ EAGLETRT_STATIC uint32_t prv_main_get_cycles(void) {
 }
 
 /*!
+ * \brief Log the DMA2D transfer timings of the last stats window, then reset them.
+ *
+ * \details Called by the scheduler stats task. Two short lines (the logger
+ *     truncates long records): count, total and longest transfer per kind.
+ */
+EAGLETRT_STATIC void prv_main_report_stats(void) {
+    const struct Dma2dOperationStats *stats = dma2d_get_stats();
+    const struct Dma2dOperationStats *fill = &stats[DMA2D_OPERATION_FILL];
+    const struct Dma2dOperationStats *blend = &stats[DMA2D_OPERATION_BLEND];
+    const struct Dma2dOperationStats *mask = &stats[DMA2D_OPERATION_MASK];
+    const struct Dma2dOperationStats *copy = &stats[DMA2D_OPERATION_COPY];
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "d2d fill %lu/%luus/%lu blend %lu/%luus/%lu", fill->count, fill->total_us, fill->max_us, blend->count, blend->total_us, blend->max_us));
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "d2d mask %lu/%luus/%lu copy %lu/%luus/%lu", mask->count, mask->total_us, mask->max_us, copy->count, copy->total_us, copy->max_us));
+    dma2d_reset_stats();
+}
+
+/*!
  * \brief Start the DWT cycle counter.
  */
 EAGLETRT_STATIC void prv_main_enable_cycle_counter(void) {
@@ -221,6 +238,11 @@ int main(void) {
                 },
             },
             .draw_rectangle = ltdc_draw_rectangle,
+            .screen_accelerators = {
+                .draw_mask = ltdc_draw_mask,
+                .mask_buffer = ltdc_mask_buffer(),
+                .mask_size = ltdc_mask_size(),
+            },
         },
         .get_tick = HAL_GetTick,
         .poll_inputs = prv_main_poll_inputs,
@@ -228,6 +250,7 @@ int main(void) {
         .reset = NVIC_SystemReset,
         .get_cycles = prv_main_get_cycles,
         .cycles_per_us = SystemCoreClock / MAIN_CYCLES_PER_US_DIVIDER,
+        .report_stats = prv_main_report_stats,
     };
 
     if (scheduler_api_init(&scheduler_config) != SCHEDULER_RC_OK) {
