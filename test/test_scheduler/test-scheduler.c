@@ -21,15 +21,13 @@
 #include "screen-api.h"
 #include "tasks-api.h"
 #include "ui-data-api.h"
+#include "wheel-fsm-api.h"
 #include <string.h>
 
 DEFINE_FFF_GLOBALS;
 
 extern struct SchedulerHandler scheduler_handler;
 extern struct ScreenHandler screen_handler;
-
-/* Private helper, reachable because the test build defines EAGLETRT_STATIC as empty. */
-enum CanPrimarySteeringwheelfsmStatus prv_scheduler_api_fsm_status(fsm_state_t state);
 
 FAKE_VALUE_FUNC(uint32_t, fake_get_tick);
 FAKE_VOID_FUNC(fake_poll_inputs, uint32_t);
@@ -46,6 +44,7 @@ static uint32_t prv_now;
 static uint32_t prv_cycles;
 static uint32_t prv_sent_ids[TEST_SCHEDULER_SENT_CAPACITY];
 static size_t prv_sent_count;
+static uint8_t prv_last_fsm_status;
 
 static uint32_t prv_get_tick(void) {
     return prv_now;
@@ -59,6 +58,9 @@ static uint32_t prv_get_cycles(void) {
 static enum CanCommunicationReturnCode prv_capture_send(const struct CanCommunicationFrame *frame) {
     if (prv_sent_count < TEST_SCHEDULER_SENT_CAPACITY) {
         prv_sent_ids[prv_sent_count++] = frame->id;
+    }
+    if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM) {
+        prv_last_fsm_status = frame->data[0] & 0x07U; /* status: bits 0-2 */
     }
     return CAN_COMMUNICATION_RC_OK;
 }
@@ -162,6 +164,7 @@ void setUp(void) {
     prv_now = 0U;
     prv_cycles = 0U;
     prv_sent_count = 0U;
+    prv_last_fsm_status = UINT8_MAX;
     fake_get_tick_fake.custom_fake = prv_get_tick;
     fake_get_cycles_fake.custom_fake = prv_get_cycles;
     fake_draw_rectangle_fake.return_val = RASTER_RC_OK;
@@ -201,17 +204,17 @@ void test_scheduler_init_rejects_cycle_counter_without_frequency(void) {
     TEST_ASSERT_EQUAL(SCHEDULER_RC_NULL_POINTER, scheduler_api_init(&config));
 }
 
-void test_scheduler_init_runs_post_into_idle(void) {
+void test_scheduler_init_runs_post_into_run(void) {
     struct SchedulerConfig config = prv_make_config();
     TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(&config));
-    TEST_ASSERT_EQUAL(FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
 }
 
 void test_scheduler_init_post_failure_leaves_fsm_in_error(void) {
     struct SchedulerConfig config = prv_make_config();
     config.post.draw_rectangle = NULL;
     TEST_ASSERT_EQUAL_MESSAGE(SCHEDULER_RC_OK, scheduler_api_init(&config), "A failed POST must not stop the scheduler: ERROR still has to reach the bus");
-    TEST_ASSERT_EQUAL(FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
 }
 
 /*! \} */
@@ -295,10 +298,10 @@ void test_scheduler_can_messages_follow_libcan_cycle_times(void) {
     TEST_ASSERT_EQUAL(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELVERSION));
 }
 
-void test_scheduler_render_skipped_outside_idle(void) {
+void test_scheduler_render_skipped_outside_run(void) {
     struct SchedulerConfig config = prv_make_config();
     scheduler_api_init(&config);
-    scheduler_handler.fsm_state = FSM_STATE_ERROR;
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
 
     prv_run_until(100U);
 
@@ -313,7 +316,18 @@ void test_scheduler_render_failure_moves_fsm_to_error(void) {
 
     prv_run_until(10U);
 
-    TEST_ASSERT_EQUAL(FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_fsm_status_reaches_the_bus(void) {
+    struct SchedulerConfig config = prv_make_config();
+    scheduler_api_init(&config);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
+
+    prv_run_until(0U);
+
+    TEST_ASSERT_EQUAL_MESSAGE(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM), "The FSM task runs before the status task on the same tick");
+    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR, prv_last_fsm_status);
 }
 
 void test_scheduler_reset_request_resets_the_board(void) {
@@ -325,13 +339,6 @@ void test_scheduler_reset_request_resets_the_board(void) {
     prv_run_until(5U);
 
     TEST_ASSERT_TRUE(fake_reset_fake.call_count > 0U);
-}
-
-void test_scheduler_fsm_status_mapping(void) {
-    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_INIT, prv_scheduler_api_fsm_status(FSM_STATE_INIT));
-    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE, prv_scheduler_api_fsm_status(FSM_STATE_IDLE));
-    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR, prv_scheduler_api_fsm_status(FSM_STATE_ERROR));
-    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_FLASH, prv_scheduler_api_fsm_status(FSM_STATE_FLASH));
 }
 
 void test_scheduler_routine_rejects_time_going_backwards(void) {
@@ -489,7 +496,7 @@ int main(void) {
     RUN_TEST(test_scheduler_init_rejects_null_config);
     RUN_TEST(test_scheduler_init_rejects_missing_callbacks);
     RUN_TEST(test_scheduler_init_rejects_cycle_counter_without_frequency);
-    RUN_TEST(test_scheduler_init_runs_post_into_idle);
+    RUN_TEST(test_scheduler_init_runs_post_into_run);
     RUN_TEST(test_scheduler_init_post_failure_leaves_fsm_in_error);
 
     RUN_TEST(test_scheduler_first_routine_runs_every_unstaggered_task);
@@ -497,10 +504,10 @@ int main(void) {
     RUN_TEST(test_scheduler_inputs_and_render_never_share_a_routine);
     RUN_TEST(test_scheduler_inputs_polled_every_10_ms);
     RUN_TEST(test_scheduler_can_messages_follow_libcan_cycle_times);
-    RUN_TEST(test_scheduler_render_skipped_outside_idle);
+    RUN_TEST(test_scheduler_render_skipped_outside_run);
     RUN_TEST(test_scheduler_render_failure_moves_fsm_to_error);
+    RUN_TEST(test_scheduler_fsm_status_reaches_the_bus);
     RUN_TEST(test_scheduler_reset_request_resets_the_board);
-    RUN_TEST(test_scheduler_fsm_status_mapping);
     RUN_TEST(test_scheduler_routine_rejects_time_going_backwards);
     RUN_TEST(test_scheduler_knob_popup_shows_on_next_frame);
     RUN_TEST(test_scheduler_tasks_get_the_tick_libtimebase_acted_on);

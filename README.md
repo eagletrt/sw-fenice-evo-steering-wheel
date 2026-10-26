@@ -18,7 +18,31 @@ It also handles **buttons** and **3 rotary switches** for user input in real-tim
 - `fenice-evo-steering-wheel-bootloader-sw/`: the OpenBLT CAN bootloader (own CubeMX project, built from the same `platformio.ini`). It occupies the first 128K flash sector; the firmware linked after it uses `STM32H723XG_FLASH_SHIFTED.ld`.
 - `test/`: host unit tests (Unity + fff) for the hardware-agnostic modules.
 - `simulator/`: host hooks (window, keyboard, CAN, logger) that run the hardware-agnostic firmware on a PC.
-- `assets/fsm/fsm.dot`: source of truth for the FSM. Regenerate `fsm.c`/`fsm.h` with `./scripts/generate_fsm.sh assets/fsm/fsm.dot` (requires the `gv_fsm` gem), then re-apply the user-code sections.
+- `Core/Src/steering/wheel-fsm-api.c`: the wheel state machine, built on [libfsm-sw](https://github.com/eagletrt/libfsm-sw) (see below).
+
+## State machine
+
+The wheel FSM is a libfsm-sw table in `wheel-fsm-api.c`, run every 5 ms by the scheduler FSM
+task. Any task can request a transition with `wheel_fsm_api_request`; it is applied at the end of
+the next FSM step. A requested `ERROR` can't be replaced by a later request.
+
+```mermaid
+stateDiagram-v2
+    [*] --> INIT
+    INIT --> IDLE: POST ok
+    INIT --> ERROR: POST failed
+    IDLE --> FLASH: another board is being flashed
+    FLASH --> IDLE: flashing over
+    RUN --> ERROR: fatal error
+    FLASH --> ERROR: fatal error
+```
+
+| State | What happens | `SteeringWheelFsm.status` |
+|---|---|---|
+| `INIT` | power-on self test (runs once, before the first task) | `INIT` |
+| `IDLE` | dashboard, inputs, CAN; resets into the bootloader when asked | `IDLE` |
+| `FLASH` | nothing yet (FLASH-state issue) | `FLASH` |
+| `ERROR` | terminal: the last frame stays on screen, CAN keeps reporting the state | `ERROR` |
 
 ## Development
 
