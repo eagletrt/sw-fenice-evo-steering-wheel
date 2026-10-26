@@ -32,8 +32,8 @@ stateDiagram-v2
     INIT --> IDLE: POST ok
     INIT --> ERROR: POST failed
     IDLE --> FLASH: another board is being flashed
+    IDLE --> ERROR: fatal error
     FLASH --> IDLE: flashing over
-    RUN --> ERROR: fatal error
     FLASH --> ERROR: fatal error
 ```
 
