@@ -19,7 +19,11 @@
 EAGLETRT_STATIC struct WheelFsmHandler wheel_fsm_handler;
 
 /*!
- * \brief INIT: run the POST, then move to RUN, or to ERROR if it failed.
+ * \brief INIT: run the POST.
+ *
+ * \note The logic does:
+ *    - if the POST is OK, go to IDLE
+ *    - if the POST is not OK, go to ERROR
  *
  * \param data The WheelFsmConfig of the handler.
  */
@@ -30,8 +34,7 @@ EAGLETRT_STATIC void prv_wheel_fsm_api_do_init(void *data) {
 }
 
 /*!
- * \brief IDLE: inputs, CAN and rendering run as their own scheduler tasks, the
- *     state only handles the bootloader reset request.
+ * \brief IDLE: handles the bootloader reset request.
  *
  * \param data The WheelFsmConfig of the handler.
  */
