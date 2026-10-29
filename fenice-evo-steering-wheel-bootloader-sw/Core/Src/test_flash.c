@@ -15,8 +15,7 @@ void EnableMemMappedQuadMode(void);
 
 void print(const char *fmt, ...);
 
-void Flash_Init()
-{
+void Flash_Init() {
     /* Enter Quad Mode 4-4-4 --------------------------------------------- */
     EnterQuadMode();
     ReadMode();
@@ -26,50 +25,39 @@ void Flash_Init()
     mem_addr = (__IO uint8_t *)(OCTOSPI1_BASE + address);
 }
 
-void Flash_Test()
-{
+void Flash_Test() {
     int errori;
 
     errori = manual_write_and_read(mem_addr, BUFFERSIZE, aTxBuffer);
 
-    if (errori == 0)
-    {
+    if (errori == 0) {
         print("Successful");
-    }
-    else
-    {
+    } else {
         print("Error");
     }
     mem_addr = (__IO uint8_t *)(OCTOSPI1_BASE + address);
 
     errori = string_write_and_read(mem_addr, BUFFERSIZE, aTxBuffer);
 
-    if (errori == 0)
-    {
+    if (errori == 0) {
         print("Successful");
-    }
-    else
-    {
+    } else {
         print("Error");
     }
 }
 
-int manual_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuffer[])
-{
+int manual_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuffer[]) {
     uint16_t index1; /*index1 counter of bytes used when reading/writing 256 bytes buffer */
     __IO uint8_t *mem_addr_iniziale = mem_addr;
 
-    for (index1 = 0; index1 < BUFFERSIZE; index1++)
-    {
+    for (index1 = 0; index1 < BUFFERSIZE; index1++) {
         *mem_addr = aTxBuffer[index1];
         mem_addr++;
     }
     mem_addr = mem_addr_iniziale;
 
-    for (index1 = 0; index1 < BUFFERSIZE; index1++)
-    {
-        if (*mem_addr != aTxBuffer[index1])
-        {
+    for (index1 = 0; index1 < BUFFERSIZE; index1++) {
+        if (*mem_addr != aTxBuffer[index1]) {
             return 1;
         }
         mem_addr++;
@@ -78,8 +66,7 @@ int manual_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuf
     return 0;
 }
 
-int string_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuffer[])
-{
+int string_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuffer[]) {
     uint8_t *addr = mem_addr;
     memcpy(addr, aTxBuffer, BUFFERSIZE);
 
@@ -87,8 +74,7 @@ int string_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuf
 
     memcpy(confronto, mem_addr, BUFFERSIZE);
 
-    if (memcmp(confronto, aTxBuffer, BUFFERSIZE) != 0)
-    {
+    if (memcmp(confronto, aTxBuffer, BUFFERSIZE) != 0) {
         return 1;
     }
 
@@ -96,8 +82,7 @@ int string_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuf
 }
 
 /*Function to Enable Memory mapped mode in Quad mode 4-4-4*/
-void EnableMemMappedQuadMode(void)
-{
+void EnableMemMappedQuadMode(void) {
     OSPI_RegularCmdTypeDef sCommand;
     OSPI_MemoryMappedTypeDef sMemMappedCfg;
     sCommand.FlashId = HAL_OSPI_FLASH_ID_1;
@@ -118,8 +103,7 @@ void EnableMemMappedQuadMode(void)
     sCommand.Instruction = FAST_READ_QUAD;
     sCommand.DummyCycles = FAST_READ_QUAD_DUMMY_CYCLES;
     if (HAL_OSPI_Command(&hospi1, &sCommand, HAL_OSPI_TIMEOUT_DEFAULT_VALUE) !=
-        HAL_OK)
-    {
+        HAL_OK) {
         Error_Handler();
     }
     /* Memory-mapped mode configuration for Quad Write mode 4-4-4*/
@@ -128,21 +112,18 @@ void EnableMemMappedQuadMode(void)
     sCommand.DummyCycles = WRITE_QUAD_DUMMY_CYCLES;
     sCommand.DQSMode = HAL_OSPI_DQS_ENABLE;
     if (HAL_OSPI_Command(&hospi1, &sCommand, HAL_OSPI_TIMEOUT_DEFAULT_VALUE) !=
-        HAL_OK)
-    {
+        HAL_OK) {
         Error_Handler();
     }
     /*Disable timeout counter for memory mapped mode*/
     sMemMappedCfg.TimeOutActivation = HAL_OSPI_TIMEOUT_COUNTER_DISABLE;
     /*Enable memory mapped mode*/
-    if (HAL_OSPI_MemoryMapped(&hospi1, &sMemMappedCfg) != HAL_OK)
-    {
+    if (HAL_OSPI_MemoryMapped(&hospi1, &sMemMappedCfg) != HAL_OK) {
         Error_Handler();
     }
 }
 /*Function to configure the external memory in Quad mode 4-4-4*/
-void EnterQuadMode(void)
-{
+void EnterQuadMode(void) {
     OSPI_RegularCmdTypeDef sCommand;
     sCommand.OperationType = HAL_OSPI_OPTYPE_COMMON_CFG;
     sCommand.FlashId = HAL_OSPI_FLASH_ID_1;
@@ -158,14 +139,12 @@ void EnterQuadMode(void)
     sCommand.SIOOMode = HAL_OSPI_SIOO_INST_EVERY_CMD;
     /*Enter QUAD mode*/
     if (HAL_OSPI_Command(&hospi1, &sCommand, HAL_OSPI_TIMEOUT_DEFAULT_VALUE) !=
-        HAL_OK)
-    {
+        HAL_OK) {
         Error_Handler();
     }
 }
 
-void ReadMode(void)
-{
+void ReadMode(void) {
     /*
     OSPI_RegularCmdTypeDef sCommand;
     sCommand.OperationType = HAL_OSPI_OPTYPE_COMMON_CFG;
@@ -187,8 +166,8 @@ void ReadMode(void)
     */
 
     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_RESET);
-    uint8_t write_data[5] = {0x4B, 0xFF, 0xFF, 0xFF, 0xFF};
-    uint8_t read_data[8] = {0};
+    uint8_t write_data[5] = { 0x4B, 0xFF, 0xFF, 0xFF, 0xFF };
+    uint8_t read_data[8] = { 0 };
     HAL_OSPI_Transmit(&hospi1, write_data, HAL_OSPI_TIMEOUT_DEFAULT_VALUE);
     HAL_OSPI_Receive(&hospi1, read_data, HAL_OSPI_TIMEOUT_DEFAULT_VALUE);
     print("read data: %x\n", read_data[0]);

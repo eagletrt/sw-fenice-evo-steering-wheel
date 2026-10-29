@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/mb.h
 * \brief        Bootloader Modbus communication interface header file.
 * \ingroup      Core
@@ -66,7 +66,7 @@
  *         the assigned function code by placing this macro in "blt_conf.h" with a
  *         different value assigned to it.
  */
-#define BOOT_COM_MBRTU_FCT_CODE_USER_XCP  (109u)
+#define BOOT_COM_MBRTU_FCT_CODE_USER_XCP (109u)
 #endif
 
 #ifndef BOOT_COM_MBRTU_DRIVER_OUTPUT_ENABLE_DELAY_US
@@ -77,7 +77,7 @@
  *         10. Note that you can override the value by placing this macro in "blt_conf.h"
  *         with a different value assigned to it.
  */
-#define BOOT_COM_MBRTU_DRIVER_OUTPUT_ENABLE_DELAY_US  (10u)
+#define BOOT_COM_MBRTU_DRIVER_OUTPUT_ENABLE_DELAY_US (10u)
 #endif
 
 #ifndef BOOT_COM_MBRTU_DRIVER_OUTPUT_DISABLE_DELAY_US
@@ -91,25 +91,22 @@
 #define BOOT_COM_MBRTU_DRIVER_OUTPUT_DISABLE_DELAY_US (10u)
 #endif
 
-
 /****************************************************************************************
 * Hook functions
 ****************************************************************************************/
 extern void MbRtuDriverOutputControlHook(blt_bool enable);
 
-
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-void       MbRtuInit(void);
-void       MbRtuTransmitPacket(blt_int8u *data, blt_int8u len);
-blt_bool   MbRtuReceivePacket(blt_int8u *data, blt_int8u *len);
+void MbRtuInit(void);
+void MbRtuTransmitPacket(blt_int8u *data, blt_int8u len);
+blt_bool MbRtuReceivePacket(blt_int8u *data, blt_int8u *len);
 blt_int16u MbRtuCrcCalculate(blt_int8u const *data, blt_int16u len);
-void       MbRtuDelay(blt_int16u delay_us);
+void MbRtuDelay(blt_int16u delay_us);
 blt_int16u MbRtuFreeRunningCounterGet(void);
 
 #endif /* BOOT_COM_MBRTU_ENABLE > 0 */
-
 
 #endif /* MB_H */
 /*********************************** end of mb.h ***************************************/

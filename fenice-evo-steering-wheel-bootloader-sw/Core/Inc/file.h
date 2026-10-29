@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/file.h
 * \brief        Bootloader file system interface header file.
 * \ingroup      Core
@@ -32,77 +32,72 @@
 /****************************************************************************************
 * Include files
 ****************************************************************************************/
-#include "ff.h"                                  /* FATFS file system library          */
-
+#include "ff.h" /* FATFS file system library          */
 
 /****************************************************************************************
 * Defines
 ****************************************************************************************/
 /** \brief Error code for not being able to open the firmware file. */
-#define FILE_ERROR_CANNOT_OPEN_FIRMWARE_FILE       (1)
+#define FILE_ERROR_CANNOT_OPEN_FIRMWARE_FILE (1)
 /** \brief Error code for not being able to read from the firmware file. */
-#define FILE_ERROR_CANNOT_READ_FROM_FILE           (2)
+#define FILE_ERROR_CANNOT_READ_FROM_FILE (2)
 /** \brief Error code because in incorrect checksum was found in the firmware file. */
-#define FILE_ERROR_INVALID_CHECKSUM_IN_FILE        (3)
+#define FILE_ERROR_INVALID_CHECKSUM_IN_FILE (3)
 /** \brief Error code because the file pointers read pointer could not be rewinded. */
-#define FILE_ERROR_REWINDING_FILE_READ_POINTER     (4)
+#define FILE_ERROR_REWINDING_FILE_READ_POINTER (4)
 /** \brief Error code because an error occurred during the memory erase operation. */
-#define FILE_ERROR_CANNOT_ERASE_MEMORY             (5)
+#define FILE_ERROR_CANNOT_ERASE_MEMORY (5)
 /** \brief Error code because an error occurred during the memory write operation. */
-#define FILE_ERROR_CANNOT_PROGRAM_MEMORY           (6)
+#define FILE_ERROR_CANNOT_PROGRAM_MEMORY (6)
 /** \brief Error code because the program's checksum could not be written to memory. */
-#define FILE_ERROR_CANNOT_WRITE_CHECKSUM           (7)
+#define FILE_ERROR_CANNOT_WRITE_CHECKSUM (7)
 #if (BOOT_INFO_TABLE_ENABLE > 0)
 /** \brief Error code because no info table or only a partial one was detected. */
-#define FILE_ERROR_INFO_TABLE_MISSING              (8)
+#define FILE_ERROR_INFO_TABLE_MISSING (8)
 /** \brief Error code because the info table check did not pass. */
-#define FILE_ERROR_INFO_TABLE_CHECK_NOT_PASSED     (9)
+#define FILE_ERROR_INFO_TABLE_CHECK_NOT_PASSED (9)
 #endif /* (BOOT_INFO_TABLE_ENABLE > 0) */
 /** \brief Maximum number of characters that can be on a line in the firmware file. */
-#define MAX_CHARS_PER_LINE                  (256)
+#define MAX_CHARS_PER_LINE (256)
 /** \brief Maximum number of data bytes that can be on a line in the firmware file
  *         (S-record).
  */
-#define MAX_DATA_BYTES_PER_LINE             (MAX_CHARS_PER_LINE/2)
+#define MAX_DATA_BYTES_PER_LINE (MAX_CHARS_PER_LINE / 2)
 /** \brief Return code in case an invalid checksum was detected on an S-record line. */
-#define ERROR_SREC_INVALID_CHECKSUM         (-1)
-
+#define ERROR_SREC_INVALID_CHECKSUM (-1)
 
 /****************************************************************************************
 * Type definitions
 ****************************************************************************************/
 /** \brief Enumeration for the different S-record line types. */
-typedef enum
-{
-  LINE_TYPE_S1,                                  /**< 16-bit address line              */
-  LINE_TYPE_S2,                                  /**< 24-bit address line              */
-  LINE_TYPE_S3,                                  /**< 32-bit address line              */
-  LINE_TYPE_UNSUPPORTED                          /**< unsupported line                 */
+typedef enum {
+    LINE_TYPE_S1,         /**< 16-bit address line              */
+    LINE_TYPE_S2,         /**< 24-bit address line              */
+    LINE_TYPE_S3,         /**< 32-bit address line              */
+    LINE_TYPE_UNSUPPORTED /**< unsupported line                 */
 } tSrecLineType;
 
 /** \brief Structure type for grouping the parsing results of an S-record line. */
 typedef struct
 {
-  blt_char  line[MAX_CHARS_PER_LINE];            /**< string buffer for the line chars */
-  blt_int8u data[MAX_DATA_BYTES_PER_LINE];       /**< array for S1, S2 or S3 data bytes*/
-  blt_addr  address;                             /**< address on S1, S2 or S3 line     */
+    blt_char line[MAX_CHARS_PER_LINE];       /**< string buffer for the line chars */
+    blt_int8u data[MAX_DATA_BYTES_PER_LINE]; /**< array for S1, S2 or S3 data bytes*/
+    blt_addr address;                        /**< address on S1, S2 or S3 line     */
 } tSrecLineParseObject;
-
 
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-void          FileInit(void);
-void          FileTask(void);
-blt_bool      FileIsIdle(void);
-blt_bool      FileHandleFirmwareUpdateRequest(void);
+void FileInit(void);
+void FileTask(void);
+blt_bool FileIsIdle(void);
+blt_bool FileHandleFirmwareUpdateRequest(void);
 /* functions for reading data from a Motorola S-record file. */
 tSrecLineType FileSrecGetLineType(const blt_char *line);
-blt_bool      FileSrecVerifyChecksum(const blt_char *line);
-blt_int16s    FileSrecParseLine(const blt_char *line, blt_addr *address, blt_int8u *data);
+blt_bool FileSrecVerifyChecksum(const blt_char *line);
+blt_int16s FileSrecParseLine(const blt_char *line, blt_addr *address, blt_int8u *data);
 
 #endif /* BOOT_FILE_SYS_ENABLE > 0 */
-
 
 #endif /* FILE_H */
 /*********************************** end of file.h *************************************/

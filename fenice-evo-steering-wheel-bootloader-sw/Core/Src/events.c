@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/events.c
 * \brief        Bootloader events module source file.
 * \ingroup      Core
@@ -29,8 +29,7 @@
 /****************************************************************************************
 * Include files
 ****************************************************************************************/
-#include "boot.h"                                /* bootloader generic header          */
-
+#include "boot.h" /* bootloader generic header          */
 
 #if (BOOT_EVENTS_ENABLE > 0)
 /****************************************************************************************
@@ -48,22 +47,19 @@ static blt_int32u bytesWritten;
 /** \brief Boolean flag to track if an error was detected during the firmware update. */
 static blt_bool errorDetected;
 
-
-/***********************************************************************************//**
+/***********************************************************************************/ /**
 ** \brief     Initializes the events module.
 ** \return    none
 **
 ****************************************************************************************/
-void EventsInit(void)
-{
-  /* Initialize locals. */
-  firmwareSize = 0U;
-  bytesWritten = 0U;
-  errorDetected = BLT_FALSE;
+void EventsInit(void) {
+    /* Initialize locals. */
+    firmwareSize = 0U;
+    bytesWritten = 0U;
+    errorDetected = BLT_FALSE;
 } /*** end of EventsInit ***/
 
-
-/***********************************************************************************//**
+/***********************************************************************************/ /**
 ** \brief     Processes the occurrence of a new event. Should only be called from the
 **            bootloader core. Cast the opaque info pointer to the correct structure
 **            type (tEventsInfoXxx) to access the event related information.
@@ -74,73 +70,67 @@ void EventsInit(void)
 ** \return    none
 **
 ****************************************************************************************/
-void EventsProcess(tEventsId id, void * info)
-{
-  blt_bool  invokeHookFct = BLT_TRUE;
-  blt_int8u progress;
+void EventsProcess(tEventsId id, void *info) {
+    blt_bool invokeHookFct = BLT_TRUE;
+    blt_int8u progress;
 
-  /* Filter on the events identifier for those events that need additional processing
+    /* Filter on the events identifier for those events that need additional processing
    * before invoking the hook-function.
    */
-  switch (id)
-  {
-    case EVENT_ID_ON_WRITE:
-      ASSERT_RT(info != BLT_NULL);
-      /* Calculate and store the write progress as a percentage. Use integer rounding,
+    switch (id) {
+        case EVENT_ID_ON_WRITE:
+            ASSERT_RT(info != BLT_NULL);
+            /* Calculate and store the write progress as a percentage. Use integer rounding,
        * yet protect against divide by zero or other unexpected values.
        */
-      progress = 0U;
-      if ( (firmwareSize > 0U) && (bytesWritten <= firmwareSize) )
-      {
-        progress = (blt_int8u)(((bytesWritten*100U) + (firmwareSize/2U)) / firmwareSize);
-      }
-      ((tEventsInfoWrite *)info)->progress = progress;
-      /* Increment the firmware bytes that will afterwards be written. */
-      bytesWritten += ((tEventsInfoWrite const *)info)->num_bytes;
-      break;
+            progress = 0U;
+            if ((firmwareSize > 0U) && (bytesWritten <= firmwareSize)) {
+                progress = (blt_int8u)(((bytesWritten * 100U) + (firmwareSize / 2U)) / firmwareSize);
+            }
+            ((tEventsInfoWrite *)info)->progress = progress;
+            /* Increment the firmware bytes that will afterwards be written. */
+            bytesWritten += ((tEventsInfoWrite const *)info)->num_bytes;
+            break;
 
-    case EVENT_ID_ON_ERASE:
-      ASSERT_RT(info != BLT_NULL);
-      /* Increment the firmware size. */
-      firmwareSize += ((tEventsInfoErase const *)info)->num_bytes;
-      break;
+        case EVENT_ID_ON_ERASE:
+            ASSERT_RT(info != BLT_NULL);
+            /* Increment the firmware size. */
+            firmwareSize += ((tEventsInfoErase const *)info)->num_bytes;
+            break;
 
-    case EVENT_ID_ON_START:
-      /* Reset the firmware size, bytes written, and error flag. */
-      firmwareSize = 0U;
-      bytesWritten = 0U;
-      errorDetected = BLT_FALSE;
-      break;
+        case EVENT_ID_ON_START:
+            /* Reset the firmware size, bytes written, and error flag. */
+            firmwareSize = 0U;
+            bytesWritten = 0U;
+            errorDetected = BLT_FALSE;
+            break;
 
-    case EVENT_ID_ON_SUCCESS:
-      /* Only pass this event on if all data was actually written and no error was
+        case EVENT_ID_ON_SUCCESS:
+            /* Only pass this event on if all data was actually written and no error was
        * detected
        */
-      if ( (errorDetected == BLT_TRUE)    || 
-           (bytesWritten != firmwareSize) || 
-           (bytesWritten == 0U) )
-      {
-        invokeHookFct = BLT_FALSE;
-      }           
-      break;
+            if ((errorDetected == BLT_TRUE) ||
+                (bytesWritten != firmwareSize) ||
+                (bytesWritten == 0U)) {
+                invokeHookFct = BLT_FALSE;
+            }
+            break;
 
-    case EVENT_ID_ON_ERROR:
-      /* Set the flag to remember that an error was encountered. */
-      errorDetected = BLT_TRUE;
-      break;
+        case EVENT_ID_ON_ERROR:
+            /* Set the flag to remember that an error was encountered. */
+            errorDetected = BLT_TRUE;
+            break;
 
-    default:
-      break;  
-  }
-  
-  /* Okay to invoke the hook function? */
-  if (invokeHookFct == BLT_TRUE)
-  {
-    /* Pass the event on to the application for further processing. */
-    EventsHook(id, info);
-  }
+        default:
+            break;
+    }
+
+    /* Okay to invoke the hook function? */
+    if (invokeHookFct == BLT_TRUE) {
+        /* Pass the event on to the application for further processing. */
+        EventsHook(id, info);
+    }
 } /*** end of EventsProcess ***/
 #endif /* BOOT_EVENTS_ENABLE > 0 */
-
 
 /*********************************** end of events.c ***********************************/

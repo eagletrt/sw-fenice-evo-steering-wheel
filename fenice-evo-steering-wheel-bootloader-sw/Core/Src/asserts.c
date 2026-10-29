@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/asserts.c
 * \brief        Bootloader assertion module source file.
 * \ingroup      Core
@@ -29,11 +29,10 @@
 /****************************************************************************************
 * Include files
 ****************************************************************************************/
-#include "boot.h"                                /* bootloader generic header          */
-
+#include "boot.h" /* bootloader generic header          */
 
 #ifndef NDEBUG
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Called when a runtime assertion failed. It stores information about where
 **            the assertion occurred and halts the software program.
 ** \param     file   Name of the source file where the assertion occurred.
@@ -41,16 +40,13 @@
 ** \return    none
 **
 ****************************************************************************************/
-void AssertFailure(blt_char *file, blt_int32u line)
-{
-  /* hang the software so that it requires a hard reset */
-  for (;;)
-  {
-    /* keep servicing the watchdog so that this one does not cause a reset */
-    CopService();
-  }
+void AssertFailure(blt_char *file, blt_int32u line) {
+    /* hang the software so that it requires a hard reset */
+    for (;;) {
+        /* keep servicing the watchdog so that this one does not cause a reset */
+        CopService();
+    }
 } /*** end of AssertFailure ***/
 #endif /* !NDEBUG */
-
 
 /*********************************** end of assert.c ***********************************/

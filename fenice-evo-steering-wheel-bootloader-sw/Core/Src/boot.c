@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/boot.c
 * \brief        Bootloader core module source file.
 * \ingroup      Core
@@ -29,81 +29,76 @@
 /****************************************************************************************
 * Include files
 ****************************************************************************************/
-#include "boot.h"                                /* bootloader generic header          */
+#include "boot.h" /* bootloader generic header          */
 
-
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Initializes the bootloader core.
 ** \return    none
 **
 ****************************************************************************************/
-void BootInit(void)
-{
-/* initialize the CPU */
-  CpuInit();
-  /* initialize the watchdog */
-  CopInit();
-  /* initialize the millisecond timer */
-  TimerInit();
+void BootInit(void) {
+    /* initialize the CPU */
+    CpuInit();
+    /* initialize the watchdog */
+    CopInit();
+    /* initialize the millisecond timer */
+    TimerInit();
 #if (BOOT_EVENTS_ENABLE > 0)
-  /* initialize the events module */
-  EventsInit();
+    /* initialize the events module */
+    EventsInit();
 #endif
-  /* initialize the non-volatile memory driver */
-  NvmInit();
+    /* initialize the non-volatile memory driver */
+    NvmInit();
 #if (BOOT_FILE_SYS_ENABLE > 0)
-  /* initialize the file system module */
-  FileInit();
+    /* initialize the file system module */
+    FileInit();
 #endif
 #if (BOOT_COM_ENABLE > 0)
-  /* initialize the communication module */
-  ComInit();
+    /* initialize the communication module */
+    ComInit();
 #endif
 #if (BOOT_INFO_TABLE_ENABLE > 0)
-  /* initialize the info table check module */
-  InfoTableInit();
+    /* initialize the info table check module */
+    InfoTableInit();
 #endif
 #if (ADDON_GATEWAY_MOD_ENABLE > 0)
-  /* initialize the gateway module */
-  GatewayInit();
+    /* initialize the gateway module */
+    GatewayInit();
 #endif
 #if (BOOT_EVENTS_ENABLE > 0)
-  /* trigger the OnEntry event now that the bootloader is initialized. should be called
+    /* trigger the OnEntry event now that the bootloader is initialized. should be called
    * before BackDoorInit(), because that one could already result in an OnExit event.
    */
-  EventsProcess(EVENT_ID_ON_ENTRY, BLT_NULL);
+    EventsProcess(EVENT_ID_ON_ENTRY, BLT_NULL);
 #endif
-  /* initialize the backdoor entry */
-  BackDoorInit();
+    /* initialize the backdoor entry */
+    BackDoorInit();
 } /*** end of BootInit ***/
 
-
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Task function of the bootloader core that drives the program.
 ** \return    none
 **
 ****************************************************************************************/
-void BootTask(void)
-{
-  /* service the watchdog */
-  CopService();
-  /* update the millisecond timer */
-  TimerUpdate();
+void BootTask(void) {
+    /* service the watchdog */
+    CopService();
+    /* update the millisecond timer */
+    TimerUpdate();
 #if (BOOT_FILE_SYS_ENABLE > 0)
-  /* call worker task for updating firmware from locally attached file storage */
-  FileTask();
+    /* call worker task for updating firmware from locally attached file storage */
+    FileTask();
 #endif /* BOOT_FILE_SYS_ENABLE > 0 */
 #if (BOOT_COM_ENABLE > 0)
-  /* process possibly pending communication data */
-  ComTask();
+    /* process possibly pending communication data */
+    ComTask();
 #endif
 #if (ADDON_GATEWAY_MOD_ENABLE > 0)
-  /* run the gateway */
-  GatewayTask();
+    /* run the gateway */
+    GatewayTask();
 #endif
-  /* control the backdoor */
-  BackDoorCheck();
+    /* control the backdoor */
+    BackDoorCheck();
 } /*** end of BootTask ***/
-
 
 /*********************************** end of boot.c *************************************/

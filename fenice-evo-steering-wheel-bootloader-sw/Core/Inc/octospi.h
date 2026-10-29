@@ -49,4 +49,3 @@ void MX_OCTOSPI1_Init(void);
 #endif
 
 #endif /* __OCTOSPI_H__ */
-

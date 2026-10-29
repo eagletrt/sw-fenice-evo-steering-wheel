@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/backdoor.c
 * \brief        Bootloader backdoor entry source file.
 * \ingroup      Core
@@ -29,8 +29,7 @@
 /****************************************************************************************
 * Include files
 ****************************************************************************************/
-#include "boot.h"                                /* bootloader generic header          */
-
+#include "boot.h" /* bootloader generic header          */
 
 /****************************************************************************************
 * Macro definitions
@@ -42,10 +41,9 @@
  *         BOOT_BACKDOOR_ENTRY_TIMEOUT_MS to blt_conf.h with your desired backdoor 
  *         open time in milliseconds.
  */
-#define BOOT_BACKDOOR_ENTRY_TIMEOUT_MS  (500)
+#define BOOT_BACKDOOR_ENTRY_TIMEOUT_MS (500)
 #endif
 #endif /* BOOT_BACKDOOR_HOOKS_ENABLE == 0 */
-
 
 /****************************************************************************************
 * Hook functions
@@ -54,7 +52,6 @@
 extern void BackDoorInitHook(void);
 extern blt_bool BackDoorEntryHook(void);
 #endif
-
 
 /****************************************************************************************
 * Local data declarations
@@ -76,44 +73,39 @@ static blt_int32u backdoorOpenTime;
 static blt_int32u backdoorExtensionTime = 0;
 #endif
 
-
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Initializes the backdoor entry option.
 ** \return    none
 **
 ****************************************************************************************/
-void BackDoorInit(void)
-{
+void BackDoorInit(void) {
 #if (BOOT_BACKDOOR_HOOKS_ENABLE > 0)
-  /* initialize application's backdoor functionality */
-  BackDoorInitHook();
+    /* initialize application's backdoor functionality */
+    BackDoorInitHook();
 
-  /* attempt to start the user program when no backdoor entry is requested */
-  if (BackDoorEntryHook() == BLT_FALSE)
-  {
-    /* this function does not return if a valid user program is present */
-    CpuStartUserProgram();
-  }
+    /* attempt to start the user program when no backdoor entry is requested */
+    if (BackDoorEntryHook() == BLT_FALSE) {
+        /* this function does not return if a valid user program is present */
+        CpuStartUserProgram();
+    }
 #if (BOOT_FILE_SYS_ENABLE > 0)
-  else
-  {
-    /* the backdoor is open so we should check if a update from locally  attached storage
+    else {
+        /* the backdoor is open so we should check if a update from locally  attached storage
      * is requested and, if so, start it.
      */
-    FileHandleFirmwareUpdateRequest();
-  }
+        FileHandleFirmwareUpdateRequest();
+    }
 #endif
 #else
-  /* open the backdoor after a reset */
-  backdoorOpen = BLT_TRUE;
-  BackDoorRestartTimer();
+    /* open the backdoor after a reset */
+    backdoorOpen = BLT_TRUE;
+    BackDoorRestartTimer();
 #endif
-  /* perform the first check that open/closes the backdoor */
-  BackDoorCheck();
+    /* perform the first check that open/closes the backdoor */
+    BackDoorCheck();
 } /*** end of BackDoorInit ***/
 
-
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     The default backdoor entry feature keeps the bootloader active for a
 **            predetermined time after reset, allowing the host application to
 **            establish a connection and start a programming sequence. This function
@@ -121,89 +113,79 @@ void BackDoorInit(void)
 ** \return    none
 **
 ****************************************************************************************/
-void BackDoorCheck(void)
-{
+void BackDoorCheck(void) {
 #if (BOOT_BACKDOOR_HOOKS_ENABLE == 0)
 #if (BOOT_COM_ENABLE > 0)
-  /* check if a connection with the host was already established. in this case the
+    /* check if a connection with the host was already established. in this case the
    * backdoor stays open anyway, so no need to check if it needs to be closed.
    */
-  if (ComIsConnected() == BLT_TRUE)
-  {
-    /* reset backdoor open flag and return. */
-    backdoorOpen = BLT_FALSE;
-    return;
-  }
+    if (ComIsConnected() == BLT_TRUE) {
+        /* reset backdoor open flag and return. */
+        backdoorOpen = BLT_FALSE;
+        return;
+    }
 #endif
 #if (BOOT_FILE_SYS_ENABLE > 0)
-  /* check if the file module is busy, indicating that a firmware update through the
+    /* check if the file module is busy, indicating that a firmware update through the
    * locally attached storage is in progress. in this case the backdoor stays open
    * anyway, so no need to check if it needs to be closed.
    */
-  if (FileIsIdle() == BLT_FALSE)
-  {
-    /* reset backdoor open flag and return. */
-    backdoorOpen = BLT_FALSE;
-    return;
-  }
+    if (FileIsIdle() == BLT_FALSE) {
+        /* reset backdoor open flag and return. */
+        backdoorOpen = BLT_FALSE;
+        return;
+    }
 #endif
 
-  /* when the backdoor is still open, check if it's time to close it */
-  if (backdoorOpen == BLT_TRUE)
-  {
-    /* check if the backdoor entry time window elapsed */
-    if (TimerGet() >= (BOOT_BACKDOOR_ENTRY_TIMEOUT_MS + backdoorExtensionTime + backdoorOpenTime))
-    {
-      /* close the backdoor */
-      backdoorOpen = BLT_FALSE;
+    /* when the backdoor is still open, check if it's time to close it */
+    if (backdoorOpen == BLT_TRUE) {
+        /* check if the backdoor entry time window elapsed */
+        if (TimerGet() >= (BOOT_BACKDOOR_ENTRY_TIMEOUT_MS + backdoorExtensionTime + backdoorOpenTime)) {
+            /* close the backdoor */
+            backdoorOpen = BLT_FALSE;
 #if (BOOT_FILE_SYS_ENABLE > 0)
-      /* during the timed backdoor no remote update request was detected. now do one
+            /* during the timed backdoor no remote update request was detected. now do one
        * last check to see if a firmware update from locally attached storage is
        * pending.
        */
-      if (FileHandleFirmwareUpdateRequest() == BLT_FALSE)
+            if (FileHandleFirmwareUpdateRequest() == BLT_FALSE)
 #endif
-      {
-        /* no firmware update requests detected, so attempt to start the user program.
+            {
+                /* no firmware update requests detected, so attempt to start the user program.
          * this function does not return if a valid user program is present.
          */
-        CpuStartUserProgram();
-      }
+                CpuStartUserProgram();
+            }
+        }
     }
-  }
 #endif
 } /*** end of BackDoorCheck ***/
 
-
 #if (BOOT_BACKDOOR_HOOKS_ENABLE == 0)
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Sets the amount of milliseconds that the default backdoor timeout time
 **            (BOOT_BACKDOOR_ENTRY_TIMEOUT_MS) is extended.
 ** \param     extension_ms Extension time in milliseconds.
 ** \return    none
 **
 ****************************************************************************************/
-void BackDoorSetExtension(blt_int32u extension_ms)
-{
-  /* update the extension time */
-  backdoorExtensionTime = extension_ms;
+void BackDoorSetExtension(blt_int32u extension_ms) {
+    /* update the extension time */
+    backdoorExtensionTime = extension_ms;
 } /*** end of BackDoorSetExtension ***/
 
-
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Gets the amount of milliseconds that the default backdoor timeout time
 **            (BOOT_BACKDOOR_ENTRY_TIMEOUT_MS) is extended.
 ** \return    Extension time in milliseconds.
 **
 ****************************************************************************************/
-blt_int32u BackDoorGetExtension(void)
-{
-  /* read out and reutrn the currently configured extension time */
-  return backdoorExtensionTime;
+blt_int32u BackDoorGetExtension(void) {
+    /* read out and reutrn the currently configured extension time */
+    return backdoorExtensionTime;
 } /*** end of BackDoorGetExtension ***/
 
-
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Restarts the timed backdoor timer. It uses the current system time as the
 **            start time. The backdoor stays open for BOOT_BACKDOOR_ENTRY_TIMEOUT_MS
 **            after this start time, possibly extended in case BackDoorSetExtension() was
@@ -211,15 +193,12 @@ blt_int32u BackDoorGetExtension(void)
 ** \return    none
 **
 ****************************************************************************************/
-void BackDoorRestartTimer(void)
-{
-  /* only restart the time if the backdoor is actually still open */
-  if (backdoorOpen == BLT_TRUE)
-  {
-    backdoorOpenTime = TimerGet();
-  }
+void BackDoorRestartTimer(void) {
+    /* only restart the time if the backdoor is actually still open */
+    if (backdoorOpen == BLT_TRUE) {
+        backdoorOpenTime = TimerGet();
+    }
 } /*** end of BackDoorRestartTimer ***/
 #endif /* BOOT_BACKDOOR_HOOKS_ENABLE == 0 */
-
 
 /*********************************** end of backdoor.c *********************************/

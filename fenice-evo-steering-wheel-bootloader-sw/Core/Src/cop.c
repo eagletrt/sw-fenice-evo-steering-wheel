@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/cop.c
 * \brief        Bootloader watchdog module source file.
 * \ingroup      Core
@@ -29,8 +29,7 @@
 /****************************************************************************************
 * Include files
 ****************************************************************************************/
-#include "boot.h"                                /* bootloader generic header          */
-
+#include "boot.h" /* bootloader generic header          */
 
 /****************************************************************************************
 * Hook functions
@@ -40,31 +39,26 @@ extern void CopInitHook(void);
 extern void CopServiceHook(void);
 #endif
 
-
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Watchdog initialization function.
 ** \return    none
 **
 ****************************************************************************************/
-void CopInit(void)
-{
+void CopInit(void) {
 #if (BOOT_COP_HOOKS_ENABLE > 0)
-  CopInitHook();
+    CopInitHook();
 #endif
 } /*** end of CopInit ***/
 
-
-/************************************************************************************//**
+/************************************************************************************/ /**
 ** \brief     Watchdog service function to prevent the watchdog from timing out.
 ** \return    none
 **
 ****************************************************************************************/
-void CopService(void)
-{
+void CopService(void) {
 #if (BOOT_COP_HOOKS_ENABLE > 0)
-  CopServiceHook();
+    CopServiceHook();
 #endif
 } /*** end of CopService ***/
-
 
 /*********************************** end of cop.c **************************************/

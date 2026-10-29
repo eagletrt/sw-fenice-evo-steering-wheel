@@ -20,10 +20,8 @@
 #define COUNTOF(__BUFFER__) (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
 #define EXTENDEDBUFFERSIZE (1048576)
 
-
-inline void write_buffer(uint32_t base_address, uint32_t offset,
-                         uint8_t wdata[], uint32_t size) {
-  memcpy((uint32_t *)base_address + offset, wdata, size);
+inline void write_buffer(uint32_t base_address, uint32_t offset, uint8_t wdata[], uint32_t size) {
+    memcpy((uint32_t *)base_address + offset, wdata, size);
 }
 
 void Flash_Init();
@@ -36,9 +34,9 @@ void Flash_Test();
 * @param  aTxBuffer: buffer to write to memory
 * @retval 0 if successful, 1 if not
 */
-int manual_write_and_read(__IO uint8_t * mem_addr, int BUFFERSIZE, uint8_t aTxBuffer[]); 
+int manual_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuffer[]);
 
-int string_write_and_read(__IO uint8_t * mem_addr, int BUFFERSIZE, uint8_t aTxBuffer[]); 
+int string_write_and_read(__IO uint8_t *mem_addr, int BUFFERSIZE, uint8_t aTxBuffer[]);
 
 #endif // EXTERNAL_FLASH_ENABLED
 

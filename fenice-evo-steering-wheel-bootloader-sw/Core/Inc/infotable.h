@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/infotable.h
 * \brief        Info table check feature header file.
 * \ingroup      Core
@@ -33,27 +33,22 @@
 * Type definitions
 ****************************************************************************************/
 /** \brief Enumeration for the info tables. */
-typedef enum
-{
-  INFO_TABLE_ID_INTERNAL_RAM,  /**< Internal RAM buffer for to-be-programmed firmware. */
-  INFO_TABLE_ID_FIRMWARE_NVM   /**< Currently programmed firmware in non-volatile mem. */
+typedef enum {
+    INFO_TABLE_ID_INTERNAL_RAM, /**< Internal RAM buffer for to-be-programmed firmware. */
+    INFO_TABLE_ID_FIRMWARE_NVM  /**< Currently programmed firmware in non-volatile mem. */
 } tInfoTableId;
-
 
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-void       InfoTableInit(void);
-blt_bool   InfoTableCheck(void);
-blt_addr   InfoTableGetPtr(tInfoTableId infoTableId);
-void       InfoTableClear(tInfoTableId infoTableId);
+void InfoTableInit(void);
+blt_bool InfoTableCheck(void);
+blt_addr InfoTableGetPtr(tInfoTableId infoTableId);
+void InfoTableClear(tInfoTableId infoTableId);
 blt_int16u InfoTableCurrentSize(tInfoTableId infoTableId);
-blt_bool   InfoTableAddData(tInfoTableId infoTableId, blt_int8u const * data,
-                            blt_int16u len);
-
+blt_bool InfoTableAddData(tInfoTableId infoTableId, blt_int8u const *data, blt_int16u len);
 
 #endif /* BOOT_INFO_TABLE_ENABLE > 0 */
-
 
 #endif /* INFOTABLE_H */
 /*********************************** end of infotable.h ********************************/

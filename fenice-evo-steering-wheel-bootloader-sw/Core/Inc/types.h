@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/ARMCM7_STM32H7/types.h
 * \brief        Bootloader types header file.
 * \ingroup      Target_ARMCM7_STM32H7
@@ -28,31 +28,28 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-
 /****************************************************************************************
 * Macro definitions
 ****************************************************************************************/
 /** \brief Boolean true value. */
-#define BLT_TRUE       (1)
+#define BLT_TRUE (1)
 /** \brief Boolean false value. */
-#define BLT_FALSE      (0)
+#define BLT_FALSE (0)
 /** \brief NULL pointer value. */
-#define BLT_NULL       ((void *)0)
-
+#define BLT_NULL ((void *)0)
 
 /****************************************************************************************
 * Type definitions
 ****************************************************************************************/
-typedef unsigned char   blt_bool;                     /**<  boolean type               */
-typedef char            blt_char;                     /**<  character type             */
-typedef unsigned long   blt_addr;                     /**<  memory address type        */
-typedef unsigned char   blt_int8u;                    /**<  8-bit unsigned integer     */
-typedef signed char     blt_int8s;                    /**<  8-bit   signed integer     */
-typedef unsigned short  blt_int16u;                   /**< 16-bit unsigned integer     */
-typedef signed short    blt_int16s;                   /**< 16-bit   signed integer     */
-typedef unsigned int    blt_int32u;                   /**< 32-bit unsigned integer     */
-typedef signed int      blt_int32s;                   /**< 32-bit   signed integer     */
-
+typedef unsigned char blt_bool;    /**<  boolean type               */
+typedef char blt_char;             /**<  character type             */
+typedef unsigned long blt_addr;    /**<  memory address type        */
+typedef unsigned char blt_int8u;   /**<  8-bit unsigned integer     */
+typedef signed char blt_int8s;     /**<  8-bit   signed integer     */
+typedef unsigned short blt_int16u; /**< 16-bit unsigned integer     */
+typedef signed short blt_int16s;   /**< 16-bit   signed integer     */
+typedef unsigned int blt_int32u;   /**< 32-bit unsigned integer     */
+typedef signed int blt_int32s;     /**< 32-bit   signed integer     */
 
 #endif /* TYPES_H */
 /*********************************** end of types.h ************************************/
