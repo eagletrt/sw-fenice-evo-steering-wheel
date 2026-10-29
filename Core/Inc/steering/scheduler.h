@@ -17,10 +17,10 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include "fsm.h"
 #include "post.h"
 #include "tasks.h"
 #include "watchdogs.h"
+#include "wheel-fsm.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -76,6 +76,11 @@ typedef uint32_t (*scheduler_get_cycles_callback)(void);
 typedef void (*scheduler_report_stats_callback)(void);
 
 /*!
+ * \brief Present the frame just rendered.
+ */
+typedef void (*scheduler_swap_framebuffers_callback)(void);
+
+/*!
  * \brief Sample every physical input and forward changes to the inputs module.
  *
  * \param tick_ms Current time in milliseconds.
@@ -86,14 +91,14 @@ typedef void (*scheduler_poll_inputs_callback)(uint32_t tick_ms);
  * \brief Hardware hooks and init data handed to the scheduler.
  */
 struct SchedulerConfig {
-    struct PostInitData post;                         /*!< Passed to the FSM INIT state (POST); parameters_on_change is set by the scheduler */
-    scheduler_get_tick_callback get_tick;             /*!< Required: millisecond tick */
-    scheduler_poll_inputs_callback poll_inputs;       /*!< Required: input sampling */
-    fsm_swap_framebuffers_callback swap_framebuffers; /*!< Required: present the frame just rendered */
-    fsm_reset reset;                                  /*!< Required: system reset (bootloader request) */
-    scheduler_get_cycles_callback get_cycles;         /*!< Optional: cycle counter, timing statistics are off when NULL */
-    uint32_t cycles_per_us;                           /*!< Cycle counter frequency in MHz, required when get_cycles is set */
-    scheduler_report_stats_callback report_stats;     /*!< Optional: called by the stats task after the task timings */
+    struct PostInitData post;                               /*!< Passed to the FSM INIT state (POST); parameters_on_change is set by the scheduler */
+    scheduler_get_tick_callback get_tick;                   /*!< Required: millisecond tick */
+    scheduler_poll_inputs_callback poll_inputs;             /*!< Required: input sampling */
+    scheduler_swap_framebuffers_callback swap_framebuffers; /*!< Required: present the frame just rendered */
+    wheel_fsm_reset_callback reset;                         /*!< Required: system reset (bootloader request) */
+    scheduler_get_cycles_callback get_cycles;               /*!< Optional: cycle counter, timing statistics are off when NULL */
+    uint32_t cycles_per_us;                                 /*!< Cycle counter frequency in MHz, required when get_cycles is set */
+    scheduler_report_stats_callback report_stats;           /*!< Optional: called by the stats task after the task timings */
 };
 
 /*!
@@ -118,14 +123,12 @@ struct SchedulerTaskStats {
  * \brief File-static state of the scheduler.
  */
 struct SchedulerHandler {
-    struct SchedulerConfig config;                       /*!< Copy of the configuration given at init */
-    struct TasksHandler tasks;                           /*!< libtimebase tasks */
-    struct WatchdogHandler watchdogs;                    /*!< libtimebase watchdogs (pool, no watchdog registered yet) */
-    struct FsmData fsm_data;                             /*!< Data handed to the FSM states */
-    fsm_state_t fsm_state;                               /*!< Current FSM state */
-    uint32_t tick;                                       /*!< Last tick read by libtimebase: the time base of every task */
+    struct SchedulerConfig config;                         /*!< Copy of the configuration given at init */
+    struct TasksHandler tasks;                             /*!< libtimebase tasks */
+    struct WatchdogHandler watchdogs;                      /*!< libtimebase watchdogs (pool, no watchdog registered yet) */
+    uint32_t tick;                                         /*!< Last tick read by libtimebase: the time base of every task */
     struct SchedulerTaskStats stats[SCHEDULER_TASK_COUNT]; /*!< Per-task timing */
-    uint16_t dropped_at_last_log;                        /*!< libtimebase dropped-runs counter at the previous stats log */
+    uint16_t dropped_at_last_log;                          /*!< libtimebase dropped-runs counter at the previous stats log */
 };
 
 #endif // SCHEDULER_H

@@ -59,6 +59,7 @@
 #include "pal-api.h"
 #include "scheduler-api.h"
 #include "screen.h"
+#include "wheel-fsm-api.h"
 
 #include "tigr.h"
 
@@ -449,10 +450,9 @@ EAGLETRT_STATIC void simulator_draw_status(void) {
     tigrFill(window, 0, SIMULATOR_DASHBOARD_HEIGHT, SIMULATOR_WIDTH, SIMULATOR_STATUS_HEIGHT, background);
     tigrPrint(window, tfont, 6, SIMULATOR_DASHBOARD_HEIGHT + 6, text,
               "knobs q/w a/s z/x | buttons e d r f | PTT c v | b n | TSon t | 1 ECU state | 2 telemetry | p feed");
-    const fsm_state_t state = scheduler_api_get_fsm_state();
     tigrPrint(window, tfont, 6, SIMULATOR_DASHBOARD_HEIGHT + 24, text,
               "FSM %s   ECU vehicleStatus %s   telemetry feed %s",
-              (state < FSM_NUM_STATES) ? fsm_state_names[state] : "?",
+              wheel_fsm_api_get_state_name(scheduler_api_get_fsm_state()),
               simulator_ecu_status_names[simulator_ecu_status],
               simulator_feed_enabled ? "ON" : "off");
 }
@@ -551,7 +551,7 @@ int main(int argc, char **argv) {
         tigrFree(window);
         return 1;
     }
-    if (scheduler_api_get_fsm_state() == FSM_STATE_ERROR) {
+    if (scheduler_api_get_fsm_state() == WHEEL_FSM_STATE_ERROR) {
         fprintf(stderr, "POST failed, the FSM is in ERROR\n");
     }
 

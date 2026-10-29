@@ -45,7 +45,7 @@ enum SchedulerReturnCode scheduler_api_routine(void);
  *
  * \return The FSM state.
  */
-fsm_state_t scheduler_api_get_fsm_state(void);
+enum WheelFsmState scheduler_api_get_fsm_state(void);
 
 /*!
  * \brief Stop a task until scheduler_api_resume_task is called.

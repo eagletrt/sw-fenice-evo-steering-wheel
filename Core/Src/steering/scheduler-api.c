@@ -21,6 +21,7 @@
 #include "tasks-api.h"
 #include "ui-data-api.h"
 #include "watchdogs-api.h"
+#include "wheel-fsm-api.h"
 
 #include <inttypes.h>
 #include <string.h>
@@ -42,29 +43,6 @@ struct SchedulerTask {
 };
 
 EAGLETRT_STATIC struct SchedulerHandler scheduler_handler;
-
-/*!
- * \brief Map the wheel FSM state onto the status signal of SteeringWheelFsm.
- *
- * \param state The current FSM state.
- *
- * \return The matching CanPrimarySteeringwheelfsmStatus value.
- */
-EAGLETRT_STATIC enum CanPrimarySteeringwheelfsmStatus prv_scheduler_api_fsm_status(fsm_state_t state) {
-    switch (state) {
-        case FSM_STATE_IDLE:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE;
-        case FSM_STATE_ERROR:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR;
-        case FSM_STATE_FLASH:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_FLASH;
-        case FSM_STATE_AUTONOMOUS:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_AUTONOMOUS;
-        case FSM_STATE_INIT:
-        default:
-            return CAN_PRIMARY_STEERINGWHEELFSM_STATUS_INIT;
-    }
-}
 
 /*!
  * \brief Mirror a parameter transition into the UI snapshot.
@@ -142,8 +120,8 @@ EAGLETRT_STATIC void prv_scheduler_api_task_inputs(uint32_t tick_ms) {
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_fsm(uint32_t tick_ms) {
-    scheduler_handler.fsm_data.tick = tick_ms;
-    scheduler_handler.fsm_state = fsm_run_state(scheduler_handler.fsm_state, &scheduler_handler.fsm_data);
+    EAGLETRT_API_UNUSED(tick_ms);
+    EAGLETRT_API_UNUSED(wheel_fsm_api_run_state());
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_can_control_maps(uint32_t tick_ms) {
@@ -158,7 +136,7 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_button_status(uint32_t tick_ms) 
 
 EAGLETRT_STATIC void prv_scheduler_api_task_can_fsm_status(uint32_t tick_ms) {
     EAGLETRT_API_UNUSED(tick_ms);
-    EAGLETRT_API_UNUSED(identity_api_send_state(prv_scheduler_api_fsm_status(scheduler_handler.fsm_state)));
+    EAGLETRT_API_UNUSED(identity_api_send_state(wheel_fsm_api_get_can_status(wheel_fsm_api_get_state())));
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_can_version(uint32_t tick_ms) {
@@ -174,15 +152,15 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_tx(uint32_t tick_ms) {
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
-    // Same as before the scheduler: the screen is only driven in IDLE, an
-    // ERROR leaves the last frame on screen.
-    if (scheduler_handler.fsm_state != FSM_STATE_IDLE) {
+    // The screen is only driven in IDLE: an ERROR leaves the last frame on
+    // screen.
+    if (wheel_fsm_api_get_state() != WHEEL_FSM_STATE_IDLE) {
         return;
     }
 
     // Setters are no-ops when nothing changed, so syncing every frame is cheap.
     if (screen_api_sync_data(ui_data_api_get()) != SCREEN_RC_OK) {
-        scheduler_handler.fsm_data.error_detected = true;
+        EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
         return;
     }
 
@@ -195,7 +173,7 @@ EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
         case SCREEN_RC_ERROR:
         case SCREEN_RC_NULL_POINTER:
         default:
-            scheduler_handler.fsm_data.error_detected = true;
+            EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
             break;
     }
 }
@@ -266,7 +244,7 @@ EAGLETRT_STATIC const struct SchedulerTask prv_scheduler_api_tasks[SCHEDULER_TAS
  */
 EAGLETRT_STATIC uint32_t prv_scheduler_api_read_tick(void) {
     if (scheduler_handler.config.get_tick == NULL) {
-        scheduler_handler.fsm_data.error_detected = true;
+        EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
         return 0U;
     }
     scheduler_handler.tick = scheduler_handler.config.get_tick();
@@ -315,13 +293,19 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     scheduler_handler.config = *config;
     scheduler_handler.config.post.parameters_on_change = prv_scheduler_api_on_parameter_change;
 
-    // POST runs once, before any task: a failure leaves the FSM in ERROR
-    // and the tasks still report it on the bus.
-    scheduler_handler.fsm_state = fsm_run_state(FSM_STATE_INIT, &scheduler_handler.config.post);
-    scheduler_handler.fsm_data = (struct FsmData){
-        .swap_framebuffers = config->swap_framebuffers,
+    const struct WheelFsmConfig fsm_config = {
+        .post = &scheduler_handler.config.post,
         .reset = config->reset,
     };
+    if (wheel_fsm_api_init(&fsm_config) != WHEEL_FSM_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+    // POST runs once, before any task: a failure leaves the FSM in ERROR
+    // and the tasks still report it on the bus. The first step runs INIT,
+    // the transition it requests is applied at the end of the same step.
+    if (wheel_fsm_api_run_state() != WHEEL_FSM_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
 
     TaskList task_list = { 0 };
     for (uint8_t i = 0U; i < SCHEDULER_TASK_COUNT; i++) {
@@ -360,8 +344,8 @@ enum SchedulerReturnCode scheduler_api_routine(void) {
     return return_code;
 }
 
-fsm_state_t scheduler_api_get_fsm_state(void) {
-    return scheduler_handler.fsm_state;
+enum WheelFsmState scheduler_api_get_fsm_state(void) {
+    return wheel_fsm_api_get_state();
 }
 
 enum SchedulerReturnCode scheduler_api_pause_task(enum SchedulerTaskId task_id) {
