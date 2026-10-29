@@ -26,6 +26,8 @@
  *       1    inject EcuFsm with the next vehicle status
  *       2    inject one step of telemetry (SoC, temperatures, laps)
  *       p    toggle a continuous telemetry feed
+ *       3    toggle flashing traffic of another board (FLASH page, wheel muted)
+ *       4    next board for the flashing traffic
  *
  *     Options:
  *       --screenshot <file.ppm>  run for SIMULATOR_SCREENSHOT_DELAY_MS, save the
@@ -39,6 +41,9 @@
  *                                boxes, so with --screenshot replaying 0..N must
  *                                give the same image as N..N: any box missing
  *                                from a back buffer shows up.
+ *       --flash <id>             start with flashing traffic on, from the
+ *                                board whose FlashingTx ID is \p id (e.g. 0x66
+ *                                for the pedals).
  */
 
 #include <stdbool.h>
@@ -72,6 +77,7 @@
 #define SIMULATOR_FRAME_PERIOD_MS (16U)        /*!< Window refresh, ~60 Hz like the LTDC scanout */
 #define SIMULATOR_IDLE_SLEEP_NS (500000L)      /*!< Sleep between scheduler routines, keeps the 1 ms tasks on time */
 #define SIMULATOR_FEED_PERIOD_MS (200U)        /*!< Continuous telemetry feed period */
+#define SIMULATOR_FLASH_PERIOD_MS (50U)        /*!< Flashing traffic period, well inside FLASH_MONITOR_TIMEOUT_MS */
 #define SIMULATOR_NS_PER_US (1000U)            /*!< "Cycles" are nanoseconds on the PC */
 #define SIMULATOR_CAN_ID_COUNT (2048U)         /*!< Standard 11-bit identifiers */
 #define SIMULATOR_LOGGER_RX_CAPACITY (1U)      /*!< Same sizes as the wheel's logger */
@@ -144,6 +150,8 @@ EAGLETRT_STATIC struct SimulatorSentFrame simulator_sent_frames[CAN_COMMUNICATIO
 EAGLETRT_STATIC uint8_t simulator_ecu_status = CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE;
 EAGLETRT_STATIC uint32_t simulator_feed_step;
 EAGLETRT_STATIC bool simulator_feed_enabled;
+EAGLETRT_STATIC bool simulator_flash_enabled;
+EAGLETRT_STATIC uint32_t simulator_flash_id = CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSFLASHINGTX;
 
 EAGLETRT_STATIC struct ArenaAllocatorHandler simulator_arena;
 EAGLETRT_STATIC struct PalHandler simulator_logger_pal;
@@ -396,6 +404,29 @@ EAGLETRT_STATIC void simulator_inject_telemetry(uint32_t step) {
 }
 
 /*!
+ * \brief Queue one frame of another board's flashing traffic (content is irrelevant).
+ */
+EAGLETRT_STATIC void simulator_inject_flashing(void) {
+    const struct CanCommunicationFrame frame = { .id = simulator_flash_id, .length = 8U };
+    if (can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame) != CAN_COMMUNICATION_RC_OK) {
+        printf("[SIM] RX queue full, 0x%03X dropped\n", (unsigned)simulator_flash_id);
+    }
+}
+
+/*!
+ * \brief Next board's FlashingTx ID, skipping the wheel's own (that one means "reset").
+ */
+EAGLETRT_STATIC void simulator_next_flash_board(void) {
+    simulator_flash_id += 2U;
+    if (simulator_flash_id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX) {
+        simulator_flash_id += 2U;
+    }
+    if (simulator_flash_id > CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGBOARDFLASHINGTX) {
+        simulator_flash_id = CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFLASHINGTX;
+    }
+}
+
+/*!
  * \brief Read one window frame of keyboard input into the simulated inputs and CAN injections.
  */
 EAGLETRT_STATIC void simulator_handle_keyboard(void) {
@@ -428,6 +459,12 @@ EAGLETRT_STATIC void simulator_handle_keyboard(void) {
     if (tigrKeyDown(window, 'P') != 0) {
         simulator_feed_enabled = !simulator_feed_enabled;
     }
+    if (tigrKeyDown(window, '3') != 0) {
+        simulator_flash_enabled = !simulator_flash_enabled;
+    }
+    if (tigrKeyDown(window, '4') != 0) {
+        simulator_next_flash_board();
+    }
 }
 
 /*!
@@ -449,12 +486,14 @@ EAGLETRT_STATIC void simulator_draw_status(void) {
     const TPixel text = tigrRGB(200, 200, 200);
     tigrFill(window, 0, SIMULATOR_DASHBOARD_HEIGHT, SIMULATOR_WIDTH, SIMULATOR_STATUS_HEIGHT, background);
     tigrPrint(window, tfont, 6, SIMULATOR_DASHBOARD_HEIGHT + 6, text,
-              "knobs q/w a/s z/x | buttons e d r f | PTT c v | b n | TSon t | 1 ECU state | 2 telemetry | p feed");
+              "knobs q/w a/s z/x | buttons e d r f | PTT c v | b n | TSon t | 1 ECU | 2 telemetry | p feed | 3 flash | 4 board");
     tigrPrint(window, tfont, 6, SIMULATOR_DASHBOARD_HEIGHT + 24, text,
-              "FSM %s   ECU vehicleStatus %s   telemetry feed %s",
+              "FSM %s   ECU vehicleStatus %s   telemetry feed %s   flashing 0x%03X %s",
               wheel_fsm_api_get_state_name(scheduler_api_get_fsm_state()),
               simulator_ecu_status_names[simulator_ecu_status],
-              simulator_feed_enabled ? "ON" : "off");
+              simulator_feed_enabled ? "ON" : "off",
+              (unsigned)simulator_flash_id,
+              simulator_flash_enabled ? "ON" : "off");
 }
 
 /*!
@@ -491,6 +530,9 @@ int main(int argc, char **argv) {
             replay = true;
             replay_step = (uint32_t)strtoul(argv[++i], NULL, 10);
             replay_to = (uint32_t)strtoul(argv[++i], NULL, 10);
+        } else if (strcmp(argv[i], "--flash") == 0 && (i + 1) < argc) {
+            simulator_flash_enabled = true;
+            simulator_flash_id = (uint32_t)strtoul(argv[++i], NULL, 0);
         }
     }
 
@@ -561,6 +603,7 @@ int main(int argc, char **argv) {
 
     uint32_t last_frame_ms = 0U;
     uint32_t last_feed_ms = 0U;
+    uint32_t last_flash_ms = 0U;
     uint32_t last_replay_ms = simulator_get_tick();
     while (tigrClosed(window) == 0) {
         if (scheduler_api_routine() != SCHEDULER_RC_OK) {
@@ -582,6 +625,11 @@ int main(int argc, char **argv) {
         if (simulator_feed_enabled && (now - last_feed_ms) >= SIMULATOR_FEED_PERIOD_MS) {
             last_feed_ms = now;
             simulator_inject_telemetry(simulator_feed_step++);
+        }
+
+        if (simulator_flash_enabled && (now - last_flash_ms) >= SIMULATOR_FLASH_PERIOD_MS) {
+            last_flash_ms = now;
+            simulator_inject_flashing();
         }
 
         if ((now - last_frame_ms) >= SIMULATOR_FRAME_PERIOD_MS) {

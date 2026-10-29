@@ -4,9 +4,10 @@
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  * \ingroup Core
  *
- * \brief Lifecycle wrapper around the main dashboard and the parameter-change
- *     popup. The actual dashboard layout lives in dashboard-api.c; this file
- *     only orchestrates init, raster swaps and the per-field setter facade.
+ * \brief Lifecycle wrapper around the main dashboard, the parameter-change
+ *     popup and the FLASH page. The actual layouts live in dashboard-api.c,
+ *     popup-api.c and splash-api.c; this file only orchestrates init, raster
+ *     swaps and the per-field setter facade.
  */
 
 #include "screen-api.h"
@@ -14,6 +15,8 @@
 #include "eagletrt.h"
 #include "popup-api.h"
 #include "raster-api.h"
+#include "raster-fonts.h"
+#include "splash-api.h"
 #include <stddef.h>
 #include <string.h>
 
@@ -41,7 +44,11 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
     if (popup_api_init(&screen_handler.popup) != POPUP_RC_OK) {
         return SCREEN_RC_ERROR;
     }
-    screen_handler.popup_visible = false;
+    if (splash_api_init(&screen_handler.flash, &font_inter) != SPLASH_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
+    screen_handler.mounted = SCREEN_INTERFACE_DASHBOARD;
+    screen_handler.flash_visible = false;
     memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
 
     return SCREEN_RC_OK;
@@ -101,8 +108,13 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_render(void) {
         changed[i] = boxes[i].updated;
         boxes[i].updated = boxes[i].updated || screen_handler.redraw_in_back_buffer[i];
     }
+    // The logo isn't a box: it goes on top of its box every time the box fill erases it.
+    const bool draw_logo = (screen_handler.mounted == SCREEN_INTERFACE_FLASH) && boxes[SPLASH_BOX_LOGO].updated;
 
     if (raster_api_render(&screen_handler.raster) != RASTER_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
+    if (draw_logo && splash_api_draw_logo(&screen_handler.raster) != SPLASH_RC_OK) {
         return SCREEN_RC_ERROR;
     }
 
@@ -112,27 +124,65 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_render(void) {
     return SCREEN_RC_RENDERED;
 }
 
-enum ScreenReturnCode screen_api_update(uint32_t tick) {
-    bool popup_active = popup_api_is_active(&screen_handler.popup, tick);
+/*!
+ * \brief Mount an interface on the raster, fully dirty.
+ *
+ * \param interface The interface to mount.
+ *
+ * \retval SCREEN_RC_OK on success.
+ * \retval SCREEN_RC_ERROR if the raster rejected it.
+ */
+EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_mount(enum ScreenInterface interface) {
+    struct Box *boxes = screen_handler.dashboard.boxes;
+    uint16_t count = DASHBOARD_BOX_COUNT;
+    switch (interface) {
+        case SCREEN_INTERFACE_POPUP:
+            boxes = screen_handler.popup.boxes;
+            count = POPUP_BOX_COUNT;
+            break;
+        case SCREEN_INTERFACE_FLASH:
+            boxes = screen_handler.flash.boxes;
+            count = SPLASH_BOX_COUNT;
+            break;
+        case SCREEN_INTERFACE_DASHBOARD:
+        default:
+            break;
+    }
 
-    if (popup_active && !screen_handler.popup_visible) {
-        if (raster_api_set_interface(&screen_handler.raster, screen_handler.popup.boxes, POPUP_BOX_COUNT) != RASTER_RC_OK) {
-            return SCREEN_RC_ERROR;
-        }
-        // Everything is redrawn, in both framebuffers over two renders.
-        prv_screen_api_dirty_all(screen_handler.popup.boxes, POPUP_BOX_COUNT);
-        memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
-        screen_handler.popup_visible = true;
-    } else if (!popup_active && screen_handler.popup_visible) {
-        if (raster_api_set_interface(&screen_handler.raster, screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT) != RASTER_RC_OK) {
-            return SCREEN_RC_ERROR;
-        }
-        prv_screen_api_dirty_all(screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT);
-        memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
-        screen_handler.popup_visible = false;
+    if (raster_api_set_interface(&screen_handler.raster, boxes, count) != RASTER_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
+    // Everything is redrawn, in both framebuffers over two renders.
+    prv_screen_api_dirty_all(boxes, count);
+    memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
+    screen_handler.mounted = interface;
+    return SCREEN_RC_OK;
+}
+
+enum ScreenReturnCode screen_api_update(uint32_t tick) {
+    const bool popup_active = popup_api_is_active(&screen_handler.popup, tick);
+
+    // FLASH hides everything, the popup hides the dashboard.
+    enum ScreenInterface wanted = SCREEN_INTERFACE_DASHBOARD;
+    if (screen_handler.flash_visible) {
+        wanted = SCREEN_INTERFACE_FLASH;
+    } else if (popup_active) {
+        wanted = SCREEN_INTERFACE_POPUP;
+    }
+
+    if (wanted != screen_handler.mounted && prv_screen_api_mount(wanted) != SCREEN_RC_OK) {
+        return SCREEN_RC_ERROR;
     }
 
     return prv_screen_api_render();
+}
+
+enum ScreenReturnCode screen_api_set_flash(bool visible, const char *board_name) {
+    screen_handler.flash_visible = visible;
+    if (!visible) {
+        return SCREEN_RC_OK;
+    }
+    return (splash_api_set_caption(&screen_handler.flash, SCREEN_FLASH_TITLE, board_name) == SPLASH_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
 }
 
 /*!

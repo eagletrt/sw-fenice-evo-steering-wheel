@@ -130,6 +130,8 @@ void BackDoorCheck(void)
    */
   if (ComIsConnected() == BLT_TRUE)
   {
+    /* reset backdoor open flag and return. */
+    backdoorOpen = BLT_FALSE;
     return;
   }
 #endif
@@ -140,6 +142,8 @@ void BackDoorCheck(void)
    */
   if (FileIsIdle() == BLT_FALSE)
   {
+    /* reset backdoor open flag and return. */
+    backdoorOpen = BLT_FALSE;
     return;
   }
 #endif

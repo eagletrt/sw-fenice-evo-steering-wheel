@@ -48,7 +48,10 @@
 /** \brief Frequency of the external crystal oscillator. */
 #define BOOT_CPU_XTAL_SPEED_KHZ          (24000)
 /** \brief Desired system speed. */
-#define BOOT_CPU_SYSTEM_SPEED_KHZ        (500000)
+/* Same clock tree as the firmware (PLL1P = 550 MHz). OpenBLT 1.22 only checks it is > 0:
+ * its timer (TIM1) and CAN bit timing read the real clocks from the RCC.
+ */
+#define BOOT_CPU_SYSTEM_SPEED_KHZ        (550000)
 /** \brief Motorola or Intel style byte ordering. */
 #define BOOT_CPU_BYTE_ORDER_MOTOROLA     (0)
 /** \brief Enable/disable hook function call right before user program start. */
@@ -151,6 +154,17 @@
 #define BOOT_NVM_SIZE_KB                (1024)
 /** \brief Enable/disable hooks functions to override the user program checksum handling. */
 #define BOOT_NVM_CHECKSUM_HOOKS_ENABLE  (0)
+/** \brief Offset of the user program signature checksum in its vector table (flash.c).
+ *        The STM32H723 table is 0x2CC long: the checksum goes in the word right after
+ *        it, reserved by STM32H723XG_FLASH_SHIFTED.ld in the firmware. The upstream
+ *        default (0x298) is the OCTOSPI2 interrupt slot on this part. Must match
+ *        CHECKSUM_OFFSET in scripts/openblt_image.py.
+ */
+#define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET    (0x2CC)
+/** \brief Use the H723 flash layout in flash_layout.c (single bank) instead of the
+ *        OpenBLT default for 1024 KB, which describes a dual-bank part.
+ */
+#define BOOT_FLASH_CUSTOM_LAYOUT_ENABLE (1)
 
 
 /****************************************************************************************

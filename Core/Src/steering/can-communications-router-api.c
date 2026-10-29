@@ -12,6 +12,7 @@
 #include "can-communications-api.h"
 #include "can-primary-api.h"
 #include "eagletrt-api.h"
+#include "flash-monitor-api.h"
 #include "parameters-api.h"
 #include "ui-data-api.h"
 
@@ -203,6 +204,11 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
 
     if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX || frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX) {
         can_communications_router_handler.reset_asked = true;
+        return CAN_COMMUNICATION_RC_OK;
+    }
+
+    // Another board being flashed: nothing to decode, the FSM goes quiet.
+    if (flash_monitor_api_on_frame(frame->id)) {
         return CAN_COMMUNICATION_RC_OK;
     }
 

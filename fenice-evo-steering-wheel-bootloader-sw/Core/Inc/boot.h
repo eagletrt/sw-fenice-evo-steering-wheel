@@ -34,7 +34,7 @@
 /** \brief Main version number of the bootloader core. */
 #define BOOT_VERSION_CORE_MAIN     (1u)
 /** \brief Minor version number of the bootloader core. */
-#define BOOT_VERSION_CORE_MINOR    (15u)
+#define BOOT_VERSION_CORE_MINOR    (22u)
 /** \brief Patch number of the bootloader core. */
 #define BOOT_VERSION_CORE_PATCH    (0u)
 
@@ -56,6 +56,7 @@
 #include "blt_conf.h"                                 /* bootloader configuration      */
 #endif /* PROJ_BLT_CONF_H */
 #include "plausibility.h"                             /* plausibility checks           */
+#include "events.h"                                   /* events module                 */
 #include "cpu.h"                                      /* cpu driver module             */
 #include "cop.h"                                      /* watchdog driver module        */
 #include "nvm.h"                                      /* memory driver module          */
@@ -63,6 +64,7 @@
 #include "backdoor.h"                                 /* backdoor entry module         */
 #include "file.h"                                     /* file system module            */
 #include "com.h"                                      /* communication interface       */
+#include "infotable.h"                                /* info table check module       */
 #if (ADDON_GATEWAY_MOD_ENABLE > 0)
 #include "gateway.h"                                  /* gateway add-on module         */
 #endif

@@ -13,6 +13,7 @@
 #include "can-communications-router-api.h"
 #include "can-primary.h"
 #include "eagletrt-api.h"
+#include "flash-monitor-api.h"
 #include "identity-api.h"
 #include "inputs-api.h"
 #include "logger-api.h"
@@ -152,9 +153,16 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_tx(uint32_t tick_ms) {
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
-    // The screen is only driven in IDLE: an ERROR leaves the last frame on
-    // screen.
-    if (wheel_fsm_api_get_state() != WHEEL_FSM_STATE_IDLE) {
+    // The screen is only driven in IDLE and FLASH: an ERROR leaves the last
+    // frame on screen.
+    const enum WheelFsmState state = wheel_fsm_api_get_state();
+    if (state != WHEEL_FSM_STATE_IDLE && state != WHEEL_FSM_STATE_FLASH) {
+        return;
+    }
+
+    const bool flashing = (state == WHEEL_FSM_STATE_FLASH);
+    if (screen_api_set_flash(flashing, flashing ? flash_monitor_api_get_board_name() : NULL) != SCREEN_RC_OK) {
+        EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
         return;
     }
 
@@ -203,6 +211,41 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
 
     if (scheduler_handler.config.report_stats != NULL) {
         scheduler_handler.config.report_stats();
+    }
+}
+
+/*!
+ * \brief Tasks silenced while another board is being flashed.
+ *
+ * \details Every CAN producer except the FSM status (which must report FLASH),
+ *     and the inputs: a knob turned meanwhile would go on the bus right away
+ *     through the parameters on-change hook. RX, the TX flush and the render
+ *     keep running.
+ */
+EAGLETRT_STATIC const enum SchedulerTaskId prv_scheduler_api_flash_muted_tasks[] = {
+    SCHEDULER_TASK_INPUTS,
+    SCHEDULER_TASK_CAN_CONTROL_MAPS,
+    SCHEDULER_TASK_CAN_BUTTON_STATUS,
+    SCHEDULER_TASK_CAN_VERSION,
+};
+
+#define SCHEDULER_FLASH_MUTED_TASK_COUNT (sizeof(prv_scheduler_api_flash_muted_tasks) / sizeof(prv_scheduler_api_flash_muted_tasks[0]))
+
+/*!
+ * \brief FSM hook, IDLE -> FLASH: pause the muted tasks.
+ */
+EAGLETRT_STATIC void prv_scheduler_api_enter_flash(void) {
+    for (size_t i = 0U; i < SCHEDULER_FLASH_MUTED_TASK_COUNT; i++) {
+        EAGLETRT_API_UNUSED(scheduler_api_pause_task(prv_scheduler_api_flash_muted_tasks[i]));
+    }
+}
+
+/*!
+ * \brief FSM hook, FLASH -> IDLE: resume the muted tasks.
+ */
+EAGLETRT_STATIC void prv_scheduler_api_leave_flash(void) {
+    for (size_t i = 0U; i < SCHEDULER_FLASH_MUTED_TASK_COUNT; i++) {
+        EAGLETRT_API_UNUSED(scheduler_api_resume_task(prv_scheduler_api_flash_muted_tasks[i]));
     }
 }
 
@@ -296,6 +339,8 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     const struct WheelFsmConfig fsm_config = {
         .post = &scheduler_handler.config.post,
         .reset = config->reset,
+        .enter_flash = prv_scheduler_api_enter_flash,
+        .leave_flash = prv_scheduler_api_leave_flash,
     };
     if (wheel_fsm_api_init(&fsm_config) != WHEEL_FSM_RC_OK) {
         return SCHEDULER_RC_ERROR;
@@ -323,6 +368,9 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
         return SCHEDULER_RC_ERROR;
     }
     if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_scheduler_api_read_tick) != WATCHDOG_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+    if (flash_monitor_api_init(&scheduler_handler.watchdogs) != FLASH_MONITOR_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
 

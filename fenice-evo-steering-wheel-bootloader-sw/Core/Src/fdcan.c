@@ -62,7 +62,7 @@ void MX_FDCAN1_Init(void)
   hfdcan1.Init.RxBuffersNbr = 0;
   hfdcan1.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
   hfdcan1.Init.TxEventsNbr = 32;
-  hfdcan1.Init.TxBuffersNbr = 32;
+  hfdcan1.Init.TxBuffersNbr = 0;
   hfdcan1.Init.TxFifoQueueElmtsNbr = 32;
   hfdcan1.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
   hfdcan1.Init.TxElmtSize = FDCAN_DATA_BYTES_8;
@@ -95,7 +95,7 @@ void MX_FDCAN2_Init(void)
   hfdcan2.Init.NominalPrescaler = 2;
   hfdcan2.Init.NominalSyncJumpWidth = 64;
   hfdcan2.Init.NominalTimeSeg1 = 9;
-  hfdcan2.Init.NominalTimeSeg2 = 2;
+  hfdcan2.Init.NominalTimeSeg2 = 1;
   hfdcan2.Init.DataPrescaler = 1;
   hfdcan2.Init.DataSyncJumpWidth = 1;
   hfdcan2.Init.DataTimeSeg1 = 2;
@@ -110,7 +110,7 @@ void MX_FDCAN2_Init(void)
   hfdcan2.Init.RxBuffersNbr = 0;
   hfdcan2.Init.RxBufferSize = FDCAN_DATA_BYTES_8;
   hfdcan2.Init.TxEventsNbr = 32;
-  hfdcan2.Init.TxBuffersNbr = 32;
+  hfdcan2.Init.TxBuffersNbr = 0;
   hfdcan2.Init.TxFifoQueueElmtsNbr = 32;
   hfdcan2.Init.TxFifoQueueMode = FDCAN_TX_FIFO_OPERATION;
   hfdcan2.Init.TxElmtSize = FDCAN_DATA_BYTES_8;
@@ -273,3 +273,4 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* fdcanHandle)
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
+

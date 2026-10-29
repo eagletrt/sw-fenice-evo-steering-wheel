@@ -77,6 +77,21 @@ enum ScreenReturnCode screen_api_set_accelerators(const struct ScreenAccelerator
 enum ScreenReturnCode screen_api_update(uint32_t tick);
 
 /*!
+ * \brief Show or hide the FLASH page (logo, "FLASHING" and the board name).
+ *
+ * \details While visible it replaces the dashboard and the popup; it is
+ *     mounted by the next screen_api_update. The name is referenced, not
+ *     copied.
+ *
+ * \param visible Whether the page is shown.
+ * \param board_name Board being flashed, NULL for none (title only).
+ *
+ * \retval SCREEN_RC_OK on success.
+ * \retval SCREEN_RC_ERROR if the caption could not be set.
+ */
+enum ScreenReturnCode screen_api_set_flash(bool visible, const char *board_name);
+
+/*!
  * \brief Pull every dashboard value from the UI data snapshot.
  *
  * \details Reads each field of \p ui_data and forwards it to the matching

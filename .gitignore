@@ -432,6 +432,8 @@ fsm_work/
 ### Generated at build time ###
 tools/generated/
 tools/.fonts.json.sha256
+fenice-evo-steering-wheel-bootloader-sw/tools/generated/
+fenice-evo-steering-wheel-bootloader-sw/tools/.fonts.json.sha256
 
 ### Doxygen output ###
 docs/html/

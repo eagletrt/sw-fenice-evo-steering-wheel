@@ -55,7 +55,6 @@
  *         verification will always fail.
  */
 #ifndef BOOT_FLASH_VECTOR_TABLE_CS_OFFSET
-// #define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET    (0x2CC)
 #define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET    (0x298)
 #endif
 
@@ -143,7 +142,7 @@ static const tFlashSector flashLayout[] =
 #if (BOOT_NVM_SIZE_KB < 1024)
   #error "BOOT_NVM_SIZE_KB < 1024 is currently not supported."
 #elif (BOOT_NVM_SIZE_KB == 1024)
-    // { 0x08000000, 0x20000, 0, 1 },       /* flash sector idx 0 - reserved for bootloader */
+    /* { 0x08000000, 0x20000, 0, 1 },     flash sector idx 0 - reserved for bootloader */
     { 0x08020000, 0x20000, 1, 1},        /* flash sector idx  1 - 128kb                */
     { 0x08040000, 0x20000, 2, 1},        /* flash sector idx  2 - 128kb                */
     { 0x08060000, 0x20000, 3, 1},        /* flash sector idx  3 - 128kb                */
@@ -224,19 +223,6 @@ void FlashInit(void)
   blockInfo.base_addr = FLASH_INVALID_ADDRESS;
   bootBlockInfo.base_addr = FLASH_INVALID_ADDRESS;
 } /*** end of FlashInit ***/
-
-
-/************************************************************************************//**
-** \brief     Reinitializes the flash driver.
-** \return    none.
-**
-****************************************************************************************/
-void FlashReinit(void)
-{
-  /* init the flash block info structs by setting the address to an invalid address */
-  blockInfo.base_addr = FLASH_INVALID_ADDRESS;
-  bootBlockInfo.base_addr = FLASH_INVALID_ADDRESS;
-} /*** end of FlashReinit ***/
 
 
 /************************************************************************************//**
@@ -672,7 +658,7 @@ static blt_bool FlashAddToBlock(tFlashBlockInfo *block, blt_addr address,
       if ((blt_addr)(dst-&(block->data[0])) >= FLASH_WRITE_BLOCK_SIZE)
       {
         /* need to switch to a new block, so program the current one and init the next */
-        block = FlashSwitchBlock(block, current_base_addr+FLASH_WRITE_BLOCK_SIZE);
+        block = FlashSwitchBlock(block, block->base_addr+FLASH_WRITE_BLOCK_SIZE);
         if (block == BLT_NULL)
         {
           /* flag error and stop looping */

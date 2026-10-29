@@ -46,6 +46,7 @@ typedef struct
   blt_int8u  ctoPending;                            /**< cto transmission pending flag */
   blt_int16s ctoLen;                                /**< cto current packet length     */
   blt_int32u mta;                                   /**< memory transfer address       */
+  blt_int8u  node_id;                               /**> node id from connection mode  */
 } tXcpInfo;
 
 
@@ -65,10 +66,8 @@ static blt_int8u XcpVerifyKey(blt_int8u resource, blt_int8u *key, blt_int8u len)
 #endif
 
 /* general utility functions */
-static void       XcpProtectResources(void);
-static void       XcpSetCtoError(blt_int8u error);
-static blt_int32u XcpGetOrderedLong(blt_int8u const * data);
-static void       XcpSetOrderedLong(blt_int32u value, blt_int8u *data);
+static void XcpProtectResources(void);
+static void XcpSetCtoError(blt_int8u cmd, blt_int8u error);
 
 /* XCP command processors */
 static void XcpCmdConnect(blt_int8u *data);
@@ -100,6 +99,16 @@ static void XcpCmdProgramClear(blt_int8u *data);
 static void XcpCmdProgramReset(blt_int8u *data);
 static void XcpCmdProgramPrepare(blt_int8u *data);
 #endif
+static void XcpCmdUser(blt_int8u *data);
+
+#if (BOOT_INFO_TABLE_ENABLE > 0)
+/* XCP USER sub command processors. */
+static void XcpCmdUserSubCmdInfoTable(blt_int8u *data);
+/* XCP USER info table sub command related command ID processors. */
+static void XcpCmdUserSubCmdInfoTableCidGetInfo(blt_int8u *data);
+static void XcpCmdUserSubCmdInfoTableCidDownload(blt_int8u *data);
+static void XcpCmdUserSubCmdInfoTableCidCheck(blt_int8u *data);
+#endif
 
 
 /****************************************************************************************
@@ -117,19 +126,6 @@ extern blt_int8u XcpCalGetPageHook(blt_int8u segment);
 #if (XCP_SEED_KEY_PROTECTION_EN == 1)
 extern blt_int8u XcpGetSeedHook(blt_int8u resource, blt_int8u *seed);
 extern blt_int8u XcpVerifyKeyHook(blt_int8u resource, blt_int8u *key, blt_int8u len);
-#endif
-
-
-/****************************************************************************************
-* External functions
-****************************************************************************************/
-#if (BOOT_COM_ENABLE == 0)
-/* in case no internally supported communication interface is used, a custom
- * communication module can be added. In order to use the XCP protocol in the custom
- * communication module, this hook function needs to be implemented. If the XCP protocol
- * is not needed, then simply remove the xcp.c source from the project.
- */
-extern void XcpTransmitPacketHook(blt_int8u *data, blt_int16u len);
 #endif
 
 
@@ -295,8 +291,11 @@ void XcpPacketReceived(blt_int8u *data, blt_int8u len)
         XcpCmdGetCalPage(data);
         break;
 #endif
+      case XCP_CMD_USER:
+        XcpCmdUser(data);
+        break;
       default:
-        XcpSetCtoError(XCP_ERR_CMD_UNKNOWN);
+        XcpSetCtoError(data[0], XCP_ERR_CMD_UNKNOWN);
         break;
     }
   }
@@ -310,7 +309,7 @@ void XcpPacketReceived(blt_int8u *data, blt_int8u len)
   if (xcpInfo.ctoPending == 1)
   {
     /* command overrun occurred */
-    XcpSetCtoError(XCP_ERR_CMD_BUSY);
+    XcpSetCtoError(data[0], XCP_ERR_CMD_BUSY);
   }
 
   /* send the response if it contains something */
@@ -335,12 +334,7 @@ void XcpPacketReceived(blt_int8u *data, blt_int8u len)
 static void XcpTransmitPacket(blt_int8u *data, blt_int16s len)
 {
   /* submit packet to the communication interface for transmission */
-#if (BOOT_COM_ENABLE == 0)
-  XcpTransmitPacketHook(data, len);
-#else
   ComTransmitPacket(data, len);
-#endif
-
 } /*** end of XcpTransmitPacket ***/
 
 
@@ -445,12 +439,52 @@ static void XcpProtectResources(void)
 
 /************************************************************************************//**
 ** \brief     Prepares the cto packet data for the specified error.
+** \param     cmd XCP request command code that causes the error.
 ** \param     error XCP error code (XCP_ERR_XXX).
 ** \return    none
 **
 ****************************************************************************************/
-static void XcpSetCtoError(blt_int8u error)
+static void XcpSetCtoError(blt_int8u cmd, blt_int8u error)
 {
+#if (BOOT_EVENTS_ENABLE > 0)
+  tEventsInfoError eventsInfoError;
+#endif
+
+#if (BOOT_EVENTS_ENABLE > 0)
+  /* ignore unknown command for the XCP user command. the info table check feature
+   * actually uses this to check if it's supported by the target.
+   */
+  if (!((cmd == XCP_CMD_USER) && (error == XCP_ERR_CMD_UNKNOWN)))
+  {
+    /* default to the catch all XCP request error identifier. */
+    eventsInfoError.error_id = EVENT_ERROR_ID_XCP_REQUEST;
+    /* filter out NVM erase and write specific errors. */
+    if (error == XCP_ERR_GENERIC)
+    {
+      /* error detected during an NVM erase operation? */
+      if (cmd == XCP_CMD_PROGRAM_CLEAR)
+      {
+        /* update to the erase specific error identifier. */
+        eventsInfoError.error_id = EVENT_ERROR_ID_ERASE;
+      }
+      /* error detected during an NVM write operation? */
+      else if ( (cmd == XCP_CMD_PROGRAM) || (cmd == XCP_CMD_PROGRAM_MAX) )
+      {
+        /* update to the write specific error identifier. */
+        eventsInfoError.error_id = EVENT_ERROR_ID_WRITE;
+      }
+    }
+    /* filter out unauthorized access error. */
+    else if (error == XCP_ERR_ACCESS_LOCKED)
+    {
+      /* update to the unauthorized error identifier. */
+      eventsInfoError.error_id = EVENT_ERROR_ID_XCP_UNAUTHORIZED;
+    }
+    /* trigger the OnError event.  */
+    EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
+  }
+#endif
+
   /* prepare the error packet */
   xcpInfo.ctoData[0] = XCP_PID_ERR;
   xcpInfo.ctoData[1] = error;
@@ -465,7 +499,7 @@ static void XcpSetCtoError(blt_int8u error)
 ** \return    The 32-bit value.
 **
 ****************************************************************************************/
-static blt_int32u XcpGetOrderedLong(blt_int8u const * data)
+blt_int32u XcpGetOrderedLong(blt_int8u const * data)
 {
   blt_int32u result = 0;
 
@@ -492,7 +526,7 @@ static blt_int32u XcpGetOrderedLong(blt_int8u const * data)
 ** \param     data Array to the buffer for storage.
 **
 ****************************************************************************************/
-static void XcpSetOrderedLong(blt_int32u value, blt_int8u *data)
+void XcpSetOrderedLong(blt_int32u value, blt_int8u *data)
 {
 #if (BOOT_CPU_BYTE_ORDER_MOTOROLA	== 0)
   data[0] = (blt_int8u) value;
@@ -527,7 +561,7 @@ static void XcpCmdConnect(blt_int8u *data)
   if (FileIsIdle() == BLT_FALSE)
   {
     /* command not processed because we are busy */
-    XcpSetCtoError(XCP_ERR_CMD_BUSY);
+    XcpSetCtoError(data[0], XCP_ERR_CMD_BUSY);
     return;
   }
 #endif
@@ -537,6 +571,9 @@ static void XcpCmdConnect(blt_int8u *data)
 
   /* indicate that the connection is established */
   xcpInfo.connected = 1;
+
+  /* read the connection mode parameter and store it as the node identifier */
+  xcpInfo.node_id = data[1];
 
   /* set packet id to command response packet */
   xcpInfo.ctoData[0] = XCP_PID_RES;
@@ -660,11 +697,8 @@ static void XcpCmdGetStatus(blt_int8u *data)
 ****************************************************************************************/
 static void XcpCmdSynch(blt_int8u *data)
 {
-  /* suppress compiler warning for unused parameter */
-  data = data;
-
   /* synch requires a negative response */
-  XcpSetCtoError(XCP_ERR_CMD_SYNCH);
+  XcpSetCtoError(data[0], XCP_ERR_CMD_SYNCH);
 } /*** end of XcpCmdSynch ***/
 
 
@@ -740,7 +774,7 @@ static void XcpCmdUpload(blt_int8u *data)
   if (data[1] > (XCP_CTO_PACKET_LEN-1))
   {
     /* requested data length is too long */
-    XcpSetCtoError(XCP_ERR_OUT_OF_RANGE);
+    XcpSetCtoError(data[0], XCP_ERR_OUT_OF_RANGE);
     return;
   }
 
@@ -806,7 +840,7 @@ static void XcpCmdShortUpload(blt_int8u *data)
   if (data[1] > (XCP_CTO_PACKET_LEN-1))
   {
     /* requested data length is too long */
-    XcpSetCtoError(XCP_ERR_OUT_OF_RANGE);
+    XcpSetCtoError(data[0], XCP_ERR_OUT_OF_RANGE);
     return;
   }
 
@@ -873,7 +907,7 @@ static void XcpCmdDownload(blt_int8u *data)
   if ((xcpInfo.protection & XCP_RES_CALPAG) != 0)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
@@ -882,7 +916,7 @@ static void XcpCmdDownload(blt_int8u *data)
   if (data[1] > (XCP_CTO_PACKET_LEN-2))
   {
     /* requested data length is too long */
-    XcpSetCtoError(XCP_ERR_OUT_OF_RANGE);
+    XcpSetCtoError(data[0], XCP_ERR_OUT_OF_RANGE);
     return;
   }
 
@@ -913,7 +947,7 @@ static void XcpCmdDownloadMax(blt_int8u *data)
   if ((xcpInfo.protection & XCP_RES_CALPAG) != 0)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
@@ -1027,7 +1061,7 @@ static void XcpCmdGetSeed(blt_int8u *data)
     /* now process the resource validation */
     if (resourceOK == 0)
     {
-      XcpSetCtoError(XCP_ERR_OUT_OF_RANGE);
+      XcpSetCtoError(data[0], XCP_ERR_OUT_OF_RANGE);
       return;
     }
 
@@ -1065,7 +1099,7 @@ static void XcpCmdGetSeed(blt_int8u *data)
     if (sequenceInProgress == BLT_FALSE)
     {
       /* invalid sequence */
-      XcpSetCtoError(XCP_ERR_SEQUENCE);
+      XcpSetCtoError(data[0], XCP_ERR_SEQUENCE);
       /* reset seed/key resource variable for possible next unlock */
       xcpInfo.s_n_k_resource = 0;
       return;
@@ -1116,7 +1150,7 @@ static void XcpCmdUnlock(blt_int8u *data)
     /* reset previous remainder for the next loop iteration */
     keyPreviousRemainder = 0;
     /* key is too long */
-    XcpSetCtoError(XCP_ERR_OUT_OF_RANGE);
+    XcpSetCtoError(data[0], XCP_ERR_OUT_OF_RANGE);
     /* reset seed/key resource variable for possible next unlock */
     xcpInfo.s_n_k_resource = 0;
     return;
@@ -1159,7 +1193,7 @@ static void XcpCmdUnlock(blt_int8u *data)
     if (XcpVerifyKey(xcpInfo.s_n_k_resource, keyBuffer, keyTotalLen) == 0)
     {
       /* invalid key so inform the master and do a disconnect */
-      XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+      XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
       /* indicate that the xcp connection is disconnected */
       xcpInfo.connected = 0;
       /* reset seed/key resource variable for possible next unlock */
@@ -1199,7 +1233,7 @@ static void XcpCmdSetCalPage(blt_int8u *data)
   if ((xcpInfo.protection & XCP_RES_CALPAG) == XCP_RES_CALPAG)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
@@ -1208,7 +1242,7 @@ static void XcpCmdSetCalPage(blt_int8u *data)
   if (XcpCalSetPageHook(data[2], data[3]) == 0)
   {
     /* calibration page could not be selected */
-    XcpSetCtoError(XCP_ERR_PAGE_NOT_VALID);
+    XcpSetCtoError(data[0], XCP_ERR_PAGE_NOT_VALID);
     return;
   }
 
@@ -1234,7 +1268,7 @@ static void XcpCmdGetCalPage(blt_int8u *data)
   if ((xcpInfo.protection & XCP_RES_CALPAG) == XCP_RES_CALPAG)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
@@ -1265,6 +1299,10 @@ static void XcpCmdGetCalPage(blt_int8u *data)
 ****************************************************************************************/
 static void XcpCmdProgramStart(blt_int8u *data)
 {
+#if (BOOT_EVENTS_ENABLE > 0)
+  tEventsInfoStart eventsInfoStart;
+#endif
+
   /* suppress compiler warning for unused parameter */
   data = data;
 
@@ -1273,7 +1311,7 @@ static void XcpCmdProgramStart(blt_int8u *data)
   if ((xcpInfo.protection & XCP_RES_PGM) == XCP_RES_PGM)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
@@ -1297,6 +1335,17 @@ static void XcpCmdProgramStart(blt_int8u *data)
 
   /* set packet length */
   xcpInfo.ctoLen = 7;
+
+#if (BOOT_EVENTS_ENABLE > 0)
+  /* trigger the OnStart event now that a firmware update is about to commence. set the
+   * filename field to NULL, because this is a firmware update via a communication
+   * inteface and not from a locally attached file system.
+   */
+  eventsInfoStart.type = EVENT_START_TYPE_NORMAL;
+  eventsInfoStart.filename = BLT_NULL;
+  eventsInfoStart.node_id = xcpInfo.node_id;
+  EventsProcess(EVENT_ID_ON_START, &eventsInfoStart);
+#endif
 } /*** end of XcpCmdProgramStart ***/
 
 
@@ -1309,21 +1358,38 @@ static void XcpCmdProgramStart(blt_int8u *data)
 ****************************************************************************************/
 static void XcpCmdProgramMax(blt_int8u *data)
 {
+  blt_int32u programLen;
+  blt_addr   programAddr;
+#if (BOOT_EVENTS_ENABLE > 0)
+  tEventsInfoWrite eventsInfoWrite;
+#endif
+
 #if (XCP_SEED_KEY_PROTECTION_EN == 1)
   /* check if PGM resource is unlocked */
   if ((xcpInfo.protection & XCP_RES_PGM) == XCP_RES_PGM)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
 
   /* program the data */
-  if (NvmWrite((blt_addr)xcpInfo.mta, XCP_CTO_PACKET_LEN-1, &data[1]) == BLT_FALSE)
+  programAddr = (blt_addr)xcpInfo.mta;
+  programLen = XCP_CTO_PACKET_LEN-1;
+#if (BOOT_EVENTS_ENABLE > 0)
+  /* trigger the OnWrite event. Note that the progress field will be calculated and 
+   * written lateron by EventsProcess().
+   */
+  eventsInfoWrite.base_addr = programAddr;
+  eventsInfoWrite.num_bytes = programLen;
+  eventsInfoWrite.progress = 0U;
+  EventsProcess(EVENT_ID_ON_WRITE, &eventsInfoWrite);
+#endif
+  if (NvmWrite(programAddr, programLen, &data[1]) == BLT_FALSE)
   {
     /* error occurred during programming */
-    XcpSetCtoError(XCP_ERR_GENERIC);
+    XcpSetCtoError(data[0], XCP_ERR_GENERIC);
     return;
   }
 
@@ -1347,12 +1413,18 @@ static void XcpCmdProgramMax(blt_int8u *data)
 ****************************************************************************************/
 static void XcpCmdProgram(blt_int8u *data)
 {
+  blt_int32u programLen;
+  blt_addr   programAddr;
+#if (BOOT_EVENTS_ENABLE > 0)
+  tEventsInfoWrite eventsInfoWrite;
+#endif
+
 #if (XCP_SEED_KEY_PROTECTION_EN == 1)
   /* check if PGM resource is unlocked */
   if ((xcpInfo.protection & XCP_RES_PGM) == XCP_RES_PGM)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
@@ -1361,7 +1433,7 @@ static void XcpCmdProgram(blt_int8u *data)
   if (data[1] > (XCP_CTO_PACKET_LEN-2))
   {
     /* requested data length is too long */
-    XcpSetCtoError(XCP_ERR_OUT_OF_RANGE);
+    XcpSetCtoError(data[0], XCP_ERR_OUT_OF_RANGE);
     return;
   }
 
@@ -1378,15 +1450,35 @@ static void XcpCmdProgram(blt_int8u *data)
     if (NvmDone() == BLT_FALSE)
     {
       /* error occurred while finishing up programming */
-      XcpSetCtoError(XCP_ERR_GENERIC);
+      XcpSetCtoError(data[0], XCP_ERR_GENERIC);
     }
+#if (BOOT_EVENTS_ENABLE > 0)
+    else
+    {
+      /* trigger the OnSuccess event now that the firmware update successfully
+       * completed.
+       */
+      EventsProcess(EVENT_ID_ON_SUCCESS, BLT_NULL);
+    }
+#endif
     return;
   }
   /* program the data */
-  if (NvmWrite((blt_addr)xcpInfo.mta, data[1], &data[2]) == BLT_FALSE)
+  programAddr = (blt_addr)xcpInfo.mta;
+  programLen = data[1];
+#if (BOOT_EVENTS_ENABLE > 0)
+  /* trigger the OnWrite event. Note that the progress field will be calculated and 
+   * written lateron by EventsProcess().
+   */
+  eventsInfoWrite.base_addr = programAddr;
+  eventsInfoWrite.num_bytes = programLen;
+  eventsInfoWrite.progress = 0U;
+  EventsProcess(EVENT_ID_ON_WRITE, &eventsInfoWrite);
+#endif
+  if (NvmWrite(programAddr, programLen, &data[2]) == BLT_FALSE)
   {
     /* error occurred during programming */
-    XcpSetCtoError(XCP_ERR_GENERIC);
+    XcpSetCtoError(data[0], XCP_ERR_GENERIC);
     return;
   }
 
@@ -1406,13 +1498,17 @@ static void XcpCmdProgramClear(blt_int8u *data)
 {
   blt_int32u eraseLen;
   blt_addr   eraseAddr;
+
+#if (BOOT_EVENTS_ENABLE > 0)
+  tEventsInfoErase eventsInfoErase;
+#endif
   
 #if (XCP_SEED_KEY_PROTECTION_EN == 1)
   /* check if PGM resource is unlocked */
   if ((xcpInfo.protection & XCP_RES_PGM) == XCP_RES_PGM)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
@@ -1420,10 +1516,16 @@ static void XcpCmdProgramClear(blt_int8u *data)
   /* erase the memory */
   eraseAddr = xcpInfo.mta;
   eraseLen = XcpGetOrderedLong(&data[4]);
+#if (BOOT_EVENTS_ENABLE > 0)
+  /* trigger the OnErase event. */
+  eventsInfoErase.base_addr = eraseAddr;
+  eventsInfoErase.num_bytes = eraseLen;
+  EventsProcess(EVENT_ID_ON_ERASE, &eventsInfoErase);
+#endif
   if (NvmErase(eraseAddr, eraseLen) == BLT_FALSE)
   {
     /* error occurred during erasure */
-    XcpSetCtoError(XCP_ERR_GENERIC);
+    XcpSetCtoError(data[0], XCP_ERR_GENERIC);
     return;
   }
 
@@ -1452,15 +1554,23 @@ static void XcpCmdProgramReset(blt_int8u *data)
   if ((xcpInfo.protection & XCP_RES_PGM) == XCP_RES_PGM)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
 
-  /* reset the ecu after programming is done. so basically, just start the newly programmed
-   * firmware. it is okay if the code does not return here. 
+  /* reset the ecu after programming is done. so basically, just start the newly 
+   * programmed firmware. it is okay if the code does not return here. 
    */
   CpuStartUserProgram();
+  
+  /* in case the user program was not actually started and this function continues
+   * running, make sure to leave the XCP connection in the disconnected state and renable
+   * the resources protection. similar to what XcpCmdDisconnect() does.
+   */
+  xcpInfo.connected = 0;
+  /* enable resource protection */
+  XcpProtectResources();
 
   /* set packet id to command response packet */
   xcpInfo.ctoData[0] = XCP_PID_RES;
@@ -1484,16 +1594,196 @@ static void XcpCmdProgramPrepare(blt_int8u *data)
   if ((xcpInfo.protection & XCP_RES_PGM) == XCP_RES_PGM)
   {
     /* resource is locked. use seed/key sequence to unlock */
-    XcpSetCtoError(XCP_ERR_ACCESS_LOCKED);
+    XcpSetCtoError(data[0], XCP_ERR_ACCESS_LOCKED);
     return;
   }
 #endif
 
   /* programming with kernel currently not needed and therefore not supported */
-  XcpSetCtoError(XCP_ERR_GENERIC);
+  XcpSetCtoError(data[0], XCP_ERR_GENERIC);
   return;
 } /*** end of XcpCmdProgramPrepare ***/
 #endif /* XCP_RES_PROGRAMMING_EN == 1 */
+
+
+/************************************************************************************//**
+** \brief     XCP command processor function which handles the USER command as
+**            defined by the protocol. Note that this is a command that allows user
+**            specific extensions to the XCP protocol.
+** \param     data Pointer to a byte buffer with the packet data.
+** \return    none
+**
+****************************************************************************************/
+static void XcpCmdUser(blt_int8u *data)
+{
+  blt_int8u subCommand;
+
+  /* Read out the sub command code. */
+  subCommand = data[1];
+
+  /* Dispatch sub command handling. */
+  switch (subCommand)
+  {
+#if (BOOT_INFO_TABLE_ENABLE > 0)
+  case XCP_CMD_USER_SUB_INFOTABLE:
+    XcpCmdUserSubCmdInfoTable(data);
+    break;
+#endif
+
+  default:
+    XcpSetCtoError(data[0], XCP_ERR_CMD_UNKNOWN);
+    break;
+  }
+} /*** end of XcpCmdUser ***/
+
+
+#if (BOOT_INFO_TABLE_ENABLE > 0)
+/************************************************************************************//**
+** \brief     XCP sub command processor function which handles the info table related
+**            sub command of the USER command. Note that this subcommand is a user
+**            specific extensions to the XCP protocol.
+** \param     data Pointer to a byte buffer with the packet data.
+** \return    none
+**
+****************************************************************************************/
+static void XcpCmdUserSubCmdInfoTable(blt_int8u *data)
+{
+  blt_int8u commandId;
+
+  /* Read out the command ID. */
+  commandId = data[2];
+
+  /* Dispatch info table command ID handling. */
+  switch (commandId)
+  {
+  case XCP_CMD_IT_CID_GETINFO:
+    XcpCmdUserSubCmdInfoTableCidGetInfo(data);
+    break;
+
+  case XCP_CMD_IT_CID_DOWNLOAD:
+    XcpCmdUserSubCmdInfoTableCidDownload(data);
+    break;
+
+  case XCP_CMD_IT_CID_CHECK:
+    XcpCmdUserSubCmdInfoTableCidCheck(data);
+    break;
+
+  default:
+    XcpSetCtoError(data[0], XCP_ERR_CMD_UNKNOWN);
+    break;
+  }
+} /*** end of XcpCmdUserSubCmdInfoTable ***/
+
+
+/************************************************************************************//**
+** \brief     XCP user sub command processor function which handles the info table
+**            GET_INFO command ID.
+** \param     data Pointer to a byte buffer with the packet data.
+** \return    none
+**
+****************************************************************************************/
+static void XcpCmdUserSubCmdInfoTableCidGetInfo(blt_int8u *data)
+{
+  blt_int16u tableLen;
+  blt_addr   tableAddr;
+
+  /* Suppress compiler warning for unused parameter. */
+  data = data;
+
+  /* Set table length and base address information. */
+  tableLen = InfoTableCurrentSize(INFO_TABLE_ID_FIRMWARE_NVM);
+  tableAddr = InfoTableGetPtr(INFO_TABLE_ID_FIRMWARE_NVM);
+  /* Clear the info table in the internal RAM buffer and reset its write pointer. */
+  InfoTableClear(INFO_TABLE_ID_INTERNAL_RAM);
+
+  /* Set packet id to command response packet. */
+  xcpInfo.ctoData[0] = XCP_PID_RES;
+  /* Set the command ID that this is a response for. */
+  xcpInfo.ctoData[1] = XCP_CMD_IT_CID_GETINFO;
+  /* Store the table length. */
+  CpuMemCopy((blt_addr)(&xcpInfo.ctoData[2]), (blt_addr)&tableLen, sizeof(tableLen));
+  /* Store the table base address. */
+  CpuMemCopy((blt_addr)(&xcpInfo.ctoData[4]), (blt_addr)&tableAddr, sizeof(tableAddr));
+  /* Set packet length. */
+  xcpInfo.ctoLen = 8;
+} /*** end of XcpCmdUserSubCmdInfoTableCidGetInfo ***/
+
+
+/************************************************************************************//**
+** \brief     XCP user sub command processor function which handles the info table
+**            DOWNLOAD command ID.
+** \param     data Pointer to a byte buffer with the packet data.
+** \return    none
+**
+****************************************************************************************/
+static void XcpCmdUserSubCmdInfoTableCidDownload(blt_int8u *data)
+{
+  /* Validate length of download request */
+  if (data[3] > (XCP_CTO_PACKET_LEN-4))
+  {
+    /* Specified data length is too long. */
+    XcpSetCtoError(data[0], XCP_ERR_OUT_OF_RANGE);
+    return;
+  }
+
+  /* Attempt to store the newly received data in the info table. */
+  if (InfoTableAddData(INFO_TABLE_ID_INTERNAL_RAM, &data[4], data[3]) == BLT_FALSE)
+  {
+    /* Data does not fit in the info table RAM buffer. */
+    XcpSetCtoError(data[0], XCP_ERR_OUT_OF_RANGE);
+    return;
+  }
+
+  /* Set packet id to command response packet. */
+  xcpInfo.ctoData[0] = XCP_PID_RES;
+  /* Set the command ID that this is a response for. */
+  xcpInfo.ctoData[1] = XCP_CMD_IT_CID_DOWNLOAD;
+  /* Set packet length. */
+  xcpInfo.ctoLen = 2;
+} /*** end of XcpCmdUserSubCmdInfoTableCidDownload ***/
+
+
+/************************************************************************************//**
+** \brief     XCP user sub command processor function which handles the info table
+**            CHECK command ID.
+** \param     data Pointer to a byte buffer with the packet data.
+** \return    none
+**
+****************************************************************************************/
+static void XcpCmdUserSubCmdInfoTableCidCheck(blt_int8u *data)
+{
+  /* Set packet id to command response packet. */
+  xcpInfo.ctoData[0] = XCP_PID_RES;
+  /* Set the command ID that this is a response for. */
+  xcpInfo.ctoData[1] = XCP_CMD_IT_CID_CHECK;
+  /* Set packet length. */
+  xcpInfo.ctoLen = 3;
+
+  /* Verify that the contents of the internal RAM info table has the same size as the
+   * one in non-volatile memory.
+   */
+  if (InfoTableCurrentSize(INFO_TABLE_ID_INTERNAL_RAM) !=
+      InfoTableCurrentSize(INFO_TABLE_ID_FIRMWARE_NVM))
+  {
+    /* Content of the internal RAM buffer were not yet fully downloaded. */
+    XcpSetCtoError(data[0], XCP_ERR_SEQUENCE);
+    return;
+  }
+
+  /* Request bootloader application to perform the info table check. */
+  if (InfoTableCheck() == BLT_TRUE)
+  {
+    /* Info table check passed. Firmware update is allow to proceed. */
+    xcpInfo.ctoData[2] = 1;
+  }
+  else
+  {
+    /* Info table check failed. Firmware update should be aborted. */
+    xcpInfo.ctoData[2] = 0;
+  }
+} /*** end of XcpCmdUserSubCmdInfoTableCidCheck ***/
+#endif /* BOOT_INFO_TABLE_ENABLE > 0 */
+
 
 #endif /* BOOT_COM_ENABLE > 0 */
 

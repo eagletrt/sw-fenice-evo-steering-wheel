@@ -39,12 +39,16 @@
 ****************************************************************************************/
 void BootInit(void)
 {
-  /* initialize the CPU */
+/* initialize the CPU */
   CpuInit();
   /* initialize the watchdog */
   CopInit();
   /* initialize the millisecond timer */
   TimerInit();
+#if (BOOT_EVENTS_ENABLE > 0)
+  /* initialize the events module */
+  EventsInit();
+#endif
   /* initialize the non-volatile memory driver */
   NvmInit();
 #if (BOOT_FILE_SYS_ENABLE > 0)
@@ -55,9 +59,19 @@ void BootInit(void)
   /* initialize the communication module */
   ComInit();
 #endif
+#if (BOOT_INFO_TABLE_ENABLE > 0)
+  /* initialize the info table check module */
+  InfoTableInit();
+#endif
 #if (ADDON_GATEWAY_MOD_ENABLE > 0)
   /* initialize the gateway module */
   GatewayInit();
+#endif
+#if (BOOT_EVENTS_ENABLE > 0)
+  /* trigger the OnEntry event now that the bootloader is initialized. should be called
+   * before BackDoorInit(), because that one could already result in an OnExit event.
+   */
+  EventsProcess(EVENT_ID_ON_ENTRY, BLT_NULL);
 #endif
   /* initialize the backdoor entry */
   BackDoorInit();

@@ -12,6 +12,7 @@
 #include "can-communications-router-api.h"
 #include "eagletrt-api.h"
 #include "eagletrt-fsm-api.h"
+#include "flash-monitor-api.h"
 #include "post-api.h"
 
 #include <string.h>
@@ -34,7 +35,8 @@ EAGLETRT_STATIC void prv_wheel_fsm_api_do_init(void *data) {
 }
 
 /*!
- * \brief IDLE: handles the bootloader reset request.
+ * \brief IDLE: handles the bootloader reset request, moves to FLASH while
+ *     another board is being flashed.
  *
  * \param data The WheelFsmConfig of the handler.
  */
@@ -43,15 +45,49 @@ EAGLETRT_STATIC void prv_wheel_fsm_api_do_idle(void *data) {
     if (can_communications_router_api_reset_asked()) {
         config->reset();
     }
+    if (flash_monitor_api_is_active()) {
+        EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_FLASH));
+    }
 }
 
 /*!
- * \brief FLASH: nothing yet, filled by the FLASH-state issue.
+ * \brief FLASH: another board is being flashed; back to IDLE once its
+ *     traffic stops. A reset into the bootloader is still honoured.
+ *
+ * \details Following the monitor's state on every step, instead of reacting
+ *     to its edges, means a frame arriving between the timeout and the next
+ *     step can't leave the wheel in the wrong state.
  *
  * \param data The WheelFsmConfig of the handler.
  */
 EAGLETRT_STATIC void prv_wheel_fsm_api_do_flash(void *data) {
-    EAGLETRT_API_UNUSED(data);
+    const struct WheelFsmConfig *config = (const struct WheelFsmConfig *)data;
+    if (can_communications_router_api_reset_asked()) {
+        config->reset();
+    }
+    if (!flash_monitor_api_is_active()) {
+        EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_IDLE));
+    }
+}
+
+/*!
+ * \brief IDLE -> FLASH: silence the wheel.
+ *
+ * \param data The WheelFsmConfig of the handler.
+ */
+EAGLETRT_STATIC void prv_wheel_fsm_api_enter_flash(void *data) {
+    const struct WheelFsmConfig *config = (const struct WheelFsmConfig *)data;
+    config->enter_flash();
+}
+
+/*!
+ * \brief FLASH -> IDLE: back to normal operation.
+ *
+ * \param data The WheelFsmConfig of the handler.
+ */
+EAGLETRT_STATIC void prv_wheel_fsm_api_leave_flash(void *data) {
+    const struct WheelFsmConfig *config = (const struct WheelFsmConfig *)data;
+    config->leave_flash();
 }
 
 /*!
@@ -69,12 +105,12 @@ EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_init_transitions[] = {
 };
 
 EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_idle_transitions[] = {
-    { WHEEL_FSM_STATE_FLASH, NULL },
+    { WHEEL_FSM_STATE_FLASH, prv_wheel_fsm_api_enter_flash },
     { WHEEL_FSM_STATE_ERROR, NULL },
 };
 
 EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_flash_transitions[] = {
-    { WHEEL_FSM_STATE_IDLE, NULL },
+    { WHEEL_FSM_STATE_IDLE, prv_wheel_fsm_api_leave_flash },
     { WHEEL_FSM_STATE_ERROR, NULL },
 };
 
@@ -123,7 +159,7 @@ EAGLETRT_STATIC const char *const prv_wheel_fsm_api_state_names[WHEEL_FSM_STATE_
 };
 
 enum WheelFsmReturnCode wheel_fsm_api_init(const struct WheelFsmConfig *config) {
-    if (config == NULL || config->post == NULL || config->reset == NULL) {
+    if (config == NULL || config->post == NULL || config->reset == NULL || config->enter_flash == NULL || config->leave_flash == NULL) {
         return WHEEL_FSM_RC_NULL_POINTER;
     }
 

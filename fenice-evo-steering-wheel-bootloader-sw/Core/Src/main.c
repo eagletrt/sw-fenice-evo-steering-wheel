@@ -32,9 +32,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <string.h>
-#define OLIVEC_IMPLEMENTATION
-#include "olive.c"
 
+#include "bootloader-screen.h"
 #include "test_flash.h"
 
 #include <stdarg.h>
@@ -69,8 +68,6 @@ void print(const char *fmt, ...) {
 
 /* USER CODE BEGIN PV */
 
-extern const unsigned char EAGLE_LOGO[30000];
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -82,18 +79,6 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-
-static void VectorBase_Config(void)
-{
-  /* The constant array with vectors of the vector table is declared externally in the
-   * c-startup code.
-   */
-  extern const unsigned long g_pfnVectors[];
- 
-  /* Remap the vector table to where the vector table is located for this program. */
-  SCB->VTOR = (unsigned long)&g_pfnVectors[0];
-}
-
 /* USER CODE END 0 */
 
 /**
@@ -102,6 +87,7 @@ static void VectorBase_Config(void)
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
 
@@ -123,6 +109,12 @@ int main(void)
 
   // VectorBase_Config();
 
+  /* OpenBLT's millisecond timer (TIM1, polled) is also the HAL tick
+   * (HAL_GetTick is overridden in timer.c): start it now, BootInit() would be
+   * too late for the HAL_Delay() and the SDRAM init below.
+   */
+  TimerInit();
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -140,39 +132,19 @@ int main(void)
   MX_DMA2D_Init();
   /* USER CODE BEGIN 2 */
 
+  /* Logo first, backlight after: the SDRAM holds random data at power-up. */
+  (void)bootloader_screen_init();
+
   HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
   HAL_Delay(100);
 
-  #define ABOBA_PADDING 50
-  #define HEIGHT 480
-  uint32_t* pixels = (uint32_t*) 0xC0000000;
-  Olivec_Canvas oc = olivec_canvas(pixels, 800, 480, 800);
-  olivec_fill(oc, 0xFF000000);
-  
-  uint32_t size = 5;
-  // powerful right alignment...
-  olivec_text(oc, "         wait for boot...", ABOBA_PADDING, HEIGHT - ABOBA_PADDING - olivec_default_font.height * size, olivec_default_font, size, 0xFFFFFFFF);
-  char buffer[] = "STEERING WHEEL OPENBLT waiting for flashing...\n";
-
-  for (size_t iindex = 0; iindex < 30000; ++iindex) {
-    for (size_t ibit = 0; ibit < 8; ++ibit) {
-      if (EAGLE_LOGO[iindex] & (1 << ibit)) {
-        pixels[iindex * 8 + ibit] = 0xFFFFFFFF;
-      } else {
-        pixels[iindex * 8 + ibit] = 0xFF000000;
-      }
-    }
-  }
 #if EXTERNAL_FLASH_ENABLED == 1
   Flash_Init();
   Flash_Test();
 #endif
 
   BootInit();
-
-  uint32_t save_cpu_time_counter = 0;
-  const uint32_t save_cpu_time = 0x000FFFFF;
 
   /* USER CODE END 2 */
 
@@ -181,15 +153,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    if (save_cpu_time_counter > save_cpu_time) {
-      HAL_UART_Transmit(&hlpuart1, (uint8_t*) buffer, sizeof(buffer), 1000);
-      save_cpu_time_counter = 0;
-    }
-    save_cpu_time_counter++;
-
-    BootTask();
 
     /* USER CODE BEGIN 3 */
+    BootTask();
+    /* "FLASHING STEERING WHEEL" while a flashing tool is connected, logo only otherwise. */
+    bootloader_screen_update(ComIsConnected() == BLT_TRUE);
   }
   /* USER CODE END 3 */
 }
@@ -213,10 +181,6 @@ void SystemClock_Config(void)
 
   while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
-  /** Macro to configure the PLL clock source
-  */
-  __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
-
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -224,17 +188,17 @@ void SystemClock_Config(void)
                               |RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_DIV1;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.HSICalibrationValue = 64;
   RCC_OscInitStruct.CSIState = RCC_CSI_ON;
   RCC_OscInitStruct.CSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 3;
-  RCC_OscInitStruct.PLL.PLLN = 62;
+  RCC_OscInitStruct.PLL.PLLM = 6;
+  RCC_OscInitStruct.PLL.PLLN = 137;
   RCC_OscInitStruct.PLL.PLLP = 1;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLQ = 5;
   RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
+  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
   RCC_OscInitStruct.PLL.PLLFRACN = 4096;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -279,8 +243,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

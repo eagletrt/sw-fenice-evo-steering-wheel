@@ -33,6 +33,9 @@
 * Include files
 ****************************************************************************************/
 #include "xcp.h"                                      /* xcp communication layer       */
+#if (BOOT_COM_MBRTU_ENABLE > 0)
+#include "mb.h"                                       /* modbus driver module          */
+#endif /* BOOT_COM_MBRTU_ENABLE > 0 */
 
 
 /****************************************************************************************
@@ -43,49 +46,93 @@
  */
 #define BOOT_COM_RX_MAX_DATA            (1)
 /* update in case CAN interface uses more */
-#if (BOOT_COM_CAN_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
-#undef BOOT_COM_RX_MAX_DATA
-#define BOOT_COM_RX_MAX_DATA            (BOOT_COM_CAN_RX_MAX_DATA)
+#if (BOOT_COM_CAN_ENABLE > 0)
+# if (BOOT_COM_CAN_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
+# undef BOOT_COM_RX_MAX_DATA
+# define BOOT_COM_RX_MAX_DATA           (BOOT_COM_CAN_RX_MAX_DATA)
+# endif
 #endif
 /* update in case RS232 interface uses more */
-#if (BOOT_COM_RS232_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
-#undef BOOT_COM_RX_MAX_DATA
-#define BOOT_COM_RX_MAX_DATA            (BOOT_COM_RS232_RX_MAX_DATA)
+#if (BOOT_COM_RS232_ENABLE > 0)
+# if (BOOT_COM_RS232_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
+# undef BOOT_COM_RX_MAX_DATA
+# define BOOT_COM_RX_MAX_DATA           (BOOT_COM_RS232_RX_MAX_DATA)
+# endif
+#endif
+/* update in case Modbus RTU interface uses more */
+#if (BOOT_COM_MBRTU_ENABLE > 0)
+# if (BOOT_COM_MBRTU_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
+# undef BOOT_COM_RX_MAX_DATA
+# define BOOT_COM_RX_MAX_DATA           (BOOT_COM_MBRTU_RX_MAX_DATA)
+# endif
 #endif
 /* update in case USB interface uses more */
-#if (BOOT_COM_USB_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
-#undef BOOT_COM_RX_MAX_DATA
-#define BOOT_COM_RX_MAX_DATA            (BOOT_COM_USB_RX_MAX_DATA)
+#if (BOOT_COM_USB_ENABLE > 0)
+# if (BOOT_COM_USB_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
+# undef BOOT_COM_RX_MAX_DATA
+# define BOOT_COM_RX_MAX_DATA           (BOOT_COM_USB_RX_MAX_DATA)
+# endif
+#endif
+/* update in case custom interface uses more */
+#if (BOOT_COM_CUSTOM_ENABLE > 0)
+# if (BOOT_COM_CUSTOM_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
+# undef BOOT_COM_RX_MAX_DATA
+# define BOOT_COM_RX_MAX_DATA           (BOOT_COM_CUSTOM_RX_MAX_DATA)
+# endif
 #endif
 /* update in case NET interface uses more */
-#if (BOOT_COM_NET_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
-#undef BOOT_COM_RX_MAX_DATA
-#define BOOT_COM_RX_MAX_DATA            (BOOT_COM_NET_RX_MAX_DATA)
+#if (BOOT_COM_NET_ENABLE > 0)
+# if (BOOT_COM_NET_RX_MAX_DATA > BOOT_COM_RX_MAX_DATA)
+# undef BOOT_COM_RX_MAX_DATA
+# define BOOT_COM_RX_MAX_DATA           (BOOT_COM_NET_RX_MAX_DATA)
+# endif
 #endif
 
 /** \brief Defines the maximum number of bytes for transport layer transmission
- *         depending on the activates interface(s).
+ *         depending on the activated interface(s).
  */
 #define BOOT_COM_TX_MAX_DATA            (1)
 /* update in case CAN interface uses more */
-#if (BOOT_COM_CAN_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
-#undef BOOT_COM_TX_MAX_DATA
-#define BOOT_COM_TX_MAX_DATA            (BOOT_COM_CAN_TX_MAX_DATA)
+#if (BOOT_COM_CAN_ENABLE > 0)
+# if (BOOT_COM_CAN_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
+# undef BOOT_COM_TX_MAX_DATA
+# define BOOT_COM_TX_MAX_DATA           (BOOT_COM_CAN_TX_MAX_DATA)
+# endif
 #endif
 /* update in case RS232 interface uses more */
-#if (BOOT_COM_RS232_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
-#undef BOOT_COM_TX_MAX_DATA
-#define BOOT_COM_TX_MAX_DATA            (BOOT_COM_RS232_TX_MAX_DATA)
+#if (BOOT_COM_RS232_ENABLE > 0)
+# if (BOOT_COM_RS232_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
+# undef BOOT_COM_TX_MAX_DATA
+# define BOOT_COM_TX_MAX_DATA           (BOOT_COM_RS232_TX_MAX_DATA)
+# endif
+#endif
+/* update in case Modbus RTU interface uses more */
+#if (BOOT_COM_MBRTU_ENABLE > 0)
+# if (BOOT_COM_MBRTU_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
+# undef BOOT_COM_TX_MAX_DATA
+# define BOOT_COM_TX_MAX_DATA           (BOOT_COM_MBRTU_TX_MAX_DATA)
+# endif
 #endif
 /* update in case USB interface uses more */
-#if (BOOT_COM_USB_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
-#undef BOOT_COM_TX_MAX_DATA
-#define BOOT_COM_TX_MAX_DATA            (BOOT_COM_USB_TX_MAX_DATA)
+#if (BOOT_COM_USB_ENABLE > 0)
+# if (BOOT_COM_USB_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
+# undef BOOT_COM_TX_MAX_DATA
+# define BOOT_COM_TX_MAX_DATA           (BOOT_COM_USB_TX_MAX_DATA)
+# endif
+#endif
+/* update in case custom interface uses more */
+#if (BOOT_COM_CUSTOM_ENABLE > 0)
+# if (BOOT_COM_CUSTOM_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
+# undef BOOT_COM_TX_MAX_DATA
+# define BOOT_COM_TX_MAX_DATA           (BOOT_COM_CUSTOM_TX_MAX_DATA)
+# endif
 #endif
 /* update in case NET interface uses more */
-#if (BOOT_COM_NET_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
-#undef BOOT_COM_TX_MAX_DATA
-#define BOOT_COM_TX_MAX_DATA            (BOOT_COM_NET_TX_MAX_DATA)
+#if (BOOT_COM_NET_ENABLE > 0)
+# if (BOOT_COM_NET_TX_MAX_DATA > BOOT_COM_TX_MAX_DATA)
+# undef BOOT_COM_TX_MAX_DATA
+# define BOOT_COM_TX_MAX_DATA           (BOOT_COM_NET_TX_MAX_DATA)
+# endif
 #endif
 
 
@@ -118,8 +165,10 @@
 typedef enum
 {
   COM_IF_RS232,                                  /**< RS232 interface                  */
+  COM_IF_MBRTU,                                  /**< Modbus RTU interface             */
   COM_IF_CAN,                                    /**< CAN interface                    */
   COM_IF_USB,                                    /**< USB interface                    */
+  COM_IF_CUSTOM,                                 /**< Custom interface                 */
   COM_IF_NET,                                    /**< NET interface                    */
   COM_IF_OTHER                                   /**< Other interface                  */
 } tComInterfaceId;

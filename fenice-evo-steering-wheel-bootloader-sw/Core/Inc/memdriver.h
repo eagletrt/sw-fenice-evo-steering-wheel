@@ -44,7 +44,11 @@ extern "C" {
 
 #include "main.h"
 
-#define REFRESH_COUNT ((uint32_t)0x0603) /* SDRAM refresh counter */
+/* SDRAM refresh counter, same as the firmware (FMC_MICRON_STEER_SDRAM_REFRESH_COUNT):
+ * 4096 rows every 64 ms = one refresh every 15.6 us, 0x5C8 = 1480 SDRAM clocks = 14.8 us
+ * at 100 MHz (FMC kernel clock 200 MHz from PLL2R, SD clock period 2).
+ */
+#define REFRESH_COUNT ((uint32_t)0x05C8)
 
 #define MICRON_STEER_TIMEOUT ((uint32_t)0xFFFF)
 

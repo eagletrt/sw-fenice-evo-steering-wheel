@@ -63,6 +63,17 @@ void CpuInit(void)
    * peripherals.
    */
   CpuIrqDisable();
+  /* run the bootloader without I-cache and D-cache to keep things simple. it doesn't
+   * need the performance improvements that these caches offer.
+   */
+  if ((SCB->CCR & SCB_CCR_IC_Msk) != 0U)
+  {
+    SCB_DisableICache();
+  }
+  if ((SCB->CCR & SCB_CCR_DC_Msk) != 0U)
+  {
+    SCB_DisableDCache();
+  }
 } /*** end of CpuInit ***/
 
 
@@ -87,6 +98,12 @@ void CpuStartUserProgram(void)
      */
     ComDeferredInit();
 #endif
+#if (BOOT_EVENTS_ENABLE > 0)
+    /* trigger the OnSuppress event because the user program won't be started due to
+     * an invalid checksum.
+     */
+    EventsProcess(EVENT_ID_ON_SUPPRESS, BLT_NULL);
+#endif
     /* not a valid user program so it cannot be started */
     return;
   }
@@ -102,6 +119,12 @@ void CpuStartUserProgram(void)
      */
     ComDeferredInit();
   #endif
+  #if (BOOT_EVENTS_ENABLE > 0)
+    /* trigger the OnSuppress event because the user program starting is requested to
+     * be bypassed.
+     */
+    EventsProcess(EVENT_ID_ON_SUPPRESS, BLT_NULL);
+  #endif
     /* callback requests the user program to not be started */
     return;
   }
@@ -109,6 +132,13 @@ void CpuStartUserProgram(void)
 #if (BOOT_COM_ENABLE > 0)
   /* release the communication interface */
   ComFree();
+#endif
+#if (BOOT_EVENTS_ENABLE > 0)
+  /* trigger the OnExit event because the user program is about to be started, which
+   * exits the bootloader. should be done before TimerReset() just in case the 
+   * user might want to use the timer in the event hook.
+   */
+  EventsProcess(EVENT_ID_ON_EXIT, BLT_NULL);
 #endif
   /* reset the HAL */
   HAL_DeInit();

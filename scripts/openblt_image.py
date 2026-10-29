@@ -3,18 +3,15 @@ Import("env")
 import struct
 import subprocess
 
-# Must match the bootloader: first user sector in flashLayout[] and
+# Must match the bootloader: first user sector in flashLayout[] (flash.c) and
 # BOOT_FLASH_VECTOR_TABLE_CS_OFFSET in
-# fenice-evo-steering-wheel-bootloader-sw/Core/Src/flash.c.
+# fenice-evo-steering-wheel-bootloader-sw/Core/Src/blt_conf.h.
 APP_BASE_ADDRESS = 0x08020000
-CHECKSUM_OFFSET = 0x298
+CHECKSUM_OFFSET = 0x2CC
 
-# The bootloader stores the checksum inside the vector table, on the slot of
-# this interrupt (the table is 0x2CC long). It is only harmless while the
-# firmware never uses that interrupt, i.e. the slot still points to the
-# default handler.
-CHECKSUM_VECTOR = "OCTOSPI2_IRQHandler"
-DEFAULT_HANDLER = "Default_Handler"
+# Word reserved for the checksum by STM32H723XG_FLASH_SHIFTED.ld, right after
+# the 0x2CC-long vector table.
+CHECKSUM_SYMBOL = "_openblt_checksum"
 
 
 def symbol_addresses(elf_path, names):
@@ -40,12 +37,12 @@ def write_openblt_checksum(source, target, env):
     bin_path = target[0].get_abspath()
     elf_path = env.subst("$BUILD_DIR/${PROGNAME}.elf")
 
-    addresses = symbol_addresses(elf_path, {CHECKSUM_VECTOR, DEFAULT_HANDLER})
-    if addresses.get(CHECKSUM_VECTOR) != addresses.get(DEFAULT_HANDLER):
+    address = symbol_addresses(elf_path, {CHECKSUM_SYMBOL}).get(CHECKSUM_SYMBOL)
+    if address != APP_BASE_ADDRESS + CHECKSUM_OFFSET:
         raise RuntimeError(
-            "%s is implemented, but its vector slot (offset 0x%X) holds the OpenBLT checksum: "
-            "move BOOT_FLASH_VECTOR_TABLE_CS_OFFSET to the end of the vector table first"
-            % (CHECKSUM_VECTOR, CHECKSUM_OFFSET)
+            "the OpenBLT checksum word (%s) is at %s, the bootloader reads it at 0x%08X: "
+            "the vector table changed size, or the linker script lost the reserved word"
+            % (CHECKSUM_SYMBOL, hex(address) if address is not None else "nowhere", APP_BASE_ADDRESS + CHECKSUM_OFFSET)
         )
 
     with open(bin_path, "rb") as f:

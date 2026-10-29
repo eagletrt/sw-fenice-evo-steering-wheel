@@ -30,7 +30,6 @@
 * Include files
 ****************************************************************************************/
 #include "boot.h"                                     /* bootloader generic header     */
-#include <string.h>                                   /* for strcpy etc.               */
 #include <ctype.h>                                    /* for toupper() etc.            */
 
 
@@ -44,7 +43,8 @@ typedef enum
   FIRMWARE_UPDATE_STATE_IDLE,                    /**< idle state                       */
   FIRMWARE_UPDATE_STATE_STARTING,                /**< starting state                   */
   FIRMWARE_UPDATE_STATE_ERASING,                 /**< erasing state                    */
-  FIRMWARE_UPDATE_STATE_PROGRAMMING              /**< programming state                */
+  FIRMWARE_UPDATE_STATE_PROGRAMMING,             /**< programming state                */
+  FIRMWARE_UPDATE_STATE_EXTRACTING               /**< extracting state                 */
 } tFirmwareUpdateState;
 
 /** \brief Structure type with information for the memory erase opeartion. */
@@ -64,11 +64,6 @@ typedef struct
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-static blt_char      FileLibByteNibbleToChar(blt_int8u nibble);
-static blt_char     *FileLibByteToHexString(blt_int8u byte_val, blt_char *destination);
-static blt_char     *FileLibLongToIntString(blt_int32u long_val, blt_char *destination);
-#endif
 static blt_int8u     FileLibHexStringToByte(const blt_char *hexstring);
 
 
@@ -77,10 +72,6 @@ static blt_int8u     FileLibHexStringToByte(const blt_char *hexstring);
 ****************************************************************************************/
 extern blt_bool        FileIsFirmwareUpdateRequestedHook(void);
 extern const blt_char *FileGetFirmwareFilenameHook(void);
-extern void            FileFirmwareUpdateStartedHook(void);
-extern void            FileFirmwareUpdateCompletedHook(void);
-extern void            FileFirmwareUpdateErrorHook(blt_int8u error_code);
-extern void            FileFirmwareUpdateLogHook(blt_char *info_string);
 
 
 /****************************************************************************************
@@ -94,10 +85,6 @@ static tFatFsObjects        fatFsObjects;
 static tSrecLineParseObject lineParseObject;
 /** \brief Local variable for storing information regarding the memory erase operation.*/
 static tFileEraseInfo       eraseInfo;
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-/** \brief Local character buffer for storing the string with log information. */
-static blt_char             loggingStr[64];
-#endif
 
 
 /***********************************************************************************//**
@@ -181,6 +168,20 @@ void FileTask(void)
 {
   blt_int16s  parse_result = 0;
   blt_char   *read_line_ptr;
+#if (BOOT_INFO_TABLE_ENABLE > 0)
+  static blt_int8u  infoTableBuffer[BOOT_INFO_TABLE_LEN];
+  static blt_int16u infoTableByteCnt;
+  static blt_bool   infoTableExtracted;
+  blt_int16u        infoTableByteIdx;
+  blt_int16u        byteIdx;
+  blt_addr          byteAddr;
+#endif
+#if (BOOT_EVENTS_ENABLE > 0)
+  tEventsInfoStart eventsInfoStart;
+  tEventsInfoErase eventsInfoErase;
+  tEventsInfoWrite eventsInfoWrite;
+  tEventsInfoError eventsInfoError;
+#endif
 
   /* ------------------------------- idle -------------------------------------------- */
   if (firmwareUpdateState == FIRMWARE_UPDATE_STATE_IDLE)
@@ -192,13 +193,14 @@ void FileTask(void)
   {
     /* reinit the NVM driver because a new firmware update is about the start */
     NvmInit();
-#if (BOOT_FILE_STARTED_HOOK_ENABLE > 0)
-    /* inform application about update started event via hook function */
-    FileFirmwareUpdateStartedHook();
-#endif
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-    FileFirmwareUpdateLogHook("Firmware update request detected\n\r");
-    FileFirmwareUpdateLogHook("Opening firmware file for reading...");
+#if (BOOT_EVENTS_ENABLE > 0)
+    /* trigger the OnStart event now that a firmware update is about to commence. set the
+     * filename, because this is a firmware update from a locally attached file system.
+     */
+    eventsInfoStart.type = EVENT_START_TYPE_NORMAL;
+    eventsInfoStart.filename = FileGetFirmwareFilenameHook();
+    eventsInfoStart.node_id = 0;
+    EventsProcess(EVENT_ID_ON_START, &eventsInfoStart);
 #endif
     /* attempt to obtain a file object for the firmware file */
     if (f_open(&fatFsObjects.file, FileGetFirmwareFilenameHook(), FA_OPEN_EXISTING | FA_READ) != FR_OK)
@@ -206,26 +208,156 @@ void FileTask(void)
       /* cannot continue with firmware update so go back to idle state */
       firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
       /* can't open file */
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("ERROR\n\r");
-#endif
-#if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-      FileFirmwareUpdateErrorHook(FILE_ERROR_CANNOT_OPEN_FIRMWARE_FILE);
+#if (BOOT_EVENTS_ENABLE > 0)
+      /* trigger the OnError event.  */
+      eventsInfoError.error_id = EVENT_ERROR_ID_FILE_OPEN;
+      EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
 #endif
       /* nothing left to do now */
       return;
     }
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-    FileFirmwareUpdateLogHook("OK\n\r");
-    FileFirmwareUpdateLogHook("Starting the programming sequence\n\r");
-    FileFirmwareUpdateLogHook("Parsing firmware file to detect erase blocks...");
-#endif
     /* prepare data objects for the erasing state */
     eraseInfo.start_address = 0;
     eraseInfo.total_size = 0;
+#if (BOOT_INFO_TABLE_ENABLE > 0)
+    /* prepare data object for the extraction state */
+    infoTableByteCnt = 0;
+    infoTableExtracted = BLT_FALSE;
+    /* clear the info table in the internal RAM buffer and reset its write pointer. */
+    InfoTableClear(INFO_TABLE_ID_INTERNAL_RAM);
+    /* transition from idle to extracting state */
+    firmwareUpdateState = FIRMWARE_UPDATE_STATE_EXTRACTING;
+#else
     /* transition from idle to erasing state */
     firmwareUpdateState = FIRMWARE_UPDATE_STATE_ERASING;
+#endif
   }
+  #if (BOOT_INFO_TABLE_ENABLE > 0)
+  /* ------------------------------- extracting -------------------------------------- */
+  else if (firmwareUpdateState == FIRMWARE_UPDATE_STATE_EXTRACTING)
+  {
+    /* read a line from the file */
+    read_line_ptr = f_gets(lineParseObject.line, sizeof(lineParseObject.line), &fatFsObjects.file);
+    /* check if an error occurred */
+    if (f_error(&fatFsObjects.file) > 0)
+    {
+      /* cannot continue with firmware update so go back to idle state */
+      firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
+#if (BOOT_EVENTS_ENABLE > 0)
+      /* trigger the OnError event.  */
+      eventsInfoError.error_id = EVENT_ERROR_ID_FILE_READ;
+      EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
+#endif
+      /* close the file */
+      f_close(&fatFsObjects.file);
+      return;
+    }
+    /* parse the S-Record line if the line is not empty */
+    if (read_line_ptr != BLT_NULL)
+    {
+      parse_result = FileSrecParseLine(lineParseObject.line, &lineParseObject.address,
+                                       lineParseObject.data);
+      /* check parsing result */
+      if (parse_result == ERROR_SREC_INVALID_CHECKSUM)
+      {
+        /* cannot continue with firmware update so go back to idle state */
+        firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnError event.  */
+        eventsInfoError.error_id = EVENT_ERROR_ID_FILE_CHECKSUM;
+        EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
+#endif
+        /* close the file */
+        f_close(&fatFsObjects.file);
+        return;
+      }
+    }
+    /* only process parsing results if the line contained address/data info */
+    if (parse_result > 0)
+    {
+      /* does the parsed data include info table data? Note that parse_result holds
+       * the number of data bytes encountered on the parsed line.
+       */
+      if (! (((BOOT_INFO_TABLE_ADDR + BOOT_INFO_TABLE_LEN) <= lineParseObject.address) ||
+             ((lineParseObject.address + parse_result) <= BOOT_INFO_TABLE_ADDR)) )
+      {
+        /* loop through all parsed data bytes. */
+        for (byteIdx = 0; byteIdx < parse_result; byteIdx++)
+        {
+          /* does this byte belong to the info table? */
+          byteAddr = lineParseObject.address + byteIdx;
+          if ( (byteAddr >= BOOT_INFO_TABLE_ADDR) &&
+               (byteAddr < (BOOT_INFO_TABLE_ADDR + BOOT_INFO_TABLE_LEN)) )
+          {
+            /* calculate index into the info table buffer. */
+            infoTableByteIdx = byteAddr - BOOT_INFO_TABLE_ADDR;
+            /* store the byte in the info table buffer. */
+            infoTableBuffer[infoTableByteIdx] = lineParseObject.data[byteIdx];
+            infoTableByteCnt++;
+            /* done extracting the info table? */
+            if (infoTableByteCnt >= BOOT_INFO_TABLE_LEN)
+            {
+              /* hand the info table over to the info table module's RAM buffer. No need
+               * to check the return value because we know the parameters are valid and
+               * that the internal RAM buffer is writable.
+               */
+              (void)InfoTableAddData(INFO_TABLE_ID_INTERNAL_RAM, &infoTableBuffer[0],
+                                     BOOT_INFO_TABLE_LEN);
+              /* update flag to indicate that info table extraction is complete. */
+              infoTableExtracted = BLT_TRUE;
+              /* no need to continue the loop. */
+              break;
+            }
+          }
+        }
+      }
+    }
+    /* check if the end of the file was reached or the info table extraction completed.*/
+    if ( (f_eof(&fatFsObjects.file) > 0) || (infoTableExtracted == BLT_TRUE) )
+    {
+      /* rewind the file in preparation for the programming state */
+      if (f_lseek(&fatFsObjects.file, 0) != FR_OK)
+      {
+        /* cannot continue with firmware update so go back to idle state */
+        firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnError event.  */
+        eventsInfoError.error_id = EVENT_ERROR_ID_FILE_REWIND_READ_PTR;
+        EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
+#endif
+        /* close the file */
+        f_close(&fatFsObjects.file);
+        return;
+      }
+      /* make sure the info table was extracted successfully. */
+      if (infoTableExtracted == BLT_FALSE)
+      {
+        /* cannot continue with firmware update so go back to idle state */
+        firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnError event.  */
+        eventsInfoError.error_id = EVENT_ERROR_ID_INFO_TABLE_MISSING;
+        EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
+#endif
+        return;
+      }
+      /* still here so the info table was successfully extracted. continue with checking
+       * the info table contents.
+       */
+      /* Request bootloader application to perform the info table check. */
+      if (InfoTableCheck() == BLT_FALSE)
+      {
+        /* cannot continue with firmware update so go back to idle state */
+        firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
+        return;
+      }
+      /* info table check passed. okay to continue with the firmware update. transition
+       * from extracting to erasing state 
+       */
+      firmwareUpdateState = FIRMWARE_UPDATE_STATE_ERASING;
+    }
+  }
+  #endif /* BOOT_INFO_TABLE_ENABLE > 0 */
   /* ------------------------------- erasing ----------------------------------------- */
   else if (firmwareUpdateState == FIRMWARE_UPDATE_STATE_ERASING)
   {
@@ -236,11 +368,10 @@ void FileTask(void)
     {
       /* cannot continue with firmware update so go back to idle state */
       firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("ERROR\n\r");
-#endif
-#if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-      FileFirmwareUpdateErrorHook(FILE_ERROR_CANNOT_READ_FROM_FILE);
+#if (BOOT_EVENTS_ENABLE > 0)
+      /* trigger the OnError event.  */
+      eventsInfoError.error_id = EVENT_ERROR_ID_FILE_READ;
+      EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
 #endif
       /* close the file */
       f_close(&fatFsObjects.file);
@@ -255,11 +386,10 @@ void FileTask(void)
       {
         /* cannot continue with firmware update so go back to idle state */
         firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-        FileFirmwareUpdateLogHook("ERROR\n\r");
-#endif
-#if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-        FileFirmwareUpdateErrorHook(FILE_ERROR_INVALID_CHECKSUM_IN_FILE);
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnError event.  */
+        eventsInfoError.error_id = EVENT_ERROR_ID_FILE_CHECKSUM;
+        EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
 #endif
         /* close the file */
         f_close(&fatFsObjects.file);
@@ -290,40 +420,26 @@ void FileTask(void)
            * gap in the data. first erase the currently detected block and then start
            * tracking a new block.
            */
-          #if (BOOT_FILE_LOGGING_ENABLE > 0)
-          FileFirmwareUpdateLogHook("OK\n\r");
-          FileFirmwareUpdateLogHook("Erasing ");
-          /* convert size to string  */
-          FileLibLongToIntString(eraseInfo.total_size, loggingStr);
-          FileFirmwareUpdateLogHook(loggingStr);
-          FileFirmwareUpdateLogHook(" bytes from memory at 0x");
-          /* convert address to hex-string  */
-          FileLibByteToHexString((blt_int8u)(eraseInfo.start_address >> 24), &loggingStr[0]);
-          FileLibByteToHexString((blt_int8u)(eraseInfo.start_address >> 16), &loggingStr[2]);
-          FileLibByteToHexString((blt_int8u)(eraseInfo.start_address >> 8), &loggingStr[4]);
-          FileLibByteToHexString((blt_int8u)eraseInfo.start_address, &loggingStr[6]);
-          FileFirmwareUpdateLogHook(loggingStr);
-          FileFirmwareUpdateLogHook("...");
-          #endif
           /* still here so we are ready to perform the memory erase operation */
+#if (BOOT_EVENTS_ENABLE > 0)
+          /* trigger the OnErase event. */
+          eventsInfoErase.base_addr = eraseInfo.start_address;
+          eventsInfoErase.num_bytes = eraseInfo.total_size;
+          EventsProcess(EVENT_ID_ON_ERASE, &eventsInfoErase);
+#endif
           if (NvmErase(eraseInfo.start_address, eraseInfo.total_size) == BLT_FALSE)
           {
             /* cannot continue with firmware update so go back to idle state */
             firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-            #if (BOOT_FILE_LOGGING_ENABLE > 0)
-            FileFirmwareUpdateLogHook("ERROR\n\r");
-            #endif
-            #if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-            FileFirmwareUpdateErrorHook(FILE_ERROR_CANNOT_ERASE_MEMORY);
-            #endif
+#if (BOOT_EVENTS_ENABLE > 0)
+            /* trigger the OnError event.  */
+            eventsInfoError.error_id = EVENT_ERROR_ID_ERASE;
+            EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
+#endif
             /* close the file */
             f_close(&fatFsObjects.file);
             return;
           }
-          #if (BOOT_FILE_LOGGING_ENABLE > 0)
-          FileFirmwareUpdateLogHook("OK\n\r");
-          FileFirmwareUpdateLogHook("Parsing firmware file to detect erase blocks...");
-          #endif
 
           /* store the start_address and element count */
           eraseInfo.start_address = lineParseObject.address;
@@ -339,11 +455,10 @@ void FileTask(void)
       {
         /* cannot continue with firmware update so go back to idle state */
         firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-        FileFirmwareUpdateLogHook("ERROR\n\r");
-#endif
-#if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-        FileFirmwareUpdateErrorHook(FILE_ERROR_REWINDING_FILE_READ_POINTER);
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnError event.  */
+        eventsInfoError.error_id = EVENT_ERROR_ID_FILE_REWIND_READ_PTR;
+        EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
 #endif
         /* close the file */
         f_close(&fatFsObjects.file);
@@ -354,39 +469,26 @@ void FileTask(void)
        */
       if (eraseInfo.total_size > 0)
       {
-        #if (BOOT_FILE_LOGGING_ENABLE > 0)
-        FileFirmwareUpdateLogHook("OK\n\r");
-        FileFirmwareUpdateLogHook("Erasing ");
-        /* convert size to string  */
-        FileLibLongToIntString(eraseInfo.total_size, loggingStr);
-        FileFirmwareUpdateLogHook(loggingStr);
-        FileFirmwareUpdateLogHook(" bytes from memory at 0x");
-        /* convert address to hex-string  */
-        FileLibByteToHexString((blt_int8u)(eraseInfo.start_address >> 24), &loggingStr[0]);
-        FileLibByteToHexString((blt_int8u)(eraseInfo.start_address >> 16), &loggingStr[2]);
-        FileLibByteToHexString((blt_int8u)(eraseInfo.start_address >> 8), &loggingStr[4]);
-        FileLibByteToHexString((blt_int8u)eraseInfo.start_address, &loggingStr[6]);
-        FileFirmwareUpdateLogHook(loggingStr);
-        FileFirmwareUpdateLogHook("...");
-        #endif
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnErase event. */
+        eventsInfoErase.base_addr = eraseInfo.start_address;
+        eventsInfoErase.num_bytes = eraseInfo.total_size;
+        EventsProcess(EVENT_ID_ON_ERASE, &eventsInfoErase);
+#endif
         if (NvmErase(eraseInfo.start_address, eraseInfo.total_size) == BLT_FALSE)
         {
           /* cannot continue with firmware update so go back to idle state */
           firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-          #if (BOOT_FILE_LOGGING_ENABLE > 0)
-          FileFirmwareUpdateLogHook("ERROR\n\r");
-          #endif
-          #if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-          FileFirmwareUpdateErrorHook(FILE_ERROR_CANNOT_ERASE_MEMORY);
-          #endif
+#if (BOOT_EVENTS_ENABLE > 0)
+          /* trigger the OnError event.  */
+          eventsInfoError.error_id = EVENT_ERROR_ID_ERASE;
+          EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
+#endif
           /* close the file */
           f_close(&fatFsObjects.file);
           return;
         }
       }
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("OK\n\r");
-#endif
       /* all okay, then go to programming state */
       firmwareUpdateState = FIRMWARE_UPDATE_STATE_PROGRAMMING;
     }
@@ -401,11 +503,10 @@ void FileTask(void)
     {
       /* cannot continue with firmware update so go back to idle state */
       firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("Reading line from file...ERROR\n\r");
-#endif
-#if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-      FileFirmwareUpdateErrorHook(FILE_ERROR_CANNOT_READ_FROM_FILE);
+#if (BOOT_EVENTS_ENABLE > 0)
+      /* trigger the OnError event.  */
+      eventsInfoError.error_id = EVENT_ERROR_ID_FILE_READ;
+      EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
 #endif
       /* close the file */
       f_close(&fatFsObjects.file);
@@ -420,11 +521,10 @@ void FileTask(void)
       {
         /* cannot continue with firmware update so go back to idle state */
         firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-        FileFirmwareUpdateLogHook("Invalid checksum found...ERROR\n\r");
-#endif
-#if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-        FileFirmwareUpdateErrorHook(FILE_ERROR_INVALID_CHECKSUM_IN_FILE);
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnError event.  */
+        eventsInfoError.error_id = EVENT_ERROR_ID_FILE_CHECKSUM;
+        EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
 #endif
         /* close the file */
         f_close(&fatFsObjects.file);
@@ -434,74 +534,56 @@ void FileTask(void)
     /* only process parsing results if the line contained address/data info */
     if (parse_result > 0)
     {
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("Programming ");
-      /* convert size to string  */
-      FileLibLongToIntString(parse_result, loggingStr);
-      FileFirmwareUpdateLogHook(loggingStr);
-      FileFirmwareUpdateLogHook(" bytes to memory at 0x");
-      /* convert address to hex-string  */
-      FileLibByteToHexString((blt_int8u)(lineParseObject.address >> 24), &loggingStr[0]);
-      FileLibByteToHexString((blt_int8u)(lineParseObject.address >> 16), &loggingStr[2]);
-      FileLibByteToHexString((blt_int8u)(lineParseObject.address >> 8), &loggingStr[4]);
-      FileLibByteToHexString((blt_int8u)lineParseObject.address, &loggingStr[6]);
-      FileFirmwareUpdateLogHook(loggingStr);
-      FileFirmwareUpdateLogHook("...");
-#endif
       /* program the data */
+#if (BOOT_EVENTS_ENABLE > 0)
+      /* trigger the OnWrite event. Note that the progress field will be calculated and 
+       * written lateron by EventsProcess().
+       */
+      eventsInfoWrite.base_addr = lineParseObject.address;
+      eventsInfoWrite.num_bytes = parse_result;
+      eventsInfoWrite.progress = 0U;
+      EventsProcess(EVENT_ID_ON_WRITE, &eventsInfoWrite);
+#endif
       if (NvmWrite(lineParseObject.address, parse_result, lineParseObject.data) == BLT_FALSE)
       {
         /* cannot continue with firmware update so go back to idle state */
         firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-        FileFirmwareUpdateLogHook("ERROR\n\r");
-#endif
-#if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-        FileFirmwareUpdateErrorHook(FILE_ERROR_CANNOT_PROGRAM_MEMORY);
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnError event.  */
+        eventsInfoError.error_id = EVENT_ERROR_ID_WRITE;
+        EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
 #endif
         /* close the file */
         f_close(&fatFsObjects.file);
         return;
       }
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("OK\n\r");
-#endif
     }
     /* check if the end of the file was reached */
     if (f_eof(&fatFsObjects.file) > 0)
     {
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("Writing program checksum...");
-#endif
       /* finish the programming by writing the checksum */
       if (NvmDone() == BLT_FALSE)
       {
         /* cannot continue with firmware update so go back to idle state */
         firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-        FileFirmwareUpdateLogHook("ERROR\n\r");
-#endif
-#if (BOOT_FILE_ERROR_HOOK_ENABLE > 0)
-        FileFirmwareUpdateErrorHook(FILE_ERROR_CANNOT_WRITE_CHECKSUM);
+#if (BOOT_EVENTS_ENABLE > 0)
+        /* trigger the OnError event.  */
+        eventsInfoError.error_id = EVENT_ERROR_ID_WRITE;
+        EventsProcess(EVENT_ID_ON_ERROR, &eventsInfoError);
 #endif
         /* close the file */
         f_close(&fatFsObjects.file);
         return;
       }
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("OK\n\r");
-      FileFirmwareUpdateLogHook("Closing firmware file\n\r");
-#endif
       /* close the file */
       f_close(&fatFsObjects.file);
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-      FileFirmwareUpdateLogHook("Firmware update successfully completed\n\r");
-#endif
       /* all done so transistion back to idle mode */
       firmwareUpdateState = FIRMWARE_UPDATE_STATE_IDLE;
-#if (BOOT_FILE_COMPLETED_HOOK_ENABLE > 0)
-      /* inform application about update completed event via hook function */
-      FileFirmwareUpdateCompletedHook();
+#if (BOOT_EVENTS_ENABLE > 0)
+      /* trigger the OnSuccess event now that the firmware update successfully
+       * completed.
+       */
+      EventsProcess(EVENT_ID_ON_SUCCESS, BLT_NULL);
 #endif
       /* attempt to start the user program now that programming is done */
       CpuStartUserProgram();
@@ -716,96 +798,6 @@ blt_int16s FileSrecParseLine(const blt_char *line, blt_addr *address, blt_int8u 
 
   return data_byte_count;
 } /*** end of FileSrecParseLine ***/
-
-
-#if (BOOT_FILE_LOGGING_ENABLE > 0)
-/************************************************************************************//**
-** \brief     Helper function to convert a 4-bit value to a character that represents its
-**            value in hexadecimal format.
-**              Example: FileLibByteNibbleToChar(11)  --> returns 'B'.
-** \param     nibble 4-bit value to convert.
-** \return    The resulting byte value.
-**
-****************************************************************************************/
-static blt_char FileLibByteNibbleToChar(blt_int8u nibble)
-{
-  blt_char  c;
-
-  /* convert to ASCII value */
-  c = (nibble & 0x0f) + '0';
-  if (nibble > 9)
-  {
-    c += 7;
-  }
-  else
-  {
-    c = toupper((blt_int16s)c);
-  }
-  /* return the character */
-  return c;
-} /*** end of FileLibByteNibbleToChar ***/
-
-
-/************************************************************************************//**
-** \brief     Helper function to convert a byte value to a string representing the
-**            value in hexadecimal format.
-**              Example: FileLibByteToHexString(28, strBuffer)  --> returns "1C".
-** \param     byte_val    8-bit value to convert.
-** \param     destination Pointer to character buffer for storing the results.
-** \return    The resulting string.
-**
-****************************************************************************************/
-static blt_char *FileLibByteToHexString(blt_int8u byte_val, blt_char *destination)
-{
-  /* first the most significant n-bit nibble */
-  destination[0] = FileLibByteNibbleToChar(byte_val >> 4);
-  /* next the least significant n-bit nibble */
-  destination[1] = FileLibByteNibbleToChar(byte_val & 0x0f);
-  /* add string termination */
-  destination[2] = '\0';
-  /* return pointer to resulting string */
-  return destination;
-} /*** end of FileLibByteToHexString ***/
-
-
-/************************************************************************************//**
-** \brief     Helper function to convert a 32-bit unsigned number to a string that
-**            represents its decimal value.
-**              Example: FileLibLongToIntString(1234, strBuffer)  --> returns "1234".
-** \param     long_val    32-bit value to convert.
-** \param     destination Pointer to character buffer for storing the results.
-** \return    The resulting string.
-**
-****************************************************************************************/
-static blt_char *FileLibLongToIntString(blt_int32u long_val, blt_char *destination)
-{
-  blt_int32u long_val_cpy = long_val;
-
-  /* first determine how many digits there will be */
-  do
-  {
-    destination++;
-    long_val_cpy /= 10;
-  }
-  while (long_val_cpy > 0);
-  /* add space for the string termination and add it */
-  *destination = '\0';
-  /* now add the digits from right to left */
-  long_val_cpy = long_val;
-  do
-  {
-    /* set write pointer to where the next character should go */
-    destination--;
-    /* write digit in ASCII format */
-    *destination = long_val_cpy % 10 + '0';
-    /* move on to the next digit */
-    long_val_cpy /= 10;
-  }
-  while (long_val_cpy > 0);
-
-  return destination;
-} /*** end of FileLibLongToIntString ***/
-#endif /* (BOOT_FILE_LOGGING_ENABLE > 0) */
 
 
 /************************************************************************************//**
