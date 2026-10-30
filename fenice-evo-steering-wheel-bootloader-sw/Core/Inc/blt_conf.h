@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Demo/ARMCM7_STM32H7_Nucleo_H743ZI_GCC/Boot/blt_conf.h
 * \brief        Bootloader configuration header file.
 * \ingroup      Boot_ARMCM7_STM32H7_Nucleo_H743ZI_GCC
@@ -46,17 +46,16 @@
  * de-initialize application specific parts, for example to stop blinking an LED, etc.
  */
 /** \brief Frequency of the external crystal oscillator. */
-#define BOOT_CPU_XTAL_SPEED_KHZ          (24000)
+#define BOOT_CPU_XTAL_SPEED_KHZ (24000)
 /** \brief Desired system speed. */
 /* Same clock tree as the firmware (PLL1P = 550 MHz). OpenBLT 1.22 only checks it is > 0:
  * its timer (TIM1) and CAN bit timing read the real clocks from the RCC.
  */
-#define BOOT_CPU_SYSTEM_SPEED_KHZ        (550000)
+#define BOOT_CPU_SYSTEM_SPEED_KHZ (550000)
 /** \brief Motorola or Intel style byte ordering. */
-#define BOOT_CPU_BYTE_ORDER_MOTOROLA     (0)
+#define BOOT_CPU_BYTE_ORDER_MOTOROLA (0)
 /** \brief Enable/disable hook function call right before user program start. */
 #define BOOT_CPU_USER_PROGRAM_START_HOOK (0)
-
 
 /****************************************************************************************
 *   C O M M U N I C A T I O N   I N T E R F A C E   C O N F I G U R A T I O N
@@ -68,11 +67,11 @@
  *
  */
 /** \brief Enable/disable USB transport layer. */
-#define BOOT_COM_USB_ENABLE             (0)
+#define BOOT_COM_USB_ENABLE (0)
 /** \brief Configure number of bytes in the target->host data packet. */
-#define BOOT_COM_USB_TX_MAX_DATA        (63)
+#define BOOT_COM_USB_TX_MAX_DATA (63)
 /** \brief Configure number of bytes in the host->target data packet. */
-#define BOOT_COM_USB_RX_MAX_DATA        (63)
+#define BOOT_COM_USB_RX_MAX_DATA (63)
 
 /* The CAN communication interface is selected by setting the BOOT_COM_CAN_ENABLE
  * configurable to 1. Configurable BOOT_COM_CAN_BAUDRATE selects the communication speed
@@ -88,19 +87,19 @@
  *
  */
 /** \brief Enable/disable CAN transport layer. */
-#define BOOT_COM_CAN_ENABLE             (1)
+#define BOOT_COM_CAN_ENABLE (1)
 /** \brief Configure the desired CAN baudrate. */
-#define BOOT_COM_CAN_BAUDRATE           (1000000)
+#define BOOT_COM_CAN_BAUDRATE (1000000)
 /** \brief Configure CAN message ID target->host. */
-#define BOOT_COM_CAN_TX_MSG_ID          (CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX /*| 0x80000000*/)
+#define BOOT_COM_CAN_TX_MSG_ID (CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX /*| 0x80000000*/)
 /** \brief Configure number of bytes in the target->host CAN message. */
-#define BOOT_COM_CAN_TX_MAX_DATA        (8)
+#define BOOT_COM_CAN_TX_MAX_DATA (8)
 /** \brief Configure CAN message ID host->target. */
-#define BOOT_COM_CAN_RX_MSG_ID          (CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX /*| 0x80000000*/)
+#define BOOT_COM_CAN_RX_MSG_ID (CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX /*| 0x80000000*/)
 /** \brief Configure number of bytes in the host->target CAN message. */
-#define BOOT_COM_CAN_RX_MAX_DATA        (8)
+#define BOOT_COM_CAN_RX_MAX_DATA (8)
 /** \brief Select the desired CAN peripheral as a zero based index. */
-#define BOOT_COM_CAN_CHANNEL_INDEX      (0)
+#define BOOT_COM_CAN_CHANNEL_INDEX (0)
 
 /* The RS232 communication interface is selected by setting the BOOT_COM_RS232_ENABLE
  * configurable to 1. Configurable BOOT_COM_RS232_BAUDRATE selects the communication speed
@@ -111,16 +110,15 @@
  *
  */
 /** \brief Enable/disable UART transport layer. */
-#define BOOT_COM_RS232_ENABLE            (0)
+#define BOOT_COM_RS232_ENABLE (0)
 /** \brief Configure the desired communication speed. */
-#define BOOT_COM_RS232_BAUDRATE          (115200)
+#define BOOT_COM_RS232_BAUDRATE (115200)
 /** \brief Configure number of bytes in the target->host data packet. */
-#define BOOT_COM_RS232_TX_MAX_DATA       (64)
+#define BOOT_COM_RS232_TX_MAX_DATA (64)
 /** \brief Configure number of bytes in the host->target data packet. */
-#define BOOT_COM_RS232_RX_MAX_DATA       (64)
+#define BOOT_COM_RS232_RX_MAX_DATA (64)
 /** \brief Select the desired UART peripheral as a zero based index. */
-#define BOOT_COM_RS232_CHANNEL_INDEX     (2)
-
+#define BOOT_COM_RS232_CHANNEL_INDEX (2)
 
 /****************************************************************************************
 *   B A C K D O O R   E N T R Y   C O N F I G U R A T I O N
@@ -134,8 +132,7 @@
  * also be implemented in a way that disables the backdoor entry altogether.
  */
 /** \brief Enable/disable the backdoor override hook functions. */
-#define BOOT_BACKDOOR_HOOKS_ENABLE      (0)
-
+#define BOOT_BACKDOOR_HOOKS_ENABLE (0)
 
 /****************************************************************************************
 *   N O N - V O L A T I L E   M E M O R Y   D R I V E R   C O N F I G U R A T I O N
@@ -149,23 +146,22 @@
  * BOOT_NVM_CHECKSUM_HOOKS_ENABLE.
  */
 /** \brief Enable/disable the NVM hook function for supporting additional memory devices. */
-#define BOOT_NVM_HOOKS_ENABLE           (0)
+#define BOOT_NVM_HOOKS_ENABLE (0)
 /** \brief Configure the size of the default memory device (typically flash EEPROM). */
-#define BOOT_NVM_SIZE_KB                (1024)
+#define BOOT_NVM_SIZE_KB (1024)
 /** \brief Enable/disable hooks functions to override the user program checksum handling. */
-#define BOOT_NVM_CHECKSUM_HOOKS_ENABLE  (0)
+#define BOOT_NVM_CHECKSUM_HOOKS_ENABLE (0)
 /** \brief Offset of the user program signature checksum in its vector table (flash.c).
  *        The STM32H723 table is 0x2CC long: the checksum goes in the word right after
  *        it, reserved by STM32H723XG_FLASH_SHIFTED.ld in the firmware. The upstream
  *        default (0x298) is the OCTOSPI2 interrupt slot on this part. Must match
  *        CHECKSUM_OFFSET in scripts/openblt_image.py.
  */
-#define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET    (0x2CC)
+#define BOOT_FLASH_VECTOR_TABLE_CS_OFFSET (0x2CC)
 /** \brief Use the H723 flash layout in flash_layout.c (single bank) instead of the
  *        OpenBLT default for 1024 KB, which describes a dual-bank part.
  */
 #define BOOT_FLASH_CUSTOM_LAYOUT_ENABLE (1)
-
 
 /****************************************************************************************
 *   W A T C H D O G   D R I V E R   C O N F I G U R A T I O N
@@ -177,8 +173,7 @@
  * hook functions.
  */
 /** \brief Enable/disable the hook functions for controlling the watchdog. */
-#define BOOT_COP_HOOKS_ENABLE           (0)
-
+#define BOOT_COP_HOOKS_ENABLE (0)
 
 /****************************************************************************************
 *   S E E D / K E Y   S E C U R I T Y   C O N F I G U R A T I O N
@@ -198,8 +193,7 @@
  * After enabling this feature the hook functions XcpGetSeedHook() and XcpVerifyKeyHook()
  * are called by the bootloader to obtain the seed and to verify the key, respectively.
  */
-#define BOOT_XCP_SEED_KEY_ENABLE        (0)
-
+#define BOOT_XCP_SEED_KEY_ENABLE (0)
 
 #endif /* BLT_CONF_H */
 /*********************************** end of blt_conf.h *********************************/

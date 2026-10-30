@@ -31,22 +31,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h>
 
 #include "bootloader-screen.h"
-#include "test_flash.h"
-
-#include <stdarg.h>
-#include <stdio.h>
-
-void print(const char *fmt, ...) {
-    char buff[256];
-    va_list args;
-    va_start(args, fmt);
-    vsnprintf(buff, sizeof(buff), fmt, args);
-    va_end(args);
-    HAL_UART_Transmit(&hlpuart1, (uint8_t *)buff, strlen(buff), 250);
-}
 
 /* USER CODE END Includes */
 
@@ -136,11 +122,6 @@ int main(void) {
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_Delay(100);
-
-#if EXTERNAL_FLASH_ENABLED == 1
-    Flash_Init();
-    Flash_Test();
-#endif
 
     BootInit();
 
