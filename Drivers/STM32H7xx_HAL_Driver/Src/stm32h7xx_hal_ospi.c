@@ -165,6 +165,7 @@
     [..]
      After the configuration, the OctoSPI will be used as soon as an access on the AHB is done on
      the address range. HAL_OSPI_TimeOutCallback() will be called when the timeout expires.
+     HAL_OSPI_IsMemoryMapped() can be used to verify whether memory-mapped mode is configured or not.
 
     *** Errors management and abort functionality ***
     =================================================
@@ -1177,7 +1178,8 @@ HAL_StatusTypeDef HAL_OSPI_Transmit(OSPI_HandleTypeDef *hospi, uint8_t *pData, u
         *((__IO uint8_t *)data_reg) = *hospi->pBuffPtr;
         hospi->pBuffPtr++;
         hospi->XferCount--;
-      } while (hospi->XferCount > 0U);
+      }
+      while (hospi->XferCount > 0U);
 
       if (status == HAL_OK)
       {
@@ -1270,7 +1272,8 @@ HAL_StatusTypeDef HAL_OSPI_Receive(OSPI_HandleTypeDef *hospi, uint8_t *pData, ui
         *hospi->pBuffPtr = *((__IO uint8_t *)data_reg);
         hospi->pBuffPtr++;
         hospi->XferCount--;
-      } while (hospi->XferCount > 0U);
+      }
+      while (hospi->XferCount > 0U);
 
       if (status == HAL_OK)
       {
@@ -1597,7 +1600,7 @@ HAL_StatusTypeDef HAL_OSPI_Receive_DMA(OSPI_HandleTypeDef *hospi, uint8_t *pData
         }
 
         /* Enable the transmit MDMA Channel */
-        if (HAL_MDMA_Start_IT(hospi->hmdma, (uint32_t)pData, (uint32_t)&hospi->Instance->DR, hospi->XferSize, 1) == \
+        if (HAL_MDMA_Start_IT(hospi->hmdma, (uint32_t)&hospi->Instance->DR, (uint32_t)pData, hospi->XferSize, 1) == \
             HAL_OK)
         {
           /* Enable the transfer error interrupt */
@@ -1849,6 +1852,29 @@ HAL_StatusTypeDef HAL_OSPI_MemoryMapped(OSPI_HandleTypeDef *hospi, OSPI_MemoryMa
 
   /* Return function status */
   return status;
+}
+
+/**
+  * @brief  Check whether the OCTOSPI is configured in Memory-mapped mode or not.
+  * @param  hospi   : OSPI handle
+  * @retval Status (0: Memory-mapped disabled or OCTOSPI not initialized, 1: Memory-mapped enabled)
+  */
+uint32_t HAL_OSPI_IsMemoryMapped(const OSPI_HandleTypeDef *hospi)
+{
+  /* Check the OSPI handle allocation */
+  if (hospi == NULL)
+  {
+    return (0UL);
+  }
+  /* Check if driver is in Reset state */
+  else if (hospi->State == HAL_OSPI_STATE_RESET)
+  {
+    return (0UL);
+  }
+  else
+  {
+    return ((READ_BIT(hospi->Instance->CR, OCTOSPI_CR_FMODE) == OCTOSPI_CR_FMODE) ? 1UL : 0UL);
+  }
 }
 
 /**
@@ -2581,9 +2607,10 @@ HAL_StatusTypeDef HAL_OSPIM_Config(OSPI_HandleTypeDef *hospi, OSPIM_CfgTypeDef *
     }
 
     /********************* Deactivation of other instance *********************/
-    if ((cfg->ClkPort == IOM_cfg[other_instance].ClkPort) || (cfg->DQSPort == IOM_cfg[other_instance].DQSPort)     ||
-        (cfg->NCSPort == IOM_cfg[other_instance].NCSPort) || (cfg->IOLowPort == IOM_cfg[other_instance].IOLowPort) ||
-        (cfg->IOHighPort == IOM_cfg[other_instance].IOHighPort))
+    if ((cfg->ClkPort == IOM_cfg[other_instance].ClkPort) || (cfg->NCSPort == IOM_cfg[other_instance].NCSPort) ||
+        ((cfg->DQSPort == IOM_cfg[other_instance].DQSPort) && (cfg->DQSPort != 0U)) ||
+        ((cfg->IOLowPort == IOM_cfg[other_instance].IOLowPort) && (cfg->IOLowPort != HAL_OSPIM_IOPORT_NONE)) ||
+        ((cfg->IOHighPort == IOM_cfg[other_instance].IOHighPort) && (cfg->IOHighPort != HAL_OSPIM_IOPORT_NONE)))
     {
       if ((cfg->ClkPort   == IOM_cfg[other_instance].ClkPort)   &&
           (cfg->DQSPort    == IOM_cfg[other_instance].DQSPort)  &&

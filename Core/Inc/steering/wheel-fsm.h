@@ -38,8 +38,8 @@ enum WheelFsmReturnCode {
  */
 enum WheelFsmState : uint8_t {
     WHEEL_FSM_STATE_INIT,  /*!< Power-on self test */
-    WHEEL_FSM_STATE_IDLE,   /*!< Normal operation: dashboard, inputs, CAN */
-    WHEEL_FSM_STATE_FLASH, /*!< Another board is being flashed (not triggered yet) */
+    WHEEL_FSM_STATE_IDLE,  /*!< Normal operation: dashboard, inputs, CAN */
+    WHEEL_FSM_STATE_FLASH, /*!< Another board is being flashed: only the FSM status goes on the bus */
     WHEEL_FSM_STATE_ERROR, /*!< Unrecoverable error, terminal */
     WHEEL_FSM_STATE_COUNT,
 };
@@ -50,11 +50,18 @@ enum WheelFsmState : uint8_t {
 typedef void (*wheel_fsm_reset_callback)(void);
 
 /*!
+ * \brief Switch the rest of the wheel into or out of a mode (e.g. pause its tasks).
+ */
+typedef void (*wheel_fsm_mode_callback)(void);
+
+/*!
  * \brief Hooks and init data handed to the wheel FSM.
  */
 struct WheelFsmConfig {
-    struct PostInitData *post;      /*!< Required: handed to the POST by INIT, must outlive the FSM */
-    wheel_fsm_reset_callback reset; /*!< Required: system reset (bootloader request) */
+    struct PostInitData *post;           /*!< Required: handed to the POST by INIT, must outlive the FSM */
+    wheel_fsm_reset_callback reset;      /*!< Required: system reset (bootloader request) */
+    wheel_fsm_mode_callback enter_flash; /*!< Required: IDLE -> FLASH, silence everything but the FSM status */
+    wheel_fsm_mode_callback leave_flash; /*!< Required: FLASH -> IDLE, undo enter_flash */
 };
 
 /*!

@@ -27,12 +27,20 @@
 #include "can-communications-api.h"
 
 /*!
- * \brief Configure the acceptance filter and RX notification of one FDCAN.
+ * \brief Bus-off events since boot, per peripheral (FDCAN1, FDCAN2).
+ *
+ * \details Written by the error-status interrupt, read by fdcan_get_bus_off_count.
+ */
+static volatile uint32_t prv_fdcan_bus_off_count[2];
+
+/*!
+ * \brief Configure the acceptance filter and the notifications of one FDCAN.
  *
  * \details Every standard ID is accepted: routing by ID is the job of the
  *     can-communications router, not of the hardware filter. Primary
  *     frames land in RX FIFO 0, secondary frames in RX FIFO 1 (matching
- *     the FIFO sizes configured by CubeMX).
+ *     the FIFO sizes configured by CubeMX). The bus-off notification lets
+ *     HAL_FDCAN_ErrorStatusCallback restart the peripheral.
  *
  * \param hfdcan Peripheral to configure.
  * \param fifo FDCAN_FILTER_TO_RXFIFO0 or FDCAN_FILTER_TO_RXFIFO1.
@@ -53,7 +61,7 @@ static void prv_fdcan_config_rx(FDCAN_HandleTypeDef *hfdcan, uint32_t fifo, uint
     if (HAL_FDCAN_ConfigFilter(hfdcan, &filter) != HAL_OK) {
         Error_Handler();
     }
-    if (HAL_FDCAN_ActivateNotification(hfdcan, notification, 0) != HAL_OK) {
+    if (HAL_FDCAN_ActivateNotification(hfdcan, notification | FDCAN_IT_BUS_OFF, 0) != HAL_OK) {
         Error_Handler();
     }
 }
@@ -364,8 +372,31 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
         HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
         msg.id = header.Identifier;
         msg.length = (uint8_t)EAGLETRT_API_MIN(header.DataLength, CAN_COMMUNICATIONS_FRAME_DATA_SIZE);
-        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan2 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
+        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
     }
+}
+
+/*!
+ * \brief Restart a peripheral that went bus-off.
+ *
+ * \details After 256 transmit errors (a loose connector corrupting frames,
+ *     a bus shorted for a while) the FDCAN goes bus-off and sets CCCR.INIT:
+ *     it stops sending and receiving until software clears INIT, after
+ *     which it rejoins once it has seen 129 x 11 recessive bits (~1.4 ms at
+ *     1 Mbit/s). Without this the wheel stayed off the bus until a power
+ *     cycle. The interrupt fires on every change of PSR.BO, so only the
+ *     entry into bus-off is acted upon.
+ */
+void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t ErrorStatusITs) {
+    if ((ErrorStatusITs & FDCAN_IR_BO) == 0U || (hfdcan->Instance->PSR & FDCAN_PSR_BO) == 0U) {
+        return;
+    }
+    prv_fdcan_bus_off_count[(hfdcan == &hfdcan1) ? 0U : 1U]++;
+    CLEAR_BIT(hfdcan->Instance->CCCR, FDCAN_CCCR_INIT);
+}
+
+uint32_t fdcan_get_bus_off_count(enum CanCommunicationNetwork network) {
+    return prv_fdcan_bus_off_count[(network == CAN_COMMUNICATION_NETWORK_PRIMARY) ? 0U : 1U];
 }
 
 /* USER CODE END 1 */

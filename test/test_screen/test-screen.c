@@ -15,6 +15,7 @@
 #include "fff.h"
 #include "screen-api.h"
 #include "raster.h"
+#include "splash.h"
 #include <string.h>
 
 extern struct ScreenHandler screen_handler;
@@ -44,6 +45,17 @@ static void prv_settle(uint32_t tick) {
     fake_draw_mask_fake.return_val = RASTER_RC_OK;
 }
 
+/* Logo blends recorded by the fake mask callback since the last reset. */
+static unsigned prv_logo_blends(void) {
+    unsigned count = 0U;
+    for (unsigned i = 0U; i < fake_draw_mask_fake.call_count && i < FFF_ARG_HISTORY_LEN; i++) {
+        if (fake_draw_mask_fake.arg0_history[i] == SPLASH_LOGO_X && fake_draw_mask_fake.arg2_history[i] == SPLASH_LOGO_WIDTH) {
+            count++;
+        }
+    }
+    return count;
+}
+
 void setUp(void) {
     RESET_FAKE(fake_draw_rectangle);
     RESET_FAKE(fake_draw_mask);
@@ -62,7 +74,7 @@ void setUp(void) {
 void test_screen_popup_mounts_on_next_update(void) {
     TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 100U));
     screen_api_update(110U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "Popup must be mounted on the first update after a change");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "Popup must be mounted on the first update after a change");
     TEST_ASSERT_EQUAL_STRING("5", screen_handler.popup.value_buffer);
 }
 
@@ -72,13 +84,13 @@ void test_screen_popup_timeout_starts_at_change_not_at_last_render(void) {
     screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 5000U);
 
     screen_api_update(5001U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "Popup must not expire because the previous render was old");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "Popup must not expire because the previous render was old");
 
     screen_api_update(5000U + SCREEN_POPUP_TIMEOUT_MS - 1U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "Popup must stay up for the whole timeout after the change");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "Popup must stay up for the whole timeout after the change");
 
     screen_api_update(5000U + SCREEN_POPUP_TIMEOUT_MS);
-    TEST_ASSERT_FALSE_MESSAGE(screen_handler.popup_visible, "Popup must go away exactly at the timeout");
+    TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "Popup must go away exactly at the timeout");
 }
 
 void test_screen_popup_survives_change_stamped_after_render_tick(void) {
@@ -86,7 +98,7 @@ void test_screen_popup_survives_change_stamped_after_render_tick(void) {
      * the render in the same pass still used the tick read earlier (100). */
     screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 105U);
     screen_api_update(100U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "A change stamped after the render tick must still show the popup");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "A change stamped after the render tick must still show the popup");
 }
 
 void test_screen_popup_new_change_extends_timeout(void) {
@@ -95,11 +107,11 @@ void test_screen_popup_new_change_extends_timeout(void) {
     screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 6U, 2000U);
 
     screen_api_update(1000U + SCREEN_POPUP_TIMEOUT_MS);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "A later change must restart the timeout");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "A later change must restart the timeout");
     TEST_ASSERT_EQUAL_STRING("6", screen_handler.popup.value_buffer);
 
     screen_api_update(2000U + SCREEN_POPUP_TIMEOUT_MS);
-    TEST_ASSERT_FALSE(screen_handler.popup_visible);
+    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_INTERFACE_POPUP));
 }
 
 void test_screen_popup_dismiss_remounts_dashboard_dirty(void) {
@@ -107,14 +119,14 @@ void test_screen_popup_dismiss_remounts_dashboard_dirty(void) {
     screen_api_update(0U);
     screen_api_update(SCREEN_POPUP_TIMEOUT_MS);
 
-    TEST_ASSERT_FALSE(screen_handler.popup_visible);
+    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_INTERFACE_POPUP));
     TEST_ASSERT_EQUAL_PTR_MESSAGE(screen_handler.dashboard.boxes, screen_handler.raster.interface, "Dashboard must be mounted again after the popup");
 }
 
 void test_screen_popup_rejects_invalid_parameter(void) {
     TEST_ASSERT_EQUAL(SCREEN_RC_ERROR, screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_COUNT, 1U, 0U));
     screen_api_update(1U);
-    TEST_ASSERT_FALSE(screen_handler.popup_visible);
+    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_INTERFACE_POPUP));
 }
 
 /*! \} */
@@ -233,6 +245,70 @@ void test_screen_popup_close_redraws_dashboard_into_both_buffers(void) {
 
 /*! \} */
 
+/*!
+ * \defgroup screen_api_set_flash FLASH page tests
+ * \{
+ */
+
+void test_screen_flash_page_replaces_the_dashboard(void) {
+    prv_settle(0U);
+
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_flash(true, "PEDALS"));
+    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(10U));
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_INTERFACE_FLASH);
+    TEST_ASSERT_EQUAL_STRING("PEDALS", screen_handler.flash.name.text);
+
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_flash(false, NULL));
+    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(20U));
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_INTERFACE_DASHBOARD);
+}
+
+void test_screen_flash_logo_is_drawn_into_both_buffers(void) {
+    prv_enable_accelerators();
+    prv_settle(0U);
+
+    screen_api_set_flash(true, "PEDALS");
+    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(10U));
+    TEST_ASSERT_TRUE_MESSAGE(prv_logo_blends() > 0U, "The logo goes on top of its box");
+
+    // Static page: nothing renders, the frame on screen already has the logo.
+    RESET_FAKE(fake_draw_mask);
+    fake_draw_mask_fake.return_val = RASTER_RC_OK;
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_update(20U));
+
+    // The next change is drawn into the other framebuffer: the logo catches up there.
+    screen_api_set_flash(true, "COOLING");
+    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(30U));
+    TEST_ASSERT_TRUE_MESSAGE(prv_logo_blends() > 0U, "The other framebuffer needs the logo too");
+}
+
+void test_screen_flash_board_change_keeps_the_logo(void) {
+    prv_enable_accelerators();
+    screen_api_set_flash(true, "PEDALS");
+    prv_settle(0U);
+    screen_api_set_flash(true, "COOLING");
+    prv_settle(1U); // both framebuffers have the whole page now
+
+    screen_api_set_flash(true, "ECU");
+    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(10U));
+    TEST_ASSERT_EQUAL_MESSAGE(0U, prv_logo_blends(), "Only the name box changed: the logo stays as it is");
+}
+
+void test_screen_flash_hides_the_popup(void) {
+    prv_settle(0U);
+    screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 3U, 0U);
+    screen_api_set_flash(true, "ECU");
+
+    screen_api_update(10U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_INTERFACE_FLASH, "FLASH wins over the popup");
+
+    screen_api_set_flash(false, NULL);
+    screen_api_update(20U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_INTERFACE_POPUP, "A popup still in its timeout comes back");
+}
+
+/*! \} */
+
 int main(void) {
     UNITY_BEGIN();
 
@@ -253,6 +329,11 @@ int main(void) {
     RUN_TEST(test_screen_popup_is_drawn_into_both_buffers);
     RUN_TEST(test_screen_knob_steps_redraw_only_the_popup_value);
     RUN_TEST(test_screen_popup_close_redraws_dashboard_into_both_buffers);
+
+    RUN_TEST(test_screen_flash_page_replaces_the_dashboard);
+    RUN_TEST(test_screen_flash_logo_is_drawn_into_both_buffers);
+    RUN_TEST(test_screen_flash_board_change_keeps_the_logo);
+    RUN_TEST(test_screen_flash_hides_the_popup);
 
     return UNITY_END();
 }

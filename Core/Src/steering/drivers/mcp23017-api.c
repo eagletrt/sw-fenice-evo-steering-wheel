@@ -65,3 +65,34 @@ enum Mcp23017ReturnCode mcp23017_api_read_port(struct Mcp23017Handler *handler, 
     const uint8_t gpio_register = (port == MCP23017_PORT_A) ? MCP23017_REGISTER_GPIOA : MCP23017_REGISTER_GPIOB;
     return handler->read_register(handler->device_address, gpio_register, value);
 }
+
+/*!
+ * \brief Check that every pull-up of one port is enabled.
+ *
+ * \param handler Handler of the target expander.
+ * \param pull_up_register GPPUA or GPPUB.
+ *
+ * \retval MCP23017_RC_OK if they are.
+ * \retval MCP23017_RC_BUS_ERROR if the register read fails.
+ * \retval MCP23017_RC_VERIFY_ERROR if some pull-up is off.
+ */
+EAGLETRT_STATIC enum Mcp23017ReturnCode prv_mcp23017_api_check_pull_ups(struct Mcp23017Handler *handler, uint8_t pull_up_register) {
+    uint8_t value = 0U;
+    const enum Mcp23017ReturnCode return_code = handler->read_register(handler->device_address, pull_up_register, &value);
+    if (return_code != MCP23017_RC_OK) {
+        return return_code;
+    }
+    return (value == MCP23017_PULL_UP_ALL) ? MCP23017_RC_OK : MCP23017_RC_VERIFY_ERROR;
+}
+
+enum Mcp23017ReturnCode mcp23017_api_check_config(struct Mcp23017Handler *handler) {
+    if (handler == NULL || handler->read_register == NULL) {
+        return MCP23017_RC_NULL_POINTER;
+    }
+
+    const enum Mcp23017ReturnCode return_code = prv_mcp23017_api_check_pull_ups(handler, MCP23017_REGISTER_GPPUA);
+    if (return_code != MCP23017_RC_OK) {
+        return return_code;
+    }
+    return prv_mcp23017_api_check_pull_ups(handler, MCP23017_REGISTER_GPPUB);
+}

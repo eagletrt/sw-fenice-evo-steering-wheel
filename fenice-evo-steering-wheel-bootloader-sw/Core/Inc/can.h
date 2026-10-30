@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/can.h
 * \brief        Bootloader CAN communication interface header file.
 * \ingroup      Core
@@ -32,11 +32,10 @@
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-void     CanInit(void);
-void     CanTransmitPacket(blt_int8u *data, blt_int8u len);
+void CanInit(void);
+void CanTransmitPacket(blt_int8u *data, blt_int8u len);
 blt_bool CanReceivePacket(blt_int8u *data, blt_int8u *len);
 #endif /* BOOT_COM_CAN_ENABLE > 0 */
-
 
 #endif /* CAN_H */
 /*********************************** end of can.h **************************************/

@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/rs232.h
 * \brief        Bootloader RS232 communication interface header file.
 * \ingroup      Core
@@ -32,11 +32,10 @@
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-void     Rs232Init(void);
-void     Rs232TransmitPacket(blt_int8u *data, blt_int8u len);
+void Rs232Init(void);
+void Rs232TransmitPacket(blt_int8u *data, blt_int8u len);
 blt_bool Rs232ReceivePacket(blt_int8u *data, blt_int8u *len);
 #endif /* BOOT_COM_RS232_ENABLE > 0 */
-
 
 #endif /* RS232_H */
 /*********************************** end of rs232.h ************************************/

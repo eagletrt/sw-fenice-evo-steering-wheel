@@ -15,7 +15,8 @@ It also handles **buttons** and **3 rotary switches** for user input in real-tim
 - `Core/Src/steering/drivers/`, `Core/Inc/steering/drivers/`: hardware-agnostic device drivers (MCP23017 GPIO expander, Micron SDRAM).
 - `Core/Src/steering/can-communications-router-api.c`: the only place that knows about **libcan**. It decodes the inbound frames the dashboard renders into the UI snapshot and builds the wheel's own outbound messages (button status carrying TS-on/PTT, control maps, driver action). Identity broadcasts (FSM status, firmware and libcan versions) live in `identity-api.c`.
 - Everything else in `Core/` is CubeMX-generated peripheral code; the hardware glue that wires peripherals to the application modules lives in its user-code sections.
-- `fenice-evo-steering-wheel-bootloader-sw/`: the OpenBLT CAN bootloader (own CubeMX project, built from the same `platformio.ini`). It occupies the first 128K flash sector; the firmware linked after it uses `STM32H723XG_FLASH_SHIFTED.ld`.
+- `fenice-evo-steering-wheel-bootloader-sw/`: the OpenBLT CAN bootloader (OpenBLT 1.22, own CubeMX project, built from the same `platformio.ini`). It occupies the first 128K flash sector; the firmware linked after it uses `STM32H723XG_FLASH_SHIFTED.ld` (see [Bootloader](#bootloader)).
+- `Core/Src/steering/splash-api.c`: the logo page shared by the firmware's FLASH page and the bootloader screen, so they line up pixel for pixel. The logo is `Core/Src/steering/splash-logo.c`, generated from `assets/eagle-logo.svg` by `tools/generate_logo.py` (needs `rsvg-convert`; run it only when the logo changes).
 - `test/`: host unit tests (Unity + fff) for the hardware-agnostic modules.
 - `simulator/`: host hooks (window, keyboard, CAN, logger) that run the hardware-agnostic firmware on a PC.
 - `Core/Src/steering/wheel-fsm-api.c`: the wheel state machine, built on [libfsm-sw](https://github.com/eagletrt/libfsm-sw) (see below).
@@ -25,6 +26,10 @@ It also handles **buttons** and **3 rotary switches** for user input in real-tim
 The wheel FSM is a libfsm-sw table in `wheel-fsm-api.c`, run every 5 ms by the scheduler FSM
 task. Any task can request a transition with `wheel_fsm_api_request`; it is applied at the end of
 the next FSM step. A requested `ERROR` can't be replaced by a later request.
+
+FLASH follows `flash-monitor-api.c`: every `<Board>FlashingTx/Rx` frame of another board restarts a 500 ms libtimebase watchdog. While it runs, IDLE moves to FLASH; once it
+expires, FLASH goes back to IDLE. The wheel's own pair (`0x6E`/`0x6F`) resets it into its bootloader
+instead. Board names are in the table at the top of `flash-monitor-api.c`.
 
 ```mermaid
 stateDiagram-v2
@@ -41,7 +46,7 @@ stateDiagram-v2
 |---|---|---|
 | `INIT` | power-on self test (runs once, before the first task) | `INIT` |
 | `IDLE` | dashboard, inputs, CAN; resets into the bootloader when asked | `IDLE` |
-| `FLASH` | nothing yet (FLASH-state issue) | `FLASH` |
+| `FLASH` | another board is being flashed: logo, "FLASHING" and the board's name on screen; inputs ignored; `SteeringWheelFsm` is the only frame the wheel sends | `FLASH` |
 | `ERROR` | terminal: the last frame stays on screen, CAN keeps reporting the state | `ERROR` |
 
 ## Development
@@ -81,13 +86,28 @@ content changes) and CAN frames can be injected:
 | `1` | inject `EcuFsm` with the next vehicle status |
 | `2` | inject one step of telemetry (SoC, temperatures, laps) |
 | `p` | toggle a continuous telemetry feed |
+| `3` | toggle flashing traffic of another board (FLASH page, wheel muted) |
+| `4` | next board for the flashing traffic |
 
 `--screenshot <file.ppm>` runs for one second, saves the window and exits
 (e.g. `.pio/build/simulator/program --screenshot frame.ppm`). `--replay <from> <to>` feeds
 telemetry steps `from..to`, alternating with ECU-state-only frames: with `--screenshot`,
 `--replay 0 12` and `--replay 12 12` must produce identical images (a quick check that the
 copy-free double buffering never leaves a stale box behind).
+`--flash <id>` starts with flashing traffic on, from the board whose `FlashingTx` ID is `<id>`
+(e.g. `--flash 0x66 --screenshot flash.ppm` for the pedals' FLASH page).
 Needs OpenGL (Cocoa on macOS, GL + X11 on Linux).
+
+### Bootloader
+
+- Shows the logo while it waits for a flashing tool, and "FLASHING STEERING WHEEL" under it while
+  one is connected (`Core/Src/bootloader-screen.c`, same splash page as the firmware, drawn by the
+  CPU with its own small font: `fenice-evo-steering-wheel-bootloader-sw/tools/fonts.json`).
+- The OpenBLT signature checksum is the word right after the vector table, at `0x2CC`: reserved by
+  `STM32H723XG_FLASH_SHIFTED.ld`, written by `scripts/openblt_image.py`, read by the bootloader
+  (`BOOT_FLASH_VECTOR_TABLE_CS_OFFSET` in `blt_conf.h`). Bootloader and firmware must agree: flash
+  both after changing it.
+- `flash_layout.c` describes the H723's single 1 MB bank (sectors 1–7 for the firmware).
 
 ### Git hooks
 

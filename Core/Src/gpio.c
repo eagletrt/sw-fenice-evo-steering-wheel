@@ -66,65 +66,65 @@ void MX_GPIO_Init(void) {
     /*Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(IMUX_C2_GPIO_Port, IMUX_C2_Pin, GPIO_PIN_RESET);
 
-    /*Configure GPIO pin : PtPin */
+    /*Configure GPIO pin : PADDLE_TOP_LEFT_Pin */
     GPIO_InitStruct.Pin = PADDLE_TOP_LEFT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(PADDLE_TOP_LEFT_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : PtPin */
+    /*Configure GPIO pin : IMUX_C3_Pin */
     GPIO_InitStruct.Pin = IMUX_C3_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(IMUX_C3_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : PCPin PCPin */
+    /*Configure GPIO pins : GREEN_BUTTON_RIGHT_Pin GREEN_BUTTON_LEFT_Pin */
     GPIO_InitStruct.Pin = GREEN_BUTTON_RIGHT_Pin | GREEN_BUTTON_LEFT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : PDPin PDPin PDPin */
+    /*Configure GPIO pins : PAD_BOTTOM_RIGHT_Pin PAD_BOTTOM_LEFT_Pin PAD_TOP_RIGHT_Pin */
     GPIO_InitStruct.Pin = PAD_BOTTOM_RIGHT_Pin | PAD_BOTTOM_LEFT_Pin | PAD_TOP_RIGHT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : PtPin */
+    /*Configure GPIO pin : LCD_BL_EN_Pin */
     GPIO_InitStruct.Pin = LCD_BL_EN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LCD_BL_EN_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : PtPin */
+    /*Configure GPIO pin : IMUX_C1_Pin */
     GPIO_InitStruct.Pin = IMUX_C1_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(IMUX_C1_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pins : PGPin PGPin PGPin */
+    /*Configure GPIO pins : IMUX_S4_Pin IMUX_S3_Pin IMUX_S2_Pin */
     GPIO_InitStruct.Pin = IMUX_S4_Pin | IMUX_S3_Pin | IMUX_S2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : PtPin */
+    /*Configure GPIO pin : IMUX_S1_Pin */
     GPIO_InitStruct.Pin = IMUX_S1_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(IMUX_S1_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : PtPin */
+    /*Configure GPIO pin : IMUX_C2_Pin */
     GPIO_InitStruct.Pin = IMUX_C2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(IMUX_C2_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : PtPin */
+    /*Configure GPIO pin : TSON_BUTTON_Pin */
     GPIO_InitStruct.Pin = TSON_BUTTON_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;

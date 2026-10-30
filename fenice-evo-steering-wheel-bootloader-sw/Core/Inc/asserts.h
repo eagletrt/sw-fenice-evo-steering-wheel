@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/asserts.h
 * \brief        Bootloader assertion module header file.
 * \ingroup      Core
@@ -41,15 +41,14 @@
 #define ASSERT_CONCAT_(a, b) a##b
 #define ASSERT_CONCAT(a, b) ASSERT_CONCAT_(a, b)
 /** \brief      Macro for assertions that can be performed at compile time. */
-#define ASSERT_CT(cond) enum { ASSERT_CONCAT(assert_error_on_line_, __LINE__) = 1/(!!(cond)) }
+#define ASSERT_CT(cond) enum { ASSERT_CONCAT(assert_error_on_line_, __LINE__) = 1 / (!!(cond)) }
 /** \brief Macro for assertions that can only be performed at run time. */
 #define ASSERT_RT(cond) \
-    if (cond) \
-      { ; } \
-    else \
-      AssertFailure(__FILE__, __LINE__)
+    if (cond) {         \
+        ;               \
+    } else              \
+        AssertFailure(__FILE__, __LINE__)
 #endif /* NDEBUG */
-
 
 /****************************************************************************************
 * Function prototypes

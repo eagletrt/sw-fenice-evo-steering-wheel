@@ -129,6 +129,36 @@ EAGLETRT_STATIC void prv_main_report_stats(void) {
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "d2d fill %lu/%luus/%lu blend %lu/%luus/%lu", fill->count, fill->total_us, fill->max_us, blend->count, blend->total_us, blend->max_us));
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "d2d mask %lu/%luus/%lu copy %lu/%luus/%lu", mask->count, mask->total_us, mask->max_us, copy->count, copy->total_us, copy->max_us));
     dma2d_reset_stats();
+
+    // Bus-off restarts (fdcan.c): logged only when one happened, the UART is slow.
+    static uint32_t reported_bus_off[CAN_COMMUNICATION_NETWORK_COUNT];
+    const uint32_t primary_bus_off = fdcan_get_bus_off_count(CAN_COMMUNICATION_NETWORK_PRIMARY);
+    const uint32_t secondary_bus_off = fdcan_get_bus_off_count(CAN_COMMUNICATION_NETWORK_SECONDARY);
+    if (primary_bus_off != reported_bus_off[CAN_COMMUNICATION_NETWORK_PRIMARY] || secondary_bus_off != reported_bus_off[CAN_COMMUNICATION_NETWORK_SECONDARY]) {
+        reported_bus_off[CAN_COMMUNICATION_NETWORK_PRIMARY] = primary_bus_off;
+        reported_bus_off[CAN_COMMUNICATION_NETWORK_SECONDARY] = secondary_bus_off;
+        EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_WARN, "can bus-off restarts p %lu s %lu", primary_bus_off, secondary_bus_off));
+    }
+}
+
+/*!
+ * \brief Log why the MCU last reset, then clear the flags.
+ *
+ * \details Neither the bootloader nor the HAL clears RCC_RSR, so the flags
+ *     still describe the reset that started the bootloader. SFT is also a
+ *     reset asked over CAN or by Error_Handler (which logs before it).
+ */
+EAGLETRT_STATIC void prv_main_log_reset_cause(void) {
+    const uint32_t flags = RCC->RSR;
+    __HAL_RCC_CLEAR_RESET_FLAGS();
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO,
+                                       "reset 0x%08lX%s%s%s%s%s",
+                                       flags,
+                                       ((flags & RCC_RSR_PORRSTF) != 0U) ? " POR" : "",
+                                       ((flags & RCC_RSR_BORRSTF) != 0U) ? " BOR" : "",
+                                       ((flags & RCC_RSR_PINRSTF) != 0U) ? " PIN" : "",
+                                       ((flags & RCC_RSR_SFTRSTF) != 0U) ? " SFT" : "",
+                                       ((flags & (RCC_RSR_IWDG1RSTF | RCC_RSR_WWDG1RSTF)) != 0U) ? " WDG" : ""));
 }
 
 /*!
@@ -210,6 +240,7 @@ int main(void) {
 
     prv_main_init_logging_configuration();
     EAGLETRT_API_UNUSED(logger_api_init(&logger_pal_handler, LOGGER_ENABLED));
+    prv_main_log_reset_cause();
 
     HAL_GPIO_WritePin(LCD_BL_EN_GPIO_Port, LCD_BL_EN_Pin, GPIO_PIN_SET);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
@@ -385,13 +416,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   */
 void Error_Handler(void) {
     /* USER CODE BEGIN Error_Handler_Debug */
-    /* User can add his own implementation to report the HAL error return state */
+    /* Log who failed, then reset instead of hanging: a transient fault gets
+     * another try through the bootloader, which also keeps the wheel
+     * flashable. The address goes through addr2line with firmware.elf. A
+     * failure before the logger is initialized is not logged (the call just
+     * returns). */
     __disable_irq();
-    while (1) {
-    }
+    const uintptr_t caller = (uintptr_t)__builtin_return_address(0);
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_ERROR, "Error_Handler from 0x%08lX, resetting", (unsigned long)caller));
+    NVIC_SystemReset();
     /* USER CODE END Error_Handler_Debug */
 }
-
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number

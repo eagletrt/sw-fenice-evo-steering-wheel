@@ -13,7 +13,9 @@
 #include "unity.h"
 #include "fff.h"
 #include "scheduler-api.h"
+#include "can-communications-api.h"
 #include "can-communications-router-api.h"
+#include "flash-monitor.h"
 #include "can-primary.h"
 #include "inputs-api.h"
 #include "parameters-api.h"
@@ -144,6 +146,25 @@ static struct SchedulerConfig prv_make_config(void) {
  */
 static void prv_run_until(uint32_t last_tick) {
     for (;;) {
+        TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
+        if (prv_now >= last_tick) {
+            break;
+        }
+        prv_now++;
+    }
+}
+
+/*!
+ * \brief Like prv_run_until, queueing a frame with \p id every \p period_ms
+ *     from the current tick on (another board being flashed).
+ */
+static void prv_run_until_flashing(uint32_t last_tick, uint32_t id, uint32_t period_ms) {
+    const uint32_t start = prv_now;
+    for (;;) {
+        if ((prv_now - start) % period_ms == 0U) {
+            const struct CanCommunicationFrame frame = { .id = id, .length = 8U };
+            TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame));
+        }
         TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
         if (prv_now >= last_tick) {
             break;
@@ -330,6 +351,72 @@ void test_scheduler_fsm_status_reaches_the_bus(void) {
     TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR, prv_last_fsm_status);
 }
 
+void test_scheduler_flashing_traffic_mutes_the_wheel(void) {
+    struct SchedulerConfig config = prv_make_config();
+    scheduler_api_init(&config);
+    prv_run_until(100U);
+    prv_now++;
+
+    prv_run_until_flashing(110U, CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSFLASHINGTX, 50U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_FLASH, scheduler_api_get_fsm_state(), "The first flashing frame moves the wheel to FLASH within an FSM period");
+
+    prv_sent_count = 0U;
+    const unsigned polls = fake_poll_inputs_fake.call_count;
+    prv_now++;
+    prv_run_until_flashing(1000U, CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSFLASHINGTX, 50U);
+
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_FLASH, scheduler_api_get_fsm_state(), "Traffic every 50 ms keeps the wheel in FLASH");
+    TEST_ASSERT_EQUAL_MESSAGE(0, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET), "No control maps while another board is flashed");
+    TEST_ASSERT_EQUAL(0, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELBUTTONSTATUS));
+    TEST_ASSERT_EQUAL(0, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELVERSION));
+    TEST_ASSERT_EQUAL_MESSAGE(prv_sent_count, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM), "The FSM status is the only frame on the bus");
+    TEST_ASSERT_TRUE(prv_sent_count > 0U);
+    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_FLASH, prv_last_fsm_status);
+    TEST_ASSERT_EQUAL_MESSAGE(polls, fake_poll_inputs_fake.call_count, "Inputs are not read in FLASH");
+}
+
+void test_scheduler_flash_page_names_the_board(void) {
+    struct SchedulerConfig config = prv_make_config();
+    scheduler_api_init(&config);
+
+    prv_run_until_flashing(100U, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFLASHINGRX, 50U);
+
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_INTERFACE_FLASH, "The render task mounts the FLASH page");
+    TEST_ASSERT_EQUAL_STRING(SCREEN_FLASH_TITLE, screen_handler.flash.title.text);
+    TEST_ASSERT_EQUAL_STRING("TSAC MAINBOARD", screen_handler.flash.name.text);
+}
+
+void test_scheduler_flash_ends_after_silence(void) {
+    struct SchedulerConfig config = prv_make_config();
+    scheduler_api_init(&config);
+    prv_run_until_flashing(200U, CAN_PRIMARY_MESSAGE_FRAME_ID_COOLINGFLASHINGTX, 50U);
+    const uint32_t last_frame = 200U;
+
+    prv_run_until(last_frame + FLASH_MONITOR_TIMEOUT_MS - 1U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_FLASH, scheduler_api_get_fsm_state(), "Still FLASH just before the timeout");
+
+    prv_sent_count = 0U;
+    const unsigned polls = fake_poll_inputs_fake.call_count;
+    prv_run_until(last_frame + FLASH_MONITOR_TIMEOUT_MS + 300U);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET) > 0U, "Control maps resume after FLASH");
+    TEST_ASSERT_TRUE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELBUTTONSTATUS) > 0U);
+    TEST_ASSERT_TRUE_MESSAGE(fake_poll_inputs_fake.call_count > polls, "Inputs are read again after FLASH");
+    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE, prv_last_fsm_status);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_INTERFACE_DASHBOARD, "The dashboard comes back");
+}
+
+void test_scheduler_own_flashing_frames_reset_instead_of_flash(void) {
+    struct SchedulerConfig config = prv_make_config();
+    scheduler_api_init(&config);
+
+    prv_run_until_flashing(20U, CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX, 50U);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(fake_reset_fake.call_count > 0U);
+}
+
 void test_scheduler_reset_request_resets_the_board(void) {
     struct SchedulerConfig config = prv_make_config();
     scheduler_api_init(&config);
@@ -360,7 +447,7 @@ void test_scheduler_knob_popup_shows_on_next_frame(void) {
         TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
     }
 
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "The popup raised by the knob must be mounted by the next frame");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "The popup raised by the knob must be mounted by the next frame");
 }
 
 void test_scheduler_tasks_get_the_tick_libtimebase_acted_on(void) {
@@ -397,7 +484,7 @@ void test_scheduler_parameter_change_reaches_ui_bus_and_popup(void) {
 
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(1U, ui_data_api_get()->power, "The knob step must be mirrored into the UI snapshot");
     TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET) >= 2U, "The change must go on the bus right away, on top of the cyclic send");
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.popup_visible, "A shared parameter must raise the popup");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "A shared parameter must raise the popup");
 }
 
 void test_scheduler_ptt_tints_dashboard_without_popup(void) {
@@ -409,7 +496,7 @@ void test_scheduler_ptt_tints_dashboard_without_popup(void) {
     prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
 
     TEST_ASSERT_EQUAL_UINT8(1U, ui_data_api_get()->ptt);
-    TEST_ASSERT_FALSE_MESSAGE(screen_handler.popup_visible, "PTT is not shared: no popup");
+    TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "PTT is not shared: no popup");
 }
 
 void test_scheduler_paused_task_stops_until_resumed(void) {
@@ -507,6 +594,10 @@ int main(void) {
     RUN_TEST(test_scheduler_render_skipped_outside_run);
     RUN_TEST(test_scheduler_render_failure_moves_fsm_to_error);
     RUN_TEST(test_scheduler_fsm_status_reaches_the_bus);
+    RUN_TEST(test_scheduler_flashing_traffic_mutes_the_wheel);
+    RUN_TEST(test_scheduler_flash_page_names_the_board);
+    RUN_TEST(test_scheduler_flash_ends_after_silence);
+    RUN_TEST(test_scheduler_own_flashing_frames_reset_instead_of_flash);
     RUN_TEST(test_scheduler_reset_request_resets_the_board);
     RUN_TEST(test_scheduler_routine_rejects_time_going_backwards);
     RUN_TEST(test_scheduler_knob_popup_shows_on_next_frame);

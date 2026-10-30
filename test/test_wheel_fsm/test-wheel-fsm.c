@@ -10,11 +10,13 @@
 #include "fff.h"
 #include "wheel-fsm-api.h"
 #include "can-primary.h"
+#include "flash-monitor.h"
 #include <string.h>
 
 DEFINE_FFF_GLOBALS;
 
 extern struct WheelFsmHandler wheel_fsm_handler;
+extern struct FlashMonitorHandler flash_monitor_handler;
 
 /* Same layout as the router's file-local handler, to clear a pending reset request between tests. */
 struct CanCommunicationsRouterHandler {
@@ -23,6 +25,8 @@ struct CanCommunicationsRouterHandler {
 extern struct CanCommunicationsRouterHandler can_communications_router_handler;
 
 FAKE_VOID_FUNC(fake_reset);
+FAKE_VOID_FUNC(fake_enter_flash);
+FAKE_VOID_FUNC(fake_leave_flash);
 FAKE_VALUE_FUNC(bool, fake_parameters_on_change, enum InputsSharedParameterID, uint8_t);
 FAKE_VALUE_FUNC(enum CanCommunicationReturnCode, fake_send, const struct CanCommunicationFrame *);
 FAKE_VALUE_FUNC(enum CanCommunicationReturnCode, fake_on_receive, const struct CanCommunicationFrame *);
@@ -34,6 +38,8 @@ static struct WheelFsmConfig prv_make_config(void) {
     return (struct WheelFsmConfig){
         .post = &prv_post,
         .reset = fake_reset,
+        .enter_flash = fake_enter_flash,
+        .leave_flash = fake_leave_flash,
     };
 }
 
@@ -47,6 +53,8 @@ static void prv_start_in_run(void) {
 
 void setUp(void) {
     RESET_FAKE(fake_reset);
+    RESET_FAKE(fake_enter_flash);
+    RESET_FAKE(fake_leave_flash);
     RESET_FAKE(fake_parameters_on_change);
     RESET_FAKE(fake_send);
     RESET_FAKE(fake_on_receive);
@@ -68,6 +76,7 @@ void setUp(void) {
     };
 
     memset(&wheel_fsm_handler, 0, sizeof(wheel_fsm_handler));
+    memset(&flash_monitor_handler, 0, sizeof(flash_monitor_handler));
     can_communications_router_handler.reset_asked = false;
 }
 
@@ -89,6 +98,14 @@ void test_wheel_fsm_init_rejects_missing_fields(void) {
 
     config = prv_make_config();
     config.reset = NULL;
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_NULL_POINTER, wheel_fsm_api_init(&config));
+
+    config = prv_make_config();
+    config.enter_flash = NULL;
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_NULL_POINTER, wheel_fsm_api_init(&config));
+
+    config = prv_make_config();
+    config.leave_flash = NULL;
     TEST_ASSERT_EQUAL(WHEEL_FSM_RC_NULL_POINTER, wheel_fsm_api_init(&config));
 }
 
@@ -268,6 +285,85 @@ void test_wheel_fsm_run_does_not_reset_without_request(void) {
 /*! \} */
 
 /*!
+ * \defgroup wheel_fsm_flash Tests for FLASH, driven by the flash monitor
+ * \{
+ */
+
+void test_wheel_fsm_idle_follows_the_monitor_into_flash(void) {
+    prv_start_in_run();
+    flash_monitor_handler.active = true;
+
+    wheel_fsm_api_run_state();
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_FLASH, wheel_fsm_api_get_state());
+    TEST_ASSERT_EQUAL_MESSAGE(1, fake_enter_flash_fake.call_count, "Entering FLASH must silence the wheel");
+    TEST_ASSERT_EQUAL(0, fake_leave_flash_fake.call_count);
+}
+
+void test_wheel_fsm_flash_stays_while_the_monitor_is_active(void) {
+    prv_start_in_run();
+    flash_monitor_handler.active = true;
+
+    for (uint8_t i = 0U; i < 10U; i++) {
+        wheel_fsm_api_run_state();
+    }
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_FLASH, wheel_fsm_api_get_state());
+    TEST_ASSERT_EQUAL_MESSAGE(1, fake_enter_flash_fake.call_count, "The hook runs once per transition, not per step");
+}
+
+void test_wheel_fsm_flash_returns_to_idle_when_the_monitor_stops(void) {
+    prv_start_in_run();
+    flash_monitor_handler.active = true;
+    wheel_fsm_api_run_state();
+
+    flash_monitor_handler.active = false;
+    wheel_fsm_api_run_state();
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, wheel_fsm_api_get_state());
+    TEST_ASSERT_EQUAL_MESSAGE(1, fake_leave_flash_fake.call_count, "Leaving FLASH must restore the wheel");
+}
+
+void test_wheel_fsm_flash_survives_a_late_frame(void) {
+    prv_start_in_run();
+    flash_monitor_handler.active = true;
+    wheel_fsm_api_run_state();
+    flash_monitor_handler.active = false;
+    wheel_fsm_api_run_state();
+
+    // A frame right after the timeout: the next step goes back to FLASH.
+    flash_monitor_handler.active = true;
+    wheel_fsm_api_run_state();
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_FLASH, wheel_fsm_api_get_state());
+    TEST_ASSERT_EQUAL(2, fake_enter_flash_fake.call_count);
+}
+
+void test_wheel_fsm_flash_still_resets_on_bootloader_request(void) {
+    prv_start_in_run();
+    flash_monitor_handler.active = true;
+    wheel_fsm_api_run_state();
+    can_communications_router_handler.reset_asked = true;
+
+    wheel_fsm_api_run_state();
+
+    TEST_ASSERT_EQUAL(1, fake_reset_fake.call_count);
+}
+
+void test_wheel_fsm_error_ignores_the_monitor(void) {
+    prv_start_in_run();
+    wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR);
+    flash_monitor_handler.active = true;
+    wheel_fsm_api_run_state();
+    wheel_fsm_api_run_state();
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, wheel_fsm_api_get_state());
+    TEST_ASSERT_EQUAL(0, fake_enter_flash_fake.call_count);
+}
+
+/*! \} */
+
+/*!
  * \defgroup wheel_fsm_names Tests for the CAN status mapping and the state names
  * \{
  */
@@ -316,6 +412,13 @@ int main(void) {
 
     RUN_TEST(test_wheel_fsm_run_resets_on_bootloader_request);
     RUN_TEST(test_wheel_fsm_run_does_not_reset_without_request);
+
+    RUN_TEST(test_wheel_fsm_idle_follows_the_monitor_into_flash);
+    RUN_TEST(test_wheel_fsm_flash_stays_while_the_monitor_is_active);
+    RUN_TEST(test_wheel_fsm_flash_returns_to_idle_when_the_monitor_stops);
+    RUN_TEST(test_wheel_fsm_flash_survives_a_late_frame);
+    RUN_TEST(test_wheel_fsm_flash_still_resets_on_bootloader_request);
+    RUN_TEST(test_wheel_fsm_error_ignores_the_monitor);
 
     RUN_TEST(test_wheel_fsm_can_status_mapping);
     RUN_TEST(test_wheel_fsm_state_names);
