@@ -57,13 +57,51 @@ void tearDown(void) {}
  * \{
  */
 
+/*!
+ * \brief Boards that are really flashed over CAN, by their libcan Tx identifier.
+ *
+ * \details Listed by hand: libcan also defines flashing pairs for boards that
+ *     don't exist (BatteryFlashingTx/Rx), so the identifier range alone can't
+ *     tell which pairs are real.
+ */
+static const uint32_t prv_expected_tx_ids[] = {
+    CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSFLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_COOLINGFLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_LVACFLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_PIPOFLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_DASFRONTFLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_DASREARFLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_TSACCELLBOARD1FLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_TSACCELLBOARD2FLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_TSACCELLBOARD3FLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_TSACCELLBOARD4FLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_TSACCELLBOARD5FLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_TSACCELLBOARD6FLASHINGTX,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGBOARDFLASHINGTX,
+};
+
+#define TEST_EXPECTED_BOARD_COUNT (sizeof(prv_expected_tx_ids) / sizeof(prv_expected_tx_ids[0]))
+
 void test_flash_monitor_table_covers_every_other_board(void) {
-    for (uint32_t id = TEST_FLASH_FIRST_ID; id <= TEST_FLASH_LAST_ID; id++) {
-        if (prv_is_own_id(id)) {
-            continue;
-        }
-        TEST_ASSERT_NOT_NULL_MESSAGE(prv_flash_monitor_api_find_target(id), "Every libcan flashing ID of another board must be in the table");
+    for (size_t i = 0U; i < TEST_EXPECTED_BOARD_COUNT; i++) {
+        const struct FlashMonitorTarget *target = prv_flash_monitor_api_find_target(prv_expected_tx_ids[i]);
+        TEST_ASSERT_NOT_NULL_MESSAGE(target, "Every board flashed over CAN must be in the table");
+        TEST_ASSERT_EQUAL(prv_expected_tx_ids[i], target->tx_id);
+        TEST_ASSERT_EQUAL_PTR_MESSAGE(target, prv_flash_monitor_api_find_target(prv_expected_tx_ids[i] + 1U), "Both frames of a pair must map to the board");
     }
+}
+
+void test_flash_monitor_table_has_only_real_boards(void) {
+    size_t found = 0U;
+    for (uint32_t id = TEST_FLASH_FIRST_ID; id <= TEST_FLASH_LAST_ID; id++) {
+        const struct FlashMonitorTarget *target = prv_flash_monitor_api_find_target(id);
+        if (target != NULL && id == target->tx_id) {
+            found++;
+        }
+    }
+    TEST_ASSERT_EQUAL_MESSAGE(TEST_EXPECTED_BOARD_COUNT, found, "A pair in the table that isn't a real board would put the wheel in FLASH for nothing");
 }
 
 void test_flash_monitor_table_excludes_the_wheel(void) {
@@ -181,6 +219,7 @@ int main(void) {
     UNITY_BEGIN();
 
     RUN_TEST(test_flash_monitor_table_covers_every_other_board);
+    RUN_TEST(test_flash_monitor_table_has_only_real_boards);
     RUN_TEST(test_flash_monitor_table_excludes_the_wheel);
     RUN_TEST(test_flash_monitor_table_ignores_other_messages);
     RUN_TEST(test_flash_monitor_table_pairs_are_consistent);

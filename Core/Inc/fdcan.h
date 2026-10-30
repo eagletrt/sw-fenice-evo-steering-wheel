@@ -79,6 +79,15 @@ enum CanCommunicationReturnCode fdcan_send_primary(const struct CanCommunication
  */
 enum CanCommunicationReturnCode fdcan_send_secondary(const struct CanCommunicationFrame *frame);
 
+/*!
+ * \brief Number of times a network went bus-off (and was restarted) since boot.
+ *
+ * \param network CAN_COMMUNICATION_NETWORK_PRIMARY or CAN_COMMUNICATION_NETWORK_SECONDARY.
+ *
+ * \return The count.
+ */
+uint32_t fdcan_get_bus_off_count(enum CanCommunicationNetwork network);
+
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

@@ -42,14 +42,21 @@ void MX_I2C4_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+/*!
+ * \brief Free the bus and configure both GPIO expanders.
+ *
+ * \details Never fatal: if the expanders don't answer, the failure is logged
+ *     and i2c_inputs_poll keeps trying to bring them back.
+ */
 void i2c_inputs_init(void);
 
 /*!
  * \brief Poll the expanders and feed raw button/knob states to the inputs module.
  *
- * \details Buttons are read on every call; the manettini are rate-limited
- *     internally for debouncing. Intended to be called from the main loop
- *     every ~10 ms.
+ * \details Buttons and manettini are read on every call. A failed read, or
+ *     an expander that lost its configuration, releases every button and
+ *     starts a bus recovery, retried every few polls until the expanders
+ *     answer again. Intended to be called every ~10 ms (inputs task).
  *
  * \param current_tick_ms Current tick count in milliseconds.
  */
