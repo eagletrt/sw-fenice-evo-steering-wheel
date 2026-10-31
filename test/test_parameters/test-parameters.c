@@ -148,7 +148,7 @@ void test_parameters_handle_button_toggle_1_to_0(void) {
 }
 
 void test_parameters_handle_button_ignores_unmapped_button(void) {
-    enum InputsReturnCode rc = parameters_api_handle_button(INPUTS_SHARED_BUTTON_ID_TOP_LEFT_1);
+    enum InputsReturnCode rc = parameters_api_handle_button(INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_LEFT);
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_RC_OK, rc, "Unmapped buttons must return OK without error");
     TEST_ASSERT_EQUAL_MESSAGE(0, on_change_callback_fake.call_count, "Unmapped buttons must not fire on_change");
 }

@@ -29,6 +29,11 @@
 #define FLASH_MONITOR_TIMEOUT_MS (500U)
 
 /*!
+ * \brief Watchdogs the flash monitor takes from the pool.
+ */
+#define FLASH_MONITOR_WATCHDOG_COUNT (1U)
+
+/*!
  * \brief Return codes for flash monitor operations.
  */
 enum FlashMonitorReturnCode {

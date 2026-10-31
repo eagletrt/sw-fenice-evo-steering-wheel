@@ -17,12 +17,14 @@
 #include "can-communications-router-api.h"
 #include "flash-monitor.h"
 #include "can-primary.h"
+#include "input-events.h"
 #include "inputs-api.h"
 #include "parameters-api.h"
 #include "screen.h"
 #include "screen-api.h"
 #include "tasks-api.h"
 #include "ui-data-api.h"
+#include "watchdogs-api.h"
 #include "wheel-fsm-api.h"
 #include <string.h>
 
@@ -30,6 +32,7 @@ DEFINE_FFF_GLOBALS;
 
 extern struct SchedulerHandler scheduler_handler;
 extern struct ScreenHandler screen_handler;
+extern struct InputEventsHandler input_events_handler;
 
 FAKE_VALUE_FUNC(uint32_t, fake_get_tick);
 FAKE_VOID_FUNC(fake_poll_inputs, uint32_t);
@@ -104,7 +107,21 @@ static void prv_swap_trace(void) {
 
 /* Holds the top-left PTT paddle down. */
 static void prv_poll_inputs_hold_ptt(uint32_t tick_ms) {
-    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT, true, tick_ms);
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT, true);
+}
+
+/* Clicks the power knob once per poll through the inputs module, as the I2C poll does. */
+static int16_t prv_knob_position;
+static void prv_poll_inputs_click_knob(uint32_t tick_ms) {
+    (void)tick_ms;
+    prv_knob_position++;
+    inputs_api_update_knob(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, prv_knob_position);
+}
+
+/* Holds both buttons of the (placeholder) menu combo. */
+static void prv_poll_inputs_hold_menu_combo(uint32_t tick_ms) {
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TOP_LEFT, true);
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TOP_RIGHT, true);
 }
 
 static size_t prv_count_sent(uint32_t id) {
@@ -185,6 +202,7 @@ void setUp(void) {
     prv_now = 0U;
     prv_cycles = 0U;
     prv_sent_count = 0U;
+    prv_knob_position = 0;
     prv_last_fsm_status = UINT8_MAX;
     fake_get_tick_fake.custom_fake = prv_get_tick;
     fake_get_cycles_fake.custom_fake = prv_get_cycles;
@@ -499,6 +517,42 @@ void test_scheduler_ptt_tints_dashboard_without_popup(void) {
     TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "PTT is not shared: no popup");
 }
 
+void test_scheduler_knob_reaches_the_parameter_through_the_router(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_click_knob;
+    scheduler_api_init(&config);
+
+    prv_run_until(0U);
+
+    TEST_ASSERT_EQUAL_UINT8(1U, parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER));
+}
+
+void test_scheduler_inputs_ignored_in_error(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_click_knob;
+    scheduler_api_init(&config);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_run_state());
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, wheel_fsm_api_get_state());
+
+    prv_run_until(100U);
+
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER), "Knobs do nothing in ERROR");
+}
+
+void test_scheduler_menu_combo_fires_through_the_watchdog_pool(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_hold_menu_combo;
+    scheduler_api_init(&config);
+    struct Watchdog *menu = &input_events_handler.combo_watchdogs[INPUT_EVENTS_COMBO_MENU];
+
+    // First poll at 0: the hold time ends at INPUT_EVENTS_COMBO_HOLD_MS.
+    prv_run_until(INPUT_EVENTS_COMBO_HOLD_MS - 1U);
+    TEST_ASSERT_TRUE(watchdogs_api_watchdog_is_running(menu));
+    prv_run_until(INPUT_EVENTS_COMBO_HOLD_MS);
+    TEST_ASSERT_TRUE_MESSAGE(watchdogs_api_watchdog_is_timed_out(menu), "The scheduler's watchdog routine fires the combo");
+}
+
 void test_scheduler_paused_task_stops_until_resumed(void) {
     struct SchedulerConfig config = prv_make_config();
     scheduler_api_init(&config);
@@ -605,6 +659,9 @@ int main(void) {
     RUN_TEST(test_scheduler_late_routine_drops_missed_runs);
     RUN_TEST(test_scheduler_parameter_change_reaches_ui_bus_and_popup);
     RUN_TEST(test_scheduler_ptt_tints_dashboard_without_popup);
+    RUN_TEST(test_scheduler_knob_reaches_the_parameter_through_the_router);
+    RUN_TEST(test_scheduler_inputs_ignored_in_error);
+    RUN_TEST(test_scheduler_menu_combo_fires_through_the_watchdog_pool);
     RUN_TEST(test_scheduler_paused_task_stops_until_resumed);
     RUN_TEST(test_scheduler_resume_running_task_is_harmless);
     RUN_TEST(test_scheduler_pause_resume_reject_invalid_task);

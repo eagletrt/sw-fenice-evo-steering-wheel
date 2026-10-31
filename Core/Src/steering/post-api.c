@@ -8,6 +8,7 @@
  */
 
 #include "post-api.h"
+#include "input-events-api.h"
 #include "inputs-api.h"
 #include "parameters-api.h"
 #include "can-communications-api.h"
@@ -31,14 +32,12 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
         ret_code = POST_RC_ERROR;
     }
 
-    // Press and release both feed parameters-api: release is needed so the
-    // PTT chord (both top paddles held) can detect a let-go on either side.
-    // Long-press is unused today.
+    // Every input goes through the event layer (combos), then the router
+    // decides per FSM state what reaches the parameters.
     if (inputs_api_init(
-            parameters_api_handle_button,
-            NULL,
-            parameters_api_handle_button_release,
-            parameters_api_handle_knob) != INPUTS_RC_OK) {
+            input_events_api_on_button_press,
+            input_events_api_on_button_release,
+            input_events_api_on_knob_rotation) != INPUTS_RC_OK) {
         ret_code = POST_RC_ERROR;
     }
 

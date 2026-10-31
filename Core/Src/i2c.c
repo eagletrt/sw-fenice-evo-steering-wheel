@@ -132,10 +132,10 @@ static const struct {
     uint8_t bit;
     enum InputsSharedButtonID button_id;
 } button_wiring[] = {
-    { 7U, INPUTS_SHARED_BUTTON_ID_TOP_LEFT_1 },
+    { 7U, INPUTS_SHARED_BUTTON_ID_TOP_LEFT },
     { 5U, INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT },
     { 3U, INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT },
-    { 1U, INPUTS_SHARED_BUTTON_ID_TOP_RIGHT_1 },
+    { 1U, INPUTS_SHARED_BUTTON_ID_TOP_RIGHT },
     { 0U, INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_RIGHT },
     { 6U, INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_LEFT },
     { 4U, INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT },
@@ -348,14 +348,12 @@ static bool prv_i2c_expanders_start(uint8_t attempts) {
  *
  * \details Releasing is the safe default: a button held when the bus died
  *     (PTT, TSon) must not stay pressed until the expanders come back.
- *
- * \param current_tick_ms Current tick, for the button releases.
  */
-static void prv_i2c_expanders_lost(uint32_t current_tick_ms) {
+static void prv_i2c_expanders_lost(void) {
     expanders.ready = false;
     expanders.polls_to_retry = 0U;
     for (size_t i = 0U; i < sizeof(button_wiring) / sizeof(button_wiring[0]); i++) {
-        inputs_api_update_button(button_wiring[i].button_id, false, current_tick_ms);
+        inputs_api_update_button(button_wiring[i].button_id, false);
     }
     logger_api_log(LOGGER_LEVEL_WARN, "I2C expanders lost, recovering");
 }
@@ -511,19 +509,19 @@ void i2c_inputs_poll(uint32_t current_tick_ms) {
     } else {
         expanders.polls_to_check = I2C_CHECK_POLLS;
         if (mcp23017_api_check_config(&mcp23017_dev1) != MCP23017_RC_OK || mcp23017_api_check_config(&mcp23017_dev2) != MCP23017_RC_OK) {
-            prv_i2c_expanders_lost(current_tick_ms);
+            prv_i2c_expanders_lost();
             return;
         }
     }
 
     uint8_t buttons_port = 0U;
     if (mcp23017_api_read_port(&mcp23017_dev1, MCP23017_PORT_B, &buttons_port) != MCP23017_RC_OK) {
-        prv_i2c_expanders_lost(current_tick_ms);
+        prv_i2c_expanders_lost();
         return;
     }
     for (size_t i = 0U; i < sizeof(button_wiring) / sizeof(button_wiring[0]); i++) {
         const bool pressed = ((buttons_port >> button_wiring[i].bit) & 1U) == 0U;
-        inputs_api_update_button(button_wiring[i].button_id, pressed, current_tick_ms);
+        inputs_api_update_button(button_wiring[i].button_id, pressed);
     }
 
     /* Sampled on every pass, not rate-limited: the codes between detents do
@@ -536,7 +534,7 @@ void i2c_inputs_poll(uint32_t current_tick_ms) {
     if (!prv_i2c_manettino_poll(I2C_MANETTINO_LEFT, &mcp23017_dev1, MCP23017_PORT_A, resync) ||
         !prv_i2c_manettino_poll(I2C_MANETTINO_CENTER, &mcp23017_dev2, MCP23017_PORT_B, resync) ||
         !prv_i2c_manettino_poll(I2C_MANETTINO_RIGHT, &mcp23017_dev2, MCP23017_PORT_A, resync)) {
-        prv_i2c_expanders_lost(current_tick_ms);
+        prv_i2c_expanders_lost();
     }
 }
 

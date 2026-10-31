@@ -45,10 +45,8 @@ void MX_GPIO_Init(void);
  *
  * \details Intended to be called from the main loop every ~10 ms, together
  *     with i2c_inputs_poll.
- *
- * \param current_tick_ms Current tick count in milliseconds.
  */
-void gpio_inputs_poll(uint32_t current_tick_ms);
+void gpio_inputs_poll(void);
 
 /* USER CODE END Prototypes */
 

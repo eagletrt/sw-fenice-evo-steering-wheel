@@ -15,6 +15,8 @@
 #include "eagletrt-api.h"
 #include "flash-monitor-api.h"
 #include "identity-api.h"
+#include "input-events-api.h"
+#include "input-router-api.h"
 #include "inputs-api.h"
 #include "logger-api.h"
 #include "parameters-api.h"
@@ -28,6 +30,7 @@
 #include <string.h>
 
 static_assert(SCHEDULER_TASK_COUNT <= MAX_TASKS, "libtimebase cannot hold every scheduler task");
+static_assert(FLASH_MONITOR_WATCHDOG_COUNT + INPUT_EVENTS_WATCHDOG_COUNT <= MAX_WATCHDOGS, "libtimebase's watchdog pool cannot hold every watchdog");
 
 /*!
  * \brief Body of a task, called with the tick of the current routine call.
@@ -113,11 +116,8 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_rx(uint32_t tick_ms) {
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_inputs(uint32_t tick_ms) {
+    // Long presses and combos are timed by their watchdogs, not here.
     scheduler_handler.config.poll_inputs(tick_ms);
-    // A transient NAK from the input expanders is not worth bricking the
-    // wheel over: ERROR has no way back and the display is the one thing
-    // the driver actually needs.
-    EAGLETRT_API_UNUSED(inputs_api_poll_for_long_press(tick_ms));
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_fsm(uint32_t tick_ms) {
@@ -212,6 +212,18 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
     if (scheduler_handler.config.report_stats != NULL) {
         scheduler_handler.config.report_stats();
     }
+}
+
+/*!
+ * \brief Input router hook: a combo recognised in the current state.
+ *
+ * \details TODO(#9): the menu combo requests MENU, the wake combo leaves the
+ *     screen saver. Until those states exist the combo is only logged.
+ *
+ * \param combo_id The combo.
+ */
+EAGLETRT_STATIC void prv_scheduler_api_on_combo(enum InputEventsComboId combo_id) {
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "input combo %s", (combo_id == INPUT_EVENTS_COMBO_MENU) ? "MENU" : "WAKE"));
 }
 
 /*!
@@ -336,6 +348,23 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     scheduler_handler.config = *config;
     scheduler_handler.config.post.parameters_on_change = prv_scheduler_api_on_parameter_change;
 
+    // The pool comes first: the flash monitor and the combos run in it, and
+    // the POST (FSM INIT step below) wires the inputs to the event layer.
+    if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_scheduler_api_read_tick) != WATCHDOG_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+    if (flash_monitor_api_init(&scheduler_handler.watchdogs) != FLASH_MONITOR_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+    const struct InputRouterConfig router_config = {
+        .get_state = wheel_fsm_api_get_state,
+        .on_combo = prv_scheduler_api_on_combo,
+    };
+    if (input_events_api_init(&scheduler_handler.watchdogs, input_router_api_handle_event) != INPUT_EVENTS_RC_OK ||
+        input_router_api_init(&router_config) != INPUT_ROUTER_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+
     const struct WheelFsmConfig fsm_config = {
         .post = &scheduler_handler.config.post,
         .reset = config->reset,
@@ -367,13 +396,6 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     if (tasks_api_init(&scheduler_handler.tasks, task_list, SCHEDULER_TASK_COUNT, prv_scheduler_api_read_tick) != TASKS_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
-    if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_scheduler_api_read_tick) != WATCHDOG_RC_OK) {
-        return SCHEDULER_RC_ERROR;
-    }
-    if (flash_monitor_api_init(&scheduler_handler.watchdogs) != FLASH_MONITOR_RC_OK) {
-        return SCHEDULER_RC_ERROR;
-    }
-
     return SCHEDULER_RC_OK;
 }
 

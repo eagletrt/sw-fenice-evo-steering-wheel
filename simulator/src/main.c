@@ -19,9 +19,9 @@
  *       z/x  manettino FRONT_CENTER (TORQUE VECTORING) -/+
  *       e    button BOTTOM_LEFT  (TELEMETRY LOG toggle)
  *       d    button BOTTOM_RIGHT (LAUNCH CONTROL toggle)
- *       r/f  buttons TOP_LEFT_1 / TOP_RIGHT_1 (no function yet)
+ *       r/f  buttons TOP_LEFT / TOP_RIGHT (both for 1 s: menu combo, logged)
  *       c/v  paddles TOP_LEFT / TOP_RIGHT (PTT, hold)
- *       b/n  paddles BOTTOM_LEFT / BOTTOM_RIGHT (no function yet)
+ *       b/n  paddles BOTTOM_LEFT / BOTTOM_RIGHT (both for 1 s: wake combo)
  *       t    TS-on button (hold)
  *       1    inject EcuFsm with the next vehicle status
  *       2    inject one step of telemetry (SoC, temperatures, laps)
@@ -92,9 +92,9 @@
  */
 EAGLETRT_STATIC const int simulator_button_keys[INPUTS_SHARED_BUTTON_ID_COUNT] = {
     [INPUTS_SHARED_BUTTON_ID_TS_ON] = 'T',
-    [INPUTS_SHARED_BUTTON_ID_TOP_LEFT_1] = 'R',
+    [INPUTS_SHARED_BUTTON_ID_TOP_LEFT] = 'R',
     [INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT] = 'E',
-    [INPUTS_SHARED_BUTTON_ID_TOP_RIGHT_1] = 'F',
+    [INPUTS_SHARED_BUTTON_ID_TOP_RIGHT] = 'F',
     [INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT] = 'D',
     [INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT] = 'C',
     [INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_LEFT] = 'B',
@@ -262,13 +262,14 @@ EAGLETRT_STATIC void simulator_swap_framebuffers(void) {
  *     tap shorter than one poll is reported as pressed for one poll.
  */
 EAGLETRT_STATIC void simulator_poll_inputs(uint32_t tick_ms) {
+    EAGLETRT_API_UNUSED(tick_ms);
     for (uint8_t id = 0U; id < INPUTS_SHARED_BUTTON_ID_COUNT; id++) {
         if (simulator_button_keys[id] == 0) {
             continue;
         }
         const bool pressed = simulator_button_held[id] || simulator_button_tapped[id];
         simulator_button_tapped[id] = false;
-        EAGLETRT_API_UNUSED(inputs_api_update_button((enum InputsSharedButtonID)id, pressed, tick_ms));
+        EAGLETRT_API_UNUSED(inputs_api_update_button((enum InputsSharedButtonID)id, pressed));
     }
     for (uint8_t id = 0U; id < INPUTS_SHARED_KNOB_ID_COUNT; id++) {
         EAGLETRT_API_UNUSED(inputs_api_update_knob((enum InputsSharedKnobID)id, simulator_knob_positions[id]));
