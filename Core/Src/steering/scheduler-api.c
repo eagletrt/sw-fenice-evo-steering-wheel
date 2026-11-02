@@ -27,7 +27,7 @@
 #include <inttypes.h>
 #include <string.h>
 
-static_assert(SCHEDULER_TASK_COUNT <= MAX_TASKS, "libtimebase cannot hold every scheduler task");
+static_assert(SCHEDULER_TASK_COUNT <= TASKS_MAX_COUNT, "libtimebase cannot hold every scheduler task");
 
 /*!
  * \brief Body of a task, called with the tick of the current routine call.
@@ -338,7 +338,6 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
 
     const struct WheelFsmConfig fsm_config = {
         .post = &scheduler_handler.config.post,
-        .reset = config->reset,
         .enter_flash = prv_scheduler_api_enter_flash,
         .leave_flash = prv_scheduler_api_leave_flash,
     };
@@ -370,7 +369,7 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_scheduler_api_read_tick) != WATCHDOG_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
-    if (flash_monitor_api_init(&scheduler_handler.watchdogs) != FLASH_MONITOR_RC_OK) {
+    if (flash_monitor_api_init(&scheduler_handler.watchdogs, config->reset) != FLASH_MONITOR_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
 

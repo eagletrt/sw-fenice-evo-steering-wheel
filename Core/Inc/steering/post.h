@@ -15,6 +15,8 @@
 #include "raster.h"
 #include "screen.h"
 
+#include <stdbool.h>
+
 enum PostReturnCode {
     POST_RC_OK,    /*!< POST completed successfully. */
     POST_RC_ERROR, /*!< POST encountered an error. */
@@ -24,6 +26,7 @@ struct PostInitData {
     parameters_on_change_callback parameters_on_change;                                         /*!< Callback fired on every parameter transition. */
     struct CanCommunicationsNetworkConfig can_network_configs[CAN_COMMUNICATION_NETWORK_COUNT]; /*!< Configuration for each CAN network. */
     raster_draw_rectangle_callback draw_rectangle;                                              /*!< Callback function required by screen module. */
+    bool can_filters_overflow;                                                                  /*!< The FDCAN has fewer filter slots than the router's list: the POST fails. */
     struct ScreenAccelerators screen_accelerators;                                              /*!< Optional screen accelerators (all NULL = none). */
 };
 

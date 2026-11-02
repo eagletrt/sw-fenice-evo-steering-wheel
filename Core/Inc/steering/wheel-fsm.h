@@ -45,11 +45,6 @@ enum WheelFsmState : uint8_t {
 };
 
 /*!
- * \brief Reset the system (bootloader request).
- */
-typedef void (*wheel_fsm_reset_callback)(void);
-
-/*!
  * \brief Switch the rest of the wheel into or out of a mode (e.g. pause its tasks).
  */
 typedef void (*wheel_fsm_mode_callback)(void);
@@ -59,7 +54,6 @@ typedef void (*wheel_fsm_mode_callback)(void);
  */
 struct WheelFsmConfig {
     struct PostInitData *post;           /*!< Required: handed to the POST by INIT, must outlive the FSM */
-    wheel_fsm_reset_callback reset;      /*!< Required: system reset (bootloader request) */
     wheel_fsm_mode_callback enter_flash; /*!< Required: IDLE -> FLASH, silence everything but the FSM status */
     wheel_fsm_mode_callback leave_flash; /*!< Required: FLASH -> IDLE, undo enter_flash */
 };

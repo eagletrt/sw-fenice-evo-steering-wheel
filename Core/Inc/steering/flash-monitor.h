@@ -11,8 +11,8 @@
  *     them is on the bus the wheel must stay quiet: the monitor is active from
  *     the first one until none has been seen for FLASH_MONITOR_TIMEOUT_MS (a
  *     libtimebase watchdog), and the FSM follows it (IDLE <-> FLASH). The
- *     wheel's own pair is not part of it: it asks the wheel to reset into its
- *     bootloader.
+ *     wheel's own pair asks the wheel to reset into its bootloader: the
+ *     monitor resets it right away, whatever state the FSM is in.
  */
 
 #ifndef FLASH_MONITOR_H
@@ -29,11 +29,16 @@
 #define FLASH_MONITOR_TIMEOUT_MS (500U)
 
 /*!
+ * \brief Reset the wheel into its bootloader.
+ */
+typedef void (*flash_monitor_reset_callback)(void);
+
+/*!
  * \brief Return codes for flash monitor operations.
  */
 enum FlashMonitorReturnCode {
     FLASH_MONITOR_RC_OK,           /*!< Operation completed successfully */
-    FLASH_MONITOR_RC_NULL_POINTER, /*!< A required pointer was NULL */
+    FLASH_MONITOR_RC_NULL_POINTER, /*!< A required pointer or callback was NULL */
     FLASH_MONITOR_RC_ERROR,        /*!< libtimebase rejected the watchdog */
 };
 
@@ -51,6 +56,7 @@ struct FlashMonitorTarget {
  */
 struct FlashMonitorHandler {
     struct WatchdogHandler *watchdogs;       /*!< Pool the timeout watchdog runs in */
+    flash_monitor_reset_callback reset;      /*!< Called on the wheel's own flashing frames */
     struct Watchdog watchdog;                /*!< Restarted by every flashing frame, expires after FLASH_MONITOR_TIMEOUT_MS of silence */
     const struct FlashMonitorTarget *target; /*!< Board of the last flashing frame, NULL before the first one */
     bool active;                             /*!< A flashing frame was seen and the watchdog hasn't expired since */

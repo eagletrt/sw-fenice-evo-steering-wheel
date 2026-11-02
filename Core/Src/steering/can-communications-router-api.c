@@ -19,13 +19,28 @@
 #include <string.h>
 
 /*!
- * \brief File-static state of the router.
+ * \brief Primary identifiers the FDCAN lets through, in programming order.
+ *
+ * \details Flashing traffic comes first, so that if the peripheral has fewer
+ *     filter slots than entries the wheel can still be reset into its
+ *     bootloader and reflashed. Then every message the dashboard decodes.
  */
-struct CanCommunicationsRouterHandler {
-    bool reset_asked; /*!< True if reset has been asked for bootloader. */
+EAGLETRT_STATIC const struct CanCommunicationsRouterFilter prv_router_api_primary_filters[] = {
+    // Every <Board>FlashingTx/Rx pair, the wheel's own included (flash monitor).
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFLASHINGTX, CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGBOARDFLASHINGRX },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM, CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDESTIMATEDSOC, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDESTIMATEDSOC },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDTEMPERATUREINFO, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDTEMPERATUREINFO },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_INVERTERTEMPERATURE, CAN_PRIMARY_MESSAGE_FRAME_ID_INVERTERTEMPERATURE },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_MOTORTEMPERATURE, CAN_PRIMARY_MESSAGE_FRAME_ID_MOTORTEMPERATURE },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREFRONT, CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREFRONT },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREREAR, CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREREAR },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_CURRENTLAP, CAN_PRIMARY_MESSAGE_FRAME_ID_CURRENTLAP },
+    { CAN_PRIMARY_MESSAGE_FRAME_ID_LAPS, CAN_PRIMARY_MESSAGE_FRAME_ID_LAPS },
 };
 
-EAGLETRT_STATIC struct CanCommunicationsRouterHandler can_communications_router_handler;
+static_assert(sizeof(prv_router_api_primary_filters) / sizeof(prv_router_api_primary_filters[0]) == CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT,
+              "update CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (and FDCAN1 StdFiltersNbr in the .ioc)");
 
 /*!
  * \brief Scale from the 0..1 state-of-charge libcan reports to a percentage.
@@ -202,33 +217,8 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
     union CanPrimaryMessages decoded;
     struct UIData *ui_data = ui_data_api_get();
 
-    if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX || frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX) {
-        can_communications_router_handler.reset_asked = true;
-        return CAN_COMMUNICATION_RC_OK;
-    }
-
-    // Another board being flashed: nothing to decode, the FSM goes quiet.
-    if (flash_monitor_api_on_frame(frame->id)) {
-        return CAN_COMMUNICATION_RC_OK;
-    }
-
-    switch ((enum CanPrimaryMessageFrameId)frame->id) {
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM:
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDESTIMATEDSOC:
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDTEMPERATUREINFO:
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_INVERTERTEMPERATURE:
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_MOTORTEMPERATURE:
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREFRONT:
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREREAR:
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_CURRENTLAP:
-        case CAN_PRIMARY_MESSAGE_FRAME_ID_LAPS:
-            break;
-
-        default:
-            // Not a message the dashboard renders.
-            return CAN_COMMUNICATION_RC_OK;
-    }
-
+    // Every frame that gets here is decoded: the FDCAN filter
+    // (can_communications_router_api_get_filters) keeps the rest out.
     if (can_primary_api_deserialize_from_id((enum CanPrimaryMessageFrameId)frame->id, payload, &decoded) < 0) {
         return CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR;
     }
@@ -283,6 +273,8 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
             break;
 
         default:
+            // Flashing traffic (the wheel's own resets it), or nothing for us.
+            EAGLETRT_API_UNUSED(flash_monitor_api_on_frame(frame->id));
             break;
     }
 
@@ -299,6 +291,26 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_secondary(
     return CAN_COMMUNICATION_RC_OK;
 }
 
-bool can_communications_router_api_reset_asked(void) {
-    return can_communications_router_handler.reset_asked;
+const struct CanCommunicationsRouterFilter *can_communications_router_api_get_filters(enum CanCommunicationNetwork network, size_t *count) {
+    if (count == NULL) {
+        return NULL;
+    }
+    // Nothing is decoded on the secondary network: it accepts no frame.
+    if (network != CAN_COMMUNICATION_NETWORK_PRIMARY) {
+        *count = 0U;
+        return NULL;
+    }
+    *count = CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT;
+    return prv_router_api_primary_filters;
+}
+
+bool can_communications_router_api_accepts(enum CanCommunicationNetwork network, uint32_t id) {
+    size_t count = 0U;
+    const struct CanCommunicationsRouterFilter *filters = can_communications_router_api_get_filters(network, &count);
+    for (size_t i = 0U; i < count; i++) {
+        if (id >= filters[i].first_id && id <= filters[i].last_id) {
+            return true;
+        }
+    }
+    return false;
 }

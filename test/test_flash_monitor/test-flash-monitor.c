@@ -10,6 +10,7 @@
  */
 
 #include "unity.h"
+#include "fff.h"
 #include "flash-monitor-api.h"
 #include "can-primary.h"
 #include "font-api.h"
@@ -26,6 +27,10 @@ const struct FlashMonitorTarget *prv_flash_monitor_api_find_target(uint32_t id);
 #define TEST_FLASH_LAST_ID ((uint32_t)CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGBOARDFLASHINGRX)
 /* Space left on each side of a board name on the FLASH page. */
 #define TEST_FLASH_NAME_MARGIN (40U)
+
+DEFINE_FFF_GLOBALS;
+
+FAKE_VOID_FUNC(fake_reset);
 
 static uint32_t prv_now;
 static struct WatchdogHandler prv_watchdogs;
@@ -45,9 +50,11 @@ static bool prv_is_own_id(uint32_t id) {
 }
 
 void setUp(void) {
+    RESET_FAKE(fake_reset);
+    FFF_RESET_HISTORY();
     prv_now = 0U;
     TEST_ASSERT_EQUAL(WATCHDOG_RC_OK, watchdogs_api_init_pool(&prv_watchdogs, prv_get_tick));
-    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_OK, flash_monitor_api_init(&prv_watchdogs));
+    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_OK, flash_monitor_api_init(&prv_watchdogs, fake_reset));
 }
 
 void tearDown(void) {}
@@ -147,7 +154,8 @@ void test_flash_monitor_table_names_fit_the_screen(void) {
  */
 
 void test_flash_monitor_init_rejects_null(void) {
-    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_NULL_POINTER, flash_monitor_api_init(NULL));
+    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_NULL_POINTER, flash_monitor_api_init(NULL, fake_reset));
+    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_NULL_POINTER, flash_monitor_api_init(&prv_watchdogs, NULL));
 }
 
 void test_flash_monitor_starts_inactive(void) {
@@ -164,9 +172,25 @@ void test_flash_monitor_flashing_frame_activates(void) {
 
 void test_flash_monitor_other_frames_are_not_consumed(void) {
     TEST_ASSERT_FALSE(flash_monitor_api_on_frame(CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM));
-    TEST_ASSERT_FALSE_MESSAGE(flash_monitor_api_on_frame(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX), "The router needs the wheel's own frames for the reset");
 
     TEST_ASSERT_FALSE(flash_monitor_api_is_active());
+    TEST_ASSERT_EQUAL(0, fake_reset_fake.call_count);
+}
+
+void test_flash_monitor_own_frames_reset_the_wheel(void) {
+    TEST_ASSERT_TRUE(flash_monitor_api_on_frame(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX));
+    TEST_ASSERT_EQUAL(1, fake_reset_fake.call_count);
+    TEST_ASSERT_TRUE(flash_monitor_api_on_frame(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX));
+    TEST_ASSERT_EQUAL(2, fake_reset_fake.call_count);
+
+    TEST_ASSERT_FALSE_MESSAGE(flash_monitor_api_is_active(), "The wheel's own flashing is not another board's");
+}
+
+void test_flash_monitor_other_boards_do_not_reset(void) {
+    for (size_t i = 0U; i < sizeof(prv_expected_tx_ids) / sizeof(prv_expected_tx_ids[0]); i++) {
+        TEST_ASSERT_TRUE(flash_monitor_api_on_frame(prv_expected_tx_ids[i]));
+    }
+    TEST_ASSERT_EQUAL(0, fake_reset_fake.call_count);
 }
 
 void test_flash_monitor_expires_after_the_timeout(void) {
@@ -229,6 +253,8 @@ int main(void) {
     RUN_TEST(test_flash_monitor_starts_inactive);
     RUN_TEST(test_flash_monitor_flashing_frame_activates);
     RUN_TEST(test_flash_monitor_other_frames_are_not_consumed);
+    RUN_TEST(test_flash_monitor_own_frames_reset_the_wheel);
+    RUN_TEST(test_flash_monitor_other_boards_do_not_reset);
     RUN_TEST(test_flash_monitor_expires_after_the_timeout);
     RUN_TEST(test_flash_monitor_each_frame_restarts_the_timeout);
     RUN_TEST(test_flash_monitor_reactivates_after_expiry);

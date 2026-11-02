@@ -329,7 +329,20 @@ EAGLETRT_STATIC enum PalReturnCode simulator_logger_transmit(const struct PalMes
 }
 
 /*!
- * \brief Serialize a libcan message and queue it as if FDCAN had received it.
+ * \brief Queue a primary frame as if FDCAN had received it, through the same acceptance filter.
+ */
+EAGLETRT_STATIC void simulator_receive(const struct CanCommunicationFrame *frame) {
+    if (!can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, frame->id)) {
+        printf("[SIM] 0x%03X rejected by the FDCAN filter\n", (unsigned)frame->id);
+        return;
+    }
+    if (can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, frame) != CAN_COMMUNICATION_RC_OK) {
+        printf("[SIM] RX queue full, 0x%03X dropped\n", (unsigned)frame->id);
+    }
+}
+
+/*!
+ * \brief Serialize a libcan message and receive it.
  */
 EAGLETRT_STATIC void simulator_inject(enum CanPrimaryMessageFrameId id, union CanPrimaryMessages *message, uint8_t length) {
     struct CanCommunicationFrame frame = { .id = (uint32_t)id, .length = length };
@@ -337,9 +350,7 @@ EAGLETRT_STATIC void simulator_inject(enum CanPrimaryMessageFrameId id, union Ca
         printf("[SIM] cannot serialize 0x%03X\n", (unsigned)id);
         return;
     }
-    if (can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame) != CAN_COMMUNICATION_RC_OK) {
-        printf("[SIM] RX queue full, 0x%03X dropped\n", (unsigned)id);
-    }
+    simulator_receive(&frame);
 }
 
 /*!
@@ -408,9 +419,7 @@ EAGLETRT_STATIC void simulator_inject_telemetry(uint32_t step) {
  */
 EAGLETRT_STATIC void simulator_inject_flashing(void) {
     const struct CanCommunicationFrame frame = { .id = simulator_flash_id, .length = 8U };
-    if (can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame) != CAN_COMMUNICATION_RC_OK) {
-        printf("[SIM] RX queue full, 0x%03X dropped\n", (unsigned)simulator_flash_id);
-    }
+    simulator_receive(&frame);
 }
 
 /*!

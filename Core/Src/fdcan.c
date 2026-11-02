@@ -25,6 +25,7 @@
 #include "eagletrt-api.h"
 
 #include "can-communications-api.h"
+#include "can-communications-router-api.h"
 
 /*!
  * \brief Bus-off events since boot, per peripheral (FDCAN1, FDCAN2).
@@ -34,31 +35,52 @@
 static volatile uint32_t prv_fdcan_bus_off_count[2];
 
 /*!
- * \brief Configure the acceptance filter and the notifications of one FDCAN.
+ * \brief Set when a network's filter list didn't fit its StdFiltersNbr (.ioc).
+ */
+static bool prv_fdcan_filter_overflow;
+
+/*!
+ * \brief Configure the acceptance filters and the notifications of one FDCAN.
  *
- * \details Every standard ID is accepted: routing by ID is the job of the
- *     can-communications router, not of the hardware filter. Primary
- *     frames land in RX FIFO 0, secondary frames in RX FIFO 1 (matching
- *     the FIFO sizes configured by CubeMX). The bus-off notification lets
- *     HAL_FDCAN_ErrorStatusCallback restart the peripheral.
+ * \details Only the identifiers the router asks for get through (one
+ *     filter element per entry of can_communications_router_api_get_filters),
+ *     everything else is rejected in hardware. Primary frames land in RX
+ *     FIFO 0, secondary frames in RX FIFO 1 (matching the FIFO sizes
+ *     configured by CubeMX). If the router has more entries than the .ioc
+ *     gives StdFiltersNbr, the first ones are programmed (flashing traffic
+ *     comes first, so the wheel can still be reflashed) and the POST fails.
+ *     The bus-off notification lets HAL_FDCAN_ErrorStatusCallback restart
+ *     the peripheral.
  *
  * \param hfdcan Peripheral to configure.
+ * \param network Network it is wired to.
  * \param fifo FDCAN_FILTER_TO_RXFIFO0 or FDCAN_FILTER_TO_RXFIFO1.
  * \param notification FDCAN_IT_RX_FIFO0_NEW_MESSAGE or FDCAN_IT_RX_FIFO1_NEW_MESSAGE.
  */
-static void prv_fdcan_config_rx(FDCAN_HandleTypeDef *hfdcan, uint32_t fifo, uint32_t notification) {
-    FDCAN_FilterTypeDef filter = {
-        .IdType = FDCAN_STANDARD_ID,
-        .FilterIndex = 0,
-        .FilterType = FDCAN_FILTER_RANGE,
-        .FilterConfig = fifo,
-        .FilterID1 = 0,
-        .FilterID2 = (1U << 11U) - 1U,
-        .IsCalibrationMsg = 0,
-        .RxBufferIndex = 0,
-    };
+static void prv_fdcan_config_rx(FDCAN_HandleTypeDef *hfdcan, enum CanCommunicationNetwork network, uint32_t fifo, uint32_t notification) {
+    size_t count = 0U;
+    const struct CanCommunicationsRouterFilter *filters = can_communications_router_api_get_filters(network, &count);
+    if (count > hfdcan->Init.StdFiltersNbr) {
+        prv_fdcan_filter_overflow = true;
+        count = hfdcan->Init.StdFiltersNbr;
+    }
 
-    if (HAL_FDCAN_ConfigFilter(hfdcan, &filter) != HAL_OK) {
+    for (size_t i = 0U; i < count; i++) {
+        FDCAN_FilterTypeDef filter = {
+            .IdType = FDCAN_STANDARD_ID,
+            .FilterIndex = (uint32_t)i,
+            .FilterType = FDCAN_FILTER_RANGE,
+            .FilterConfig = fifo,
+            .FilterID1 = filters[i].first_id,
+            .FilterID2 = filters[i].last_id,
+            .IsCalibrationMsg = 0,
+            .RxBufferIndex = 0,
+        };
+        if (HAL_FDCAN_ConfigFilter(hfdcan, &filter) != HAL_OK) {
+            Error_Handler();
+        }
+    }
+    if (HAL_FDCAN_ConfigGlobalFilter(hfdcan, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE) != HAL_OK) {
         Error_Handler();
     }
     if (HAL_FDCAN_ActivateNotification(hfdcan, notification | FDCAN_IT_BUS_OFF, 0) != HAL_OK) {
@@ -133,7 +155,7 @@ void MX_FDCAN1_Init(void) {
     hfdcan1.Init.DataTimeSeg1 = 1;
     hfdcan1.Init.DataTimeSeg2 = 1;
     hfdcan1.Init.MessageRAMOffset = 0;
-    hfdcan1.Init.StdFiltersNbr = 1;
+    hfdcan1.Init.StdFiltersNbr = 10;
     hfdcan1.Init.ExtFiltersNbr = 0;
     hfdcan1.Init.RxFifo0ElmtsNbr = 64;
     hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
@@ -151,7 +173,7 @@ void MX_FDCAN1_Init(void) {
     }
     /* USER CODE BEGIN FDCAN1_Init 2 */
 
-    prv_fdcan_config_rx(&hfdcan1, FDCAN_FILTER_TO_RXFIFO0, FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
+    prv_fdcan_config_rx(&hfdcan1, CAN_COMMUNICATION_NETWORK_PRIMARY, FDCAN_FILTER_TO_RXFIFO0, FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
 
     /* USER CODE END FDCAN1_Init 2 */
 }
@@ -179,8 +201,8 @@ void MX_FDCAN2_Init(void) {
     hfdcan2.Init.DataSyncJumpWidth = 1;
     hfdcan2.Init.DataTimeSeg1 = 1;
     hfdcan2.Init.DataTimeSeg2 = 1;
-    hfdcan2.Init.MessageRAMOffset = 449;
-    hfdcan2.Init.StdFiltersNbr = 1;
+    hfdcan2.Init.MessageRAMOffset = 458;
+    hfdcan2.Init.StdFiltersNbr = 0;
     hfdcan2.Init.ExtFiltersNbr = 0;
     hfdcan2.Init.RxFifo0ElmtsNbr = 0;
     hfdcan2.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
@@ -198,7 +220,7 @@ void MX_FDCAN2_Init(void) {
     }
     /* USER CODE BEGIN FDCAN2_Init 2 */
 
-    prv_fdcan_config_rx(&hfdcan2, FDCAN_FILTER_TO_RXFIFO1, FDCAN_IT_RX_FIFO1_NEW_MESSAGE);
+    prv_fdcan_config_rx(&hfdcan2, CAN_COMMUNICATION_NETWORK_SECONDARY, FDCAN_FILTER_TO_RXFIFO1, FDCAN_IT_RX_FIFO1_NEW_MESSAGE);
 
     /* USER CODE END FDCAN2_Init 2 */
 }
@@ -397,6 +419,10 @@ void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t ErrorSt
 
 uint32_t fdcan_get_bus_off_count(enum CanCommunicationNetwork network) {
     return prv_fdcan_bus_off_count[(network == CAN_COMMUNICATION_NETWORK_PRIMARY) ? 0U : 1U];
+}
+
+bool fdcan_filters_overflow(void) {
+    return prv_fdcan_filter_overflow;
 }
 
 /* USER CODE END 1 */

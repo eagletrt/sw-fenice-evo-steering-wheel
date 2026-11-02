@@ -18,13 +18,6 @@ DEFINE_FFF_GLOBALS;
 extern struct WheelFsmHandler wheel_fsm_handler;
 extern struct FlashMonitorHandler flash_monitor_handler;
 
-/* Same layout as the router's file-local handler, to clear a pending reset request between tests. */
-struct CanCommunicationsRouterHandler {
-    bool reset_asked;
-};
-extern struct CanCommunicationsRouterHandler can_communications_router_handler;
-
-FAKE_VOID_FUNC(fake_reset);
 FAKE_VOID_FUNC(fake_enter_flash);
 FAKE_VOID_FUNC(fake_leave_flash);
 FAKE_VALUE_FUNC(bool, fake_parameters_on_change, enum InputsSharedParameterID, uint8_t);
@@ -37,7 +30,6 @@ static struct PostInitData prv_post;
 static struct WheelFsmConfig prv_make_config(void) {
     return (struct WheelFsmConfig){
         .post = &prv_post,
-        .reset = fake_reset,
         .enter_flash = fake_enter_flash,
         .leave_flash = fake_leave_flash,
     };
@@ -52,7 +44,6 @@ static void prv_start_in_run(void) {
 }
 
 void setUp(void) {
-    RESET_FAKE(fake_reset);
     RESET_FAKE(fake_enter_flash);
     RESET_FAKE(fake_leave_flash);
     RESET_FAKE(fake_parameters_on_change);
@@ -77,7 +68,6 @@ void setUp(void) {
 
     memset(&wheel_fsm_handler, 0, sizeof(wheel_fsm_handler));
     memset(&flash_monitor_handler, 0, sizeof(flash_monitor_handler));
-    can_communications_router_handler.reset_asked = false;
 }
 
 void tearDown(void) {}
@@ -94,10 +84,6 @@ void test_wheel_fsm_init_rejects_null_config(void) {
 void test_wheel_fsm_init_rejects_missing_fields(void) {
     struct WheelFsmConfig config = prv_make_config();
     config.post = NULL;
-    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_NULL_POINTER, wheel_fsm_api_init(&config));
-
-    config = prv_make_config();
-    config.reset = NULL;
     TEST_ASSERT_EQUAL(WHEEL_FSM_RC_NULL_POINTER, wheel_fsm_api_init(&config));
 
     config = prv_make_config();
@@ -265,21 +251,14 @@ void test_wheel_fsm_error_is_terminal(void) {
  * \{
  */
 
-void test_wheel_fsm_run_resets_on_bootloader_request(void) {
-    prv_start_in_run();
-    can_communications_router_handler.reset_asked = true;
-
-    wheel_fsm_api_run_state();
-
-    TEST_ASSERT_EQUAL(1, fake_reset_fake.call_count);
-}
-
-void test_wheel_fsm_run_does_not_reset_without_request(void) {
+void test_wheel_fsm_idle_stays_idle_without_flashing(void) {
     prv_start_in_run();
 
     wheel_fsm_api_run_state();
+    wheel_fsm_api_run_state();
 
-    TEST_ASSERT_EQUAL(0, fake_reset_fake.call_count);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, wheel_fsm_api_get_state());
+    TEST_ASSERT_EQUAL(0, fake_enter_flash_fake.call_count);
 }
 
 /*! \} */
@@ -337,17 +316,6 @@ void test_wheel_fsm_flash_survives_a_late_frame(void) {
 
     TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_FLASH, wheel_fsm_api_get_state());
     TEST_ASSERT_EQUAL(2, fake_enter_flash_fake.call_count);
-}
-
-void test_wheel_fsm_flash_still_resets_on_bootloader_request(void) {
-    prv_start_in_run();
-    flash_monitor_handler.active = true;
-    wheel_fsm_api_run_state();
-    can_communications_router_handler.reset_asked = true;
-
-    wheel_fsm_api_run_state();
-
-    TEST_ASSERT_EQUAL(1, fake_reset_fake.call_count);
 }
 
 void test_wheel_fsm_error_ignores_the_monitor(void) {
@@ -410,14 +378,12 @@ int main(void) {
     RUN_TEST(test_wheel_fsm_pending_error_is_not_overwritten);
     RUN_TEST(test_wheel_fsm_error_is_terminal);
 
-    RUN_TEST(test_wheel_fsm_run_resets_on_bootloader_request);
-    RUN_TEST(test_wheel_fsm_run_does_not_reset_without_request);
+    RUN_TEST(test_wheel_fsm_idle_stays_idle_without_flashing);
 
     RUN_TEST(test_wheel_fsm_idle_follows_the_monitor_into_flash);
     RUN_TEST(test_wheel_fsm_flash_stays_while_the_monitor_is_active);
     RUN_TEST(test_wheel_fsm_flash_returns_to_idle_when_the_monitor_stops);
     RUN_TEST(test_wheel_fsm_flash_survives_a_late_frame);
-    RUN_TEST(test_wheel_fsm_flash_still_resets_on_bootloader_request);
     RUN_TEST(test_wheel_fsm_error_ignores_the_monitor);
 
     RUN_TEST(test_wheel_fsm_can_status_mapping);
