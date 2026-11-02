@@ -29,7 +29,10 @@
 #include <stdint.h>
 
 /*!
- * \brief Number of primary filter entries: must equal FDCAN1 StdFiltersNbr in the .ioc.
+ * \brief Number of primary filter entries.
+ *
+ * \details Must not exceed FDCAN1 StdFiltersNbr in the .ioc (64 slots are
+ *     reserved there, so new messages need no CubeMX change until then).
  */
 #define CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (10U)
 

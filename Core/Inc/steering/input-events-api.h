@@ -19,59 +19,54 @@
 #include <stdbool.h>
 
 /*!
- * \brief Set up the hold-time watchdogs, no button held.
+ * \brief Take the layer's timeouts from the pool, no button held.
  *
- * \details Takes INPUT_EVENTS_WATCHDOG_COUNT watchdogs from the pool.
+ * \details Takes INPUT_EVENTS_TIMEOUT_COUNT timeouts (timeout_api_init first).
  *
  * \param sink Receiver of every event.
+ * \param active_combos Combos recognised right now (NULL: none, every button is delivered at once).
  *
  * \retval INPUT_EVENTS_RC_OK on success.
- * \retval INPUT_EVENTS_RC_NULL_POINTER if \p watchdogs or \p sink is NULL.
- * \retval INPUT_EVENTS_RC_ERROR if libtimebase rejected a watchdog.
+ * \retval INPUT_EVENTS_RC_NULL_POINTER if \p sink is NULL.
+ * \retval INPUT_EVENTS_RC_ERROR if the timeout pool is full.
  */
-enum InputEventsReturnCode input_events_api_init(input_events_sink_callback sink);
+enum InputEventsReturnCode input_events_api_init(input_events_sink_callback sink, input_events_active_combos_callback active_combos);
 
 /*!
- * \brief Buttons and hold time of a combo.
+ * \brief Buttons of a combo.
  *
  * \param combo_id The combo.
  *
- * \return The combo, NULL if \p combo_id is invalid.
+ * \return Mask of INPUT_EVENTS_BUTTON_BIT, 0 if \p combo_id is invalid.
  */
-const struct InputEventsCombo *input_events_api_get_combo(enum InputEventsComboId combo_id);
+uint16_t input_events_api_get_combo_buttons(enum InputEventsComboId combo_id);
 
 /*!
- * \brief Whether a button is currently held.
+ * \brief Whether a button is physically down.
  *
  * \param button_id The button.
  *
- * \return true if held, false if released or \p button_id is invalid.
+ * \return true if down (whatever its gesture), false if up or \p button_id is invalid.
  */
 bool input_events_api_is_held(enum InputsSharedButtonID button_id);
 
 /*!
  * \brief Inputs callback: a button went down.
  *
- * \details Forwards the press, then starts its long-press hold time and the
- *     hold time of every combo the press completes.
- *
  * \param button_id The button.
  *
  * \retval INPUTS_RC_OK on success.
- * \retval INPUTS_RC_ERROR if \p button_id is invalid, the sink failed or a watchdog could not start.
+ * \retval INPUTS_RC_ERROR if \p button_id is invalid, the sink failed or a timeout could not start.
  */
 enum InputsReturnCode input_events_api_on_button_press(enum InputsSharedButtonID button_id);
 
 /*!
  * \brief Inputs callback: a button went up.
  *
- * \details Cancels (or re-arms, if it already fired) its long press and
- *     every combo the button belongs to, then forwards the release.
- *
  * \param button_id The button.
  *
  * \retval INPUTS_RC_OK on success.
- * \retval INPUTS_RC_ERROR if \p button_id is invalid, the sink failed or a watchdog could not be reset.
+ * \retval INPUTS_RC_ERROR if \p button_id is invalid, the sink failed or a timeout could not stop.
  */
 enum InputsReturnCode input_events_api_on_button_release(enum InputsSharedButtonID button_id);
 

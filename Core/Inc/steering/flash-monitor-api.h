@@ -15,13 +15,15 @@
 #include <stdbool.h>
 
 /*!
- * \brief Set up the timeout watchdog, nothing is being flashed.
+ * \brief Set up the silence timeout, nothing is being flashed.
+ *
+ * \details Takes FLASH_MONITOR_TIMEOUT_COUNT timeouts from the pool (timeout_api_init first).
  *
  * \param reset Resets the wheel into its bootloader (its own flashing frames).
  *
  * \retval FLASH_MONITOR_RC_OK on success.
  * \retval FLASH_MONITOR_RC_NULL_POINTER if \p reset is NULL.
- * \retval FLASH_MONITOR_RC_ERROR if libtimebase rejected the watchdog.
+ * \retval FLASH_MONITOR_RC_ERROR if the timeout pool is full.
  */
 enum FlashMonitorReturnCode flash_monitor_api_init(flash_monitor_reset_callback reset);
 
@@ -46,7 +48,7 @@ bool flash_monitor_api_on_frame(uint32_t id);
  * \details The FSM polls it: IDLE moves to FLASH while it is true, FLASH
  *     back to IDLE once it is false.
  *
- * \return true from a flashing frame until the timeout watchdog expires.
+ * \return true from a flashing frame until the silence timeout expires.
  */
 bool flash_monitor_api_is_active(void);
 

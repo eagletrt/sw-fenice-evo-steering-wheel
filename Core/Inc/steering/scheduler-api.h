@@ -86,49 +86,4 @@ enum SchedulerReturnCode scheduler_api_resume_task(enum SchedulerTaskId task_id)
  */
 uint32_t scheduler_api_get_tick(void);
 
-/*!
- * \brief Restart a watchdog, even if it has already timed out.
- *
- * \details The watchdog is unregistered and re-registered with the same timeout
- *    and callback. If it was running it is re-armed, if it was timed
- *    it is re-armed and the callback can fire again after the timeout.
- *
- * \param watchdog The watchdog to restart.
- *
- * \retval SCHEDULER_RC_OK on success.
- * \retval SCHEDULER_RC_NULL_POINTER if \p watchdog is NULL.
- * \retval SCHEDULER_RC_ERROR if the watchdog could not be restarted.
- */
-enum SchedulerReturnCode scheduler_api_restart_watchdog(struct Watchdog *watchdog);
-
-/*!
- * \brief Reset a watchdog, even if it has already timed out.
- *
- * \details The watchdog is unregistered and its state is set to NOT_RUNNING.
- *   If it was running it is stopped, if it was timed out it is stopped and
- *   the callback will not fire again until the watchdog is restarted.
- *
- * \param watchdog The watchdog to reset.
- *
- * \retval SCHEDULER_RC_OK on success.
- * \retval SCHEDULER_RC_NULL_POINTER if \p watchdog is NULL.
- * \retval SCHEDULER_RC_ERROR if the watchdog could not be reset.
- */
-enum SchedulerReturnCode scheduler_api_reset_watchdog(struct Watchdog *watchdog);
-
-/*!
- * \brief Stop a watchdog, even if it has already timed out.
- *
- * \details The watchdog is unregistered and its state is set to NOT_RUNNING.
- *    If it was running it is stopped, if it was timed out it is stopped and
- *    the callback will not fire again until the watchdog is restarted.
- *
- * \param watchdog The watchdog to stop.
- *
- * \retval SCHEDULER_RC_OK on success.
- * \retval SCHEDULER_RC_NULL_POINTER if \p watchdog is NULL.
- * \retval SCHEDULER_RC_ERROR if the watchdog could not be stopped.
- */
-enum SchedulerReturnCode scheduler_api_stop_watchdog(struct Watchdog *watchdog);
-
 #endif // SCHEDULER_API_H

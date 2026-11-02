@@ -13,7 +13,7 @@
 #include "input-router.h"
 
 /*!
- * \brief Store the hooks and allow every driver control.
+ * \brief Store the hooks and allow every action group.
  *
  * \param config Hooks, copied into the router.
  *
@@ -23,7 +23,7 @@
 enum InputRouterReturnCode input_router_api_init(const struct InputRouterConfig *config);
 
 /*!
- * \brief Choose which groups of driver controls are allowed.
+ * \brief Choose which action groups are allowed.
  *
  * \details Takes effect from the next event. Releases are never filtered.
  *
@@ -32,20 +32,36 @@ enum InputRouterReturnCode input_router_api_init(const struct InputRouterConfig 
 void input_router_api_set_filter(struct InputRouterFilter filter);
 
 /*!
- * \brief Groups of driver controls currently allowed.
+ * \brief Action groups currently allowed.
  *
  * \return The filter.
  */
 struct InputRouterFilter input_router_api_get_filter(void);
 
 /*!
- * \brief Input events sink: deliver an event to whoever handles it in the current state.
+ * \brief Bindings of a state.
+ *
+ * \param state The FSM state.
+ *
+ * \return The bindings, NULL if \p state is invalid.
+ */
+const struct InputStateBindings *input_router_api_get_bindings(enum WheelFsmState state);
+
+/*!
+ * \brief Input events callback: combos the current state binds (the only ones recognised).
+ *
+ * \return Mask of INPUT_EVENTS_COMBO_BIT, 0 before init.
+ */
+uint8_t input_router_api_active_combos(void);
+
+/*!
+ * \brief Input events sink: run the actions the current state binds to an event.
  *
  * \param event The event.
  *
- * \retval INPUT_EVENTS_RC_OK if the event was delivered or deliberately dropped.
+ * \retval INPUT_EVENTS_RC_OK if the event was handled or has no binding.
  * \retval INPUT_EVENTS_RC_NULL_POINTER if \p event is NULL or the router is not initialised.
- * \retval INPUT_EVENTS_RC_ERROR if the receiver (the parameters) failed.
+ * \retval INPUT_EVENTS_RC_ERROR if a parameter update failed.
  */
 enum InputEventsReturnCode input_router_api_handle_event(const struct InputEvent *event);
 

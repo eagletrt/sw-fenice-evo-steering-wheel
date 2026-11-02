@@ -27,7 +27,7 @@ The wheel FSM is a libfsm-sw table in `wheel-fsm-api.c`, run every 5 ms by the s
 task. Any task can request a transition with `wheel_fsm_api_request`; it is applied at the end of
 the next FSM step. A requested `ERROR` can't be replaced by a later request.
 
-FLASH follows `flash-monitor-api.c`: every `<Board>FlashingTx/Rx` frame of another board restarts a 500 ms libtimebase watchdog. While it runs, IDLE moves to FLASH; once it
+FLASH follows `flash-monitor-api.c`: every `<Board>FlashingTx/Rx` frame of another board restarts a 500 ms timeout. While it runs, IDLE moves to FLASH; once it
 expires, FLASH goes back to IDLE. The wheel's own pair (`0x6E`/`0x6F`) resets it into its bootloader
 instead, right away and in every state (ERROR included, so a wheel in ERROR can still be reflashed).
 Board names are in the table at the top of `flash-monitor-api.c`.
@@ -50,23 +50,40 @@ stateDiagram-v2
 | `FLASH` | another board is being flashed: logo, "FLASHING" and the board's name on screen; inputs ignored; `SteeringWheelFsm` is the only frame the wheel sends | `FLASH` |
 | `ERROR` | terminal: the last frame stays on screen, CAN keeps reporting the state | `ERROR` |
 
+### Timeouts
+
+Every timeout of the wheel (flash traffic silence, long presses, the combo window; later CAN data
+staleness and acks) comes from one static pool in `timeout-api.c`: a module creates its timeouts at
+init and gets ids back (`timeout_api_create/start/stop`), expiry callbacks run from the scheduler's
+main loop with the context given at creation. It is built on libtimebase watchdogs, but nothing
+else includes libtimebase's watchdog headers. Size: `TIMEOUT_MAX_COUNT` (20, at most libtimebase's
+`WATCHDOGS_MAX_COUNT`); a `static_assert` in `scheduler-api.c` checks the wheel's total.
+
 ### Inputs
 
 Raw inputs (button edges, knob steps) go through two layers before they change anything:
 
-- **Input events** (`input-events`): one stream of press / release / long-press / knob events, plus
-  **combos**: a set of buttons held together for a hold time. Every hold time is a libtimebase
-  watchdog (one per button for the 500 ms long press, one per combo). Long presses and combos fire
-  once per hold and again only after a release.
-- **Input router** (`input-router`): a table per FSM state. `IDLE` sends the driver controls to the
-  parameters and recognises the menu combo; `INIT`, `FLASH` and `ERROR` ignore inputs. Driver
-  controls also pass a filter with one flag each for parameters, PTT and TS-on (set by the driving
-  context once autonomous missions are handled). Releases always reach the parameters, so a PTT or
-  TS-on held while the state or the filter changes is never left on.
+- **Input events** (`input-events`): buttons and combos produce the same events: press, release,
+  tap (released before the long-press time) and long press; knobs produce rotations.
+  - A button that belongs to a combo active in the current state opens a **150 ms combo window**.
+    If the rest of the combo goes down inside it, the combo is pressed and its buttons send nothing
+    of their own; otherwise the button's press is delivered when the window ends (or at once if it
+    is released first).
+  - A button in no active combo is delivered at once. Long press: 500 ms from the physical press;
+    combo long press: 1 s from its recognition.
+- **Input router** (`input-router`): one **binding table per FSM state** (`input-router-api.c`):
+  button events, combo events and knob rotations are bound to actions (step, toggle or hold a
+  parameter, or a request such as opening the menu). The combos a state binds are the only ones
+  recognised in it. Every action belongs to a filter group (parameters, PTT, TS-on; requests are
+  never filtered) set by the driving context once autonomous missions are handled. Releases always
+  let go of what the button held, in every state and through any filter, so a PTT or TS-on is never
+  left on.
 
-Combos (placeholders until the design is ready, `input-events.h`): menu = `TOP_LEFT` +
-`TOP_RIGHT`, wake = both bottom paddles, held 1 s. Until the menu exists the menu combo is only
-logged. None of these buttons does anything on its own while driving.
+`IDLE` today: manettini step power / regen / torque vectoring; bottom buttons toggle telemetry log
+and launch control; top paddles hold PTT; TS-on held while pressed; **top right = driver action
+OK, top left = REPEAT** (1 while held, `DriverAction` on every change); menu combo (both top
+buttons, placeholder) held 1 s requests the menu (only logged until the menu exists). `INIT`,
+`FLASH` and `ERROR` bind nothing.
 
 ## Development
 
@@ -101,8 +118,8 @@ content changes) and CAN frames can be injected:
 | `e`, `d` | telemetry log, launch control buttons |
 | `c`, `v` (hold) | PTT paddles |
 | `t` (hold) | TS-on |
-| `r`, `f` | top buttons (both 1 s: menu combo, logged) |
-| `b`, `n` | bottom paddles (both 1 s: wake combo) |
+| `r`, `f` (hold) | top buttons: REPEAT / OK driver actions; both together, held 1 s: menu combo (logged) |
+| `b`, `n` | bottom paddles (no function yet) |
 | `1` | inject `EcuFsm` with the next vehicle status |
 | `2` | inject one step of telemetry (SoC, temperatures, laps) |
 | `p` | toggle a continuous telemetry feed |

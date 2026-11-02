@@ -24,7 +24,8 @@
 #include "screen-api.h"
 #include "tasks-api.h"
 #include "ui-data-api.h"
-#include "watchdogs-api.h"
+#include "can-primary-api.h"
+#include "timeout-api.h"
 #include "wheel-fsm-api.h"
 #include <string.h>
 
@@ -50,6 +51,8 @@ static uint32_t prv_cycles;
 static uint32_t prv_sent_ids[TEST_SCHEDULER_SENT_CAPACITY];
 static size_t prv_sent_count;
 static uint8_t prv_last_fsm_status;
+static uint8_t prv_last_driver_action[8];
+static size_t prv_driver_action_count;
 
 static uint32_t prv_get_tick(void) {
     return prv_now;
@@ -67,6 +70,10 @@ static enum CanCommunicationReturnCode prv_capture_send(const struct CanCommunic
     if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM) {
         prv_last_fsm_status = frame->data[0] & 0x07U; /* status: bits 0-2 */
     }
+    if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_DRIVERACTION) {
+        memcpy(prv_last_driver_action, frame->data, sizeof(prv_last_driver_action));
+        prv_driver_action_count++;
+    }
     return CAN_COMMUNICATION_RC_OK;
 }
 
@@ -78,7 +85,7 @@ static uint32_t prv_get_tick_flowing(void) {
 /* Turns the power knob by one step, as the real inputs task would on a knob click. */
 static void prv_poll_inputs_turn_knob(uint32_t tick_ms) {
     (void)tick_ms;
-    parameters_api_handle_knob(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, 1);
+    parameters_api_step(INPUTS_SHARED_PARAMETER_ID_POWER, 1);
 }
 
 /* First tick at which libtimebase runs a task (its staggered start). */
@@ -120,8 +127,23 @@ static void prv_poll_inputs_click_knob(uint32_t tick_ms) {
 
 /* Holds both buttons of the (placeholder) menu combo. */
 static void prv_poll_inputs_hold_menu_combo(uint32_t tick_ms) {
+    (void)tick_ms;
     inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TOP_LEFT, true);
     inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TOP_RIGHT, true);
+}
+
+/* Holds the top-right button (driver action OK) until prv_release_top is set. */
+static bool prv_release_top;
+static void prv_poll_inputs_hold_ok(uint32_t tick_ms) {
+    (void)tick_ms;
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TOP_RIGHT, !prv_release_top);
+}
+
+/* Decode the last DriverAction the wheel sent. */
+static struct CanPrimaryDriveraction prv_decode_driver_action(void) {
+    union CanPrimaryMessages message = { 0 };
+    TEST_ASSERT_EQUAL(0, can_primary_api_deserialize_from_id(CAN_PRIMARY_MESSAGE_FRAME_ID_DRIVERACTION, prv_last_driver_action, &message));
+    return message.driveraction;
 }
 
 static size_t prv_count_sent(uint32_t id) {
@@ -203,6 +225,9 @@ void setUp(void) {
     prv_cycles = 0U;
     prv_sent_count = 0U;
     prv_knob_position = 0;
+    prv_driver_action_count = 0U;
+    prv_release_top = false;
+    memset(prv_last_driver_action, 0, sizeof(prv_last_driver_action));
     prv_last_fsm_status = UINT8_MAX;
     fake_get_tick_fake.custom_fake = prv_get_tick;
     fake_get_cycles_fake.custom_fake = prv_get_cycles;
@@ -561,17 +586,39 @@ void test_scheduler_inputs_ignored_in_error(void) {
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER), "Knobs do nothing in ERROR");
 }
 
-void test_scheduler_menu_combo_fires_through_the_watchdog_pool(void) {
+void test_scheduler_menu_combo_long_press_through_the_timeout_pool(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_hold_menu_combo;
     scheduler_api_init(&config);
-    struct Watchdog *menu = &input_events_handler.combo_watchdogs[INPUT_EVENTS_COMBO_MENU];
 
-    // First poll at 0: the hold time ends at INPUT_EVENTS_COMBO_HOLD_MS.
-    prv_run_until(INPUT_EVENTS_COMBO_HOLD_MS - 1U);
-    TEST_ASSERT_TRUE(watchdogs_api_watchdog_is_running(menu));
-    prv_run_until(INPUT_EVENTS_COMBO_HOLD_MS);
-    TEST_ASSERT_TRUE_MESSAGE(watchdogs_api_watchdog_is_timed_out(menu), "The scheduler's watchdog routine fires the combo");
+    // Both buttons in the first poll (tick 0): the combo is pressed right away.
+    prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS - 1U);
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_COMBO_MENU, input_events_handler.combo);
+    TEST_ASSERT_TRUE(timeout_api_is_running(input_events_handler.combo_long_press));
+    prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS);
+    TEST_ASSERT_TRUE_MESSAGE(timeout_api_has_expired(input_events_handler.combo_long_press), "The scheduler routine runs the timeout pool");
+    TEST_ASSERT_EQUAL_MESSAGE(0U, prv_driver_action_count, "The menu combo sends neither OK nor REPEAT");
+}
+
+void test_scheduler_top_right_sends_driver_action_ok(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_hold_ok;
+    scheduler_api_init(&config);
+
+    // A combo button: its press arrives when the combo window ends.
+    prv_run_until(INPUT_EVENTS_COMBO_WINDOW_MS - 1U);
+    TEST_ASSERT_EQUAL(0U, prv_driver_action_count);
+    prv_run_until(INPUT_EVENTS_COMBO_WINDOW_MS + 1U);
+    TEST_ASSERT_EQUAL_MESSAGE(1U, prv_driver_action_count, "DriverAction goes out on the press");
+    struct CanPrimaryDriveraction action = prv_decode_driver_action();
+    TEST_ASSERT_EQUAL_UINT8(1U, action.ok);
+    TEST_ASSERT_EQUAL_UINT8(0U, action.repeat);
+
+    prv_release_top = true;
+    prv_run_until(INPUT_EVENTS_COMBO_WINDOW_MS + 30U);
+    TEST_ASSERT_EQUAL_MESSAGE(2U, prv_driver_action_count, "DriverAction goes out again on the release");
+    action = prv_decode_driver_action();
+    TEST_ASSERT_EQUAL_UINT8(0U, action.ok);
 }
 
 void test_scheduler_paused_task_stops_until_resumed(void) {
@@ -684,7 +731,8 @@ int main(void) {
     RUN_TEST(test_scheduler_ptt_tints_dashboard_without_popup);
     RUN_TEST(test_scheduler_knob_reaches_the_parameter_through_the_router);
     RUN_TEST(test_scheduler_inputs_ignored_in_error);
-    RUN_TEST(test_scheduler_menu_combo_fires_through_the_watchdog_pool);
+    RUN_TEST(test_scheduler_menu_combo_long_press_through_the_timeout_pool);
+    RUN_TEST(test_scheduler_top_right_sends_driver_action_ok);
     RUN_TEST(test_scheduler_paused_task_stops_until_resumed);
     RUN_TEST(test_scheduler_resume_running_task_is_harmless);
     RUN_TEST(test_scheduler_pause_resume_reject_invalid_task);

@@ -19,9 +19,10 @@
  *       z/x  manettino FRONT_CENTER (TORQUE VECTORING) -/+
  *       e    button BOTTOM_LEFT  (TELEMETRY LOG toggle)
  *       d    button BOTTOM_RIGHT (LAUNCH CONTROL toggle)
- *       r/f  buttons TOP_LEFT / TOP_RIGHT (both for 1 s: menu combo, logged)
+ *       r/f  buttons TOP_LEFT / TOP_RIGHT: driver actions REPEAT / OK (hold);
+ *            both together, held 1 s: menu combo (logged)
  *       c/v  paddles TOP_LEFT / TOP_RIGHT (PTT, hold)
- *       b/n  paddles BOTTOM_LEFT / BOTTOM_RIGHT (both for 1 s: wake combo)
+ *       b/n  paddles BOTTOM_LEFT / BOTTOM_RIGHT (no function yet)
  *       t    TS-on button (hold)
  *       1    inject EcuFsm with the next vehicle status
  *       2    inject one step of telemetry (SoC, temperatures, laps)
