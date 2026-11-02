@@ -12,6 +12,7 @@
 #include "unity.h"
 #include "fff.h"
 #include "input-events-api.h"
+#include "scheduler.h"
 #include "watchdogs-api.h"
 #include <string.h>
 
@@ -24,7 +25,8 @@ extern struct InputEventsHandler input_events_handler;
 #define TEST_INPUT_EVENTS_CAPACITY (32U)
 
 static uint32_t prv_now;
-static struct WatchdogHandler prv_watchdogs;
+/* The flash monitor and the input events run their watchdogs in the scheduler's pool. */
+extern struct SchedulerHandler scheduler_handler;
 static struct InputEvent prv_events[TEST_INPUT_EVENTS_CAPACITY];
 static size_t prv_event_count;
 
@@ -42,7 +44,7 @@ static enum InputEventsReturnCode prv_record(const struct InputEvent *event) {
 /* Move the clock and let the watchdog pool fire whatever expired. */
 static void prv_advance_to(uint32_t tick) {
     prv_now = tick;
-    TEST_ASSERT_EQUAL(WATCHDOG_RC_OK, watchdogs_api_routine(&prv_watchdogs));
+    TEST_ASSERT_EQUAL(WATCHDOG_RC_OK, watchdogs_api_routine(&scheduler_handler.watchdogs));
 }
 
 static size_t prv_count_combos(enum InputEventsComboId combo_id) {
@@ -116,8 +118,8 @@ void setUp(void) {
     prv_now = 0U;
     prv_event_count = 0U;
     memset(prv_events, 0, sizeof(prv_events));
-    TEST_ASSERT_EQUAL(WATCHDOG_RC_OK, watchdogs_api_init_pool(&prv_watchdogs, prv_get_tick));
-    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, input_events_api_init(&prv_watchdogs, fake_sink));
+    TEST_ASSERT_EQUAL(WATCHDOG_RC_OK, watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_get_tick));
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, input_events_api_init(fake_sink));
 }
 
 void tearDown(void) {
@@ -129,13 +131,12 @@ void tearDown(void) {
  */
 
 void test_input_events_init_rejects_null_pointers(void) {
-    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_NULL_POINTER, input_events_api_init(NULL, fake_sink));
-    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_NULL_POINTER, input_events_api_init(&prv_watchdogs, NULL));
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_NULL_POINTER, input_events_api_init(NULL));
 }
 
 void test_input_events_init_releases_every_button(void) {
     TEST_ASSERT_EQUAL(INPUTS_RC_OK, input_events_api_on_button_press(INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT));
-    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, input_events_api_init(&prv_watchdogs, fake_sink));
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, input_events_api_init(fake_sink));
     TEST_ASSERT_FALSE(input_events_api_is_held(INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT));
 }
 

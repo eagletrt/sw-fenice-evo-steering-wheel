@@ -21,8 +21,9 @@
  * \brief Every board flashed over CAN except the wheel, with its name.
  *
  * \details One entry per libcan <Board>FlashingTx/Rx pair. The wheel's own
- *     pair is left out on purpose: the router turns it into a reset into the
- *     bootloader. Names are what the FLASH page shows; edit them here.
+ *     pair is left out on purpose: it resets the wheel instead (see
+ *     prv_flash_monitor_api_is_own). Names are what the FLASH page shows;
+ *     edit them here.
  */
 EAGLETRT_STATIC const struct FlashMonitorTarget prv_flash_monitor_api_targets[] = {
     { CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFLASHINGTX, CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFLASHINGRX, "ECU" },
@@ -64,14 +65,30 @@ EAGLETRT_STATIC const struct FlashMonitorTarget *prv_flash_monitor_api_find_targ
 }
 
 /*!
+ * \brief Whether a frame identifier is the wheel's own flashing pair.
+ *
+ * \param id CAN identifier.
+ *
+ * \return true for SteeringWheelFlashingTx/Rx.
+ */
+EAGLETRT_STATIC bool prv_flash_monitor_api_is_own(uint32_t id) {
+    return id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX || id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX;
+}
+
+/*!
  * \brief No flashing frame for FLASH_MONITOR_TIMEOUT_MS: flashing is over.
  */
 EAGLETRT_STATIC void prv_flash_monitor_api_on_timeout(void) {
     flash_monitor_handler.active = false;
 }
 
-enum FlashMonitorReturnCode flash_monitor_api_init(void) {
+enum FlashMonitorReturnCode flash_monitor_api_init(flash_monitor_reset_callback reset) {
+    if (reset == NULL) {
+        return FLASH_MONITOR_RC_NULL_POINTER;
+    }
+
     memset(&flash_monitor_handler, 0, sizeof(flash_monitor_handler));
+    flash_monitor_handler.reset = reset;
     if (watchdogs_api_init_watchdog(&flash_monitor_handler.watchdog, FLASH_MONITOR_TIMEOUT_MS, prv_flash_monitor_api_on_timeout) != WATCHDOG_RC_OK) {
         return FLASH_MONITOR_RC_ERROR;
     }
@@ -79,6 +96,15 @@ enum FlashMonitorReturnCode flash_monitor_api_init(void) {
 }
 
 bool flash_monitor_api_on_frame(uint32_t id) {
+    // In every FSM state, ERROR included: a wheel stuck in ERROR can still
+    // be reflashed over CAN.
+    if (prv_flash_monitor_api_is_own(id)) {
+        if (flash_monitor_handler.reset != NULL) {
+            flash_monitor_handler.reset();
+        }
+        return true;
+    }
+
     const struct FlashMonitorTarget *target = prv_flash_monitor_api_find_target(id);
     if (target == NULL) {
         return false;

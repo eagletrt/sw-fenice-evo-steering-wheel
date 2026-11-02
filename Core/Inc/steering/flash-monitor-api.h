@@ -17,22 +17,25 @@
 /*!
  * \brief Set up the timeout watchdog, nothing is being flashed.
  *
+ * \param reset Resets the wheel into its bootloader (its own flashing frames).
+ *
  * \retval FLASH_MONITOR_RC_OK on success.
- * \retval FLASH_MONITOR_RC_NULL_POINTER if \p watchdogs is NULL.
+ * \retval FLASH_MONITOR_RC_NULL_POINTER if \p reset is NULL.
  * \retval FLASH_MONITOR_RC_ERROR if libtimebase rejected the watchdog.
  */
-enum FlashMonitorReturnCode flash_monitor_api_init(void);
+enum FlashMonitorReturnCode flash_monitor_api_init(flash_monitor_reset_callback reset);
 
 /*!
- * \brief Check a received frame for flashing traffic of another board.
+ * \brief Check a received frame for flashing traffic.
  *
- * \details On a match: remembers the board and restarts the timeout. Call
- *     it on every received primary frame, before decoding it. Main context
- *     only.
+ * \details The wheel's own flashing frames reset it into its bootloader.
+ *     Another board's: remembers the board and restarts the timeout. Call it
+ *     for every received primary frame the dashboard doesn't use. Main
+ *     context only.
  *
  * \param id CAN identifier of the frame.
  *
- * \retval true if the frame belongs to another board's flashing (don't decode it).
+ * \retval true if the frame is flashing traffic (the wheel's or another board's).
  * \retval false otherwise.
  */
 bool flash_monitor_api_on_frame(uint32_t id);

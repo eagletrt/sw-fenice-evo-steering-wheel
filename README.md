@@ -13,7 +13,7 @@ It also handles **buttons** and **3 rotary switches** for user input in real-tim
 
 - `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules (scheduler, FSM, inputs, input events and routing, parameters, CAN communications, dashboard/popup/screen UI).
 - `Core/Src/steering/drivers/`, `Core/Inc/steering/drivers/`: hardware-agnostic device drivers (MCP23017 GPIO expander, Micron SDRAM).
-- `Core/Src/steering/can-communications-router-api.c`: the only place that knows about **libcan**. It decodes the inbound frames the dashboard renders into the UI snapshot and builds the wheel's own outbound messages (button status carrying TS-on/PTT, control maps, driver action). Identity broadcasts (FSM status, firmware and libcan versions) live in `identity-api.c`.
+- `Core/Src/steering/can-communications-router-api.c`: the only place that knows about **libcan**. It decodes every inbound frame, folds the ones the dashboard renders into the UI snapshot, hands the rest to the flash monitor, and owns the list of identifiers the FDCAN hardware filters let through (everything else is rejected before it reaches the CPU; the secondary bus accepts nothing yet). It also builds the wheel's own outbound messages (button status carrying TS-on/PTT, control maps, driver action). Identity broadcasts (FSM status, firmware and libcan versions) live in `identity-api.c`.
 - Everything else in `Core/` is CubeMX-generated peripheral code; the hardware glue that wires peripherals to the application modules lives in its user-code sections.
 - `fenice-evo-steering-wheel-bootloader-sw/`: the OpenBLT CAN bootloader (OpenBLT 1.22, own CubeMX project, built from the same `platformio.ini`). It occupies the first 128K flash sector; the firmware linked after it uses `STM32H723XG_FLASH_SHIFTED.ld` (see [Bootloader](#bootloader)).
 - `Core/Src/steering/splash-api.c`: the logo page shared by the firmware's FLASH page and the bootloader screen, so they line up pixel for pixel. The logo is `Core/Src/steering/splash-logo.c`, generated from `assets/eagle-logo.svg` by `tools/generate_logo.py` (needs `rsvg-convert`; run it only when the logo changes).
@@ -29,7 +29,8 @@ the next FSM step. A requested `ERROR` can't be replaced by a later request.
 
 FLASH follows `flash-monitor-api.c`: every `<Board>FlashingTx/Rx` frame of another board restarts a 500 ms libtimebase watchdog. While it runs, IDLE moves to FLASH; once it
 expires, FLASH goes back to IDLE. The wheel's own pair (`0x6E`/`0x6F`) resets it into its bootloader
-instead. Board names are in the table at the top of `flash-monitor-api.c`.
+instead, right away and in every state (ERROR included, so a wheel in ERROR can still be reflashed).
+Board names are in the table at the top of `flash-monitor-api.c`.
 
 ```mermaid
 stateDiagram-v2
@@ -45,7 +46,7 @@ stateDiagram-v2
 | State | What happens | `SteeringWheelFsm.status` |
 |---|---|---|
 | `INIT` | power-on self test (runs once, before the first task) | `INIT` |
-| `IDLE` | dashboard, inputs, CAN; resets into the bootloader when asked | `IDLE` |
+| `IDLE` | dashboard, inputs, CAN | `IDLE` |
 | `FLASH` | another board is being flashed: logo, "FLASHING" and the board's name on screen; inputs ignored; `SteeringWheelFsm` is the only frame the wheel sends | `FLASH` |
 | `ERROR` | terminal: the last frame stays on screen, CAN keeps reporting the state | `ERROR` |
 

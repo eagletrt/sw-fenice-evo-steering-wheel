@@ -353,7 +353,7 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_scheduler_api_read_tick) != WATCHDOG_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
-    if (flash_monitor_api_init() != FLASH_MONITOR_RC_OK) {
+    if (flash_monitor_api_init(config->reset) != FLASH_MONITOR_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
     const struct InputRouterConfig router_config = {
@@ -367,7 +367,6 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
 
     const struct WheelFsmConfig fsm_config = {
         .post = &scheduler_handler.config.post,
-        .reset = config->reset,
         .enter_flash = prv_scheduler_api_enter_flash,
         .leave_flash = prv_scheduler_api_leave_flash,
     };

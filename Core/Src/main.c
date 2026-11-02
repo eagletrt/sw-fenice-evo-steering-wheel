@@ -269,6 +269,7 @@ int main(void) {
                 },
             },
             .draw_rectangle = ltdc_draw_rectangle,
+            .can_filters_overflow = fdcan_filters_overflow(),
             .screen_accelerators = {
                 .draw_mask = ltdc_draw_mask,
                 .mask_buffer = ltdc_mask_buffer(),

@@ -446,6 +446,27 @@ void test_scheduler_reset_request_resets_the_board(void) {
     TEST_ASSERT_TRUE(fake_reset_fake.call_count > 0U);
 }
 
+void test_scheduler_own_flashing_frame_resets_even_in_error(void) {
+    struct SchedulerConfig config = prv_make_config();
+    scheduler_api_init(&config);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_run_state());
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+
+    prv_run_until_flashing(5U, CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX, 50U);
+
+    TEST_ASSERT_TRUE_MESSAGE(fake_reset_fake.call_count > 0U, "A wheel in ERROR must still be reflashable");
+}
+
+void test_scheduler_post_fails_when_can_filters_overflow(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.post.can_filters_overflow = true;
+
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(&config));
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+}
+
 void test_scheduler_routine_rejects_time_going_backwards(void) {
     struct SchedulerConfig config = prv_make_config();
     prv_now = 100U;
@@ -653,6 +674,8 @@ int main(void) {
     RUN_TEST(test_scheduler_flash_ends_after_silence);
     RUN_TEST(test_scheduler_own_flashing_frames_reset_instead_of_flash);
     RUN_TEST(test_scheduler_reset_request_resets_the_board);
+    RUN_TEST(test_scheduler_own_flashing_frame_resets_even_in_error);
+    RUN_TEST(test_scheduler_post_fails_when_can_filters_overflow);
     RUN_TEST(test_scheduler_routine_rejects_time_going_backwards);
     RUN_TEST(test_scheduler_knob_popup_shows_on_next_frame);
     RUN_TEST(test_scheduler_tasks_get_the_tick_libtimebase_acted_on);
