@@ -29,8 +29,8 @@
 #include <inttypes.h>
 #include <string.h>
 
-static_assert(SCHEDULER_TASK_COUNT <= MAX_TASKS, "libtimebase cannot hold every scheduler task");
-static_assert(FLASH_MONITOR_WATCHDOG_COUNT + INPUT_EVENTS_WATCHDOG_COUNT <= MAX_WATCHDOGS, "libtimebase's watchdog pool cannot hold every watchdog");
+static_assert(SCHEDULER_TASK_COUNT <= TASKS_MAX_COUNT, "libtimebase cannot hold every scheduler task");
+static_assert(FLASH_MONITOR_WATCHDOG_COUNT + INPUT_EVENTS_WATCHDOG_COUNT <= WATCHDOGS_MAX_COUNT, "libtimebase's watchdog pool cannot hold every watchdog");
 
 /*!
  * \brief Body of a task, called with the tick of the current routine call.
@@ -353,14 +353,14 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_scheduler_api_read_tick) != WATCHDOG_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
-    if (flash_monitor_api_init(&scheduler_handler.watchdogs) != FLASH_MONITOR_RC_OK) {
+    if (flash_monitor_api_init() != FLASH_MONITOR_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
     const struct InputRouterConfig router_config = {
         .get_state = wheel_fsm_api_get_state,
         .on_combo = prv_scheduler_api_on_combo,
     };
-    if (input_events_api_init(&scheduler_handler.watchdogs, input_router_api_handle_event) != INPUT_EVENTS_RC_OK ||
+    if (input_events_api_init(input_router_api_handle_event) != INPUT_EVENTS_RC_OK ||
         input_router_api_init(&router_config) != INPUT_ROUTER_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
@@ -435,4 +435,25 @@ enum SchedulerReturnCode scheduler_api_resume_task(enum SchedulerTaskId task_id)
 
 uint32_t scheduler_api_get_tick(void) {
     return scheduler_handler.tick;
+}
+
+enum SchedulerReturnCode scheduler_api_restart_watchdog(struct Watchdog *watchdog) {
+    if (watchdog == NULL) {
+        return SCHEDULER_RC_NULL_POINTER;
+    }
+    return (watchdogs_api_watchdog_restart(&scheduler_handler.watchdogs, watchdog) == WATCHDOG_RC_OK) ? SCHEDULER_RC_OK : SCHEDULER_RC_ERROR;
+}
+
+enum SchedulerReturnCode scheduler_api_reset_watchdog(struct Watchdog *watchdog) {
+    if (watchdog == NULL) {
+        return SCHEDULER_RC_NULL_POINTER;
+    }
+    return (watchdogs_api_watchdog_reset(&scheduler_handler.watchdogs, watchdog) == WATCHDOG_RC_OK) ? SCHEDULER_RC_OK : SCHEDULER_RC_ERROR;
+}
+
+enum SchedulerReturnCode scheduler_api_stop_watchdog(struct Watchdog *watchdog) {
+    if (watchdog == NULL) {
+        return SCHEDULER_RC_NULL_POINTER;
+    }
+    return (watchdogs_api_watchdog_stop(&scheduler_handler.watchdogs, watchdog) == WATCHDOG_RC_OK) ? SCHEDULER_RC_OK : SCHEDULER_RC_ERROR;
 }

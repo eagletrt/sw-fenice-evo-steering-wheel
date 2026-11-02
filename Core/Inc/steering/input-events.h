@@ -131,7 +131,6 @@ struct InputEventsCombo {
  */
 struct InputEventsHandler {
     input_events_sink_callback sink;                                     /*!< Receiver of every event */
-    struct WatchdogHandler *watchdogs;                                   /*!< Pool running the hold times */
     struct Watchdog long_press_watchdogs[INPUTS_SHARED_BUTTON_ID_COUNT]; /*!< Running: button held. Timed out: long press fired */
     struct Watchdog combo_watchdogs[INPUT_EVENTS_COMBO_COUNT];           /*!< Running: combo held, waiting. Timed out: fired */
     uint16_t held;                                                       /*!< Mask of the buttons currently held */

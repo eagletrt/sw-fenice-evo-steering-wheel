@@ -55,7 +55,6 @@ struct FlashMonitorTarget {
  * \brief File-static state of the flash monitor.
  */
 struct FlashMonitorHandler {
-    struct WatchdogHandler *watchdogs;       /*!< Pool the timeout watchdog runs in */
     struct Watchdog watchdog;                /*!< Restarted by every flashing frame, expires after FLASH_MONITOR_TIMEOUT_MS of silence */
     const struct FlashMonitorTarget *target; /*!< Board of the last flashing frame, NULL before the first one */
     bool active;                             /*!< A flashing frame was seen and the watchdog hasn't expired since */

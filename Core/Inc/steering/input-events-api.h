@@ -23,15 +23,13 @@
  *
  * \details Takes INPUT_EVENTS_WATCHDOG_COUNT watchdogs from the pool.
  *
- * \param watchdogs The libtimebase pool running the hold times (its routine
- *     fires long presses and combos, from main context).
  * \param sink Receiver of every event.
  *
  * \retval INPUT_EVENTS_RC_OK on success.
  * \retval INPUT_EVENTS_RC_NULL_POINTER if \p watchdogs or \p sink is NULL.
  * \retval INPUT_EVENTS_RC_ERROR if libtimebase rejected a watchdog.
  */
-enum InputEventsReturnCode input_events_api_init(struct WatchdogHandler *watchdogs, input_events_sink_callback sink);
+enum InputEventsReturnCode input_events_api_init(input_events_sink_callback sink);
 
 /*!
  * \brief Buttons and hold time of a combo.

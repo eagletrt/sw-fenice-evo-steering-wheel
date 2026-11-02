@@ -17,14 +17,11 @@
 /*!
  * \brief Set up the timeout watchdog, nothing is being flashed.
  *
- * \param watchdogs The libtimebase pool the watchdog runs in (its routine
- *     calls the timeout from main context).
- *
  * \retval FLASH_MONITOR_RC_OK on success.
  * \retval FLASH_MONITOR_RC_NULL_POINTER if \p watchdogs is NULL.
  * \retval FLASH_MONITOR_RC_ERROR if libtimebase rejected the watchdog.
  */
-enum FlashMonitorReturnCode flash_monitor_api_init(struct WatchdogHandler *watchdogs);
+enum FlashMonitorReturnCode flash_monitor_api_init(void);
 
 /*!
  * \brief Check a received frame for flashing traffic of another board.

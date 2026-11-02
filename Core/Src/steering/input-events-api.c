@@ -10,6 +10,7 @@
 #include "input-events-api.h"
 
 #include "eagletrt-api.h"
+#include "scheduler-api.h"
 #include "watchdogs-api.h"
 
 #include <stddef.h>
@@ -120,13 +121,12 @@ EAGLETRT_STATIC const watchdog_timeout_callback prv_input_events_api_long_press_
     [INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_RIGHT] = prv_input_events_api_long_press_PADDLE_BOTTOM_RIGHT,
 };
 
-enum InputEventsReturnCode input_events_api_init(struct WatchdogHandler *watchdogs, input_events_sink_callback sink) {
-    if (watchdogs == NULL || sink == NULL) {
+enum InputEventsReturnCode input_events_api_init(input_events_sink_callback sink) {
+    if (sink == NULL) {
         return INPUT_EVENTS_RC_NULL_POINTER;
     }
 
     memset(&input_events_handler, 0, sizeof(input_events_handler));
-    input_events_handler.watchdogs = watchdogs;
     input_events_handler.sink = sink;
 
     for (enum InputsSharedButtonID i = 0; i < INPUTS_SHARED_BUTTON_ID_COUNT; i++) {
@@ -168,7 +168,7 @@ enum InputsReturnCode input_events_api_on_button_press(enum InputsSharedButtonID
     enum InputsReturnCode return_code = prv_input_events_api_emit(&event);
 
     // A repeated press of a button already held keeps its original hold time.
-    if (!was_held && watchdogs_api_watchdog_restart(input_events_handler.watchdogs, &input_events_handler.long_press_watchdogs[button_id]) != WATCHDOG_RC_OK) {
+    if (!was_held && scheduler_api_restart_watchdog(&input_events_handler.long_press_watchdogs[button_id]) != SCHEDULER_RC_OK) {
         return_code = INPUTS_RC_ERROR;
     }
 
@@ -183,7 +183,7 @@ enum InputsReturnCode input_events_api_on_button_press(enum InputsSharedButtonID
             watchdogs_api_watchdog_is_timed_out(watchdog)) {
             continue;
         }
-        if (watchdogs_api_watchdog_restart(input_events_handler.watchdogs, watchdog) != WATCHDOG_RC_OK) {
+        if (scheduler_api_restart_watchdog(watchdog) != SCHEDULER_RC_OK) {
             return_code = INPUTS_RC_ERROR;
         }
     }
@@ -199,7 +199,7 @@ enum InputsReturnCode input_events_api_on_button_release(enum InputsSharedButton
     input_events_handler.held &= (uint16_t)~INPUT_EVENTS_BUTTON_BIT(button_id);
 
     // Cancels a pending long press, or re-arms it if it already fired.
-    if (watchdogs_api_watchdog_reset(input_events_handler.watchdogs, &input_events_handler.long_press_watchdogs[button_id]) != WATCHDOG_RC_OK) {
+    if (scheduler_api_reset_watchdog(&input_events_handler.long_press_watchdogs[button_id]) != SCHEDULER_RC_OK) {
         return_code = INPUTS_RC_ERROR;
     }
 
@@ -209,7 +209,7 @@ enum InputsReturnCode input_events_api_on_button_release(enum InputsSharedButton
         if ((prv_input_events_api_combos[i].buttons & INPUT_EVENTS_BUTTON_BIT(button_id)) == 0U) {
             continue;
         }
-        if (watchdogs_api_watchdog_reset(input_events_handler.watchdogs, &input_events_handler.combo_watchdogs[i]) != WATCHDOG_RC_OK) {
+        if (scheduler_api_reset_watchdog(&input_events_handler.combo_watchdogs[i]) != SCHEDULER_RC_OK) {
             return_code = INPUTS_RC_ERROR;
         }
     }
