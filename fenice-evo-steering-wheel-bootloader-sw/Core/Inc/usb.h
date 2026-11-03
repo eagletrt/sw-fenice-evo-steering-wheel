@@ -1,4 +1,4 @@
-/************************************************************************************//**
+/************************************************************************************/ /**
 * \file         Source/usb.h
 * \brief        Bootloader USB communication interface header file.
 * \ingroup      Core
@@ -32,9 +32,9 @@
 /****************************************************************************************
 * Function prototypes
 ****************************************************************************************/
-void     UsbInit(void);
-void     UsbFree(void);
-void     UsbTransmitPacket(blt_int8u *data, blt_int8u len);
+void UsbInit(void);
+void UsbFree(void);
+void UsbTransmitPacket(blt_int8u *data, blt_int8u len);
 blt_bool UsbReceivePacket(blt_int8u *data, blt_int8u *len);
 
 /****************************************************************************************
@@ -44,9 +44,7 @@ extern void UsbEnterLowPowerModeHook(void);
 extern void UsbLeaveLowPowerModeHook(void);
 extern void UsbConnectHook(blt_bool connect);
 
-
 #endif /* BOOT_COM_USB_ENABLE > 0 */
-
 
 #endif /* USB_H */
 /*********************************** end of usb.h **************************************/

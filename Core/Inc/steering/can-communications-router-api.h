@@ -24,19 +24,36 @@
 #include "can-communications.h"
 #include "inputs-shared.h"
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+/*!
+ * \brief Number of primary filter entries: must equal FDCAN1 StdFiltersNbr in the .ioc.
+ */
+#define CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (10U)
+
+/*!
+ * \brief A range of standard identifiers the FDCAN lets through (one filter element).
+ */
+struct CanCommunicationsRouterFilter {
+    uint16_t first_id; /*!< First accepted identifier */
+    uint16_t last_id;  /*!< Last accepted identifier, equal to first_id for a single one */
+};
+
 /*!
  * \brief Dispatch one frame received on the primary network.
  *
- * \details Deserializes the frame with libcan and, for the messages the
- *     dashboard cares about, writes the decoded values into the UIData
- *     snapshot. Unknown IDs are silently ignored.
+ * \details Deserializes the frame with libcan, writes the values the
+ *     dashboard renders into the UIData snapshot and hands every other
+ *     frame to the flash monitor (flashing traffic, own reset).
  *
  * \param[in] frame The frame popped off the primary RX queue.
  *
  * \retval CAN_COMMUNICATION_RC_OK on success, or for an unhandled ID.
  * \retval CAN_COMMUNICATION_RC_NULL_POINTER if \p frame is NULL.
- * \retval CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR if libcan failed to
- *     deserialize a frame whose ID we do handle.
+ * \retval CAN_COMMUNICATION_RC_RECEIVE_HANDLER_ERROR if libcan can't
+ *     decode the frame (an identifier the FDCAN filter should have dropped).
  */
 enum CanCommunicationReturnCode can_communications_router_api_receive_primary(const struct CanCommunicationFrame *frame);
 
@@ -94,11 +111,29 @@ enum CanCommunicationReturnCode can_communications_router_api_send_button_status
 enum CanCommunicationReturnCode can_communications_router_api_send_control_maps(void);
 
 /*!
- * \brief Check if a reset has been requested via CAN (same ID as the OpenBLT RX).
+ * \brief Identifiers a network's FDCAN must let through, for its hardware filter.
  *
- * \retval true if a reset has been requested.
- * \retval false if no reset has been requested.
+ * \details One filter element per entry, everything else rejected. The
+ *     primary list has CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT entries,
+ *     flashing traffic first; the secondary one is empty.
+ *
+ * \param network The network.
+ * \param[out] count Number of entries.
+ *
+ * \return The entries (NULL when there are none or \p count is NULL).
  */
-bool can_communications_router_api_reset_asked(void);
+const struct CanCommunicationsRouterFilter *can_communications_router_api_get_filters(enum CanCommunicationNetwork network, size_t *count);
+
+/*!
+ * \brief Whether a network's filter lets an identifier through.
+ *
+ * \details For senders that bypass the FDCAN, like the PC simulator.
+ *
+ * \param network The network.
+ * \param id The standard identifier.
+ *
+ * \return true if one of the network's filter entries covers \p id.
+ */
+bool can_communications_router_api_accepts(enum CanCommunicationNetwork network, uint32_t id);
 
 #endif // CAN_COMMUNICATIONS_ROUTER_API_H

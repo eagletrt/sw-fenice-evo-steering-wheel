@@ -27,6 +27,11 @@ enum PostReturnCode post_api_do_init(struct PostInitData *post_init_data) {
 
     enum PostReturnCode ret_code = POST_RC_OK;
 
+    // Some identifiers the router decodes would be dropped by the FDCAN.
+    if (post_init_data->can_filters_overflow) {
+        ret_code = POST_RC_ERROR;
+    }
+
     if (parameters_api_init(post_init_data->parameters_on_change) != PARAMETERS_RC_OK) {
         ret_code = POST_RC_ERROR;
     }

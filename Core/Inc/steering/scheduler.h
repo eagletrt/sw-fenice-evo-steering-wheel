@@ -17,6 +17,7 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include "flash-monitor.h"
 #include "post.h"
 #include "tasks.h"
 #include "watchdogs.h"
@@ -95,7 +96,7 @@ struct SchedulerConfig {
     scheduler_get_tick_callback get_tick;                   /*!< Required: millisecond tick */
     scheduler_poll_inputs_callback poll_inputs;             /*!< Required: input sampling */
     scheduler_swap_framebuffers_callback swap_framebuffers; /*!< Required: present the frame just rendered */
-    wheel_fsm_reset_callback reset;                         /*!< Required: system reset (bootloader request) */
+    flash_monitor_reset_callback reset;                     /*!< Required: reset into the bootloader (the wheel's own flashing frames) */
     scheduler_get_cycles_callback get_cycles;               /*!< Optional: cycle counter, timing statistics are off when NULL */
     uint32_t cycles_per_us;                                 /*!< Cycle counter frequency in MHz, required when get_cycles is set */
     scheduler_report_stats_callback report_stats;           /*!< Optional: called by the stats task after the task timings */
@@ -125,7 +126,7 @@ struct SchedulerTaskStats {
 struct SchedulerHandler {
     struct SchedulerConfig config;                         /*!< Copy of the configuration given at init */
     struct TasksHandler tasks;                             /*!< libtimebase tasks */
-    struct WatchdogHandler watchdogs;                      /*!< libtimebase watchdogs (pool, no watchdog registered yet) */
+    struct WatchdogHandler watchdogs;                      /*!< libtimebase watchdogs (pool: the flash monitor timeout) */
     uint32_t tick;                                         /*!< Last tick read by libtimebase: the time base of every task */
     struct SchedulerTaskStats stats[SCHEDULER_TASK_COUNT]; /*!< Per-task timing */
     uint16_t dropped_at_last_log;                          /*!< libtimebase dropped-runs counter at the previous stats log */

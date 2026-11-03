@@ -32,6 +32,8 @@ extern "C" {
 
 #include "can-communications.h"
 
+#include <stdbool.h>
+
 /* USER CODE END Includes */
 
 extern FDCAN_HandleTypeDef hfdcan1;
@@ -78,6 +80,24 @@ enum CanCommunicationReturnCode fdcan_send_primary(const struct CanCommunication
  * \retval CAN_COMMUNICATION_RC_TRANSMISSION_ERROR if the underlying HAL call reported a failure.
  */
 enum CanCommunicationReturnCode fdcan_send_secondary(const struct CanCommunicationFrame *frame);
+
+/*!
+ * \brief Number of times a network went bus-off (and was restarted) since boot.
+ *
+ * \param network CAN_COMMUNICATION_NETWORK_PRIMARY or CAN_COMMUNICATION_NETWORK_SECONDARY.
+ *
+ * \return The count.
+ */
+uint32_t fdcan_get_bus_off_count(enum CanCommunicationNetwork network);
+
+/*!
+ * \brief Whether a network's filter list had more entries than its StdFiltersNbr (.ioc).
+ *
+ * \details Then only the first entries were programmed; the POST fails.
+ *
+ * \return true if some identifiers the router decodes are dropped in hardware.
+ */
+bool fdcan_filters_overflow(void);
 
 /* USER CODE END Prototypes */
 

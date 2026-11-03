@@ -25,35 +25,65 @@
 #include "eagletrt-api.h"
 
 #include "can-communications-api.h"
+#include "can-communications-router-api.h"
 
 /*!
- * \brief Configure the acceptance filter and RX notification of one FDCAN.
+ * \brief Bus-off events since boot, per peripheral (FDCAN1, FDCAN2).
  *
- * \details Every standard ID is accepted: routing by ID is the job of the
- *     can-communications router, not of the hardware filter. Primary
- *     frames land in RX FIFO 0, secondary frames in RX FIFO 1 (matching
- *     the FIFO sizes configured by CubeMX).
+ * \details Written by the error-status interrupt, read by fdcan_get_bus_off_count.
+ */
+static volatile uint32_t prv_fdcan_bus_off_count[2];
+
+/*!
+ * \brief Set when a network's filter list didn't fit its StdFiltersNbr (.ioc).
+ */
+static bool prv_fdcan_filter_overflow;
+
+/*!
+ * \brief Configure the acceptance filters and the notifications of one FDCAN.
+ *
+ * \details Only the identifiers the router asks for get through (one
+ *     filter element per entry of can_communications_router_api_get_filters),
+ *     everything else is rejected in hardware. Primary frames land in RX
+ *     FIFO 0, secondary frames in RX FIFO 1 (matching the FIFO sizes
+ *     configured by CubeMX). If the router has more entries than the .ioc
+ *     gives StdFiltersNbr, the first ones are programmed (flashing traffic
+ *     comes first, so the wheel can still be reflashed) and the POST fails.
+ *     The bus-off notification lets HAL_FDCAN_ErrorStatusCallback restart
+ *     the peripheral.
  *
  * \param hfdcan Peripheral to configure.
+ * \param network Network it is wired to.
  * \param fifo FDCAN_FILTER_TO_RXFIFO0 or FDCAN_FILTER_TO_RXFIFO1.
  * \param notification FDCAN_IT_RX_FIFO0_NEW_MESSAGE or FDCAN_IT_RX_FIFO1_NEW_MESSAGE.
  */
-static void prv_fdcan_config_rx(FDCAN_HandleTypeDef *hfdcan, uint32_t fifo, uint32_t notification) {
-    FDCAN_FilterTypeDef filter = {
-        .IdType = FDCAN_STANDARD_ID,
-        .FilterIndex = 0,
-        .FilterType = FDCAN_FILTER_RANGE,
-        .FilterConfig = fifo,
-        .FilterID1 = 0,
-        .FilterID2 = (1U << 11U) - 1U,
-        .IsCalibrationMsg = 0,
-        .RxBufferIndex = 0,
-    };
+static void prv_fdcan_config_rx(FDCAN_HandleTypeDef *hfdcan, enum CanCommunicationNetwork network, uint32_t fifo, uint32_t notification) {
+    size_t count = 0U;
+    const struct CanCommunicationsRouterFilter *filters = can_communications_router_api_get_filters(network, &count);
+    if (count > hfdcan->Init.StdFiltersNbr) {
+        prv_fdcan_filter_overflow = true;
+        count = hfdcan->Init.StdFiltersNbr;
+    }
 
-    if (HAL_FDCAN_ConfigFilter(hfdcan, &filter) != HAL_OK) {
+    for (size_t i = 0U; i < count; i++) {
+        FDCAN_FilterTypeDef filter = {
+            .IdType = FDCAN_STANDARD_ID,
+            .FilterIndex = (uint32_t)i,
+            .FilterType = FDCAN_FILTER_RANGE,
+            .FilterConfig = fifo,
+            .FilterID1 = filters[i].first_id,
+            .FilterID2 = filters[i].last_id,
+            .IsCalibrationMsg = 0,
+            .RxBufferIndex = 0,
+        };
+        if (HAL_FDCAN_ConfigFilter(hfdcan, &filter) != HAL_OK) {
+            Error_Handler();
+        }
+    }
+    if (HAL_FDCAN_ConfigGlobalFilter(hfdcan, FDCAN_REJECT, FDCAN_REJECT, FDCAN_REJECT_REMOTE, FDCAN_REJECT_REMOTE) != HAL_OK) {
         Error_Handler();
     }
-    if (HAL_FDCAN_ActivateNotification(hfdcan, notification, 0) != HAL_OK) {
+    if (HAL_FDCAN_ActivateNotification(hfdcan, notification | FDCAN_IT_BUS_OFF, 0) != HAL_OK) {
         Error_Handler();
     }
 }
@@ -125,7 +155,7 @@ void MX_FDCAN1_Init(void) {
     hfdcan1.Init.DataTimeSeg1 = 1;
     hfdcan1.Init.DataTimeSeg2 = 1;
     hfdcan1.Init.MessageRAMOffset = 0;
-    hfdcan1.Init.StdFiltersNbr = 1;
+    hfdcan1.Init.StdFiltersNbr = 10;
     hfdcan1.Init.ExtFiltersNbr = 0;
     hfdcan1.Init.RxFifo0ElmtsNbr = 64;
     hfdcan1.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
@@ -143,7 +173,7 @@ void MX_FDCAN1_Init(void) {
     }
     /* USER CODE BEGIN FDCAN1_Init 2 */
 
-    prv_fdcan_config_rx(&hfdcan1, FDCAN_FILTER_TO_RXFIFO0, FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
+    prv_fdcan_config_rx(&hfdcan1, CAN_COMMUNICATION_NETWORK_PRIMARY, FDCAN_FILTER_TO_RXFIFO0, FDCAN_IT_RX_FIFO0_NEW_MESSAGE);
 
     /* USER CODE END FDCAN1_Init 2 */
 }
@@ -171,8 +201,8 @@ void MX_FDCAN2_Init(void) {
     hfdcan2.Init.DataSyncJumpWidth = 1;
     hfdcan2.Init.DataTimeSeg1 = 1;
     hfdcan2.Init.DataTimeSeg2 = 1;
-    hfdcan2.Init.MessageRAMOffset = 449;
-    hfdcan2.Init.StdFiltersNbr = 1;
+    hfdcan2.Init.MessageRAMOffset = 458;
+    hfdcan2.Init.StdFiltersNbr = 0;
     hfdcan2.Init.ExtFiltersNbr = 0;
     hfdcan2.Init.RxFifo0ElmtsNbr = 0;
     hfdcan2.Init.RxFifo0ElmtSize = FDCAN_DATA_BYTES_8;
@@ -190,7 +220,7 @@ void MX_FDCAN2_Init(void) {
     }
     /* USER CODE BEGIN FDCAN2_Init 2 */
 
-    prv_fdcan_config_rx(&hfdcan2, FDCAN_FILTER_TO_RXFIFO1, FDCAN_IT_RX_FIFO1_NEW_MESSAGE);
+    prv_fdcan_config_rx(&hfdcan2, CAN_COMMUNICATION_NETWORK_SECONDARY, FDCAN_FILTER_TO_RXFIFO1, FDCAN_IT_RX_FIFO1_NEW_MESSAGE);
 
     /* USER CODE END FDCAN2_Init 2 */
 }
@@ -364,8 +394,35 @@ void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
         HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
         msg.id = header.Identifier;
         msg.length = (uint8_t)EAGLETRT_API_MIN(header.DataLength, CAN_COMMUNICATIONS_FRAME_DATA_SIZE);
-        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan2 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
+        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
     }
+}
+
+/*!
+ * \brief Restart a peripheral that went bus-off.
+ *
+ * \details After 256 transmit errors (a loose connector corrupting frames,
+ *     a bus shorted for a while) the FDCAN goes bus-off and sets CCCR.INIT:
+ *     it stops sending and receiving until software clears INIT, after
+ *     which it rejoins once it has seen 129 x 11 recessive bits (~1.4 ms at
+ *     1 Mbit/s). Without this the wheel stayed off the bus until a power
+ *     cycle. The interrupt fires on every change of PSR.BO, so only the
+ *     entry into bus-off is acted upon.
+ */
+void HAL_FDCAN_ErrorStatusCallback(FDCAN_HandleTypeDef *hfdcan, uint32_t ErrorStatusITs) {
+    if ((ErrorStatusITs & FDCAN_IR_BO) == 0U || (hfdcan->Instance->PSR & FDCAN_PSR_BO) == 0U) {
+        return;
+    }
+    prv_fdcan_bus_off_count[(hfdcan == &hfdcan1) ? 0U : 1U]++;
+    CLEAR_BIT(hfdcan->Instance->CCCR, FDCAN_CCCR_INIT);
+}
+
+uint32_t fdcan_get_bus_off_count(enum CanCommunicationNetwork network) {
+    return prv_fdcan_bus_off_count[(network == CAN_COMMUNICATION_NETWORK_PRIMARY) ? 0U : 1U];
+}
+
+bool fdcan_filters_overflow(void) {
+    return prv_fdcan_filter_overflow;
 }
 
 /* USER CODE END 1 */

@@ -44,7 +44,11 @@ extern "C" {
 
 #include "main.h"
 
-#define REFRESH_COUNT ((uint32_t)0x0603) /* SDRAM refresh counter */
+/* SDRAM refresh counter, same as the firmware (FMC_MICRON_STEER_SDRAM_REFRESH_COUNT):
+ * 4096 rows every 64 ms = one refresh every 15.6 us, 0x5C8 = 1480 SDRAM clocks = 14.8 us
+ * at 100 MHz (FMC kernel clock 200 MHz from PLL2R, SD clock period 2).
+ */
+#define REFRESH_COUNT ((uint32_t)0x05C8)
 
 #define MICRON_STEER_TIMEOUT ((uint32_t)0xFFFF)
 
@@ -52,14 +56,14 @@ extern "C" {
  * @{
  */
 typedef struct {
-  uint32_t TargetBank;     /*!< Target Bank                             */
-  uint32_t RefreshMode;    /*!< Refresh Mode                            */
-  uint32_t RefreshRate;    /*!< Refresh Rate                            */
-  uint32_t BurstLength;    /*!< Burst Length                            */
-  uint32_t BurstType;      /*!< Burst Type                              */
-  uint32_t CASLatency;     /*!< CAS Latency                             */
-  uint32_t OperationMode;  /*!< Operation Mode                          */
-  uint32_t WriteBurstMode; /*!< Write Burst Mode                        */
+    uint32_t TargetBank;     /*!< Target Bank                             */
+    uint32_t RefreshMode;    /*!< Refresh Mode                            */
+    uint32_t RefreshRate;    /*!< Refresh Rate                            */
+    uint32_t BurstLength;    /*!< Burst Length                            */
+    uint32_t BurstType;      /*!< Burst Type                              */
+    uint32_t CASLatency;     /*!< CAS Latency                             */
+    uint32_t OperationMode;  /*!< Operation Mode                          */
+    uint32_t WriteBurstMode; /*!< Write Burst Mode                        */
 } MICRON_STEER_Context_t;
 
 /**
@@ -102,23 +106,22 @@ typedef struct {
  * @{
  */
 int32_t MicronSteer_Init(SDRAM_HandleTypeDef *Ctx,
-                          MICRON_STEER_Context_t *pRegMode);
+                         MICRON_STEER_Context_t *pRegMode);
 int32_t MicronSteer_ClockEnable(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
 int32_t MicronSteer_Precharge(SDRAM_HandleTypeDef *Ctx, uint32_t Interface);
 int32_t MicronSteer_ModeRegConfig(SDRAM_HandleTypeDef *Ctx,
-                                   MICRON_STEER_Context_t *pRegMode);
+                                  MICRON_STEER_Context_t *pRegMode);
 int32_t MicronSteer_TimingConfig(SDRAM_HandleTypeDef *Ctx,
-                                  FMC_SDRAM_TimingTypeDef *pTiming);
-int32_t MicronSteer_RefreshMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface,
-                                 uint32_t RefreshMode);
+                                 FMC_SDRAM_TimingTypeDef *pTiming);
+int32_t MicronSteer_RefreshMode(SDRAM_HandleTypeDef *Ctx, uint32_t Interface, uint32_t RefreshMode);
 int32_t MicronSteer_RefreshRate(SDRAM_HandleTypeDef *Ctx,
-                                 uint32_t RefreshCount);
+                                uint32_t RefreshCount);
 int32_t MicronSteer_EnterPowerMode(SDRAM_HandleTypeDef *Ctx,
-                                    uint32_t Interface);
-int32_t MicronSteer_ExitPowerMode(SDRAM_HandleTypeDef *Ctx,
                                    uint32_t Interface);
+int32_t MicronSteer_ExitPowerMode(SDRAM_HandleTypeDef *Ctx,
+                                  uint32_t Interface);
 int32_t MicronSteer_Sendcmd(SDRAM_HandleTypeDef *Ctx,
-                             FMC_SDRAM_CommandTypeDef *SdramCmd);
+                            FMC_SDRAM_CommandTypeDef *SdramCmd);
 
 /**
  * @}

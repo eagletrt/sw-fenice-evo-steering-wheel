@@ -10,9 +10,13 @@ from SCons.Script import Import
 
 Import("env")
 
-JSON_PATH = Path("tools/fonts.json")
-HASH_PATH = Path("tools/.fonts.json.sha256")
-OUTPUT_DIR = Path("tools/generated")
+# An environment can generate its own glyph set (e.g. the bootloader, which
+# can't afford the firmware's font) with, in platformio.ini:
+#   custom_fonts_json = path/to/fonts.json
+#   custom_fonts_output = path/to/generated
+JSON_PATH = Path(env.GetProjectOption("custom_fonts_json", "tools/fonts.json"))
+OUTPUT_DIR = Path(env.GetProjectOption("custom_fonts_output", "tools/generated"))
+HASH_PATH = JSON_PATH.parent / ("." + JSON_PATH.name + ".sha256")
 
 
 logging.basicConfig(level=logging.INFO, format="[libraster] %(message)s")

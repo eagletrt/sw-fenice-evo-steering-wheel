@@ -79,6 +79,12 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
+    /* OpenBLT signature checksum, right after the vector table (0x2CC long on the
+     * STM32H723): BOOT_FLASH_VECTOR_TABLE_CS_OFFSET in the bootloader's blt_conf.h.
+     * Written by scripts/openblt_image.py, checked by the bootloader at startup.
+     */
+    _openblt_checksum = .;
+    LONG(0x00000000)
   } >FLASH
 
   /* The program code and other data goes into FLASH */

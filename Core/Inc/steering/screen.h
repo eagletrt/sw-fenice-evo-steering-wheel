@@ -4,6 +4,8 @@
 #include "dashboard.h"
 #include "popup.h"
 #include "raster.h"
+#include "splash.h"
+#include "eagletrt-api.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -11,6 +13,7 @@
 #define SCREEN_HEIGHT (480U)
 
 #define SCREEN_POPUP_TIMEOUT_MS (1500U)
+#define SCREEN_FLASH_TITLE "FLASHING" /*!< First caption line of the FLASH page */
 
 /*!
  * \brief Return codes for screen operations
@@ -39,13 +42,23 @@ struct ScreenAccelerators {
 /*!
  * \brief Boxes of the biggest interface (dashboard or popup).
  */
-#define SCREEN_MAX_BOX_COUNT (DASHBOARD_BOX_COUNT > POPUP_BOX_COUNT ? DASHBOARD_BOX_COUNT : POPUP_BOX_COUNT)
+#define SCREEN_MAX_BOX_COUNT (EAGLETRT_API_MAX(EAGLETRT_API_MAX(DASHBOARD_BOX_COUNT, POPUP_BOX_COUNT), SPLASH_BOX_COUNT))
+
+/*!
+ * \brief Interfaces the screen can mount on the raster.
+ */
+enum ScreenInterface : uint8_t {
+    SCREEN_INTERFACE_DASHBOARD, /*!< Main telemetry page */
+    SCREEN_INTERFACE_POPUP,     /*!< Parameter-change popup */
+    SCREEN_INTERFACE_FLASH,     /*!< Logo + "FLASHING <board>" while another board is flashed */
+};
 
 /*!
  * \brief Main screen handler structure
  */
 struct ScreenHandler {
-    bool popup_visible; /*!< Whether the popup interface is currently mounted on the raster */
+    enum ScreenInterface mounted; /*!< Interface currently mounted on the raster */
+    bool flash_visible;           /*!< The FLASH page replaces every other interface */
 
     /*!
      * Boxes of the mounted interface drawn into one framebuffer by the last
@@ -57,6 +70,7 @@ struct ScreenHandler {
     struct RasterHandler raster;       /*!< Handler for raster operations */
     struct DashboardHandler dashboard; /*!< Main always-on interface (telemetry, scenario, lap) */
     struct PopupHandler popup;         /*!< State of the parameter-change popup overlay */
+    struct SplashHandler flash;        /*!< FLASH page: logo + "FLASHING" + board name */
 };
 
 #endif // SCREEN_H

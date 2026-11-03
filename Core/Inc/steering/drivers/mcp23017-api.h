@@ -46,4 +46,20 @@ enum Mcp23017ReturnCode mcp23017_api_init(struct Mcp23017Handler *handler, uint8
  */
 enum Mcp23017ReturnCode mcp23017_api_read_port(struct Mcp23017Handler *handler, enum Mcp23017Port port, uint8_t *value);
 
+/*!
+ * \brief Check that the expander still holds the configuration written by mcp23017_api_init.
+ *
+ * \details An expander that lost power or was reset on its own comes back
+ *     with the pull-ups off, and its open inputs then read as random
+ *     presses: re-run mcp23017_api_init when this fails.
+ *
+ * \param handler Handler of the target expander, initialized.
+ *
+ * \retval MCP23017_RC_OK if the configuration is intact.
+ * \retval MCP23017_RC_NULL_POINTER if \p handler is NULL or not initialized.
+ * \retval MCP23017_RC_BUS_ERROR if a register read fails.
+ * \retval MCP23017_RC_VERIFY_ERROR if the pull-ups are not all enabled.
+ */
+enum Mcp23017ReturnCode mcp23017_api_check_config(struct Mcp23017Handler *handler);
+
 #endif // MCP23017_API_H
