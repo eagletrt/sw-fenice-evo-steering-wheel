@@ -104,7 +104,7 @@ EAGLETRT_STATIC void prv_main_init_logging_configuration() {
  */
 EAGLETRT_STATIC void prv_main_poll_inputs(uint32_t tick) {
     i2c_inputs_poll(tick);
-    gpio_inputs_poll(tick);
+    gpio_inputs_poll();
 }
 
 /*!

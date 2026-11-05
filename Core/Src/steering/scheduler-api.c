@@ -15,19 +15,21 @@
 #include "eagletrt-api.h"
 #include "flash-monitor-api.h"
 #include "identity-api.h"
-#include "inputs-api.h"
+#include "input-events-api.h"
+#include "input-router-api.h"
 #include "logger-api.h"
 #include "parameters-api.h"
 #include "screen-api.h"
 #include "tasks-api.h"
+#include "timeout-api.h"
 #include "ui-data-api.h"
-#include "watchdogs-api.h"
 #include "wheel-fsm-api.h"
 
 #include <inttypes.h>
 #include <string.h>
 
 static_assert(SCHEDULER_TASK_COUNT <= TASKS_MAX_COUNT, "libtimebase cannot hold every scheduler task");
+static_assert(FLASH_MONITOR_TIMEOUT_COUNT + INPUT_EVENTS_TIMEOUT_COUNT <= TIMEOUT_MAX_COUNT, "the timeout pool cannot hold every timeout");
 
 /*!
  * \brief Body of a task, called with the tick of the current routine call.
@@ -113,11 +115,8 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_rx(uint32_t tick_ms) {
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_inputs(uint32_t tick_ms) {
+    // Long presses and combo windows are timeouts, run by the scheduler routine.
     scheduler_handler.config.poll_inputs(tick_ms);
-    // A transient NAK from the input expanders is not worth bricking the
-    // wheel over: ERROR has no way back and the display is the one thing
-    // the driver actually needs.
-    EAGLETRT_API_UNUSED(inputs_api_poll_for_long_press(tick_ms));
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_fsm(uint32_t tick_ms) {
@@ -212,6 +211,18 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
     if (scheduler_handler.config.report_stats != NULL) {
         scheduler_handler.config.report_stats();
     }
+}
+
+/*!
+ * \brief Input router hook: a request action fired.
+ *
+ * \details TODO(#9): MENU opens the menu, WAKE leaves the screen saver.
+ *     Until those states exist the request is only logged.
+ *
+ * \param request What is asked.
+ */
+EAGLETRT_STATIC void prv_scheduler_api_on_request(enum InputRequest request) {
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "input request %s", (request == INPUT_REQUEST_MENU) ? "MENU" : "WAKE"));
 }
 
 /*!
@@ -336,6 +347,24 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     scheduler_handler.config = *config;
     scheduler_handler.config.post.parameters_on_change = prv_scheduler_api_on_parameter_change;
 
+    // The timeout pool comes first: the flash monitor and the input events
+    // take their timeouts from it, and the POST (FSM INIT step below) wires
+    // the inputs to the event layer.
+    if (timeout_api_init(prv_scheduler_api_read_tick) != TIMEOUT_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+    if (flash_monitor_api_init(config->reset) != FLASH_MONITOR_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+    const struct InputRouterConfig router_config = {
+        .get_state = wheel_fsm_api_get_state,
+        .on_request = prv_scheduler_api_on_request,
+    };
+    if (input_events_api_init(input_router_api_handle_event, input_router_api_active_combos) != INPUT_EVENTS_RC_OK ||
+        input_router_api_init(&router_config) != INPUT_ROUTER_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+
     const struct WheelFsmConfig fsm_config = {
         .post = &scheduler_handler.config.post,
         .enter_flash = prv_scheduler_api_enter_flash,
@@ -366,13 +395,6 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     if (tasks_api_init(&scheduler_handler.tasks, task_list, SCHEDULER_TASK_COUNT, prv_scheduler_api_read_tick) != TASKS_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
-    if (watchdogs_api_init_pool(&scheduler_handler.watchdogs, prv_scheduler_api_read_tick) != WATCHDOG_RC_OK) {
-        return SCHEDULER_RC_ERROR;
-    }
-    if (flash_monitor_api_init(&scheduler_handler.watchdogs, config->reset) != FLASH_MONITOR_RC_OK) {
-        return SCHEDULER_RC_ERROR;
-    }
-
     return SCHEDULER_RC_OK;
 }
 
@@ -385,7 +407,7 @@ enum SchedulerReturnCode scheduler_api_routine(void) {
     if (tasks_api_routine(&scheduler_handler.tasks) != TASKS_RC_OK) {
         return_code = SCHEDULER_RC_ERROR;
     }
-    if (watchdogs_api_routine(&scheduler_handler.watchdogs) != WATCHDOG_RC_OK) {
+    if (timeout_api_routine() != TIMEOUT_RC_OK) {
         return_code = SCHEDULER_RC_ERROR;
     }
     return return_code;

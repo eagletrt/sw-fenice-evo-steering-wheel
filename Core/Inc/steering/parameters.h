@@ -39,13 +39,17 @@ enum ParametersReturnCode {
 typedef bool (*parameters_on_change_callback)(enum InputsSharedParameterID parameter_id, uint8_t value);
 
 /*!
+ * \brief Number of distinct inputs that can hold a parameter (bits of ParametersHandler::holders).
+ */
+#define PARAMETERS_HOLD_SOURCE_COUNT (32U)
+
+/*!
  * \brief Parameters handler structure.
  */
 struct ParametersHandler {
-    parameters_on_change_callback on_change;          /*!< Called on every value transition */
-    uint8_t values[INPUTS_SHARED_PARAMETER_ID_COUNT]; /*!< Current value of each parameter */
-    bool ptt_top_left_held;                           /*!< Top-left paddle is currently held; PTT is active while either paddle is held */
-    bool ptt_top_right_held;                          /*!< Top-right paddle is currently held; PTT is active while either paddle is held */
+    parameters_on_change_callback on_change;            /*!< Called on every value transition */
+    uint8_t values[INPUTS_SHARED_PARAMETER_ID_COUNT];   /*!< Current value of each parameter */
+    uint32_t holders[INPUTS_SHARED_PARAMETER_ID_COUNT]; /*!< Inputs currently holding each parameter at 1, one bit per source */
 };
 
 #endif // PARAMETERS_H

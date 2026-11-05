@@ -29,25 +29,41 @@ EAGLETRT_STATIC struct WheelFsmHandler wheel_fsm_handler;
  */
 EAGLETRT_STATIC void prv_wheel_fsm_api_do_init(void *data) {
     struct WheelFsmConfig *config = (struct WheelFsmConfig *)data;
+    // if POST fails, the FSM goes to ERROR, if passes go to IDLE
     const enum WheelFsmState next = (post_api_do_init(config->post) == POST_RC_OK) ? WHEEL_FSM_STATE_IDLE : WHEEL_FSM_STATE_ERROR;
     EAGLETRT_API_UNUSED(wheel_fsm_api_request(next));
 }
 
 /*!
- * \brief IDLE and FLASH: follow the flash monitor.
+ * \brief IDLE: only follows the flash-monitor.
  *
- * \details One function for both states: FLASH while another board is
- *     being flashed, IDLE otherwise (requesting the current state keeps it).
- *     Following the monitor's state on every step, instead of reacting to its
- *     edges, means a frame arriving between the timeout and the next step
- *     can't leave the wheel in the wrong state. The reset into the bootloader
- *     is the monitor's job, in every state.
+ * \note The logic does:
+ *    - if the flash-monitor is active, go to FLASH
+ *    - if the flash-monitor is not active, stay in IDLE
  *
  * \param data The WheelFsmConfig of the handler (unused).
  */
-EAGLETRT_STATIC void prv_wheel_fsm_api_follow_flash_monitor(void *data) {
+EAGLETRT_STATIC void prv_wheel_fsm_api_do_idle(void *data) {
     EAGLETRT_API_UNUSED(data);
-    EAGLETRT_API_UNUSED(wheel_fsm_api_request(flash_monitor_api_is_active() ? WHEEL_FSM_STATE_FLASH : WHEEL_FSM_STATE_IDLE));
+    if (flash_monitor_api_is_active()) {
+        EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_FLASH));
+    }
+}
+
+/*!
+ * \brief FLASH: only follows the flash-monitor.
+ *
+ * \note The logic does:
+ *    - if the flash-monitor is active, stay in FLASH
+ *    - if the flash-monitor is not active, go to IDLE
+ *
+ * \param data The WheelFsmConfig of the handler (unused).
+ */
+EAGLETRT_STATIC void prv_wheel_fsm_api_do_flash(void *data) {
+    EAGLETRT_API_UNUSED(data);
+    if (!flash_monitor_api_is_active()) {
+        EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_IDLE));
+    }
 }
 
 /*!
@@ -110,14 +126,14 @@ EAGLETRT_STATIC const struct State prv_wheel_fsm_api_states[WHEEL_FSM_STATE_COUN
     },
     [WHEEL_FSM_STATE_IDLE] = {
         WHEEL_FSM_STATE_IDLE,
-        prv_wheel_fsm_api_follow_flash_monitor,
+        prv_wheel_fsm_api_do_idle,
         WHEEL_FSM_STATE_IDLE,
         prv_wheel_fsm_api_idle_transitions,
         (uint8_t)EAGLETRT_FSM_TRANSITION_LEN(prv_wheel_fsm_api_idle_transitions),
     },
     [WHEEL_FSM_STATE_FLASH] = {
         WHEEL_FSM_STATE_FLASH,
-        prv_wheel_fsm_api_follow_flash_monitor,
+        prv_wheel_fsm_api_do_flash,
         WHEEL_FSM_STATE_FLASH,
         prv_wheel_fsm_api_flash_transitions,
         (uint8_t)EAGLETRT_FSM_TRANSITION_LEN(prv_wheel_fsm_api_flash_transitions),

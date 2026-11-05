@@ -11,7 +11,8 @@
  *     - the taxonomy of physical inputs (knob and button IDs), consumed by
  *       the inputs module;
  *     - the full list of parameters managed by the parameters module. Some
- *       are forwarded to the UI popup, others (like PTT and TS_ON) only
+ *       are forwarded to the UI popup, others (PTT, TS_ON, the driver
+ *       actions) only
  *       drive hardware side effects and the CAN broadcast.
  *       parameters_api_is_shared is the source of truth on which is which.
  *
@@ -41,20 +42,14 @@ enum InputsSharedKnobID {
  */
 enum InputsSharedButtonID {
     INPUTS_SHARED_BUTTON_ID_TS_ON,
-    INPUTS_SHARED_BUTTON_ID_TOP_LEFT_1,
-    INPUTS_SHARED_BUTTON_ID_TOP_LEFT_2,
+    INPUTS_SHARED_BUTTON_ID_TOP_LEFT,
     INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT,
-    INPUTS_SHARED_BUTTON_ID_TOP_RIGHT_1,
-    INPUTS_SHARED_BUTTON_ID_TOP_RIGHT_2,
+    INPUTS_SHARED_BUTTON_ID_TOP_RIGHT,
     INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT,
     INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT,
     INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_LEFT,
     INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT,
     INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_RIGHT,
-    INPUTS_SHARED_BUTTON_ID_KNOB_PUSH_FRONT_LEFT,
-    INPUTS_SHARED_BUTTON_ID_KNOB_PUSH_FRONT_RIGHT,
-    INPUTS_SHARED_BUTTON_ID_KNOB_PUSH_SIDE_LEFT,
-    INPUTS_SHARED_BUTTON_ID_KNOB_PUSH_SIDE_RIGHT,
     INPUTS_SHARED_BUTTON_ID_COUNT,
 };
 
@@ -71,8 +66,10 @@ enum InputsSharedParameterID {
     INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING, /*!< Torque vectoring level (0..10) */
     INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG,    /*!< Telemetry log toggle */
     INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL,   /*!< Launch control toggle */
-    INPUTS_SHARED_PARAMETER_ID_PTT,              /*!< Push-To-Talk toggle */
+    INPUTS_SHARED_PARAMETER_ID_PTT,              /*!< Push-To-Talk, held while either top paddle is pressed */
     INPUTS_SHARED_PARAMETER_ID_TS_ON,            /*!< TS-on request, held while the button is pressed */
+    INPUTS_SHARED_PARAMETER_ID_DRIVER_OK,        /*!< Driver action OK, held while its button is pressed */
+    INPUTS_SHARED_PARAMETER_ID_DRIVER_REPEAT,    /*!< Driver action REPEAT, held while its button is pressed */
     INPUTS_SHARED_PARAMETER_ID_COUNT,
 };
 

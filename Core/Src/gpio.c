@@ -141,10 +141,10 @@ void MX_GPIO_Init(void) {
 
 #include <stdbool.h>
 
-void gpio_inputs_poll(uint32_t current_tick_ms) {
+void gpio_inputs_poll(void) {
     /* TS-ON is the only button on a direct MCU pin; active low. */
     const bool pressed = HAL_GPIO_ReadPin(TSON_BUTTON_GPIO_Port, TSON_BUTTON_Pin) == GPIO_PIN_RESET;
-    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TS_ON, pressed, current_tick_ms);
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TS_ON, pressed);
 }
 
 /* USER CODE END 2 */

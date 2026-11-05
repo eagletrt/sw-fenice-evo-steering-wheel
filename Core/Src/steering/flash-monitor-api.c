@@ -10,8 +10,8 @@
 #include "flash-monitor-api.h"
 
 #include "can-primary.h"
-#include "eagletrt.h"
-#include "watchdogs-api.h"
+#include "eagletrt-api.h"
+#include "timeout-api.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -76,20 +76,22 @@ EAGLETRT_STATIC bool prv_flash_monitor_api_is_own(uint32_t id) {
 
 /*!
  * \brief No flashing frame for FLASH_MONITOR_TIMEOUT_MS: flashing is over.
+ *
+ * \param context Unused.
  */
-EAGLETRT_STATIC void prv_flash_monitor_api_on_timeout(void) {
+EAGLETRT_STATIC void prv_flash_monitor_api_on_timeout(void *context) {
+    EAGLETRT_API_UNUSED(context);
     flash_monitor_handler.active = false;
 }
 
-enum FlashMonitorReturnCode flash_monitor_api_init(struct WatchdogHandler *watchdogs, flash_monitor_reset_callback reset) {
-    if (watchdogs == NULL || reset == NULL) {
+enum FlashMonitorReturnCode flash_monitor_api_init(flash_monitor_reset_callback reset) {
+    if (reset == NULL) {
         return FLASH_MONITOR_RC_NULL_POINTER;
     }
 
     memset(&flash_monitor_handler, 0, sizeof(flash_monitor_handler));
-    flash_monitor_handler.watchdogs = watchdogs;
     flash_monitor_handler.reset = reset;
-    if (watchdogs_api_init_watchdog(&flash_monitor_handler.watchdog, FLASH_MONITOR_TIMEOUT_MS, prv_flash_monitor_api_on_timeout) != WATCHDOG_RC_OK) {
+    if (timeout_api_create(FLASH_MONITOR_TIMEOUT_MS, prv_flash_monitor_api_on_timeout, NULL, &flash_monitor_handler.silence) != TIMEOUT_RC_OK) {
         return FLASH_MONITOR_RC_ERROR;
     }
     return FLASH_MONITOR_RC_OK;
@@ -111,9 +113,9 @@ bool flash_monitor_api_on_frame(uint32_t id) {
     }
 
     flash_monitor_handler.target = target;
-    // Restart works whether the watchdog is idle, running or expired. If it
+    // Start works whether the timeout is idle, running or expired. If it
     // fails the wheel would never leave FLASH: don't enter it at all.
-    flash_monitor_handler.active = (watchdogs_api_watchdog_restart(flash_monitor_handler.watchdogs, &flash_monitor_handler.watchdog) == WATCHDOG_RC_OK);
+    flash_monitor_handler.active = (timeout_api_start(flash_monitor_handler.silence) == TIMEOUT_RC_OK);
     return true;
 }
 

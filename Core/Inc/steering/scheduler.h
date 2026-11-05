@@ -20,7 +20,6 @@
 #include "flash-monitor.h"
 #include "post.h"
 #include "tasks.h"
-#include "watchdogs.h"
 #include "wheel-fsm.h"
 
 #include <stdbool.h>
@@ -126,7 +125,6 @@ struct SchedulerTaskStats {
 struct SchedulerHandler {
     struct SchedulerConfig config;                         /*!< Copy of the configuration given at init */
     struct TasksHandler tasks;                             /*!< libtimebase tasks */
-    struct WatchdogHandler watchdogs;                      /*!< libtimebase watchdogs (pool: the flash monitor timeout) */
     uint32_t tick;                                         /*!< Last tick read by libtimebase: the time base of every task */
     struct SchedulerTaskStats stats[SCHEDULER_TASK_COUNT]; /*!< Per-task timing */
     uint16_t dropped_at_last_log;                          /*!< libtimebase dropped-runs counter at the previous stats log */

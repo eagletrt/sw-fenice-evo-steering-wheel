@@ -5,7 +5,7 @@
  *
  * \brief Unit tests for the detection of other boards being flashed.
  *
- * \details The timeout runs on a real libtimebase watchdog pool with a fake
+ * \details The timeout runs on the real timeout pool with a fake
  *     clock.
  */
 
@@ -16,7 +16,7 @@
 #include "font-api.h"
 #include "raster-fonts.h"
 #include "splash.h"
-#include "watchdogs-api.h"
+#include "timeout-api.h"
 #include <string.h>
 
 extern struct FlashMonitorHandler flash_monitor_handler;
@@ -33,16 +33,15 @@ DEFINE_FFF_GLOBALS;
 FAKE_VOID_FUNC(fake_reset);
 
 static uint32_t prv_now;
-static struct WatchdogHandler prv_watchdogs;
 
 static uint32_t prv_get_tick(void) {
     return prv_now;
 }
 
-/* Move the clock and let the watchdog pool fire whatever expired. */
+/* Move the clock and let the timeout pool expire whatever is due. */
 static void prv_advance_to(uint32_t tick) {
     prv_now = tick;
-    TEST_ASSERT_EQUAL(WATCHDOG_RC_OK, watchdogs_api_routine(&prv_watchdogs));
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
 }
 
 static bool prv_is_own_id(uint32_t id) {
@@ -53,8 +52,8 @@ void setUp(void) {
     RESET_FAKE(fake_reset);
     FFF_RESET_HISTORY();
     prv_now = 0U;
-    TEST_ASSERT_EQUAL(WATCHDOG_RC_OK, watchdogs_api_init_pool(&prv_watchdogs, prv_get_tick));
-    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_OK, flash_monitor_api_init(&prv_watchdogs, fake_reset));
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_init(prv_get_tick));
+    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_OK, flash_monitor_api_init(fake_reset));
 }
 
 void tearDown(void) {}
@@ -154,8 +153,7 @@ void test_flash_monitor_table_names_fit_the_screen(void) {
  */
 
 void test_flash_monitor_init_rejects_null(void) {
-    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_NULL_POINTER, flash_monitor_api_init(NULL, fake_reset));
-    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_NULL_POINTER, flash_monitor_api_init(&prv_watchdogs, NULL));
+    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_NULL_POINTER, flash_monitor_api_init(NULL));
 }
 
 void test_flash_monitor_starts_inactive(void) {
@@ -223,7 +221,7 @@ void test_flash_monitor_reactivates_after_expiry(void) {
 
     prv_advance_to(2000U);
     TEST_ASSERT_TRUE(flash_monitor_api_on_frame(CAN_PRIMARY_MESSAGE_FRAME_ID_DASREARFLASHINGTX));
-    TEST_ASSERT_TRUE_MESSAGE(flash_monitor_api_is_active(), "An expired watchdog must restart on the next flashing frame");
+    TEST_ASSERT_TRUE_MESSAGE(flash_monitor_api_is_active(), "An expired timeout must restart on the next flashing frame");
     TEST_ASSERT_EQUAL_STRING("DAS REAR", flash_monitor_api_get_board_name());
 
     prv_advance_to(2000U + FLASH_MONITOR_TIMEOUT_MS);

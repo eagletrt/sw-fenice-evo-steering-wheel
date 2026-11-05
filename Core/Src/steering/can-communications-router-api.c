@@ -40,7 +40,7 @@ EAGLETRT_STATIC const struct CanCommunicationsRouterFilter prv_router_api_primar
 };
 
 static_assert(sizeof(prv_router_api_primary_filters) / sizeof(prv_router_api_primary_filters[0]) == CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT,
-              "update CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (and FDCAN1 StdFiltersNbr in the .ioc)");
+              "update CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (at most FDCAN1 StdFiltersNbr in the .ioc)");
 
 /*!
  * \brief Scale from the 0..1 state-of-charge libcan reports to a percentage.
@@ -104,9 +104,10 @@ enum CanCommunicationReturnCode can_communications_router_api_send_control_maps(
 /*!
  * \brief Build and queue DriverAction from the current parameters.
  *
- * \details Event-based message (no cycle time in libcan): only the
- *     telemetry-log toggle is wired today, the other three signals are
- *     reserved for buttons that do not exist on this wheel yet.
+ * \details Event-based message (no cycle time in libcan), sent on every
+ *     change of one of its signals: the telemetry-log toggle and the driver
+ *     actions OK and REPEAT (1 while their button is held). The marker has
+ *     no button on this wheel.
  *
  * \retval CAN_COMMUNICATION_RC_OK on success.
  * \retval CAN_COMMUNICATION_RC_ERROR if libcan failed to serialize.
@@ -116,8 +117,8 @@ EAGLETRT_STATIC enum CanCommunicationReturnCode prv_router_api_send_driver_actio
     message.driveraction = (struct CanPrimaryDriveraction){
         .log = parameters_api_get(INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG),
         .marker = 0U,
-        .ok = 0U,
-        .repeat = 0U,
+        .ok = parameters_api_get(INPUTS_SHARED_PARAMETER_ID_DRIVER_OK),
+        .repeat = parameters_api_get(INPUTS_SHARED_PARAMETER_ID_DRIVER_REPEAT),
     };
     return prv_router_api_queue_primary(
         CAN_PRIMARY_MESSAGE_FRAME_ID_DRIVERACTION,
@@ -140,6 +141,8 @@ enum CanCommunicationReturnCode can_communications_router_api_on_parameter_chang
             return can_communications_router_api_send_control_maps();
 
         case INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG:
+        case INPUTS_SHARED_PARAMETER_ID_DRIVER_OK:
+        case INPUTS_SHARED_PARAMETER_ID_DRIVER_REPEAT:
             return prv_router_api_send_driver_action();
 
         case INPUTS_SHARED_PARAMETER_ID_COUNT:

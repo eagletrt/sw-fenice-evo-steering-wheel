@@ -33,6 +33,8 @@ EAGLETRT_STATIC const struct ParameterMeta parameters_api_meta[INPUTS_SHARED_PAR
     [INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL] = { .is_toggle = true, .is_shared = true },
     [INPUTS_SHARED_PARAMETER_ID_PTT] = { .is_toggle = true, .is_shared = false },
     [INPUTS_SHARED_PARAMETER_ID_TS_ON] = { .is_toggle = true, .is_shared = false },
+    [INPUTS_SHARED_PARAMETER_ID_DRIVER_OK] = { .is_toggle = true, .is_shared = false },
+    [INPUTS_SHARED_PARAMETER_ID_DRIVER_REPEAT] = { .is_toggle = true, .is_shared = false },
 };
 
 /*!
@@ -68,20 +70,6 @@ EAGLETRT_STATIC enum ParametersReturnCode prv_parameters_api_apply_value(const e
     return PARAMETERS_RC_OK;
 }
 
-/*!
- * \brief Recompute the PTT toggle from the current paddle hold flags.
- *
- * \details PTT is active while either top paddle is held; it only goes
- *     back to 0 once both are released.
- *
- * \retval PARAMETERS_RC_OK if the value is unchanged or the on-change callback succeeded.
- * \retval PARAMETERS_RC_ERROR if the on-change callback returned false.
- */
-EAGLETRT_STATIC enum ParametersReturnCode prv_recompute_ptt(void) {
-    uint8_t desired = (parameters_handler.ptt_top_left_held || parameters_handler.ptt_top_right_held) ? 1U : 0U;
-    return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_PTT, desired);
-}
-
 enum ParametersReturnCode parameters_api_init(parameters_on_change_callback on_change) {
     if (on_change == NULL) {
         return PARAMETERS_RC_ERROR;
@@ -114,90 +102,44 @@ enum ParametersReturnCode parameters_api_set(const enum InputsSharedParameterID 
     return prv_parameters_api_apply_value(parameter_id, prv_parameters_api_clamp_to_allowed(parameter_id, (int16_t)value));
 }
 
-enum InputsReturnCode parameters_api_handle_button(enum InputsSharedButtonID button_id) {
-    switch (button_id) {
-        case INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT:
-        case INPUTS_SHARED_BUTTON_ID_BOTTOM_RIGHT: {
-            enum InputsSharedParameterID param =
-                (button_id == INPUTS_SHARED_BUTTON_ID_BOTTOM_LEFT)
-                    ? INPUTS_SHARED_PARAMETER_ID_TELEMETRY_LOG
-                    : INPUTS_SHARED_PARAMETER_ID_LAUNCH_CONTROL;
-
-            uint8_t next = parameters_handler.values[param] ? 0U : 1U;
-
-            return prv_parameters_api_apply_value(param, next) == PARAMETERS_RC_OK
-                       ? INPUTS_RC_OK
-                       : INPUTS_RC_ERROR;
-        }
-        case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT:
-        case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT: {
-            bool *held =
-                (button_id == INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT)
-                    ? &parameters_handler.ptt_top_left_held
-                    : &parameters_handler.ptt_top_right_held;
-
-            *held = true;
-
-            return prv_recompute_ptt() == PARAMETERS_RC_OK
-                       ? INPUTS_RC_OK
-                       : INPUTS_RC_ERROR;
-        }
-        case INPUTS_SHARED_BUTTON_ID_TS_ON: {
-            // Momentary: the ECU wants the request asserted for as long as
-            // the driver holds the button, so press/release drive it
-            // directly instead of toggling.
-            return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_TS_ON, 1U) == PARAMETERS_RC_OK
-                       ? INPUTS_RC_OK
-                       : INPUTS_RC_ERROR;
-        }
-        default:
-            return INPUTS_RC_OK;
+enum ParametersReturnCode parameters_api_toggle(enum InputsSharedParameterID parameter_id) {
+    if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
+        return PARAMETERS_RC_ERROR;
     }
+    return prv_parameters_api_apply_value(parameter_id, (parameters_handler.values[parameter_id] != 0U) ? 0U : 1U);
 }
 
-enum InputsReturnCode parameters_api_handle_button_release(enum InputsSharedButtonID button_id) {
-    switch (button_id) {
-        case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT:
-        case INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_RIGHT: {
-            bool *released =
-                (button_id == INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT)
-                    ? &parameters_handler.ptt_top_left_held
-                    : &parameters_handler.ptt_top_right_held;
-
-            *released = false;
-
-            return prv_recompute_ptt() == PARAMETERS_RC_OK
-                       ? INPUTS_RC_OK
-                       : INPUTS_RC_ERROR;
-        }
-        case INPUTS_SHARED_BUTTON_ID_TS_ON: {
-            return prv_parameters_api_apply_value(INPUTS_SHARED_PARAMETER_ID_TS_ON, 0U) == PARAMETERS_RC_OK
-                       ? INPUTS_RC_OK
-                       : INPUTS_RC_ERROR;
-        }
-        default:
-            return INPUTS_RC_OK;
+enum ParametersReturnCode parameters_api_step(enum InputsSharedParameterID parameter_id, int8_t delta) {
+    if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
+        return PARAMETERS_RC_ERROR;
     }
+    const int16_t candidate = (int16_t)((int16_t)parameters_handler.values[parameter_id] + delta);
+    return prv_parameters_api_apply_value(parameter_id, prv_parameters_api_clamp_to_allowed(parameter_id, candidate));
 }
 
-enum InputsReturnCode parameters_api_handle_knob(const enum InputsSharedKnobID knob_id, int8_t delta) {
-    enum InputsSharedParameterID parameter_id;
-    switch (knob_id) {
-        case INPUTS_SHARED_KNOB_ID_FRONT_LEFT:
-            parameter_id = INPUTS_SHARED_PARAMETER_ID_POWER;
-            break;
-        case INPUTS_SHARED_KNOB_ID_FRONT_RIGHT:
-            parameter_id = INPUTS_SHARED_PARAMETER_ID_REGEN;
-            break;
-        case INPUTS_SHARED_KNOB_ID_FRONT_CENTER:
-            parameter_id = INPUTS_SHARED_PARAMETER_ID_TORQUE_VECTORING;
-            break;
-        default:
-            return INPUTS_RC_OK;
+enum ParametersReturnCode parameters_api_hold(enum InputsSharedParameterID parameter_id, uint8_t source, bool held) {
+    if (parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT || source >= PARAMETERS_HOLD_SOURCE_COUNT) {
+        return PARAMETERS_RC_ERROR;
     }
-    int16_t candidate = parameters_handler.values[parameter_id] + delta;
-    if (prv_parameters_api_apply_value(parameter_id, prv_parameters_api_clamp_to_allowed(parameter_id, candidate)) != PARAMETERS_RC_OK) {
-        return INPUTS_RC_ERROR;
+    const uint32_t bit = 1UL << source;
+    if (held) {
+        parameters_handler.holders[parameter_id] |= bit;
+    } else {
+        parameters_handler.holders[parameter_id] &= ~bit;
     }
-    return INPUTS_RC_OK;
+    return prv_parameters_api_apply_value(parameter_id, (parameters_handler.holders[parameter_id] != 0U) ? 1U : 0U);
+}
+
+enum ParametersReturnCode parameters_api_release_source(uint8_t source) {
+    if (source >= PARAMETERS_HOLD_SOURCE_COUNT) {
+        return PARAMETERS_RC_ERROR;
+    }
+    enum ParametersReturnCode return_code = PARAMETERS_RC_OK;
+    for (enum InputsSharedParameterID i = 0; i < INPUTS_SHARED_PARAMETER_ID_COUNT; i++) {
+        if ((parameters_handler.holders[i] & (1UL << source)) != 0U &&
+            parameters_api_hold(i, source, false) != PARAMETERS_RC_OK) {
+            return_code = PARAMETERS_RC_ERROR;
+        }
+    }
+    return return_code;
 }

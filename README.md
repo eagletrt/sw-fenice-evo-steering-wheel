@@ -11,7 +11,7 @@ It also handles **buttons** and **3 rotary switches** for user input in real-tim
 
 ## Codebase structure
 
-- `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules (scheduler, FSM, inputs, parameters, CAN communications, dashboard/popup/screen UI).
+- `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules (scheduler, FSM, inputs, input events and routing, parameters, CAN communications, dashboard/popup/screen UI).
 - `Core/Src/steering/drivers/`, `Core/Inc/steering/drivers/`: hardware-agnostic device drivers (MCP23017 GPIO expander, Micron SDRAM).
 - `Core/Src/steering/can-communications-router-api.c`: the only place that knows about **libcan**. It decodes every inbound frame, folds the ones the dashboard renders into the UI snapshot, hands the rest to the flash monitor, and owns the list of identifiers the FDCAN hardware filters let through (everything else is rejected before it reaches the CPU; the secondary bus accepts nothing yet). It also builds the wheel's own outbound messages (button status carrying TS-on/PTT, control maps, driver action). Identity broadcasts (FSM status, firmware and libcan versions) live in `identity-api.c`.
 - Everything else in `Core/` is CubeMX-generated peripheral code; the hardware glue that wires peripherals to the application modules lives in its user-code sections.
@@ -27,7 +27,7 @@ The wheel FSM is a libfsm-sw table in `wheel-fsm-api.c`, run every 5 ms by the s
 task. Any task can request a transition with `wheel_fsm_api_request`; it is applied at the end of
 the next FSM step. A requested `ERROR` can't be replaced by a later request.
 
-FLASH follows `flash-monitor-api.c`: every `<Board>FlashingTx/Rx` frame of another board restarts a 500 ms libtimebase watchdog. While it runs, IDLE moves to FLASH; once it
+FLASH follows `flash-monitor-api.c`: every `<Board>FlashingTx/Rx` frame of another board restarts a 500 ms timeout. While it runs, IDLE moves to FLASH; once it
 expires, FLASH goes back to IDLE. The wheel's own pair (`0x6E`/`0x6F`) resets it into its bootloader
 instead, right away and in every state (ERROR included, so a wheel in ERROR can still be reflashed).
 Board names are in the table at the top of `flash-monitor-api.c`.
@@ -49,6 +49,41 @@ stateDiagram-v2
 | `IDLE` | dashboard, inputs, CAN | `IDLE` |
 | `FLASH` | another board is being flashed: logo, "FLASHING" and the board's name on screen; inputs ignored; `SteeringWheelFsm` is the only frame the wheel sends | `FLASH` |
 | `ERROR` | terminal: the last frame stays on screen, CAN keeps reporting the state | `ERROR` |
+
+### Timeouts
+
+Every timeout of the wheel (flash traffic silence, long presses, the combo window; later CAN data
+staleness and acks) comes from one static pool in `timeout-api.c`: a module creates its timeouts at
+init and gets ids back (`timeout_api_create/start/stop`), expiry callbacks run from the scheduler's
+main loop with the context given at creation. It is built on libtimebase watchdogs, but nothing
+else includes libtimebase's watchdog headers. Size: `TIMEOUT_MAX_COUNT` (20, at most libtimebase's
+`WATCHDOGS_MAX_COUNT`); a `static_assert` in `scheduler-api.c` checks the wheel's total.
+
+### Inputs
+
+Raw inputs (button edges, knob steps) go through two layers before they change anything:
+
+- **Input events** (`input-events`): buttons and combos produce the same events: press, release,
+  tap (released before the long-press time) and long press; knobs produce rotations.
+  - A button that belongs to a combo active in the current state opens a **150 ms combo window**.
+    If the rest of the combo goes down inside it, the combo is pressed and its buttons send nothing
+    of their own; otherwise the button's press is delivered when the window ends (or at once if it
+    is released first).
+  - A button in no active combo is delivered at once. Long press: 500 ms from the physical press;
+    combo long press: 1 s from its recognition.
+- **Input router** (`input-router`): one **binding table per FSM state** (`input-router-api.c`):
+  button events, combo events and knob rotations are bound to actions (step, toggle or hold a
+  parameter, or a request such as opening the menu). The combos a state binds are the only ones
+  recognised in it. Every action belongs to a filter group (parameters, PTT, TS-on; requests are
+  never filtered) set by the driving context once autonomous missions are handled. Releases always
+  let go of what the button held, in every state and through any filter, so a PTT or TS-on is never
+  left on.
+
+`IDLE` today: manettini step power / regen / torque vectoring; bottom buttons toggle telemetry log
+and launch control; top paddles hold PTT; TS-on held while pressed; **top right = driver action
+OK, top left = REPEAT** (1 while held, `DriverAction` on every change); menu combo (both top
+buttons, placeholder) held 1 s requests the menu (only logged until the menu exists). `INIT`,
+`FLASH` and `ERROR` bind nothing.
 
 ## Development
 
@@ -83,7 +118,8 @@ content changes) and CAN frames can be injected:
 | `e`, `d` | telemetry log, launch control buttons |
 | `c`, `v` (hold) | PTT paddles |
 | `t` (hold) | TS-on |
-| `r`, `f`, `b`, `n` | other buttons and bottom paddles |
+| `r`, `f` (hold) | top buttons: REPEAT / OK driver actions; both together, held 1 s: menu combo (logged) |
+| `b`, `n` | bottom paddles (no function yet) |
 | `1` | inject `EcuFsm` with the next vehicle status |
 | `2` | inject one step of telemetry (SoC, temperatures, laps) |
 | `p` | toggle a continuous telemetry feed |

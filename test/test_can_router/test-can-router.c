@@ -5,8 +5,8 @@
  *
  * \brief Unit tests for the CAN router's receive path and FDCAN filter list.
  *
- * \details Frames go through the real flash monitor, on a real libtimebase
- *     watchdog pool with a fake clock; the reset is a fake.
+ * \details Frames go through the real flash monitor, on the real timeout
+ *     pool with a fake clock; the reset is a fake.
  */
 
 #include "unity.h"
@@ -15,7 +15,7 @@
 #include "can-primary-api.h"
 #include "flash-monitor-api.h"
 #include "ui-data-api.h"
-#include "watchdogs-api.h"
+#include "timeout-api.h"
 #include <string.h>
 
 DEFINE_FFF_GLOBALS;
@@ -43,7 +43,6 @@ static const uint32_t prv_dashboard_ids[] = {
 #define TEST_ROUTER_DASHBOARD_COUNT (sizeof(prv_dashboard_ids) / sizeof(prv_dashboard_ids[0]))
 
 static uint32_t prv_now;
-static struct WatchdogHandler prv_watchdogs;
 
 static uint32_t prv_get_tick(void) {
     return prv_now;
@@ -61,8 +60,8 @@ void setUp(void) {
     FFF_RESET_HISTORY();
     prv_now = 0U;
     memset(ui_data_api_get(), 0, sizeof(struct UIData));
-    TEST_ASSERT_EQUAL(WATCHDOG_RC_OK, watchdogs_api_init_pool(&prv_watchdogs, prv_get_tick));
-    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_OK, flash_monitor_api_init(&prv_watchdogs, fake_reset));
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_init(prv_get_tick));
+    TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_OK, flash_monitor_api_init(fake_reset));
 }
 
 void tearDown(void) {}
