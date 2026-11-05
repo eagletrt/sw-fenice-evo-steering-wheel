@@ -162,13 +162,13 @@ EAGLETRT_STATIC bool prv_input_router_api_run(const struct InputAction *action, 
  * \retval false if an action failed.
  */
 EAGLETRT_STATIC bool prv_input_router_api_dispatch(const struct InputStateBindings *bindings, const struct InputEvent *event) {
-    bool ok = true;
+    bool result = true;
     switch (event->source) {
         case INPUT_EVENT_SOURCE_BUTTON:
             for (uint8_t i = 0U; i < bindings->button_count; i++) {
                 const struct InputButtonBinding *binding = &bindings->buttons[i];
                 if (binding->button == event->button && binding->event == event->type) {
-                    ok = prv_input_router_api_run(&binding->action, (uint8_t)event->button, 1) && ok;
+                    result = prv_input_router_api_run(&binding->action, (uint8_t)event->button, 1) && result;
                 }
             }
             break;
@@ -176,7 +176,7 @@ EAGLETRT_STATIC bool prv_input_router_api_dispatch(const struct InputStateBindin
             for (uint8_t i = 0U; i < bindings->combo_count; i++) {
                 const struct InputComboBinding *binding = &bindings->combos[i];
                 if (binding->combo == event->combo && binding->event == event->type) {
-                    ok = prv_input_router_api_run(&binding->action, INPUT_ROUTER_COMBO_SOURCE(event->combo), 1) && ok;
+                    result = prv_input_router_api_run(&binding->action, INPUT_ROUTER_COMBO_SOURCE(event->combo), 1) && result;
                 }
             }
             break;
@@ -184,14 +184,14 @@ EAGLETRT_STATIC bool prv_input_router_api_dispatch(const struct InputStateBindin
             for (uint8_t i = 0U; i < bindings->knob_count; i++) {
                 const struct InputKnobBinding *binding = &bindings->knobs[i];
                 if (binding->knob == event->knob && event->type == INPUT_EVENT_TYPE_ROTATION) {
-                    ok = prv_input_router_api_run(&binding->action, 0U, event->delta) && ok;
+                    result = prv_input_router_api_run(&binding->action, 0U, event->delta) && result;
                 }
             }
             break;
         default:
             break;
     }
-    return ok;
+    return result;
 }
 
 enum InputRouterReturnCode input_router_api_init(const struct InputRouterConfig *config) {
@@ -237,19 +237,19 @@ enum InputEventsReturnCode input_router_api_handle_event(const struct InputEvent
         return INPUT_EVENTS_RC_NULL_POINTER;
     }
 
-    bool ok = true;
+    bool result = true;
     // Releases first, in every state and through any filter (input-router.h).
     if (event->type == INPUT_EVENT_TYPE_RELEASE) {
         if (event->source == INPUT_EVENT_SOURCE_BUTTON) {
-            ok = parameters_api_release_source((uint8_t)event->button) == PARAMETERS_RC_OK;
+            result = parameters_api_release_source((uint8_t)event->button) == PARAMETERS_RC_OK;
         } else if (event->source == INPUT_EVENT_SOURCE_COMBO) {
-            ok = parameters_api_release_source(INPUT_ROUTER_COMBO_SOURCE(event->combo)) == PARAMETERS_RC_OK;
+            result = parameters_api_release_source(INPUT_ROUTER_COMBO_SOURCE(event->combo)) == PARAMETERS_RC_OK;
         }
     }
 
     const struct InputStateBindings *bindings = input_router_api_get_bindings(input_router_handler.config.get_state());
     if (bindings != NULL) {
-        ok = prv_input_router_api_dispatch(bindings, event) && ok;
+        result = prv_input_router_api_dispatch(bindings, event) && result;
     }
-    return ok ? INPUT_EVENTS_RC_OK : INPUT_EVENTS_RC_ERROR;
+    return result ? INPUT_EVENTS_RC_OK : INPUT_EVENTS_RC_ERROR;
 }

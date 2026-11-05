@@ -140,6 +140,8 @@ EAGLETRT_STATIC enum InputsReturnCode prv_input_events_api_flush_pending(void) {
 /*!
  * \brief The buttons of the combo window form a combo: press it.
  *
+ * \details The window of each button is over, and they have no gesture of their own any more.
+ *
  * \param combo_id The combo.
  *
  * \retval INPUTS_RC_OK on success.
@@ -218,9 +220,11 @@ EAGLETRT_STATIC enum InputsReturnCode prv_input_events_api_press_in_window(enum 
     for (enum InputEventsComboId i = 0; i < INPUT_EVENTS_COMBO_COUNT; i++) {
         const uint16_t combo = prv_input_events_api_active_buttons(active, i);
         if (combo == 0U || (candidate & combo) != candidate) {
+            // if the candidate is not a subset of the combo, it can't be it so continue
             continue;
         }
         if (candidate == combo) {
+            // the combo is complete, so press it and stop the window
             *handled = true;
             prv_input_events_api_add_pending(button_id);
             return prv_input_events_api_press_combo(i);
@@ -228,12 +232,12 @@ EAGLETRT_STATIC enum InputsReturnCode prv_input_events_api_press_in_window(enum 
         partial = true;
     }
     if (partial) {
-        // Part of a bigger combo: wait for the rest, the window keeps its start.
+        // part of a bigger combo: wait for the rest, the window keeps its start.
         *handled = true;
         prv_input_events_api_add_pending(button_id);
         return INPUTS_RC_OK;
     }
-    // Belongs to no combo with the others: they were single presses after all.
+    // belongs to no combo with the others: they were single presses after all.
     *handled = false;
     return prv_input_events_api_flush_pending();
 }
