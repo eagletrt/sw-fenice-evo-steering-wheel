@@ -29,7 +29,7 @@
 #include <string.h>
 
 static_assert(SCHEDULER_TASK_COUNT <= TASKS_MAX_COUNT, "libtimebase cannot hold every scheduler task");
-static_assert(FLASH_MONITOR_TIMEOUT_COUNT + INPUT_EVENTS_TIMEOUT_COUNT <= TIMEOUT_MAX_COUNT, "the timeout pool cannot hold every timeout");
+static_assert(FLASH_MONITOR_TIMEOUT_COUNT + INPUT_EVENTS_TIMEOUT_COUNT + SCHEDULER_TIMEOUT_COUNT <= TIMEOUT_MAX_COUNT, "the timeout pool cannot hold every timeout");
 
 /*!
  * \brief Body of a task, called with the tick of the current routine call.
@@ -171,6 +171,20 @@ EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
         return;
     }
 
+    // Asynchronous drawing: the last frame isn't on screen yet. Drawing now
+    // would land in the buffer that frame is still using, and each render
+    // must be followed by exactly one swap (the screen's back-buffer
+    // catch-up relies on it). Its changes stay pending for the next render.
+    if (scheduler_handler.config.render_busy != NULL) {
+        if (scheduler_handler.config.render_busy()) {
+            if (!timeout_api_is_running(scheduler_handler.render_stall_timeout)) {
+                EAGLETRT_API_UNUSED(timeout_api_start(scheduler_handler.render_stall_timeout));
+            }
+            return;
+        }
+        EAGLETRT_API_UNUSED(timeout_api_stop(scheduler_handler.render_stall_timeout));
+    }
+
     switch (screen_api_update(tick_ms)) {
         case SCREEN_RC_OK:
             break;
@@ -267,8 +281,8 @@ EAGLETRT_STATIC void prv_scheduler_api_leave_flash(void) {
  *
  *     Start offsets stagger the tasks so the slow ones don't pile up in the
  *     same routine call. Measured on hardware (idle): every task is at the µs
- *     level except INPUTS (~1.6 ms of blocking I2C) and STATS (~10 ms of
- *     blocking UART), so RENDER is shifted by half the INPUTS period and STATS
+ *     level except STATS (~10 ms of blocking UART) and RENDER (~17 ms when redrawing full dashboard),
+ *     so RENDER is shifted by half the INPUTS period and STATS
  *     away from both: with 10/20 ms periods they never meet. Staggering the
  *     µs-level CAN tasks buys nothing measurable, they keep starting at 0.
  */
@@ -333,6 +347,19 @@ EAGLETRT_STATIC void prv_scheduler_api_run_task(uint8_t task_id) {
     stats->window_max_us = EAGLETRT_API_MAX(stats->window_max_us, elapsed_us);
 }
 
+/*!
+ * \brief A frame stayed in flight too long: same as any other screen failure.
+ *
+ * \details The last complete frame stays on screen and the bus reports ERROR.
+ *
+ * \param context Unused.
+ */
+EAGLETRT_STATIC void prv_scheduler_api_on_render_stall(void *context) {
+    EAGLETRT_API_UNUSED(context);
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_ERROR, "Frame stuck in flight"));
+    EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
+}
+
 enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config) {
     if (config == NULL ||
         config->get_tick == NULL ||
@@ -351,6 +378,9 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     // take their timeouts from it, and the POST (FSM INIT step below) wires
     // the inputs to the event layer.
     if (timeout_api_init(prv_scheduler_api_read_tick) != TIMEOUT_RC_OK) {
+        return SCHEDULER_RC_ERROR;
+    }
+    if (timeout_api_create(SCHEDULER_RENDER_STALL_TIMEOUT_MS, prv_scheduler_api_on_render_stall, NULL, &scheduler_handler.render_stall_timeout) != TIMEOUT_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
     if (flash_monitor_api_init(config->reset) != FLASH_MONITOR_RC_OK) {

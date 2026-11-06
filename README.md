@@ -85,6 +85,23 @@ OK, top left = REPEAT** (1 while held, `DriverAction` on every change); menu com
 buttons, placeholder) held 1 s requests the menu (only logged until the menu exists). `INIT`,
 `FLASH` and `ERROR` bind nothing.
 
+### Rendering
+
+Drawing doesn't wait for the DMA2D. On the wheel, libraster's draw callbacks only queue transfers
+(`Core/Src/dma2d.c`, on [libring-buffer-sw](https://github.com/eagletrt/libring-buffer-sw)) and return;
+the DMA2D interrupt starts the next one, and when the last transfer of a frame has run it swaps the
+framebuffers. The application only sees the draw callbacks, the swap and the optional
+`SchedulerConfig.render_busy`: while a frame is in flight the render task skips its turn and the
+changes wait for the next one, so every render is followed by exactly one swap. The simulator draws
+synchronously and leaves the hook NULL.
+
+- A mask is copied into AXI SRAM (`0x24020000`, 192 KB, after libraster's 128 KB scratch at
+  `0x24000000`) because libraster reuses its scratch for the next label before the transfer has run.
+  The copies are all given back when the queue is empty (a full dashboard takes ~85 KB).
+- A failed transfer is counted (`d2d transfer errors` on the UART) and the queue moves on. If a frame
+  stays in flight for 500 ms, or the draw path finds no room for 100 ms, the FSM goes to `ERROR`, like
+  any other screen failure: the last complete frame stays on screen and the bus reports it.
+
 ## Development
 
 The codebase is based on **PlatformIO**. Install it with `pip install platformio`.

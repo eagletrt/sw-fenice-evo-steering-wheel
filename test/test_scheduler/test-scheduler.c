@@ -39,6 +39,7 @@ FAKE_VALUE_FUNC(uint32_t, fake_get_tick);
 FAKE_VOID_FUNC(fake_poll_inputs, uint32_t);
 FAKE_VOID_FUNC(fake_swap_framebuffers);
 FAKE_VOID_FUNC(fake_reset);
+FAKE_VALUE_FUNC(bool, fake_render_busy);
 FAKE_VALUE_FUNC(uint32_t, fake_get_cycles);
 FAKE_VALUE_FUNC(enum RasterReturnCode, fake_draw_rectangle, uint16_t, uint16_t, uint16_t, uint16_t, struct Color);
 
@@ -217,6 +218,7 @@ void setUp(void) {
     RESET_FAKE(fake_poll_inputs);
     RESET_FAKE(fake_swap_framebuffers);
     RESET_FAKE(fake_reset);
+    RESET_FAKE(fake_render_busy);
     RESET_FAKE(fake_get_cycles);
     RESET_FAKE(fake_draw_rectangle);
     FFF_RESET_HISTORY();
@@ -621,6 +623,75 @@ void test_scheduler_top_right_sends_driver_action_ok(void) {
     TEST_ASSERT_EQUAL_UINT8(0U, action.ok);
 }
 
+void test_scheduler_render_waits_while_the_last_frame_is_in_flight(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_turn_knob;
+    config.render_busy = fake_render_busy;
+    fake_render_busy_fake.return_val = true;
+    scheduler_api_init(&config);
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER) + 100U);
+    TEST_ASSERT_TRUE_MESSAGE(fake_render_busy_fake.call_count > 0U, "The render task asks before drawing");
+    TEST_ASSERT_EQUAL_MESSAGE(0U, fake_draw_rectangle_fake.call_count, "Nothing is drawn while a frame is in flight");
+    TEST_ASSERT_EQUAL_MESSAGE(0U, fake_swap_framebuffers_fake.call_count, "No swap while a frame is in flight");
+
+    fake_render_busy_fake.return_val = false;
+    prv_run_until(prv_now + 20U);
+    TEST_ASSERT_TRUE_MESSAGE(fake_draw_rectangle_fake.call_count > 0U, "The pending changes are drawn once the frame is out");
+    TEST_ASSERT_EQUAL(1U, fake_swap_framebuffers_fake.call_count);
+}
+
+void test_scheduler_frame_stuck_in_flight_goes_to_error(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.render_busy = fake_render_busy;
+    fake_render_busy_fake.return_val = true;
+    scheduler_api_init(&config);
+    const uint32_t first_render = prv_task_start(SCHEDULER_TASK_RENDER);
+
+    prv_run_until(first_render + SCHEDULER_RENDER_STALL_TIMEOUT_MS - 1U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state(), "Not stuck yet");
+
+    prv_run_until(first_render + SCHEDULER_RENDER_STALL_TIMEOUT_MS + 10U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_frames_that_finish_never_stall(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.render_busy = fake_render_busy;
+    scheduler_api_init(&config);
+
+    /* Every frame stays in flight for most of the timeout, then gets out for one render. */
+    for (uint32_t frame = 0U; frame < 5U; frame++) {
+        fake_render_busy_fake.return_val = true;
+        prv_run_until(prv_now + SCHEDULER_RENDER_STALL_TIMEOUT_MS - 50U);
+        fake_render_busy_fake.return_val = false;
+        prv_run_until(prv_now + 25U);
+    }
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_no_stall_while_nothing_is_in_flight(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.render_busy = fake_render_busy;
+    fake_render_busy_fake.return_val = false;
+    scheduler_api_init(&config);
+
+    prv_run_until(3U * SCHEDULER_RENDER_STALL_TIMEOUT_MS);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_render_without_busy_hook_draws_at_once(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_turn_knob;
+    scheduler_api_init(&config);
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
+
+    TEST_ASSERT_EQUAL(1U, fake_swap_framebuffers_fake.call_count);
+}
+
 void test_scheduler_paused_task_stops_until_resumed(void) {
     struct SchedulerConfig config = prv_make_config();
     scheduler_api_init(&config);
@@ -733,6 +804,11 @@ int main(void) {
     RUN_TEST(test_scheduler_inputs_ignored_in_error);
     RUN_TEST(test_scheduler_menu_combo_long_press_through_the_timeout_pool);
     RUN_TEST(test_scheduler_top_right_sends_driver_action_ok);
+    RUN_TEST(test_scheduler_render_waits_while_the_last_frame_is_in_flight);
+    RUN_TEST(test_scheduler_frame_stuck_in_flight_goes_to_error);
+    RUN_TEST(test_scheduler_frames_that_finish_never_stall);
+    RUN_TEST(test_scheduler_no_stall_while_nothing_is_in_flight);
+    RUN_TEST(test_scheduler_render_without_busy_hook_draws_at_once);
     RUN_TEST(test_scheduler_paused_task_stops_until_resumed);
     RUN_TEST(test_scheduler_resume_running_task_is_harmless);
     RUN_TEST(test_scheduler_pause_resume_reject_invalid_task);

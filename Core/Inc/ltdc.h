@@ -33,6 +33,8 @@ extern "C" {
 #include "colors.h"
 #include "raster.h"
 
+#include <stdbool.h>
+
 /* USER CODE END Includes */
 
 extern LTDC_HandleTypeDef hltdc;
@@ -48,12 +50,20 @@ void MX_LTDC_Init(void);
 /*!
  * \brief Present the freshly-drawn frame and start drawing the next one.
  *
- * \details Waits for the DMA2D to go idle, swaps the display and draw
- *     framebuffers and points the LTDC layer at the new display buffer. The
- *     new draw buffer is one frame behind: the screen module redraws into it
- *     the boxes it drew last time (no full-frame copy).
+ * \details Returns at once: the swap of the display and draw framebuffers
+ *     (and the LTDC layer address) happens when the DMA2D queue has run every
+ *     transfer of the frame. Don't draw again before ltdc_frame_in_flight()
+ *     is false. The new draw buffer is one frame behind: the screen module
+ *     redraws into it the boxes it drew last time (no full-frame copy).
  */
 void ltdc_swap_framebuffers(void);
+
+/*!
+ * \brief Whether the last frame is still being drawn or waits for its swap.
+ *
+ * \return true from the first queued transfer until the swap has happened.
+ */
+bool ltdc_frame_in_flight(void);
 
 /*!
  * \brief Fill a rectangle of the draw framebuffer with one color.

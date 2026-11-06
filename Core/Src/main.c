@@ -115,12 +115,35 @@ EAGLETRT_STATIC uint32_t prv_main_get_cycles(void) {
 }
 
 /*!
- * \brief Log the DMA2D transfer timings of the last stats window, then reset them.
+ * \brief Renders skipped because the previous frame was still in flight, since the last stats log.
+ */
+EAGLETRT_STATIC uint32_t prv_main_render_skips;
+
+/*!
+ * \brief Scheduler render-busy hook: the DMA2D queue or the swap isn't done yet.
  *
- * \details Called by the scheduler stats task. Two short lines (the logger
- *     truncates long records): count, total and longest transfer per kind.
+ * \return true while the last frame is in flight.
+ */
+EAGLETRT_STATIC bool prv_main_render_busy(void) {
+    const bool busy = ltdc_frame_in_flight();
+    if (busy) {
+        prv_main_render_skips++;
+    }
+    return busy;
+}
+
+/*!
+ * \brief Log the DMA2D timings of the last stats window, then reset them.
+ *
+ * \details Called by the scheduler stats task. Three short lines (the logger
+ *     truncates long records): frames (first queued transfer to swap), skipped
+ *     renders and waits for queue / mask space, then count, total and longest
+ *     transfer per kind; a fourth only when transfers failed since the last one.
  */
 EAGLETRT_STATIC void prv_main_report_stats(void) {
+    const struct Dma2dQueueStats *queue = dma2d_get_queue_stats();
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "d2d frame %lu/%luus/%lu skip %lu wait q%lu m%lu", queue->frames.count, queue->frames.total_us, queue->frames.max_us, prv_main_render_skips, queue->queue_waits, queue->mask_waits));
+    prv_main_render_skips = 0U;
     const struct Dma2dOperationStats *stats = dma2d_get_stats();
     const struct Dma2dOperationStats *fill = &stats[DMA2D_OPERATION_FILL];
     const struct Dma2dOperationStats *blend = &stats[DMA2D_OPERATION_BLEND];
@@ -129,6 +152,13 @@ EAGLETRT_STATIC void prv_main_report_stats(void) {
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "d2d fill %lu/%luus/%lu blend %lu/%luus/%lu", fill->count, fill->total_us, fill->max_us, blend->count, blend->total_us, blend->max_us));
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "d2d mask %lu/%luus/%lu copy %lu/%luus/%lu", mask->count, mask->total_us, mask->max_us, copy->count, copy->total_us, copy->max_us));
     dma2d_reset_stats();
+
+    static uint32_t reported_dma2d_errors;
+    const uint32_t dma2d_errors = dma2d_get_error_count();
+    if (dma2d_errors != reported_dma2d_errors) {
+        reported_dma2d_errors = dma2d_errors;
+        EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_WARN, "d2d transfer errors %lu", dma2d_errors));
+    }
 
     // Bus-off restarts (fdcan.c): logged only when one happened, the UART is slow.
     static uint32_t reported_bus_off[CAN_COMMUNICATION_NETWORK_COUNT];
@@ -252,6 +282,10 @@ int main(void) {
 
     prv_main_enable_cycle_counter();
 
+    if (!dma2d_queue_init(&arena_allocator_handler)) {
+        Error_Handler();
+    }
+
     const struct SchedulerConfig scheduler_config = {
         .post = {
             .can_network_configs = {
@@ -283,6 +317,7 @@ int main(void) {
         .get_cycles = prv_main_get_cycles,
         .cycles_per_us = SystemCoreClock / MAIN_CYCLES_PER_US_DIVIDER,
         .report_stats = prv_main_report_stats,
+        .render_busy = prv_main_render_busy,
     };
 
     if (scheduler_api_init(&scheduler_config) != SCHEDULER_RC_OK) {

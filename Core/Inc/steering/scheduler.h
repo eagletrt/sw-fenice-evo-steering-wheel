@@ -20,7 +20,7 @@
 #include "flash-monitor.h"
 #include "post.h"
 #include "tasks.h"
-#include "wheel-fsm.h"
+#include "timeout.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -29,6 +29,18 @@
  * \brief Period of the scheduler statistics log, in milliseconds.
  */
 #define SCHEDULER_STATS_LOG_PERIOD_MS (5000U)
+
+/*!
+ * \brief A frame still in flight after this long means the display hardware is stuck, in milliseconds.
+ *
+ * \details A full dashboard redraw takes ~50 ms.
+ */
+#define SCHEDULER_RENDER_STALL_TIMEOUT_MS (500U)
+
+/*!
+ * \brief Timeouts the scheduler itself takes from the pool.
+ */
+#define SCHEDULER_TIMEOUT_COUNT (1U)
 
 /*!
  * \brief Return codes for scheduler operations.
@@ -77,8 +89,18 @@ typedef void (*scheduler_report_stats_callback)(void);
 
 /*!
  * \brief Present the frame just rendered.
+ *
+ * \details May return before the frame is on screen (asynchronous drawing):
+ *     then render_busy says when the next frame can start.
  */
 typedef void (*scheduler_swap_framebuffers_callback)(void);
+
+/*!
+ * \brief Whether the last frame is still being drawn or presented.
+ *
+ * \return true to skip this render (its changes wait for the next one).
+ */
+typedef bool (*scheduler_render_busy_callback)(void);
 
 /*!
  * \brief Sample every physical input and forward changes to the inputs module.
@@ -99,6 +121,7 @@ struct SchedulerConfig {
     scheduler_get_cycles_callback get_cycles;               /*!< Optional: cycle counter, timing statistics are off when NULL */
     uint32_t cycles_per_us;                                 /*!< Cycle counter frequency in MHz, required when get_cycles is set */
     scheduler_report_stats_callback report_stats;           /*!< Optional: called by the stats task after the task timings */
+    scheduler_render_busy_callback render_busy;             /*!< Optional: asynchronous drawing, NULL when every draw callback completes before returning */
 };
 
 /*!
@@ -128,6 +151,7 @@ struct SchedulerHandler {
     uint32_t tick;                                         /*!< Last tick read by libtimebase: the time base of every task */
     struct SchedulerTaskStats stats[SCHEDULER_TASK_COUNT]; /*!< Per-task timing */
     uint16_t dropped_at_last_log;                          /*!< libtimebase dropped-runs counter at the previous stats log */
+    timeout_id render_stall_timeout;                       /*!< Runs while the last frame is in flight */
 };
 
 #endif // SCHEDULER_H
