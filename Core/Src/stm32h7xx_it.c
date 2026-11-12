@@ -22,6 +22,7 @@
 #include "stm32h7xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "dma2d.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -272,6 +273,10 @@ void TIM7_IRQHandler(void) {
   */
 void DMA2D_IRQHandler(void) {
     /* USER CODE BEGIN DMA2D_IRQn 0 */
+
+    /* The HAL handler would see the flags of the transfer started in here as its own. */
+    dma2d_irq_handler();
+    return;
 
     /* USER CODE END DMA2D_IRQn 0 */
     HAL_DMA2D_IRQHandler(&hdma2d);

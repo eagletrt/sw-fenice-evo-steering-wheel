@@ -11,6 +11,7 @@
 #define SCHEDULER_API_H
 
 #include "scheduler.h"
+#include "wheel-fsm.h"
 
 /*!
  * \brief Run the POST and register every task.

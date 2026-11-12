@@ -39,15 +39,16 @@
 #define LTDC_FRAMEBUFFER1_ADDRESS (0xC0000000U)
 #define LTDC_FRAMEBUFFER2_ADDRESS (0xC0200000U)
 
-static uint32_t *display_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER1_ADDRESS;
-static uint32_t *draw_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER2_ADDRESS;
+/* Swapped from the DMA2D interrupt once a frame's transfers have run (prv_ltdc_swap_now). */
+static uint32_t *volatile display_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER1_ADDRESS;
+static uint32_t *volatile draw_framebuffer = (uint32_t *)LTDC_FRAMEBUFFER2_ADDRESS;
 
 /*!
  * \brief Scratch where libraster renders a label's coverage before ltdc_draw_mask.
  *
- * \details In the AXI SRAM (RAM_D1, unused by the linker script): the DMA2D
- *     can read it (the DTCM it can't) and the CPU writes it at full speed
- *     through the D-cache, which is cleaned before each transfer.
+ * \details In the AXI SRAM (RAM_D1, unused by the linker script). The DMA2D
+ *     never reads it: dma2d_enqueue_mask copies each mask right after it, so
+ *     libraster can render the next label at once.
  */
 #define LTDC_MASK_ADDRESS (0x24000000U)
 #define LTDC_MASK_SIZE (128U * 1024U)
@@ -322,20 +323,32 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef *ltdcHandle) {
 
 /* USER CODE BEGIN 1 */
 
-void ltdc_swap_framebuffers(void) {
-    dma2d_draw_drain();
-
+/*!
+ * \brief Swap the buffers now: every transfer of the frame has run.
+ *
+ * \details Called by the DMA2D queue when it drains (interrupt context), or
+ *     right away if it was already idle.
+ */
+static void prv_ltdc_swap_now(void) {
     uint32_t *temp = display_framebuffer;
     display_framebuffer = draw_framebuffer;
     draw_framebuffer = temp;
 
-    // swaps at next vertical blanking interval
     __HAL_LTDC_LAYER(&hltdc, 0)->CFBAR = (uint32_t)display_framebuffer;
     __HAL_LTDC_RELOAD_CONFIG(&hltdc);
 
     /* No copy of the visible frame into the new draw buffer: the screen
      * module redraws into it the boxes it drew last time (a full-frame copy
      * costs ~60 ms of SDRAM bandwidth shared with the LTDC scanout). */
+}
+
+void ltdc_swap_framebuffers(void) {
+    /* The frame's transfers are only queued: swap once they have run. */
+    dma2d_when_idle(prv_ltdc_swap_now);
+}
+
+bool ltdc_frame_in_flight(void) {
+    return dma2d_is_busy();
 }
 
 uint8_t *ltdc_mask_buffer(void) {
@@ -350,10 +363,6 @@ enum RasterReturnCode ltdc_draw_mask(uint16_t x, uint16_t y, uint16_t w, uint16_
     if (w == 0 || h == 0 || x >= (int)SCREEN_WIDTH || y >= (int)SCREEN_HEIGHT) {
         return RASTER_RC_OK;
     }
-
-    /* The CPU wrote the mask through the D-cache: push it to the SRAM before
-     * the DMA2D reads it. */
-    SCB_CleanDCache_by_Addr((uint32_t *)mask, (int32_t)((uint32_t)w * h));
 
     /* Clip right and bottom: the mask keeps its full stride. */
     const uint16_t stride = w;

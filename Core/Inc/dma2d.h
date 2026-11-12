@@ -30,8 +30,11 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
+#include "arena-allocator.h"
 #include "colors.h"
 #include "raster.h"
+
+#include <stdbool.h>
 
 /* USER CODE END Includes */
 
@@ -59,11 +62,63 @@ struct Dma2dOperationStats {
     uint32_t max_us;   /*!< Longest one */
 };
 
+/*!
+ * \brief Queue behaviour since the last reset.
+ */
+struct Dma2dQueueStats {
+    struct Dma2dOperationStats frames; /*!< Rendered frames: first queued transfer to the idle callback (the swap) */
+    uint32_t queue_waits;              /*!< Times a producer waited for a free queue slot */
+    uint32_t mask_waits;               /*!< Times a mask waited for the queued ones to run, to get its space */
+};
+
 /* USER CODE END Private defines */
 
 void MX_DMA2D_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+
+/*!
+ * \brief Allocate the transfer queue. Call it before the first draw.
+ *
+ * \param arena Arena the queue is allocated from.
+ *
+ * \retval true on success.
+ * \retval false if the allocation failed.
+ */
+bool dma2d_queue_init(struct ArenaAllocatorHandler *arena);
+
+/*!
+ * \brief DMA2D interrupt: start the next queued transfer, or run the idle callback after the last.
+ *
+ * \details Replaces HAL_DMA2D_IRQHandler: the transfers are started on the
+ *     registers, without the HAL's state, and the next one starts in here, so
+ *     the HAL handler must not look at the flags afterwards.
+ */
+void dma2d_irq_handler(void);
+
+/*!
+ * \brief Whether transfers are queued or running, or a when-idle callback is pending.
+ *
+ * \return true until the queue has drained and its idle callback has run.
+ */
+bool dma2d_is_busy(void);
+
+/*!
+ * \brief Run \p callback once the queue has drained (right away if it is idle).
+ *
+ * \details From the DMA2D interrupt when the last transfer completes. One
+ *     callback at a time: a second call replaces the pending one.
+ *
+ * \param callback Function to call (interrupt context when deferred).
+ */
+void dma2d_when_idle(void (*callback)(void));
+
+/*!
+ * \brief Frame timings and waits since the last dma2d_reset_stats.
+ *
+ * \return The statistics.
+ */
+const struct Dma2dQueueStats *dma2d_get_queue_stats(void);
 
 /*!
  * \brief Enqueues a rectangle fill operation to the DMA2D engine.
@@ -75,7 +130,8 @@ void MX_DMA2D_Init(void);
  * \param h The height of the rectangle.
  * \param color The color to fill the rectangle with, in ARGB format.
  *
- * \return A RasterReturnCode indicating the success or failure of the operation.
+ * \return A RasterReturnCode indicating the success or failure of the operation
+ *     (RASTER_RC_ERROR if the queue had no room in time).
  */
 enum RasterReturnCode dma2d_enqueue_rectangle(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color);
 
@@ -101,9 +157,7 @@ const struct Dma2dOperationStats *dma2d_get_stats(void);
 void dma2d_reset_stats(void);
 
 /*!
- * \brief Waits for all queued DMA2D operations to complete.
- *
- * This function blocks until the DMA2D engine has finished processing all pending operations.
+ * \brief Waits for all queued DMA2D operations to complete, for at most 100 ms.
  */
 void dma2d_draw_drain(void);
 
@@ -113,13 +167,14 @@ void dma2d_draw_drain(void);
  * \details Used right after a framebuffer swap to seed the freshly-becoming-draw
  *     buffer with the currently-visible frame, so the next partial-mode render
  *     starts on top of the frame the user is looking at instead of a two-frames-old
- *     back buffer. Busy-waits until the DMA2D engine reports completion.
+ *     back buffer. Queued: returns before the copy has run.
  *
  * \param dst Destination framebuffer (write-only).
  * \param src Source framebuffer (read-only).
  *
  * \retval RASTER_RC_OK on success.
  * \retval RASTER_RC_NULL_POINTER if \p dst or \p src is NULL.
+ * \retval RASTER_RC_ERROR if the queue had no room in time.
  */
 enum RasterReturnCode dma2d_enqueue_framebuffer_copy(uint32_t *dst, const uint32_t *src);
 
@@ -129,9 +184,8 @@ enum RasterReturnCode dma2d_enqueue_framebuffer_copy(uint32_t *dst, const uint32
  * \details One DMA2D memory-to-memory-with-blending transfer: the foreground
  *     is the A8 mask (per-pixel alpha multiplied by \p color's alpha, colour
  *     from \p color), the background and the output are the framebuffer
- *     rectangle. Busy-waits until the transfer completes, like the rectangle
- *     fill. The mask must be in DMA2D-readable memory and already written back
- *     from the D-cache.
+ *     rectangle. Queued: the mask is copied into AXI SRAM, so the caller may
+ *     reuse \p mask as soon as this returns.
  *
  * \param framebuffer Destination framebuffer (stride DMA2D_FRAMEBUFFER_WIDTH).
  * \param x Top-left X of the destination rectangle (already clipped).
@@ -144,6 +198,7 @@ enum RasterReturnCode dma2d_enqueue_framebuffer_copy(uint32_t *dst, const uint32
  *
  * \retval RASTER_RC_OK on success.
  * \retval RASTER_RC_NULL_POINTER if \p framebuffer or \p mask is NULL.
+ * \retval RASTER_RC_ERROR if the mask is too large or the queue had no room in time.
  */
 enum RasterReturnCode dma2d_enqueue_mask(uint32_t *framebuffer, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *mask, uint16_t mask_stride, struct Color color);
 
