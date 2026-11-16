@@ -34,6 +34,8 @@ DEFINE_FFF_GLOBALS;
 extern struct SchedulerHandler scheduler_handler;
 extern struct ScreenHandler screen_handler;
 extern struct InputEventsHandler input_events_handler;
+#include "input-router.h"
+extern void prv_scheduler_api_on_request(enum InputRequest request);
 
 FAKE_VALUE_FUNC(uint32_t, fake_get_tick);
 FAKE_VOID_FUNC(fake_poll_inputs, uint32_t);
@@ -426,7 +428,7 @@ void test_scheduler_flash_page_names_the_board(void) {
 
     prv_run_until_flashing(100U, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFLASHINGRX, 50U);
 
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_INTERFACE_FLASH, "The render task mounts the FLASH page");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_FLASH, "The render task mounts the FLASH page");
     TEST_ASSERT_EQUAL_STRING(SCREEN_FLASH_TITLE, screen_handler.flash.title.text);
     TEST_ASSERT_EQUAL_STRING("TSAC MAINBOARD", screen_handler.flash.name.text);
 }
@@ -449,7 +451,7 @@ void test_scheduler_flash_ends_after_silence(void) {
     TEST_ASSERT_TRUE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELBUTTONSTATUS) > 0U);
     TEST_ASSERT_TRUE_MESSAGE(fake_poll_inputs_fake.call_count > polls, "Inputs are read again after FLASH");
     TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE, prv_last_fsm_status);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_INTERFACE_DASHBOARD, "The dashboard comes back");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_DRIVER, "The dashboard comes back");
 }
 
 void test_scheduler_own_flashing_frames_reset_instead_of_flash(void) {
@@ -513,7 +515,7 @@ void test_scheduler_knob_popup_shows_on_next_frame(void) {
         TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
     }
 
-    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "The popup raised by the knob must be mounted by the next frame");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "The popup raised by the knob must be mounted by the next frame");
 }
 
 void test_scheduler_tasks_get_the_tick_libtimebase_acted_on(void) {
@@ -550,7 +552,7 @@ void test_scheduler_parameter_change_reaches_ui_bus_and_popup(void) {
 
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(1U, ui_data_api_get()->power, "The knob step must be mirrored into the UI snapshot");
     TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET) >= 2U, "The change must go on the bus right away, on top of the cyclic send");
-    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "A shared parameter must raise the popup");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "A shared parameter must raise the popup");
 }
 
 void test_scheduler_ptt_tints_dashboard_without_popup(void) {
@@ -562,7 +564,7 @@ void test_scheduler_ptt_tints_dashboard_without_popup(void) {
     prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
 
     TEST_ASSERT_EQUAL_UINT8(1U, ui_data_api_get()->ptt);
-    TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "PTT is not shared: no popup");
+    TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "PTT is not shared: no popup");
 }
 
 void test_scheduler_knob_reaches_the_parameter_through_the_router(void) {
@@ -600,6 +602,28 @@ void test_scheduler_menu_combo_long_press_through_the_timeout_pool(void) {
     prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS);
     TEST_ASSERT_TRUE_MESSAGE(timeout_api_has_expired(input_events_handler.combo_long_press), "The scheduler routine runs the timeout pool");
     TEST_ASSERT_EQUAL_MESSAGE(0U, prv_driver_action_count, "The menu combo sends neither OK nor REPEAT");
+
+    // TODO(#9): the menu combo toggles the "MENU" placeholder until the MENU mode exists.
+    prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS + 40U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER, "The render task mounts the placeholder");
+    TEST_ASSERT_EQUAL_STRING("MENU", screen_handler.placeholder.name.text);
+}
+
+void test_scheduler_menu_request_toggles_the_placeholder_back(void) {
+    struct SchedulerConfig config = prv_make_config();
+    scheduler_api_init(&config);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU);
+    prv_run_until(40U);
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_WAKE);
+    prv_run_until(80U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER, "Only MENU toggles it");
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU);
+    prv_run_until(120U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_DRIVER, "The second MENU brings the dashboard back");
 }
 
 void test_scheduler_top_right_sends_driver_action_ok(void) {
@@ -803,6 +827,7 @@ int main(void) {
     RUN_TEST(test_scheduler_knob_reaches_the_parameter_through_the_router);
     RUN_TEST(test_scheduler_inputs_ignored_in_error);
     RUN_TEST(test_scheduler_menu_combo_long_press_through_the_timeout_pool);
+    RUN_TEST(test_scheduler_menu_request_toggles_the_placeholder_back);
     RUN_TEST(test_scheduler_top_right_sends_driver_action_ok);
     RUN_TEST(test_scheduler_render_waits_while_the_last_frame_is_in_flight);
     RUN_TEST(test_scheduler_frame_stuck_in_flight_goes_to_error);

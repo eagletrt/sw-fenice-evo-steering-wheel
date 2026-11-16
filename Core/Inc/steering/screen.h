@@ -13,7 +13,8 @@
 #define SCREEN_HEIGHT (480U)
 
 #define SCREEN_POPUP_TIMEOUT_MS (1500U)
-#define SCREEN_FLASH_TITLE "FLASHING" /*!< First caption line of the FLASH page */
+#define SCREEN_FLASH_TITLE "FLASHING"            /*!< First caption line of the FLASH page */
+#define SCREEN_PLACEHOLDER_TITLE "NO DESIGN YET" /*!< First caption line of the placeholder page */
 
 /*!
  * \brief Return codes for screen operations
@@ -40,37 +41,44 @@ struct ScreenAccelerators {
 };
 
 /*!
- * \brief Boxes of the biggest interface (dashboard or popup).
+ * \brief Boxes of the biggest view.
  */
 #define SCREEN_MAX_BOX_COUNT (EAGLETRT_API_MAX(EAGLETRT_API_MAX(DASHBOARD_BOX_COUNT, POPUP_BOX_COUNT), SPLASH_BOX_COUNT))
 
 /*!
- * \brief Interfaces the screen can mount on the raster.
+ * \brief Pages the screen can show.
+ *
+ * \details One row each in the view table of screen-api.c. POPUP is an
+ *     overlay: it is never selected, it covers a view that allows it while a
+ *     parameter change is recent.
  */
-enum ScreenInterface : uint8_t {
-    SCREEN_INTERFACE_DASHBOARD, /*!< Main telemetry page */
-    SCREEN_INTERFACE_POPUP,     /*!< Parameter-change popup */
-    SCREEN_INTERFACE_FLASH,     /*!< Logo + "FLASHING <board>" while another board is flashed */
+enum ScreenViewId : uint8_t {
+    SCREEN_VIEW_DRIVER,      /*!< Main telemetry dashboard */
+    SCREEN_VIEW_FLASH,       /*!< Logo + "FLASHING <board>" while another board is flashed */
+    SCREEN_VIEW_PLACEHOLDER, /*!< Logo + page name, for modes whose design isn't ready (TODO(design)) */
+    SCREEN_VIEW_POPUP,       /*!< Parameter-change popup, overlay only */
+    SCREEN_VIEW_COUNT,
 };
 
 /*!
  * \brief Main screen handler structure
  */
 struct ScreenHandler {
-    enum ScreenInterface mounted; /*!< Interface currently mounted on the raster */
-    bool flash_visible;           /*!< The FLASH page replaces every other interface */
+    enum ScreenViewId view;    /*!< View selected by screen_api_set_view */
+    enum ScreenViewId mounted; /*!< View currently mounted on the raster (view or the popup over it) */
 
     /*!
-     * Boxes of the mounted interface drawn into one framebuffer by the last
+     * Boxes of the mounted view drawn into one framebuffer by the last
      * render and still to be drawn into the other one (double buffering
      * without copying whole frames: see screen_api_update).
      */
     bool redraw_in_back_buffer[SCREEN_MAX_BOX_COUNT];
 
     struct RasterHandler raster;       /*!< Handler for raster operations */
-    struct DashboardHandler dashboard; /*!< Main always-on interface (telemetry, scenario, lap) */
+    struct DashboardHandler dashboard; /*!< Driver view (telemetry, scenario, lap) */
     struct PopupHandler popup;         /*!< State of the parameter-change popup overlay */
     struct SplashHandler flash;        /*!< FLASH page: logo + "FLASHING" + board name */
+    struct SplashHandler placeholder;  /*!< Placeholder page: logo + "NO DESIGN YET" + page name */
 };
 
 #endif // SCREEN_H

@@ -4,10 +4,11 @@
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  * \ingroup Core
  *
- * \brief Lifecycle wrapper around the main dashboard, the parameter-change
- *     popup and the FLASH page. The actual layouts live in dashboard-api.c,
- *     popup-api.c and splash-api.c; this file only orchestrates init, raster
- *     swaps and the per-field setter facade.
+ * \brief Lifecycle wrapper around the screen's views: the dashboard, the
+ *     parameter-change popup and the splash pages (FLASH, placeholder). The
+ *     actual layouts live in dashboard-api.c, popup-api.c and splash-api.c;
+ *     this file only holds the view table and orchestrates init, view
+ *     switches, raster swaps and the per-field setter facade.
  */
 
 #include "screen-api.h"
@@ -21,6 +22,26 @@
 #include <string.h>
 
 EAGLETRT_STATIC struct ScreenHandler screen_handler;
+
+/*!
+ * \brief A page of the screen: what the raster mounts when it is shown.
+ */
+struct ScreenView {
+    struct Box *boxes;  /*!< Boxes mounted as the raster interface */
+    uint16_t box_count; /*!< Number of \c boxes */
+    bool popup;         /*!< A recent parameter change shows the popup over it */
+    bool logo;          /*!< Splash page: the logo is drawn over SPLASH_BOX_LOGO after it */
+};
+
+/*!
+ * \brief Every view, indexed by ScreenViewId: a new page is a new row.
+ */
+EAGLETRT_STATIC const struct ScreenView screen_views[SCREEN_VIEW_COUNT] = {
+    [SCREEN_VIEW_DRIVER] = { screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT, true, false },
+    [SCREEN_VIEW_FLASH] = { screen_handler.flash.boxes, SPLASH_BOX_COUNT, false, true },
+    [SCREEN_VIEW_PLACEHOLDER] = { screen_handler.placeholder.boxes, SPLASH_BOX_COUNT, false, true },
+    [SCREEN_VIEW_POPUP] = { screen_handler.popup.boxes, POPUP_BOX_COUNT, false, false },
+};
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 enum ScreenReturnCode screen_api_on_parameter_change(const enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick) {
@@ -44,11 +65,12 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
     if (popup_api_init(&screen_handler.popup) != POPUP_RC_OK) {
         return SCREEN_RC_ERROR;
     }
-    if (splash_api_init(&screen_handler.flash, &font_inter) != SPLASH_RC_OK) {
+    if (splash_api_init(&screen_handler.flash, &font_inter) != SPLASH_RC_OK ||
+        splash_api_init(&screen_handler.placeholder, &font_inter) != SPLASH_RC_OK) {
         return SCREEN_RC_ERROR;
     }
-    screen_handler.mounted = SCREEN_INTERFACE_DASHBOARD;
-    screen_handler.flash_visible = false;
+    screen_handler.view = SCREEN_VIEW_DRIVER;
+    screen_handler.mounted = SCREEN_VIEW_DRIVER;
     memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
 
     return SCREEN_RC_OK;
@@ -68,9 +90,9 @@ enum ScreenReturnCode screen_api_set_accelerators(const struct ScreenAccelerator
  * \brief Flag every box of an interface as updated.
  *
  * \details The raster clears \c updated after rendering. When we swap from
- *     one interface to another the new boxes carry whatever flags were left
+ *     one view to another the new boxes carry whatever flags were left
  *     behind by the previous render (usually all false), so without this
- *     pass the freshly-mounted interface would not be redrawn until each
+ *     pass the freshly-mounted view would not be redrawn until each
  *     individual box is touched again.
  */
 EAGLETRT_STATIC void prv_screen_api_dirty_all(struct Box *boxes, uint16_t count) {
@@ -80,7 +102,7 @@ EAGLETRT_STATIC void prv_screen_api_dirty_all(struct Box *boxes, uint16_t count)
 }
 
 /*!
- * \brief Render the mounted interface, keeping both framebuffers in step.
+ * \brief Render the mounted view, keeping both framebuffers in step.
  *
  * \details The two framebuffers alternate on every swap, and the one about to
  *     be drawn into is one frame behind: it misses whatever the previous
@@ -109,7 +131,7 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_render(void) {
         boxes[i].updated = boxes[i].updated || screen_handler.redraw_in_back_buffer[i];
     }
     // The logo isn't a box: it goes on top of its box every time the box fill erases it.
-    const bool draw_logo = (screen_handler.mounted == SCREEN_INTERFACE_FLASH) && boxes[SPLASH_BOX_LOGO].updated;
+    const bool draw_logo = screen_views[screen_handler.mounted].logo && boxes[SPLASH_BOX_LOGO].updated;
 
     if (raster_api_render(&screen_handler.raster) != RASTER_RC_OK) {
         return SCREEN_RC_ERROR;
@@ -125,50 +147,29 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_render(void) {
 }
 
 /*!
- * \brief Mount an interface on the raster, fully dirty.
+ * \brief Mount a view on the raster, fully dirty.
  *
- * \param interface The interface to mount.
+ * \param view The view to mount.
  *
  * \retval SCREEN_RC_OK on success.
  * \retval SCREEN_RC_ERROR if the raster rejected it.
  */
-EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_mount(enum ScreenInterface interface) {
-    struct Box *boxes = screen_handler.dashboard.boxes;
-    uint16_t count = DASHBOARD_BOX_COUNT;
-    switch (interface) {
-        case SCREEN_INTERFACE_POPUP:
-            boxes = screen_handler.popup.boxes;
-            count = POPUP_BOX_COUNT;
-            break;
-        case SCREEN_INTERFACE_FLASH:
-            boxes = screen_handler.flash.boxes;
-            count = SPLASH_BOX_COUNT;
-            break;
-        case SCREEN_INTERFACE_DASHBOARD:
-        default:
-            break;
-    }
-
-    if (raster_api_set_interface(&screen_handler.raster, boxes, count) != RASTER_RC_OK) {
+EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_mount(enum ScreenViewId view) {
+    const struct ScreenView *page = &screen_views[view];
+    if (raster_api_set_interface(&screen_handler.raster, page->boxes, page->box_count) != RASTER_RC_OK) {
         return SCREEN_RC_ERROR;
     }
     // Everything is redrawn, in both framebuffers over two renders.
-    prv_screen_api_dirty_all(boxes, count);
+    prv_screen_api_dirty_all(page->boxes, page->box_count);
     memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
-    screen_handler.mounted = interface;
+    screen_handler.mounted = view;
     return SCREEN_RC_OK;
 }
 
 enum ScreenReturnCode screen_api_update(uint32_t tick) {
+    // Always ask the popup: it expires here even while a view hides it.
     const bool popup_active = popup_api_is_active(&screen_handler.popup, tick);
-
-    // FLASH hides everything, the popup hides the dashboard.
-    enum ScreenInterface wanted = SCREEN_INTERFACE_DASHBOARD;
-    if (screen_handler.flash_visible) {
-        wanted = SCREEN_INTERFACE_FLASH;
-    } else if (popup_active) {
-        wanted = SCREEN_INTERFACE_POPUP;
-    }
+    const enum ScreenViewId wanted = (popup_active && screen_views[screen_handler.view].popup) ? SCREEN_VIEW_POPUP : screen_handler.view;
 
     if (wanted != screen_handler.mounted && prv_screen_api_mount(wanted) != SCREEN_RC_OK) {
         return SCREEN_RC_ERROR;
@@ -177,12 +178,27 @@ enum ScreenReturnCode screen_api_update(uint32_t tick) {
     return prv_screen_api_render();
 }
 
-enum ScreenReturnCode screen_api_set_flash(bool visible, const char *board_name) {
-    screen_handler.flash_visible = visible;
-    if (!visible) {
-        return SCREEN_RC_OK;
+enum ScreenReturnCode screen_api_set_view(enum ScreenViewId view, const char *caption) {
+    enum SplashReturnCode return_code = SPLASH_RC_OK;
+    switch (view) {
+        case SCREEN_VIEW_DRIVER:
+            break;
+        case SCREEN_VIEW_FLASH:
+            return_code = splash_api_set_caption(&screen_handler.flash, SCREEN_FLASH_TITLE, caption);
+            break;
+        case SCREEN_VIEW_PLACEHOLDER:
+            return_code = splash_api_set_caption(&screen_handler.placeholder, SCREEN_PLACEHOLDER_TITLE, caption);
+            break;
+        case SCREEN_VIEW_POPUP:
+        case SCREEN_VIEW_COUNT:
+        default:
+            return SCREEN_RC_ERROR;
     }
-    return (splash_api_set_caption(&screen_handler.flash, SCREEN_FLASH_TITLE, board_name) == SPLASH_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
+    if (return_code != SPLASH_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
+    screen_handler.view = view;
+    return SCREEN_RC_OK;
 }
 
 /*!

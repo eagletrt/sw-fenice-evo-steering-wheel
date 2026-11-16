@@ -159,8 +159,16 @@ EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
         return;
     }
 
-    const bool flashing = (state == WHEEL_FSM_STATE_FLASH);
-    if (screen_api_set_flash(flashing, flashing ? flash_monitor_api_get_board_name() : NULL) != SCREEN_RC_OK) {
+    // TODO(#9): one view per mode, the menu placeholder goes away.
+    enum ScreenReturnCode view_return_code = SCREEN_RC_OK;
+    if (state == WHEEL_FSM_STATE_FLASH) {
+        view_return_code = screen_api_set_view(SCREEN_VIEW_FLASH, flash_monitor_api_get_board_name());
+    } else if (scheduler_handler.menu_placeholder) {
+        view_return_code = screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MENU");
+    } else {
+        view_return_code = screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
+    }
+    if (view_return_code != SCREEN_RC_OK) {
         EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
         return;
     }
@@ -237,6 +245,10 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
  */
 EAGLETRT_STATIC void prv_scheduler_api_on_request(enum InputRequest request) {
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "input request %s", (request == INPUT_REQUEST_MENU) ? "MENU" : "WAKE"));
+    // TODO(#9): stand-in for the MENU mode, to try a view switch at runtime.
+    if (request == INPUT_REQUEST_MENU) {
+        scheduler_handler.menu_placeholder = !scheduler_handler.menu_placeholder;
+    }
 }
 
 /*!

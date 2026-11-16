@@ -74,7 +74,7 @@ void setUp(void) {
 void test_screen_popup_mounts_on_next_update(void) {
     TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 100U));
     screen_api_update(110U);
-    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "Popup must be mounted on the first update after a change");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "Popup must be mounted on the first update after a change");
     TEST_ASSERT_EQUAL_STRING("5", screen_handler.popup.value_buffer);
 }
 
@@ -84,13 +84,13 @@ void test_screen_popup_timeout_starts_at_change_not_at_last_render(void) {
     screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 5000U);
 
     screen_api_update(5001U);
-    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "Popup must not expire because the previous render was old");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "Popup must not expire because the previous render was old");
 
     screen_api_update(5000U + SCREEN_POPUP_TIMEOUT_MS - 1U);
-    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "Popup must stay up for the whole timeout after the change");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "Popup must stay up for the whole timeout after the change");
 
     screen_api_update(5000U + SCREEN_POPUP_TIMEOUT_MS);
-    TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "Popup must go away exactly at the timeout");
+    TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "Popup must go away exactly at the timeout");
 }
 
 void test_screen_popup_survives_change_stamped_after_render_tick(void) {
@@ -98,7 +98,7 @@ void test_screen_popup_survives_change_stamped_after_render_tick(void) {
      * the render in the same pass still used the tick read earlier (100). */
     screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 105U);
     screen_api_update(100U);
-    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "A change stamped after the render tick must still show the popup");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "A change stamped after the render tick must still show the popup");
 }
 
 void test_screen_popup_new_change_extends_timeout(void) {
@@ -107,11 +107,11 @@ void test_screen_popup_new_change_extends_timeout(void) {
     screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 6U, 2000U);
 
     screen_api_update(1000U + SCREEN_POPUP_TIMEOUT_MS);
-    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_INTERFACE_POPUP), "A later change must restart the timeout");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "A later change must restart the timeout");
     TEST_ASSERT_EQUAL_STRING("6", screen_handler.popup.value_buffer);
 
     screen_api_update(2000U + SCREEN_POPUP_TIMEOUT_MS);
-    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_INTERFACE_POPUP));
+    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_VIEW_POPUP));
 }
 
 void test_screen_popup_dismiss_remounts_dashboard_dirty(void) {
@@ -119,14 +119,14 @@ void test_screen_popup_dismiss_remounts_dashboard_dirty(void) {
     screen_api_update(0U);
     screen_api_update(SCREEN_POPUP_TIMEOUT_MS);
 
-    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_INTERFACE_POPUP));
+    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_VIEW_POPUP));
     TEST_ASSERT_EQUAL_PTR_MESSAGE(screen_handler.dashboard.boxes, screen_handler.raster.interface, "Dashboard must be mounted again after the popup");
 }
 
 void test_screen_popup_rejects_invalid_parameter(void) {
     TEST_ASSERT_EQUAL(SCREEN_RC_ERROR, screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_COUNT, 1U, 0U));
     screen_api_update(1U);
-    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_INTERFACE_POPUP));
+    TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_VIEW_POPUP));
 }
 
 /*! \} */
@@ -246,28 +246,28 @@ void test_screen_popup_close_redraws_dashboard_into_both_buffers(void) {
 /*! \} */
 
 /*!
- * \defgroup screen_api_set_flash FLASH page tests
+ * \defgroup screen_api_set_view View tests
  * \{
  */
 
 void test_screen_flash_page_replaces_the_dashboard(void) {
     prv_settle(0U);
 
-    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_flash(true, "PEDALS"));
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_view(SCREEN_VIEW_FLASH, "PEDALS"));
     TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(10U));
-    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_INTERFACE_FLASH);
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_FLASH);
     TEST_ASSERT_EQUAL_STRING("PEDALS", screen_handler.flash.name.text);
 
-    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_flash(false, NULL));
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_view(SCREEN_VIEW_DRIVER, NULL));
     TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(20U));
-    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_INTERFACE_DASHBOARD);
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DRIVER);
 }
 
 void test_screen_flash_logo_is_drawn_into_both_buffers(void) {
     prv_enable_accelerators();
     prv_settle(0U);
 
-    screen_api_set_flash(true, "PEDALS");
+    screen_api_set_view(SCREEN_VIEW_FLASH, "PEDALS");
     TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(10U));
     TEST_ASSERT_TRUE_MESSAGE(prv_logo_blends() > 0U, "The logo goes on top of its box");
 
@@ -277,19 +277,19 @@ void test_screen_flash_logo_is_drawn_into_both_buffers(void) {
     TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_update(20U));
 
     // The next change is drawn into the other framebuffer: the logo catches up there.
-    screen_api_set_flash(true, "COOLING");
+    screen_api_set_view(SCREEN_VIEW_FLASH, "COOLING");
     TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(30U));
     TEST_ASSERT_TRUE_MESSAGE(prv_logo_blends() > 0U, "The other framebuffer needs the logo too");
 }
 
 void test_screen_flash_board_change_keeps_the_logo(void) {
     prv_enable_accelerators();
-    screen_api_set_flash(true, "PEDALS");
+    screen_api_set_view(SCREEN_VIEW_FLASH, "PEDALS");
     prv_settle(0U);
-    screen_api_set_flash(true, "COOLING");
+    screen_api_set_view(SCREEN_VIEW_FLASH, "COOLING");
     prv_settle(1U); // both framebuffers have the whole page now
 
-    screen_api_set_flash(true, "ECU");
+    screen_api_set_view(SCREEN_VIEW_FLASH, "ECU");
     TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(10U));
     TEST_ASSERT_EQUAL_MESSAGE(0U, prv_logo_blends(), "Only the name box changed: the logo stays as it is");
 }
@@ -297,14 +297,72 @@ void test_screen_flash_board_change_keeps_the_logo(void) {
 void test_screen_flash_hides_the_popup(void) {
     prv_settle(0U);
     screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 3U, 0U);
-    screen_api_set_flash(true, "ECU");
+    screen_api_set_view(SCREEN_VIEW_FLASH, "ECU");
 
     screen_api_update(10U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_INTERFACE_FLASH, "FLASH wins over the popup");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_FLASH, "FLASH wins over the popup");
 
-    screen_api_set_flash(false, NULL);
+    screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
     screen_api_update(20U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_INTERFACE_POPUP, "A popup still in its timeout comes back");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_POPUP, "A popup still in its timeout comes back");
+}
+
+void test_screen_view_rejects_the_popup_and_unknown_views(void) {
+    TEST_ASSERT_EQUAL(SCREEN_RC_ERROR, screen_api_set_view(SCREEN_VIEW_POPUP, NULL));
+    TEST_ASSERT_EQUAL(SCREEN_RC_ERROR, screen_api_set_view(SCREEN_VIEW_COUNT, NULL));
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.view == SCREEN_VIEW_DRIVER, "A rejected view leaves the current one");
+}
+
+void test_screen_view_placeholder_shows_its_name_and_the_logo(void) {
+    prv_enable_accelerators();
+    prv_settle(0U);
+
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MENU"));
+    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(10U));
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER);
+    TEST_ASSERT_EQUAL_STRING(SCREEN_PLACEHOLDER_TITLE, screen_handler.placeholder.title.text);
+    TEST_ASSERT_EQUAL_STRING("MENU", screen_handler.placeholder.name.text);
+    TEST_ASSERT_TRUE_MESSAGE(prv_logo_blends() > 0U, "The placeholder carries the logo");
+}
+
+void test_screen_view_same_view_every_frame_draws_nothing(void) {
+    screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MENU");
+    prv_settle(0U);
+
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MENU"));
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_update(10U));
+    TEST_ASSERT_EQUAL(0U, fake_draw_rectangle_fake.call_count);
+}
+
+void test_screen_view_switch_redraws_every_box_in_both_buffers(void) {
+    prv_enable_accelerators();
+    screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MENU");
+    prv_settle(0U);
+
+    screen_api_set_view(SCREEN_VIEW_FLASH, "ECU");
+    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, screen_api_update(10U));
+    for (uint16_t i = 0U; i < SPLASH_BOX_COUNT; i++) {
+        TEST_ASSERT_TRUE_MESSAGE(screen_handler.redraw_in_back_buffer[i], "Every box of the new view is still owed to the other buffer");
+    }
+
+    screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
+    prv_settle(20U);
+    screen_api_set_soc(42U);
+    screen_api_update(30U);
+    TEST_ASSERT_EQUAL_MESSAGE(DASHBOARD_BOX_COUNT, fake_draw_rectangle_fake.call_count, "The other buffer still had the FLASH page: whole dashboard again");
+}
+
+void test_screen_view_popup_only_over_the_driver_view(void) {
+    screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MENU");
+    prv_settle(0U);
+    screen_api_on_parameter_change(INPUTS_SHARED_PARAMETER_ID_POWER, 3U, 0U);
+
+    screen_api_update(10U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER, "No popup over the placeholder");
+
+    screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
+    screen_api_update(20U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_POPUP, "Back on the dashboard a recent change shows the popup");
 }
 
 /*! \} */
@@ -334,6 +392,11 @@ int main(void) {
     RUN_TEST(test_screen_flash_logo_is_drawn_into_both_buffers);
     RUN_TEST(test_screen_flash_board_change_keeps_the_logo);
     RUN_TEST(test_screen_flash_hides_the_popup);
+    RUN_TEST(test_screen_view_rejects_the_popup_and_unknown_views);
+    RUN_TEST(test_screen_view_placeholder_shows_its_name_and_the_logo);
+    RUN_TEST(test_screen_view_same_view_every_frame_draws_nothing);
+    RUN_TEST(test_screen_view_switch_redraws_every_box_in_both_buffers);
+    RUN_TEST(test_screen_view_popup_only_over_the_driver_view);
 
     return UNITY_END();
 }
