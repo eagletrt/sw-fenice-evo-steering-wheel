@@ -53,6 +53,9 @@ static_assert(sizeof(prv_router_api_primary_filters) / sizeof(prv_router_api_pri
  *
  * \details Not taken from prv_router_api_map_vehicle_state: AS_EMERGENCY maps
  *     to the generic ERROR there, but the car is still running its AS mission.
+ *     TODO: stand-in only. Once libcan has the mission message the
+ *     AS page MUST follow it, and no page may be shown before the selected
+ *     mission is reported (rules).
  */
 EAGLETRT_STATIC bool prv_router_api_is_autonomous(uint8_t vehicle_status) {
     switch ((enum CanPrimaryEcufsmVehiclestatus)vehicle_status) {
@@ -86,7 +89,7 @@ EAGLETRT_STATIC timeout_id prv_router_api_ecu_timeout;
 EAGLETRT_STATIC void prv_router_api_on_ecu_stale(void *context) {
     EAGLETRT_API_UNUSED(context);
     ui_data_api_get()->vehicle_state = (uint8_t)UI_DATA_VEHICLE_STATE_COUNT;
-    ui_data_api_get()->autonomous = 0U; // D20: an unknown ECU counts as manual (TODO(#11))
+    ui_data_api_get()->autonomous = 0U; // stand-in; TODO: no page without a reported mission (D57)
 }
 
 enum CanCommunicationReturnCode can_communications_router_api_init(void) {

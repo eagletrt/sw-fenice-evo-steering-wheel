@@ -50,6 +50,11 @@ EAGLETRT_STATIC struct SchedulerHandler scheduler_handler;
 /*!
  * \brief Mirror a parameter transition into the UI snapshot.
  *
+ * \details TODO: the ECU is the source of truth for the control
+ *     maps (power, regen, torque vectoring, launch control): the dashboard
+ *     must show what the ECU reports (libcan message still to add), not what
+ *     the wheel set. PTT stays local.
+ *
  * \param parameter_id Parameter that changed.
  * \param value New value of the parameter.
  */
