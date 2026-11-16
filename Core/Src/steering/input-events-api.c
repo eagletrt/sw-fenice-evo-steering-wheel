@@ -22,7 +22,6 @@ EAGLETRT_STATIC struct InputEventsHandler input_events_handler;
  */
 EAGLETRT_STATIC const uint16_t prv_input_events_api_combos[INPUT_EVENTS_COMBO_COUNT] = {
     [INPUT_EVENTS_COMBO_MENU] = INPUT_EVENTS_COMBO_MENU_BUTTONS,
-    [INPUT_EVENTS_COMBO_WAKE] = INPUT_EVENTS_COMBO_WAKE_BUTTONS,
 };
 
 /*!

@@ -35,7 +35,7 @@ static_assert(INPUT_ROUTER_COMBO_SOURCE(INPUT_EVENTS_COMBO_COUNT) <= PARAMETERS_
 /*!
  * \brief A REQUEST, never filtered.
  */
-#define INPUT_ROUTER_REQUEST(input_request) { .type = INPUT_ACTION_REQUEST, .group = INPUT_ACTION_GROUP_SYSTEM, .request = (input_request), .amount = 0 }
+#define INPUT_ROUTER_REQUEST(input_request) { .type = INPUT_ACTION_REQUEST, .group = INPUT_ACTION_GROUP_SYSTEM, .request = (input_request), .amount = 1 }
 
 /*!
  * \brief Number of entries of a binding array.
@@ -60,14 +60,14 @@ EAGLETRT_STATIC const struct InputButtonBinding prv_input_router_api_idle_button
 };
 
 /*!
- * \brief IDLE (driving): combos. TODO(#9): the request opens the menu, today it is only logged.
+ * \brief IDLE (driving) and DEBUG: combos.
  */
-EAGLETRT_STATIC const struct InputComboBinding prv_input_router_api_idle_combos[] = {
+EAGLETRT_STATIC const struct InputComboBinding prv_input_router_api_menu_combo[] = {
     { INPUT_EVENTS_COMBO_MENU, INPUT_EVENT_TYPE_LONG_PRESS, INPUT_ROUTER_REQUEST(INPUT_REQUEST_MENU) },
 };
 
 /*!
- * \brief IDLE (driving): the manettini.
+ * \brief IDLE (driving) and DEBUG: the manettini.
  */
 EAGLETRT_STATIC const struct InputKnobBinding prv_input_router_api_idle_knobs[] = {
     { INPUTS_SHARED_KNOB_ID_FRONT_LEFT, INPUT_ROUTER_STEP(INPUTS_SHARED_PARAMETER_ID_POWER, 1) },
@@ -76,22 +76,48 @@ EAGLETRT_STATIC const struct InputKnobBinding prv_input_router_api_idle_knobs[] 
 };
 
 /*!
+ * \brief MENU: the top buttons select and go back (D49). No combo here, so
+ *     they act on press with no combo window.
+ */
+EAGLETRT_STATIC const struct InputButtonBinding prv_input_router_api_menu_buttons[] = {
+    { INPUTS_SHARED_BUTTON_ID_TOP_RIGHT, INPUT_EVENT_TYPE_PRESS, INPUT_ROUTER_REQUEST(INPUT_REQUEST_SELECT) },
+    { INPUTS_SHARED_BUTTON_ID_TOP_LEFT, INPUT_EVENT_TYPE_PRESS, INPUT_ROUTER_REQUEST(INPUT_REQUEST_BACK) },
+};
+
+/*!
+ * \brief MENU: the center manettino moves the cursor (D49).
+ */
+EAGLETRT_STATIC const struct InputKnobBinding prv_input_router_api_menu_knobs[] = {
+    { INPUTS_SHARED_KNOB_ID_FRONT_CENTER, INPUT_ROUTER_REQUEST(INPUT_REQUEST_MOVE) },
+};
+
+/*!
+ * \brief CALIBRATION: only back to the menu. TODO(#14): the calibration flow.
+ */
+EAGLETRT_STATIC const struct InputButtonBinding prv_input_router_api_back_button[] = {
+    { INPUTS_SHARED_BUTTON_ID_TOP_LEFT, INPUT_EVENT_TYPE_PRESS, INPUT_ROUTER_REQUEST(INPUT_REQUEST_BACK) },
+};
+
+#define INPUT_ROUTER_BUTTONS(array) .buttons = (array), .button_count = INPUT_ROUTER_COUNT(array)
+#define INPUT_ROUTER_COMBOS(array) .combos = (array), .combo_count = INPUT_ROUTER_COUNT(array)
+#define INPUT_ROUTER_KNOBS(array) .knobs = (array), .knob_count = INPUT_ROUTER_COUNT(array)
+
+/*!
  * \brief Bindings of every FSM state, indexed by WheelFsmState.
  *
  * \details INIT, FLASH and ERROR bind nothing: inputs are ignored there
  *     (FLASH also pauses the inputs task); releases still let go of holds.
- *     TODO(#9): MENU, DEBUG, CALIBRATION and SCREEN_SAVER (the wake combo).
+ *     DEBUG keeps every driver control (D11), the menu combo leads back to
+ *     the menu (TODO(#13): page cycling). SCREEN_SAVER only knows the menu
+ *     combo (D51).
  */
 EAGLETRT_STATIC const struct InputStateBindings prv_input_router_api_bindings[WHEEL_FSM_STATE_COUNT] = {
     [WHEEL_FSM_STATE_INIT] = { 0 },
-    [WHEEL_FSM_STATE_IDLE] = {
-        .buttons = prv_input_router_api_idle_buttons,
-        .button_count = INPUT_ROUTER_COUNT(prv_input_router_api_idle_buttons),
-        .combos = prv_input_router_api_idle_combos,
-        .combo_count = INPUT_ROUTER_COUNT(prv_input_router_api_idle_combos),
-        .knobs = prv_input_router_api_idle_knobs,
-        .knob_count = INPUT_ROUTER_COUNT(prv_input_router_api_idle_knobs),
-    },
+    [WHEEL_FSM_STATE_IDLE] = { INPUT_ROUTER_BUTTONS(prv_input_router_api_idle_buttons), INPUT_ROUTER_COMBOS(prv_input_router_api_menu_combo), INPUT_ROUTER_KNOBS(prv_input_router_api_idle_knobs) },
+    [WHEEL_FSM_STATE_MENU] = { INPUT_ROUTER_BUTTONS(prv_input_router_api_menu_buttons), INPUT_ROUTER_KNOBS(prv_input_router_api_menu_knobs) },
+    [WHEEL_FSM_STATE_DEBUG] = { INPUT_ROUTER_BUTTONS(prv_input_router_api_idle_buttons), INPUT_ROUTER_COMBOS(prv_input_router_api_menu_combo), INPUT_ROUTER_KNOBS(prv_input_router_api_idle_knobs) },
+    [WHEEL_FSM_STATE_CALIBRATION] = { INPUT_ROUTER_BUTTONS(prv_input_router_api_back_button) },
+    [WHEEL_FSM_STATE_SCREEN_SAVER] = { INPUT_ROUTER_COMBOS(prv_input_router_api_menu_combo) },
     [WHEEL_FSM_STATE_FLASH] = { 0 },
     [WHEEL_FSM_STATE_ERROR] = { 0 },
 };
@@ -120,6 +146,19 @@ EAGLETRT_STATIC bool prv_input_router_api_allowed(enum InputActionGroup group) {
 }
 
 /*!
+ * \brief Steps of a STEP or REQUEST action: its amount times the rotation, saturated.
+ *
+ * \param action The action.
+ * \param multiplier Knob rotation (steps), 1 for buttons and combos.
+ *
+ * \return The steps.
+ */
+EAGLETRT_STATIC int8_t prv_input_router_api_steps(const struct InputAction *action, int8_t multiplier) {
+    const int32_t steps = (int32_t)action->amount * (int32_t)multiplier;
+    return (int8_t)EAGLETRT_API_CLAMP(steps, INT8_MIN, INT8_MAX);
+}
+
+/*!
  * \brief Run one action.
  *
  * \param action The action.
@@ -134,17 +173,15 @@ EAGLETRT_STATIC bool prv_input_router_api_run(const struct InputAction *action, 
         return true;
     }
     switch (action->type) {
-        case INPUT_ACTION_STEP: {
-            const int32_t steps = (int32_t)action->amount * (int32_t)multiplier;
-            return parameters_api_step(action->parameter, (int8_t)EAGLETRT_API_CLAMP(steps, INT8_MIN, INT8_MAX)) == PARAMETERS_RC_OK;
-        }
+        case INPUT_ACTION_STEP:
+            return parameters_api_step(action->parameter, prv_input_router_api_steps(action, multiplier)) == PARAMETERS_RC_OK;
         case INPUT_ACTION_TOGGLE:
             return parameters_api_toggle(action->parameter) == PARAMETERS_RC_OK;
         case INPUT_ACTION_HOLD:
             return parameters_api_hold(action->parameter, source, true) == PARAMETERS_RC_OK;
         case INPUT_ACTION_REQUEST:
             if (input_router_handler.config.on_request != NULL) {
-                input_router_handler.config.on_request(action->request);
+                input_router_handler.config.on_request(action->request, prv_input_router_api_steps(action, multiplier));
             }
             return true;
         default:

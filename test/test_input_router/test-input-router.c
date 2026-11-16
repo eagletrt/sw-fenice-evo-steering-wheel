@@ -18,7 +18,7 @@
 DEFINE_FFF_GLOBALS;
 
 FAKE_VALUE_FUNC(enum WheelFsmState, fake_get_state);
-FAKE_VOID_FUNC(fake_on_request, enum InputRequest);
+FAKE_VOID_FUNC(fake_on_request, enum InputRequest, int8_t);
 FAKE_VALUE_FUNC(bool, fake_on_change, enum InputsSharedParameterID, uint8_t);
 
 static enum InputEventsReturnCode prv_button(enum InputsSharedButtonID button, enum InputEventType type) {
@@ -233,11 +233,6 @@ void test_input_router_idle_menu_combo_requests_the_menu_on_long_press_only(void
     TEST_ASSERT_EQUAL_MESSAGE(0U, fake_on_change_fake.call_count, "A combo changes no parameter");
 }
 
-void test_input_router_idle_wake_combo_does_nothing(void) {
-    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_combo(INPUT_EVENTS_COMBO_WAKE, INPUT_EVENT_TYPE_LONG_PRESS));
-    TEST_ASSERT_EQUAL(0U, fake_on_request_fake.call_count);
-}
-
 void test_input_router_request_without_hook_is_dropped(void) {
     prv_init(NULL);
     TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_combo(INPUT_EVENTS_COMBO_MENU, INPUT_EVENT_TYPE_LONG_PRESS));
@@ -346,6 +341,66 @@ void test_input_router_filter_never_blocks_requests(void) {
 
 /*! \} */
 
+/*!
+ * \defgroup input_router_modes Tests for the MENU, DEBUG, CALIBRATION and SCREEN_SAVER bindings
+ * \{
+ */
+
+void test_input_router_menu_center_knob_moves_by_its_rotation(void) {
+    fake_get_state_fake.return_val = WHEEL_FSM_STATE_MENU;
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_turn(INPUTS_SHARED_KNOB_ID_FRONT_CENTER, -3));
+    TEST_ASSERT_EQUAL(1U, fake_on_request_fake.call_count);
+    TEST_ASSERT_EQUAL(INPUT_REQUEST_MOVE, fake_on_request_fake.arg0_val);
+    TEST_ASSERT_EQUAL_INT8(-3, fake_on_request_fake.arg1_val);
+}
+
+void test_input_router_menu_top_right_selects_top_left_goes_back(void) {
+    fake_get_state_fake.return_val = WHEEL_FSM_STATE_MENU;
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_press(INPUTS_SHARED_BUTTON_ID_TOP_RIGHT));
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_press(INPUTS_SHARED_BUTTON_ID_TOP_LEFT));
+    TEST_ASSERT_EQUAL(2U, fake_on_request_fake.call_count);
+    TEST_ASSERT_EQUAL(INPUT_REQUEST_SELECT, fake_on_request_fake.arg0_history[0]);
+    TEST_ASSERT_EQUAL(INPUT_REQUEST_BACK, fake_on_request_fake.arg0_history[1]);
+    TEST_ASSERT_EQUAL_MESSAGE(0U, fake_on_change_fake.call_count, "The top buttons don't hold OK/REPEAT in the menu");
+}
+
+void test_input_router_menu_has_no_combo_and_no_driver_controls(void) {
+    fake_get_state_fake.return_val = WHEEL_FSM_STATE_MENU;
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, input_router_api_active_combos(), "No combo window: the top buttons act right away");
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_turn(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, 2));
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_press(INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT));
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_press(INPUTS_SHARED_BUTTON_ID_TS_ON));
+    TEST_ASSERT_EQUAL(0U, fake_on_change_fake.call_count);
+    TEST_ASSERT_EQUAL(0U, fake_on_request_fake.call_count);
+}
+
+void test_input_router_debug_keeps_the_driver_controls_and_the_menu_combo(void) {
+    fake_get_state_fake.return_val = WHEEL_FSM_STATE_DEBUG;
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_turn(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, 1));
+    TEST_ASSERT_EQUAL_UINT8(1U, parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER));
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_combo(INPUT_EVENTS_COMBO_MENU, INPUT_EVENT_TYPE_LONG_PRESS));
+    TEST_ASSERT_EQUAL(INPUT_REQUEST_MENU, fake_on_request_fake.arg0_val);
+}
+
+void test_input_router_calibration_only_goes_back(void) {
+    fake_get_state_fake.return_val = WHEEL_FSM_STATE_CALIBRATION;
+    prv_use_every_control();
+    TEST_ASSERT_EQUAL(0U, fake_on_change_fake.call_count);
+    TEST_ASSERT_EQUAL(1U, fake_on_request_fake.call_count);
+    TEST_ASSERT_EQUAL(INPUT_REQUEST_BACK, fake_on_request_fake.arg0_val);
+}
+
+void test_input_router_screen_saver_only_knows_the_menu_combo(void) {
+    fake_get_state_fake.return_val = WHEEL_FSM_STATE_SCREEN_SAVER;
+    prv_use_every_control();
+    TEST_ASSERT_EQUAL(0U, fake_on_change_fake.call_count);
+    TEST_ASSERT_EQUAL(0U, fake_on_request_fake.call_count);
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, prv_combo(INPUT_EVENTS_COMBO_MENU, INPUT_EVENT_TYPE_LONG_PRESS));
+    TEST_ASSERT_EQUAL(INPUT_REQUEST_MENU, fake_on_request_fake.arg0_val);
+}
+
+/*! \} */
+
 int main(void) {
     UNITY_BEGIN();
 
@@ -363,7 +418,6 @@ int main(void) {
     RUN_TEST(test_input_router_idle_ts_on_held_while_pressed);
     RUN_TEST(test_input_router_idle_ok_on_the_right_repeat_on_the_left);
     RUN_TEST(test_input_router_idle_menu_combo_requests_the_menu_on_long_press_only);
-    RUN_TEST(test_input_router_idle_wake_combo_does_nothing);
     RUN_TEST(test_input_router_request_without_hook_is_dropped);
     RUN_TEST(test_input_router_unbound_events_change_nothing);
     RUN_TEST(test_input_router_parameter_failure_is_reported);
@@ -376,6 +430,13 @@ int main(void) {
     RUN_TEST(test_input_router_filter_drops_ts_on_only);
     RUN_TEST(test_input_router_filter_never_blocks_a_release);
     RUN_TEST(test_input_router_filter_never_blocks_requests);
+
+    RUN_TEST(test_input_router_menu_center_knob_moves_by_its_rotation);
+    RUN_TEST(test_input_router_menu_top_right_selects_top_left_goes_back);
+    RUN_TEST(test_input_router_menu_has_no_combo_and_no_driver_controls);
+    RUN_TEST(test_input_router_debug_keeps_the_driver_controls_and_the_menu_combo);
+    RUN_TEST(test_input_router_calibration_only_goes_back);
+    RUN_TEST(test_input_router_screen_saver_only_knows_the_menu_combo);
 
     return UNITY_END();
 }

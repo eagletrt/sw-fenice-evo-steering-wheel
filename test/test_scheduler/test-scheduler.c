@@ -35,7 +35,9 @@ extern struct SchedulerHandler scheduler_handler;
 extern struct ScreenHandler screen_handler;
 extern struct InputEventsHandler input_events_handler;
 #include "input-router.h"
-extern void prv_scheduler_api_on_request(enum InputRequest request);
+#include "wheel-fsm-api.h"
+#include "ui-data-api.h"
+extern void prv_scheduler_api_on_request(enum InputRequest request, int8_t amount);
 
 FAKE_VALUE_FUNC(uint32_t, fake_get_tick);
 FAKE_VOID_FUNC(fake_poll_inputs, uint32_t);
@@ -215,6 +217,27 @@ static void prv_run_until_flashing(uint32_t last_tick, uint32_t id, uint32_t per
     }
 }
 
+/*!
+ * \brief Init the scheduler, then skip the boot logo straight to IDLE (INIT -> IDLE is a table edge).
+ */
+static void prv_init_skipping_the_logo(struct SchedulerConfig *config) {
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(config));
+    if (wheel_fsm_api_request(WHEEL_FSM_STATE_IDLE) == WHEEL_FSM_RC_OK) {
+        TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_run_state());
+    }
+}
+
+/*!
+ * \brief Feed one EcuFsm frame with \p vehicle_status.
+ */
+static void prv_send_ecu_status(uint8_t vehicle_status) {
+    union CanPrimaryMessages message = { 0 };
+    message.ecufsm.vehiclestatus = vehicle_status;
+    struct CanCommunicationFrame frame = { .id = CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM, .length = (uint8_t)can_primary_byte_size_ecufsm };
+    TEST_ASSERT_TRUE(can_primary_api_serialize_from_id(CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM, &message, frame.data) >= 0);
+    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame));
+}
+
 void setUp(void) {
     RESET_FAKE(fake_get_tick);
     RESET_FAKE(fake_poll_inputs);
@@ -236,6 +259,8 @@ void setUp(void) {
     fake_get_tick_fake.custom_fake = prv_get_tick;
     fake_get_cycles_fake.custom_fake = prv_get_cycles;
     fake_draw_rectangle_fake.return_val = RASTER_RC_OK;
+    memset(ui_data_api_get(), 0, sizeof(struct UIData));
+    ui_data_api_get()->vehicle_state = (uint8_t)UI_DATA_VEHICLE_STATE_COUNT;
 }
 
 /*!
@@ -275,7 +300,7 @@ void test_scheduler_init_rejects_cycle_counter_without_frequency(void) {
 void test_scheduler_init_runs_post_into_run(void) {
     struct SchedulerConfig config = prv_make_config();
     TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(&config));
-    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_INIT, scheduler_api_get_fsm_state(), "POST passed: INIT now shows the boot logo");
 }
 
 void test_scheduler_init_post_failure_leaves_fsm_in_error(void) {
@@ -294,7 +319,7 @@ void test_scheduler_init_post_failure_leaves_fsm_in_error(void) {
 
 void test_scheduler_first_routine_runs_every_unstaggered_task(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(0U);
 
@@ -311,7 +336,7 @@ void test_scheduler_first_routine_runs_every_unstaggered_task(void) {
 
 void test_scheduler_first_frame_presented_at_render_start(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
 
@@ -324,7 +349,7 @@ void test_scheduler_inputs_and_render_never_share_a_routine(void) {
     config.swap_framebuffers = prv_swap_trace;
     prv_inputs_count = 0U;
     prv_render_count = 0U;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     /* Something changes every tick, so every render presents a frame (and is traced). */
     for (;;) {
@@ -346,7 +371,7 @@ void test_scheduler_inputs_and_render_never_share_a_routine(void) {
 
 void test_scheduler_inputs_polled_every_10_ms(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(99U);
 
@@ -356,7 +381,7 @@ void test_scheduler_inputs_polled_every_10_ms(void) {
 
 void test_scheduler_can_messages_follow_libcan_cycle_times(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(599U);
 
@@ -368,7 +393,7 @@ void test_scheduler_can_messages_follow_libcan_cycle_times(void) {
 
 void test_scheduler_render_skipped_outside_run(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
 
     prv_run_until(100U);
@@ -379,7 +404,7 @@ void test_scheduler_render_skipped_outside_run(void) {
 
 void test_scheduler_render_failure_moves_fsm_to_error(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     fake_draw_rectangle_fake.return_val = RASTER_RC_ERROR;
 
     prv_run_until(10U);
@@ -389,7 +414,7 @@ void test_scheduler_render_failure_moves_fsm_to_error(void) {
 
 void test_scheduler_fsm_status_reaches_the_bus(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
 
     prv_run_until(0U);
@@ -400,7 +425,7 @@ void test_scheduler_fsm_status_reaches_the_bus(void) {
 
 void test_scheduler_flashing_traffic_mutes_the_wheel(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     prv_run_until(100U);
     prv_now++;
 
@@ -424,7 +449,7 @@ void test_scheduler_flashing_traffic_mutes_the_wheel(void) {
 
 void test_scheduler_flash_page_names_the_board(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until_flashing(100U, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFLASHINGRX, 50U);
 
@@ -435,7 +460,7 @@ void test_scheduler_flash_page_names_the_board(void) {
 
 void test_scheduler_flash_ends_after_silence(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     prv_run_until_flashing(200U, CAN_PRIMARY_MESSAGE_FRAME_ID_COOLINGFLASHINGTX, 50U);
     const uint32_t last_frame = 200U;
 
@@ -456,7 +481,7 @@ void test_scheduler_flash_ends_after_silence(void) {
 
 void test_scheduler_own_flashing_frames_reset_instead_of_flash(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until_flashing(20U, CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX, 50U);
 
@@ -466,7 +491,7 @@ void test_scheduler_own_flashing_frames_reset_instead_of_flash(void) {
 
 void test_scheduler_reset_request_resets_the_board(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     const struct CanCommunicationFrame frame = { .id = CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX, .length = 0U };
     can_communications_router_api_receive_primary(&frame);
@@ -477,7 +502,7 @@ void test_scheduler_reset_request_resets_the_board(void) {
 
 void test_scheduler_own_flashing_frame_resets_even_in_error(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
     TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_run_state());
     TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
@@ -499,7 +524,7 @@ void test_scheduler_post_fails_when_can_filters_overflow(void) {
 void test_scheduler_routine_rejects_time_going_backwards(void) {
     struct SchedulerConfig config = prv_make_config();
     prv_now = 100U;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     prv_now = 50U;
     TEST_ASSERT_EQUAL(SCHEDULER_RC_ERROR, scheduler_api_routine());
 }
@@ -508,7 +533,7 @@ void test_scheduler_knob_popup_shows_on_next_frame(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_turn_knob;
     fake_get_tick_fake.custom_fake = prv_get_tick_flowing;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     /* Time keeps flowing on every clock read, like HAL_GetTick during a slow I2C poll. */
     for (uint32_t calls = 0U; calls < 100U && fake_swap_framebuffers_fake.call_count == 0U; calls++) {
@@ -520,7 +545,7 @@ void test_scheduler_knob_popup_shows_on_next_frame(void) {
 
 void test_scheduler_tasks_get_the_tick_libtimebase_acted_on(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     prv_now = 40U;
 
     TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
@@ -531,7 +556,7 @@ void test_scheduler_tasks_get_the_tick_libtimebase_acted_on(void) {
 
 void test_scheduler_late_routine_drops_missed_runs(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     prv_run_until(0U);
     const unsigned polls_before = fake_poll_inputs_fake.call_count;
 
@@ -545,7 +570,7 @@ void test_scheduler_late_routine_drops_missed_runs(void) {
 void test_scheduler_parameter_change_reaches_ui_bus_and_popup(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_turn_knob;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     memset(ui_data_api_get(), 0, sizeof(struct UIData));
 
     prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
@@ -558,7 +583,7 @@ void test_scheduler_parameter_change_reaches_ui_bus_and_popup(void) {
 void test_scheduler_ptt_tints_dashboard_without_popup(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_hold_ptt;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     memset(ui_data_api_get(), 0, sizeof(struct UIData));
 
     prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
@@ -570,7 +595,7 @@ void test_scheduler_ptt_tints_dashboard_without_popup(void) {
 void test_scheduler_knob_reaches_the_parameter_through_the_router(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_click_knob;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(0U);
 
@@ -580,7 +605,7 @@ void test_scheduler_knob_reaches_the_parameter_through_the_router(void) {
 void test_scheduler_inputs_ignored_in_error(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_click_knob;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
     TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_run_state());
     TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, wheel_fsm_api_get_state());
@@ -593,7 +618,7 @@ void test_scheduler_inputs_ignored_in_error(void) {
 void test_scheduler_menu_combo_long_press_through_the_timeout_pool(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_hold_menu_combo;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     // Both buttons in the first poll (tick 0): the combo is pressed right away.
     prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS - 1U);
@@ -603,33 +628,121 @@ void test_scheduler_menu_combo_long_press_through_the_timeout_pool(void) {
     TEST_ASSERT_TRUE_MESSAGE(timeout_api_has_expired(input_events_handler.combo_long_press), "The scheduler routine runs the timeout pool");
     TEST_ASSERT_EQUAL_MESSAGE(0U, prv_driver_action_count, "The menu combo sends neither OK nor REPEAT");
 
-    // TODO(#9): the menu combo toggles the "MENU" placeholder until the MENU mode exists.
     prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS + 40U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER, "The render task mounts the placeholder");
-    TEST_ASSERT_EQUAL_STRING("MENU", screen_handler.placeholder.name.text);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state(), "The combo opens the menu");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_MENU, "The render task mounts the menu page");
 }
 
-void test_scheduler_menu_request_toggles_the_placeholder_back(void) {
+void test_scheduler_boot_logo_then_dashboard(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(&config));
 
-    prv_scheduler_api_on_request(INPUT_REQUEST_MENU);
+    prv_run_until(WHEEL_FSM_BOOT_LOGO_MS - 10U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_INIT, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_LOGO, "INIT shows the boot logo");
+    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_INIT, prv_last_fsm_status);
+
+    prv_run_until(WHEEL_FSM_BOOT_LOGO_MS + 40U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DRIVER);
+}
+
+void test_scheduler_menu_debug_and_back_to_driving(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
     prv_run_until(40U);
-    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER);
+    TEST_ASSERT_EQUAL_MESSAGE(MENU_ITEM_DEBUG, screen_handler.menu.cursor, "ECU state unknown: the cursor skips the locked items");
 
-    prv_scheduler_api_on_request(INPUT_REQUEST_WAKE);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
     prv_run_until(80U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER, "Only MENU toggles it");
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_DEBUG, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER);
+    TEST_ASSERT_EQUAL_STRING("DEBUG", screen_handler.placeholder.name.text);
 
-    prv_scheduler_api_on_request(INPUT_REQUEST_MENU);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(100U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MOVE, 1);
     prv_run_until(120U);
-    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_DRIVER, "The second MENU brings the dashboard back");
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL(MENU_ITEM_EXIT, screen_handler.menu.cursor);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(160U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DRIVER);
+}
+
+void test_scheduler_menu_unlocks_with_the_ecu_idle_and_locks_when_it_goes_silent(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE);
+    prv_run_until(20U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.menu.unlocked, "EcuFsm IDLE unlocks the menu");
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MOVE, -4);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MOVE, 1);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(80U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_CALIBRATION, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL_STRING("CALIBRATIONS", screen_handler.placeholder.name.text);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_BACK, 1);
+    prv_run_until(120U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL_MESSAGE(MENU_ITEM_CALIBRATIONS, screen_handler.menu.cursor, "BACK keeps the cursor");
+
+    // The ECU went quiet at tick 0: three missed frames and the state is unknown again.
+    prv_run_until(3U * (uint32_t)can_primary_cycle_time_ecufsm + 40U);
+    TEST_ASSERT_FALSE_MESSAGE(screen_handler.menu.unlocked, "A silent ECU locks the menu (A4)");
+    TEST_ASSERT_EQUAL(MENU_ITEM_DEBUG, screen_handler.menu.cursor);
+}
+
+void test_scheduler_screen_saver_shows_the_logo_and_the_combo_opens_the_menu(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE);
+    prv_run_until(20U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MOVE, 2);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(80U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_SCREEN_SAVER, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_LOGO);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(120U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL_MESSAGE(MENU_ITEM_MISSION, screen_handler.menu.cursor, "The combo reopens the menu from the top");
+}
+
+void test_scheduler_mission_opens_its_placeholder(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE);
+    prv_run_until(20U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(80U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER);
+    TEST_ASSERT_EQUAL_STRING("MISSION", screen_handler.placeholder.name.text);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_BACK, 1);
+    prv_run_until(120U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state(), "BACK closes the mission page, not the menu");
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_MENU);
 }
 
 void test_scheduler_top_right_sends_driver_action_ok(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_hold_ok;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     // A combo button: its press arrives when the combo window ends.
     prv_run_until(INPUT_EVENTS_COMBO_WINDOW_MS - 1U);
@@ -652,7 +765,7 @@ void test_scheduler_render_waits_while_the_last_frame_is_in_flight(void) {
     config.poll_inputs = prv_poll_inputs_turn_knob;
     config.render_busy = fake_render_busy;
     fake_render_busy_fake.return_val = true;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER) + 100U);
     TEST_ASSERT_TRUE_MESSAGE(fake_render_busy_fake.call_count > 0U, "The render task asks before drawing");
@@ -669,7 +782,7 @@ void test_scheduler_frame_stuck_in_flight_goes_to_error(void) {
     struct SchedulerConfig config = prv_make_config();
     config.render_busy = fake_render_busy;
     fake_render_busy_fake.return_val = true;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     const uint32_t first_render = prv_task_start(SCHEDULER_TASK_RENDER);
 
     prv_run_until(first_render + SCHEDULER_RENDER_STALL_TIMEOUT_MS - 1U);
@@ -682,7 +795,7 @@ void test_scheduler_frame_stuck_in_flight_goes_to_error(void) {
 void test_scheduler_frames_that_finish_never_stall(void) {
     struct SchedulerConfig config = prv_make_config();
     config.render_busy = fake_render_busy;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     /* Every frame stays in flight for most of the timeout, then gets out for one render. */
     for (uint32_t frame = 0U; frame < 5U; frame++) {
@@ -699,7 +812,7 @@ void test_scheduler_no_stall_while_nothing_is_in_flight(void) {
     struct SchedulerConfig config = prv_make_config();
     config.render_busy = fake_render_busy;
     fake_render_busy_fake.return_val = false;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(3U * SCHEDULER_RENDER_STALL_TIMEOUT_MS);
 
@@ -709,7 +822,7 @@ void test_scheduler_no_stall_while_nothing_is_in_flight(void) {
 void test_scheduler_render_without_busy_hook_draws_at_once(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_turn_knob;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
 
@@ -718,7 +831,7 @@ void test_scheduler_render_without_busy_hook_draws_at_once(void) {
 
 void test_scheduler_paused_task_stops_until_resumed(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     prv_run_until(0U);
     const size_t fsm_frames = prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM);
 
@@ -734,13 +847,13 @@ void test_scheduler_paused_task_stops_until_resumed(void) {
 
 void test_scheduler_resume_running_task_is_harmless(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_resume_task(SCHEDULER_TASK_CAN_RX));
 }
 
 void test_scheduler_pause_resume_reject_invalid_task(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
     TEST_ASSERT_EQUAL(SCHEDULER_RC_ERROR, scheduler_api_pause_task(SCHEDULER_TASK_COUNT));
     TEST_ASSERT_EQUAL(SCHEDULER_RC_ERROR, scheduler_api_resume_task(SCHEDULER_TASK_COUNT));
 }
@@ -756,7 +869,7 @@ void test_scheduler_stats_record_task_duration(void) {
     struct SchedulerConfig config = prv_make_config();
     config.get_cycles = fake_get_cycles;
     config.cycles_per_us = TEST_SCHEDULER_CYCLES_PER_US;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(0U);
 
@@ -768,7 +881,7 @@ void test_scheduler_stats_record_task_duration(void) {
 
 void test_scheduler_stats_off_without_cycle_counter(void) {
     struct SchedulerConfig config = prv_make_config();
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     prv_run_until(10U);
 
@@ -780,7 +893,7 @@ void test_scheduler_stats_window_reset_by_stats_task(void) {
     struct SchedulerConfig config = prv_make_config();
     config.get_cycles = fake_get_cycles;
     config.cycles_per_us = TEST_SCHEDULER_CYCLES_PER_US;
-    scheduler_api_init(&config);
+    prv_init_skipping_the_logo(&config);
 
     const uint32_t second_log = prv_task_start(SCHEDULER_TASK_STATS) + SCHEDULER_STATS_LOG_PERIOD_MS;
 
@@ -827,7 +940,11 @@ int main(void) {
     RUN_TEST(test_scheduler_knob_reaches_the_parameter_through_the_router);
     RUN_TEST(test_scheduler_inputs_ignored_in_error);
     RUN_TEST(test_scheduler_menu_combo_long_press_through_the_timeout_pool);
-    RUN_TEST(test_scheduler_menu_request_toggles_the_placeholder_back);
+    RUN_TEST(test_scheduler_boot_logo_then_dashboard);
+    RUN_TEST(test_scheduler_menu_debug_and_back_to_driving);
+    RUN_TEST(test_scheduler_menu_unlocks_with_the_ecu_idle_and_locks_when_it_goes_silent);
+    RUN_TEST(test_scheduler_screen_saver_shows_the_logo_and_the_combo_opens_the_menu);
+    RUN_TEST(test_scheduler_mission_opens_its_placeholder);
     RUN_TEST(test_scheduler_top_right_sends_driver_action_ok);
     RUN_TEST(test_scheduler_render_waits_while_the_last_frame_is_in_flight);
     RUN_TEST(test_scheduler_frame_stuck_in_flight_goes_to_error);

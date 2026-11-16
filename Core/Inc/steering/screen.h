@@ -2,6 +2,7 @@
 #define SCREEN_H
 
 #include "dashboard.h"
+#include "menu.h"
 #include "popup.h"
 #include "raster.h"
 #include "splash.h"
@@ -43,7 +44,7 @@ struct ScreenAccelerators {
 /*!
  * \brief Boxes of the biggest view.
  */
-#define SCREEN_MAX_BOX_COUNT (EAGLETRT_API_MAX(EAGLETRT_API_MAX(DASHBOARD_BOX_COUNT, POPUP_BOX_COUNT), SPLASH_BOX_COUNT))
+#define SCREEN_MAX_BOX_COUNT (EAGLETRT_API_MAX(EAGLETRT_API_MAX(EAGLETRT_API_MAX(DASHBOARD_BOX_COUNT, POPUP_BOX_COUNT), SPLASH_BOX_COUNT), MENU_BOX_COUNT))
 
 /*!
  * \brief Pages the screen can show.
@@ -56,6 +57,8 @@ enum ScreenViewId : uint8_t {
     SCREEN_VIEW_DRIVER,      /*!< Main telemetry dashboard */
     SCREEN_VIEW_FLASH,       /*!< Logo + "FLASHING <board>" while another board is flashed */
     SCREEN_VIEW_PLACEHOLDER, /*!< Logo + page name, for modes whose design isn't ready (TODO(design)) */
+    SCREEN_VIEW_LOGO,        /*!< Logo only: boot and screen saver */
+    SCREEN_VIEW_MENU,        /*!< Menu page */
     SCREEN_VIEW_POPUP,       /*!< Parameter-change popup, overlay only */
     SCREEN_VIEW_COUNT,
 };
@@ -79,6 +82,8 @@ struct ScreenHandler {
     struct PopupHandler popup;         /*!< State of the parameter-change popup overlay */
     struct SplashHandler flash;        /*!< FLASH page: logo + "FLASHING" + board name */
     struct SplashHandler placeholder;  /*!< Placeholder page: logo + "NO DESIGN YET" + page name */
+    struct SplashHandler logo;         /*!< Logo-only page (boot, screen saver) */
+    struct MenuHandler menu;           /*!< Menu page and its cursor */
 };
 
 #endif // SCREEN_H

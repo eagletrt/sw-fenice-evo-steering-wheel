@@ -13,6 +13,7 @@
 
 #include "screen-api.h"
 #include "dashboard-api.h"
+#include "menu-api.h"
 #include "eagletrt.h"
 #include "popup-api.h"
 #include "raster-api.h"
@@ -40,6 +41,9 @@ EAGLETRT_STATIC const struct ScreenView screen_views[SCREEN_VIEW_COUNT] = {
     [SCREEN_VIEW_DRIVER] = { screen_handler.dashboard.boxes, DASHBOARD_BOX_COUNT, true, false },
     [SCREEN_VIEW_FLASH] = { screen_handler.flash.boxes, SPLASH_BOX_COUNT, false, true },
     [SCREEN_VIEW_PLACEHOLDER] = { screen_handler.placeholder.boxes, SPLASH_BOX_COUNT, false, true },
+    // TODO(#15): Figma centres the screen-saver logo (y 152), the boot logo is at y 112.
+    [SCREEN_VIEW_LOGO] = { screen_handler.logo.boxes, SPLASH_BOX_COUNT, false, true },
+    [SCREEN_VIEW_MENU] = { screen_handler.menu.boxes, MENU_BOX_COUNT, false, false },
     [SCREEN_VIEW_POPUP] = { screen_handler.popup.boxes, POPUP_BOX_COUNT, false, false },
 };
 
@@ -66,7 +70,9 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
         return SCREEN_RC_ERROR;
     }
     if (splash_api_init(&screen_handler.flash, &font_inter) != SPLASH_RC_OK ||
-        splash_api_init(&screen_handler.placeholder, &font_inter) != SPLASH_RC_OK) {
+        splash_api_init(&screen_handler.placeholder, &font_inter) != SPLASH_RC_OK ||
+        splash_api_init(&screen_handler.logo, &font_inter) != SPLASH_RC_OK ||
+        menu_api_init(&screen_handler.menu, &font_inter) != MENU_RC_OK) {
         return SCREEN_RC_ERROR;
     }
     screen_handler.view = SCREEN_VIEW_DRIVER;
@@ -181,6 +187,8 @@ enum ScreenReturnCode screen_api_set_view(enum ScreenViewId view, const char *ca
     enum SplashReturnCode return_code = SPLASH_RC_OK;
     switch (view) {
         case SCREEN_VIEW_DRIVER:
+        case SCREEN_VIEW_LOGO:
+        case SCREEN_VIEW_MENU:
             break;
         case SCREEN_VIEW_FLASH:
             return_code = splash_api_set_caption(&screen_handler.flash, SCREEN_FLASH_TITLE, caption);
@@ -296,6 +304,9 @@ enum ScreenReturnCode screen_api_sync_data(const struct UIData *ui_data) {
 
     enum ScreenReturnCode return_code = SCREEN_RC_OK;
 
+    // D22 + A4: only an ECU known to be IDLE unlocks the menu (unknown or stale is not IDLE).
+    menu_api_set_unlocked(&screen_handler.menu, ui_data->vehicle_state == UI_DATA_VEHICLE_STATE_IDLE);
+
     if (screen_api_set_car_state(prv_screen_api_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK) {
         return_code = SCREEN_RC_ERROR;
     }
@@ -355,4 +366,16 @@ bool screen_api_should_redraw(struct Box *boxes, uint16_t count) {
     }
 
     return false;
+}
+
+void screen_api_menu_open(void) {
+    menu_api_open(&screen_handler.menu);
+}
+
+enum MenuAction screen_api_menu_handle(enum MenuInput input, int8_t amount) {
+    return menu_api_handle(&screen_handler.menu, input, amount);
+}
+
+bool screen_api_menu_is_mission_open(void) {
+    return screen_handler.menu.mission_open;
 }

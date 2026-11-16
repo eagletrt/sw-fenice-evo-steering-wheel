@@ -69,13 +69,6 @@ static_assert(INPUT_EVENTS_LONG_PRESS_MS > INPUT_EVENTS_COMBO_WINDOW_MS, "a long
 #define INPUT_EVENTS_COMBO_MENU_BUTTONS (INPUT_EVENTS_BUTTON_BIT(INPUTS_SHARED_BUTTON_ID_TOP_LEFT) | INPUT_EVENTS_BUTTON_BIT(INPUTS_SHARED_BUTTON_ID_TOP_RIGHT))
 
 /*!
- * \brief Buttons of the screen-saver wake combo.
- *
- * \details TODO(design): placeholder (Q1).
- */
-#define INPUT_EVENTS_COMBO_WAKE_BUTTONS (INPUT_EVENTS_BUTTON_BIT(INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_LEFT) | INPUT_EVENTS_BUTTON_BIT(INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_RIGHT))
-
-/*!
  * \brief Return codes for input events operations.
  */
 enum InputEventsReturnCode {
@@ -88,8 +81,7 @@ enum InputEventsReturnCode {
  * \brief Every combo the wheel knows. Which ones are recognised depends on the state.
  */
 enum InputEventsComboId : uint8_t {
-    INPUT_EVENTS_COMBO_MENU, /*!< Open the menu */
-    INPUT_EVENTS_COMBO_WAKE, /*!< Leave the screen saver */
+    INPUT_EVENTS_COMBO_MENU, /*!< Open the menu (also wakes the screen saver) */
     INPUT_EVENTS_COMBO_COUNT,
 };
 

@@ -235,4 +235,26 @@ enum ScreenReturnCode screen_api_set_motor_temperatures(int16_t front_left, int1
  */
 bool screen_api_should_redraw(struct Box *boxes, uint16_t count);
 
+/*!
+ * \brief Back to the menu's item list, cursor on the first selectable item.
+ */
+void screen_api_menu_open(void);
+
+/*!
+ * \brief Handle one menu input (menu_api_handle on the screen's menu).
+ *
+ * \param input The input.
+ * \param amount MOVE only: rows to move, positive = down.
+ *
+ * \return What the wheel should do.
+ */
+enum MenuAction screen_api_menu_handle(enum MenuInput input, int8_t amount);
+
+/*!
+ * \brief Whether the menu shows the mission page instead of the item list.
+ *
+ * \return true while the mission page is open.
+ */
+bool screen_api_menu_is_mission_open(void);
+
 #endif // SCREEN_API_H

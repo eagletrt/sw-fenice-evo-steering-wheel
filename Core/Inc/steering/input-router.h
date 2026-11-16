@@ -65,8 +65,10 @@ enum InputActionGroup : uint8_t {
  * \brief Requests the router hands to the rest of the wheel.
  */
 enum InputRequest : uint8_t {
-    INPUT_REQUEST_MENU, /*!< Open the menu */
-    INPUT_REQUEST_WAKE, /*!< Leave the screen saver */
+    INPUT_REQUEST_MENU,   /*!< Open the menu */
+    INPUT_REQUEST_MOVE,   /*!< Move the cursor by the amount (knob detents) */
+    INPUT_REQUEST_SELECT, /*!< Select the item under the cursor */
+    INPUT_REQUEST_BACK,   /*!< Leave the current page */
 };
 
 /*!
@@ -79,7 +81,7 @@ struct InputAction {
         enum InputsSharedParameterID parameter; /*!< STEP, TOGGLE, HOLD */
         enum InputRequest request;              /*!< REQUEST */
     };
-    int8_t amount; /*!< STEP only: steps per event (knobs: per detent) */
+    int8_t amount; /*!< STEP and REQUEST: steps per event (knobs: per detent) */
 };
 
 /*!
@@ -147,8 +149,9 @@ typedef enum WheelFsmState (*input_router_get_state_callback)(void);
  * \brief A request action fired.
  *
  * \param request What is asked.
+ * \param amount The action's amount times the knob rotation (1 x amount for buttons and combos).
  */
-typedef void (*input_router_request_callback)(enum InputRequest request);
+typedef void (*input_router_request_callback)(enum InputRequest request, int8_t amount);
 
 /*!
  * \brief Hooks of the router.
