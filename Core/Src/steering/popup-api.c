@@ -15,6 +15,7 @@
 #include "screen.h"
 #include "eagletrt-api.h"
 #include "raster-fonts.h"
+#include "timeout-api.h"
 #include <stddef.h>
 #include <stdio.h>
 
@@ -65,8 +66,9 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler) {
         return POPUP_RC_ERROR;
     }
 
-    handler->active = false;
-    handler->last_event_tick = 0U;
+    if (timeout_api_create(SCREEN_POPUP_TIMEOUT_MS, NULL, NULL, &handler->timeout) != TIMEOUT_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
     handler->current_parameter = INPUTS_SHARED_PARAMETER_ID_POWER;
     handler->value_buffer[0] = '\0';
 
@@ -93,7 +95,7 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler) {
 }
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick) {
+enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value) {
     if (handler == NULL || parameter_id >= INPUTS_SHARED_PARAMETER_ID_COUNT) {
         return POPUP_RC_ERROR;
     }
@@ -101,10 +103,11 @@ enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSha
     // The name box spans the whole width: redrawing it costs ~5 ms of SDRAM
     // writes, so only when the name actually changes (the screen redraws
     // everything anyway when the popup appears).
-    const bool name_changed = !handler->active || handler->current_parameter != parameter_id;
+    const bool name_changed = !timeout_api_is_running(handler->timeout) || handler->current_parameter != parameter_id;
 
-    handler->active = true;
-    handler->last_event_tick = tick;
+    if (timeout_api_start(handler->timeout) != TIMEOUT_RC_OK) {
+        return POPUP_RC_ERROR;
+    }
     handler->current_parameter = parameter_id;
 
     handler->labels[1].text = (char *)prv_parameter_names[parameter_id];
@@ -123,20 +126,12 @@ void popup_api_dismiss(struct PopupHandler *handler) {
     if (handler == NULL) {
         return;
     }
-    handler->active = false;
+    EAGLETRT_API_UNUSED(timeout_api_stop(handler->timeout));
 }
 
-bool popup_api_is_active(struct PopupHandler *handler, uint32_t tick) {
-    if (handler == NULL || !handler->active) {
+bool popup_api_is_active(struct PopupHandler *handler) {
+    if (handler == NULL) {
         return false;
     }
-    // Signed difference: an event stamped slightly after \p tick (another clock,
-    // or read later in the same pass) has just happened, it must not look like
-    // ~49 days ago and dismiss the popup before it is ever drawn.
-    const int32_t elapsed_ms = (int32_t)(tick - handler->last_event_tick);
-    if (elapsed_ms >= (int32_t)SCREEN_POPUP_TIMEOUT_MS) {
-        handler->active = false;
-        return false;
-    }
-    return true;
+    return timeout_api_is_running(handler->timeout);
 }

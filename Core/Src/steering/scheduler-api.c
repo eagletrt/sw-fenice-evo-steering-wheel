@@ -29,7 +29,7 @@
 #include <string.h>
 
 static_assert(SCHEDULER_TASK_COUNT <= TASKS_MAX_COUNT, "libtimebase cannot hold every scheduler task");
-static_assert(FLASH_MONITOR_TIMEOUT_COUNT + INPUT_EVENTS_TIMEOUT_COUNT + SCHEDULER_TIMEOUT_COUNT <= TIMEOUT_MAX_COUNT, "the timeout pool cannot hold every timeout");
+static_assert(FLASH_MONITOR_TIMEOUT_COUNT + INPUT_EVENTS_TIMEOUT_COUNT + POPUP_TIMEOUT_COUNT + SCHEDULER_TIMEOUT_COUNT <= TIMEOUT_MAX_COUNT, "the timeout pool cannot hold every timeout");
 
 /*!
  * \brief Body of a task, called with the tick of the current routine call.
@@ -105,7 +105,7 @@ EAGLETRT_STATIC bool prv_scheduler_api_on_parameter_change(enum InputsSharedPara
     }
 
     // Same time base as the render task that checks the popup timeout.
-    return screen_api_on_parameter_change(parameter_id, value, scheduler_handler.tick) == SCREEN_RC_OK;
+    return screen_api_on_parameter_change(parameter_id, value) == SCREEN_RC_OK;
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_can_rx(uint32_t tick_ms) {
@@ -152,6 +152,7 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_tx(uint32_t tick_ms) {
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
+    EAGLETRT_API_UNUSED(tick_ms);
     // The screen is only driven in IDLE and FLASH: an ERROR leaves the last
     // frame on screen.
     const enum WheelFsmState state = wheel_fsm_api_get_state();
@@ -193,7 +194,7 @@ EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
         EAGLETRT_API_UNUSED(timeout_api_stop(scheduler_handler.render_stall_timeout));
     }
 
-    switch (screen_api_update(tick_ms)) {
+    switch (screen_api_update()) {
         case SCREEN_RC_OK:
             break;
         case SCREEN_RC_RENDERED:

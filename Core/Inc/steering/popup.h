@@ -19,6 +19,7 @@
 #include "box.h"
 #include "label.h"
 #include "style.h"
+#include "timeout.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -29,6 +30,11 @@ enum PopupReturnCode {
     POPUP_RC_OK,    /*!< Operation completed successfully */
     POPUP_RC_ERROR, /*!< An error occurred during the operation */
 };
+
+/*!
+ * \brief Timeouts the popup takes from the pool (its auto-hide).
+ */
+#define POPUP_TIMEOUT_COUNT (1U)
 
 /*!
  * \brief Number of RasterBox entries composing the popup interface.
@@ -51,8 +57,7 @@ enum PopupReturnCode {
  * \brief Popup state handler structure.
  */
 struct PopupHandler {
-    bool active;                                    /*!< Whether the popup should currently be rendered */
-    uint32_t last_event_tick;                       /*!< Tick of the last parameter change, in milliseconds */
+    timeout_id timeout;                             /*!< Timeout ID for the popup auto-hide timer */
     enum InputsSharedParameterID current_parameter; /*!< Parameter currently displayed by the popup */
     char value_buffer[POPUP_VALUE_BUFFER_SIZE];     /*!< Buffer for the formatted value label */
     struct Label labels[POPUP_BOX_COUNT];           /*!< Labels referenced by the popup boxes */

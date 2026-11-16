@@ -57,10 +57,19 @@ void test_timeout_init_rejects_null_clock(void) {
     TEST_ASSERT_EQUAL(TIMEOUT_RC_NULL_POINTER, timeout_api_init(NULL));
 }
 
-void test_timeout_create_rejects_null_pointers(void) {
-    timeout_id id = 0U;
-    TEST_ASSERT_EQUAL(TIMEOUT_RC_NULL_POINTER, timeout_api_create(10U, NULL, NULL, &id));
+void test_timeout_create_rejects_null_id(void) {
     TEST_ASSERT_EQUAL(TIMEOUT_RC_NULL_POINTER, timeout_api_create(10U, fake_expired, NULL, NULL));
+}
+
+void test_timeout_without_callback_only_expires(void) {
+    timeout_id id = 0U;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_create(10U, NULL, NULL, &id));
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_start(id));
+
+    prv_now = 10U;
+    TEST_ASSERT_EQUAL_MESSAGE(TIMEOUT_RC_OK, timeout_api_routine(), "No callback to call: the routine just marks it expired");
+    TEST_ASSERT_FALSE(timeout_api_is_running(id));
+    TEST_ASSERT_TRUE(timeout_api_has_expired(id));
 }
 
 void test_timeout_create_hands_out_distinct_ids_until_full(void) {
@@ -206,7 +215,8 @@ int main(void) {
     UNITY_BEGIN();
 
     RUN_TEST(test_timeout_init_rejects_null_clock);
-    RUN_TEST(test_timeout_create_rejects_null_pointers);
+    RUN_TEST(test_timeout_create_rejects_null_id);
+    RUN_TEST(test_timeout_without_callback_only_expires);
     RUN_TEST(test_timeout_create_hands_out_distinct_ids_until_full);
     RUN_TEST(test_timeout_init_empties_the_pool);
     RUN_TEST(test_timeout_unknown_id_is_rejected);

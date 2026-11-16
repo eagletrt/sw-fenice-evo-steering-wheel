@@ -44,12 +44,12 @@ EAGLETRT_STATIC const struct ScreenView screen_views[SCREEN_VIEW_COUNT] = {
 };
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-enum ScreenReturnCode screen_api_on_parameter_change(const enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick) {
+enum ScreenReturnCode screen_api_on_parameter_change(const enum InputsSharedParameterID parameter_id, uint8_t value) {
     // Called from the parameters on-change path: only update the popup state
     // here. The raster interface swap is performed by screen_api_update in
     // the render task. The timeout starts from the change itself, not from the
     // last render: renders can be late or not running at all.
-    if (popup_api_show(&screen_handler.popup, parameter_id, value, tick) != POPUP_RC_OK) {
+    if (popup_api_show(&screen_handler.popup, parameter_id, value) != POPUP_RC_OK) {
         return SCREEN_RC_ERROR;
     }
     return SCREEN_RC_OK;
@@ -166,9 +166,8 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_mount(enum ScreenViewId vie
     return SCREEN_RC_OK;
 }
 
-enum ScreenReturnCode screen_api_update(uint32_t tick) {
-    // Always ask the popup: it expires here even while a view hides it.
-    const bool popup_active = popup_api_is_active(&screen_handler.popup, tick);
+enum ScreenReturnCode screen_api_update(void) {
+    const bool popup_active = popup_api_is_active(&screen_handler.popup);
     const enum ScreenViewId wanted = (popup_active && screen_views[screen_handler.view].popup) ? SCREEN_VIEW_POPUP : screen_handler.view;
 
     if (wanted != screen_handler.mounted && prv_screen_api_mount(wanted) != SCREEN_RC_OK) {

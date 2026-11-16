@@ -4,19 +4,36 @@
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  *
  * \brief Unit tests for the popup API functionality.
+ *
+ * \details The popup's auto-hide is a timeout of the real pool, driven by a
+ *     fake clock through timeout_api_routine (as the scheduler routine does).
  */
 
 #include "unity.h"
 #include "popup-api.h"
 #include "screen.h"
+#include "timeout-api.h"
 
 struct PopupHandler popup_handler;
 
 bool prv_popup_is_toggle(enum InputsSharedParameterID parameter_id);
 void prv_popup_format_value(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value);
 
+static uint32_t prv_now;
+static uint32_t prv_get_tick(void) {
+    return prv_now;
+}
+
+/* Move the clock and run the timeout pool. */
+static void prv_at(uint32_t tick) {
+    prv_now = tick;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
+}
+
 void setUp(void) {
-    popup_api_init(&popup_handler);
+    prv_now = 0U;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_init(prv_get_tick));
+    TEST_ASSERT_EQUAL(POPUP_RC_OK, popup_api_init(&popup_handler));
 }
 
 /*!
@@ -27,8 +44,7 @@ void setUp(void) {
 void test_popup_api_init_success(void) {
     enum PopupReturnCode rc = popup_api_init(&popup_handler);
     TEST_ASSERT_EQUAL_MESSAGE(POPUP_RC_OK, rc, "popup_api_init should return POPUP_RC_OK on successful initialization");
-    TEST_ASSERT_FALSE_MESSAGE(popup_handler.active, "Popup should be inactive after initialization");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(0, popup_handler.last_event_tick, "last_event_tick should be initialized to 0");
+    TEST_ASSERT_FALSE_MESSAGE(popup_api_is_active(&popup_handler), "Popup should be inactive after initialization");
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_SHARED_PARAMETER_ID_POWER, popup_handler.current_parameter, "current_parameter should be initialized to a default value");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("", popup_handler.value_buffer, "value_buffer should be initialized to an empty string");
 }
@@ -36,6 +52,13 @@ void test_popup_api_init_success(void) {
 void test_popup_api_init_null_pointer(void) {
     enum PopupReturnCode rc = popup_api_init(NULL);
     TEST_ASSERT_EQUAL(POPUP_RC_ERROR, rc);
+}
+
+void test_popup_api_init_fails_when_the_timeout_pool_is_full(void) {
+    timeout_id id = 0U;
+    while (timeout_api_create(1U, NULL, NULL, &id) == TIMEOUT_RC_OK) {
+    }
+    TEST_ASSERT_EQUAL(POPUP_RC_ERROR, popup_api_init(&popup_handler));
 }
 
 /*! \} */
@@ -46,56 +69,67 @@ void test_popup_api_init_null_pointer(void) {
  */
 
 void test_popup_api_show_success(void) {
-    enum PopupReturnCode rc = popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
+    enum PopupReturnCode rc = popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
 
     TEST_ASSERT_EQUAL_MESSAGE(POPUP_RC_OK, rc, "popup_api_show should return POPUP_RC_OK on successful update");
-    TEST_ASSERT_TRUE_MESSAGE(popup_handler.active, "Popup should be active after showing");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(50, popup_handler.last_event_tick, "last_event_tick should be updated to the provided tick");
+    TEST_ASSERT_TRUE_MESSAGE(popup_api_is_active(&popup_handler), "Popup should be active after showing");
     TEST_ASSERT_EQUAL_MESSAGE(INPUTS_SHARED_PARAMETER_ID_POWER, popup_handler.current_parameter, "current_parameter should be updated to the provided parameter ID");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("4", popup_handler.value_buffer, "value_buffer should be updated to the formatted parameter value");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("4", popup_handler.labels[0].text, "The first label should display the parameter value");
     TEST_ASSERT_EQUAL_STRING_MESSAGE("POWER", popup_handler.labels[1].text, "The second label should display the parameter name");
-    
 }
 
 void test_popup_api_show_same_parameter_keeps_name_box_clean(void) {
-    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
     popup_handler.boxes[0].updated = false;
     popup_handler.boxes[1].updated = false;
 
-    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5, 60);
+    prv_at(10U);
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5);
 
     TEST_ASSERT_TRUE_MESSAGE(popup_handler.boxes[0].updated, "the value box shows the new value");
     TEST_ASSERT_FALSE_MESSAGE(popup_handler.boxes[1].updated, "same parameter: the full-width name box must not be redrawn");
 }
 
 void test_popup_api_show_other_parameter_redraws_name_box(void) {
-    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
     popup_handler.boxes[1].updated = false;
 
-    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_REGEN, 2, 60);
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_REGEN, 2);
 
     TEST_ASSERT_TRUE(popup_handler.boxes[1].updated);
 }
 
-void test_popup_api_show_after_timeout_redraws_name_box(void) {
-    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
+void test_popup_api_show_after_dismiss_redraws_name_box(void) {
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
     popup_handler.boxes[1].updated = false;
     popup_api_dismiss(&popup_handler);
 
-    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5, 60);
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5);
 
     TEST_ASSERT_TRUE_MESSAGE(popup_handler.boxes[1].updated, "a popup that comes back is drawn whole");
 }
 
+void test_popup_api_show_after_timeout_redraws_name_box(void) {
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
+    prv_at(SCREEN_POPUP_TIMEOUT_MS);
+    popup_handler.boxes[1].updated = false;
+
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5);
+
+    TEST_ASSERT_TRUE_MESSAGE(popup_handler.boxes[1].updated, "an expired popup that comes back is drawn whole");
+    TEST_ASSERT_TRUE(popup_api_is_active(&popup_handler));
+}
+
 void test_popup_api_show_null_handler(void) {
-    enum PopupReturnCode rc = popup_api_show(NULL, INPUTS_SHARED_PARAMETER_ID_POWER, 4, 50);
+    enum PopupReturnCode rc = popup_api_show(NULL, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
     TEST_ASSERT_EQUAL(POPUP_RC_ERROR, rc);
 }
 
 void test_popup_api_show_invalid_parameter_id(void) {
-    enum PopupReturnCode rc = popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_COUNT, 4, 50);
+    enum PopupReturnCode rc = popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_COUNT, 4);
     TEST_ASSERT_EQUAL(POPUP_RC_ERROR, rc);
+    TEST_ASSERT_FALSE_MESSAGE(popup_api_is_active(&popup_handler), "A rejected change shows nothing");
 }
 
 /*! \} */
@@ -106,9 +140,9 @@ void test_popup_api_show_invalid_parameter_id(void) {
  */
 
 void test_popup_api_dismiss(void) {
-    popup_handler.active = true; // Simulate an active popup
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
     popup_api_dismiss(&popup_handler);
-    TEST_ASSERT_FALSE_MESSAGE(popup_handler.active, "Popup should be inactive after dismissal");
+    TEST_ASSERT_FALSE_MESSAGE(popup_api_is_active(&popup_handler), "Popup should be inactive after dismissal");
 }
 
 void test_popup_api_dismiss_null_handler(void) {
@@ -124,30 +158,36 @@ void test_popup_api_dismiss_null_handler(void) {
  * \{
  */
 
-void test_popup_api_is_active(void) {
-    popup_handler.active = true;
-    popup_handler.last_event_tick = 100;
+void test_popup_api_is_active_until_the_timeout(void) {
+    prv_at(100U);
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
 
-    TEST_ASSERT_TRUE_MESSAGE(popup_api_is_active(&popup_handler, 150), "Popup should be active within timeout");
+    prv_at(100U + SCREEN_POPUP_TIMEOUT_MS - 1U);
+    TEST_ASSERT_TRUE_MESSAGE(popup_api_is_active(&popup_handler), "Popup should be active within timeout");
 
-    TEST_ASSERT_FALSE_MESSAGE(popup_api_is_active(&popup_handler, 2651), "Popup should be inactive after timeout");
-    TEST_ASSERT_FALSE_MESSAGE(popup_handler.active, "Popup handler should be set to inactive after timeout");
+    prv_at(100U + SCREEN_POPUP_TIMEOUT_MS);
+    TEST_ASSERT_FALSE_MESSAGE(popup_api_is_active(&popup_handler), "Popup should be inactive exactly at the timeout");
 }
 
-void test_popup_api_is_active_event_stamped_after_now(void) {
-    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5, 105U);
-    TEST_ASSERT_TRUE_MESSAGE(popup_api_is_active(&popup_handler, 100U), "An event stamped a few ticks after 'now' just happened, it must not wrap to a huge elapsed time");
-    TEST_ASSERT_TRUE(popup_api_is_active(&popup_handler, 105U + SCREEN_POPUP_TIMEOUT_MS - 1U));
-    TEST_ASSERT_FALSE(popup_api_is_active(&popup_handler, 105U + SCREEN_POPUP_TIMEOUT_MS));
+void test_popup_api_is_active_new_change_restarts_the_timeout(void) {
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
+    prv_at(1000U);
+    popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5);
+
+    prv_at(SCREEN_POPUP_TIMEOUT_MS);
+    TEST_ASSERT_TRUE_MESSAGE(popup_api_is_active(&popup_handler), "The second change restarted the timeout");
+
+    prv_at(1000U + SCREEN_POPUP_TIMEOUT_MS);
+    TEST_ASSERT_FALSE(popup_api_is_active(&popup_handler));
 }
 
 void test_popup_api_is_active_null_handler(void) {
-    TEST_ASSERT_FALSE(popup_api_is_active(NULL, 100));
+    TEST_ASSERT_FALSE(popup_api_is_active(NULL));
 }
 
 void test_popup_api_is_active_inactive(void) {
-    popup_handler.active = false;
-    TEST_ASSERT_FALSE(popup_api_is_active(&popup_handler, 100));
+    prv_at(5000U);
+    TEST_ASSERT_FALSE_MESSAGE(popup_api_is_active(&popup_handler), "Never shown: time alone doesn't activate it");
 }
 
 /*! \} */
@@ -191,10 +231,12 @@ int main(void) {
 
     RUN_TEST(test_popup_api_init_success);
     RUN_TEST(test_popup_api_init_null_pointer);
+    RUN_TEST(test_popup_api_init_fails_when_the_timeout_pool_is_full);
 
     RUN_TEST(test_popup_api_show_success);
     RUN_TEST(test_popup_api_show_same_parameter_keeps_name_box_clean);
     RUN_TEST(test_popup_api_show_other_parameter_redraws_name_box);
+    RUN_TEST(test_popup_api_show_after_dismiss_redraws_name_box);
     RUN_TEST(test_popup_api_show_after_timeout_redraws_name_box);
     RUN_TEST(test_popup_api_show_null_handler);
     RUN_TEST(test_popup_api_show_invalid_parameter_id);
@@ -202,8 +244,8 @@ int main(void) {
     RUN_TEST(test_popup_api_dismiss);
     RUN_TEST(test_popup_api_dismiss_null_handler);
 
-    RUN_TEST(test_popup_api_is_active);
-    RUN_TEST(test_popup_api_is_active_event_stamped_after_now);
+    RUN_TEST(test_popup_api_is_active_until_the_timeout);
+    RUN_TEST(test_popup_api_is_active_new_change_restarts_the_timeout);
     RUN_TEST(test_popup_api_is_active_null_handler);
     RUN_TEST(test_popup_api_is_active_inactive);
 

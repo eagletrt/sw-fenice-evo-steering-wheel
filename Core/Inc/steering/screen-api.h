@@ -24,18 +24,13 @@
 /*!
  * \brief Handle a parameter change event by showing the popup overlay.
  *
- * \details Stamps \p tick as the start of the popup timeout and refreshes
- *     the popup labels. The raster interface swap is deferred to
- *     screen_update so that rendering stays out of the input-handling path.
- *
  * \param parameter_id The parameter that was changed.
  * \param value The new value of the parameter.
- * \param tick Time of the change in milliseconds (the popup timeout starts here).
  *
  * \retval SCREEN_RC_OK on success.
  * \retval SCREEN_RC_ERROR on failure.
  */
-enum ScreenReturnCode screen_api_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick);
+enum ScreenReturnCode screen_api_on_parameter_change(enum InputsSharedParameterID parameter_id, uint8_t value);
 
 /*!
  * \brief Initialize the screen interface.
@@ -65,16 +60,13 @@ enum ScreenReturnCode screen_api_set_accelerators(const struct ScreenAccelerator
 /*!
  * \brief Update the screen state, including popup visibility and raster interface.
  *
- * \details Checks whether the popup should still be active based on the current
- *     tick, and updates the raster interface accordingly.
- *
- * \param tick Current tick count in milliseconds, used for popup timeout checks.
+ * \details Checks whether the popup should still be active and updates the raster interface accordingly.
  *
  * \retval SCREEN_RC_OK if the screen was updated but nothing had to be redrawn.
  * \retval SCREEN_RC_RENDERED if the screen was updated and the raster redrew at least one box.
  * \retval SCREEN_RC_ERROR if an error occurred during update.
  */
-enum ScreenReturnCode screen_api_update(uint32_t tick);
+enum ScreenReturnCode screen_api_update(void);
 
 /*!
  * \brief Select the view the screen shows.

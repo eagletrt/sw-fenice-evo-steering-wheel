@@ -32,12 +32,13 @@ enum TimeoutReturnCode timeout_api_init(timeout_get_tick_callback get_tick);
  * \brief Take a slot of the pool, stopped.
  *
  * \param duration_ms Time from timeout_api_start to expiry.
- * \param on_expired Called once per start when the time is up.
+ * \param on_expired Called once per start when the time is up; NULL when
+ *     only timeout_api_is_running / timeout_api_has_expired are polled.
  * \param context Handed back to \p on_expired (may be NULL).
  * \param[out] id Identifier of the new timeout.
  *
  * \retval TIMEOUT_RC_OK on success.
- * \retval TIMEOUT_RC_NULL_POINTER if \p on_expired or \p id is NULL.
+ * \retval TIMEOUT_RC_NULL_POINTER if \p id is NULL.
  * \retval TIMEOUT_RC_FULL if TIMEOUT_MAX_COUNT timeouts already exist.
  * \retval TIMEOUT_RC_ERROR if libtimebase rejected the timeout.
  */
