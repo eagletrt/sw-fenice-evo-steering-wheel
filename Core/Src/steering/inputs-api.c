@@ -78,7 +78,7 @@ enum InputsReturnCode inputs_api_update_knob(const enum InputsSharedKnobID knob_
         return INPUTS_RC_OK;
     }
 
-    int16_t delta = current_position - knob->last_position;
+    int32_t delta = current_position - knob->last_position;
     knob->last_position = current_position;
 
     if (delta == 0 || inputs_handler.on_knob_rotation == NULL) {

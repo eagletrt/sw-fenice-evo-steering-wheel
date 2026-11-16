@@ -53,4 +53,4 @@ jobs:
 
       - name: Static Code Analysis
         if: github.ref == 'refs/heads/kraken'
-        run: pio check --src-filters="+<Core/Src/*>" --src-filters="+<Core/Inc/*>" --src-filters="-<Drivers/*>" || true
+        run: pio check
