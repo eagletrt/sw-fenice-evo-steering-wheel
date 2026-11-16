@@ -58,7 +58,7 @@ stateDiagram-v2
 | State | What happens | `SteeringWheelFsm.status` |
 |---|---|---|
 | `INIT` | power-on self test (once, before the first task), then the logo for 1 s | `INIT` |
-| `IDLE` | dashboard, inputs, CAN | `IDLE` |
+| `IDLE` | main page: driver dashboard, or the AS page while the ECU runs an autonomous mission (driver controls, PTT and TS-on ignored then) | `IDLE` |
 | `MENU` | menu page; knob and top buttons navigate, driver controls ignored | `IDLE` |
 | `DEBUG` | placeholder page; every driver control still works | `IDLE` |
 | `CALIBRATION` | placeholder page; top left goes back to the menu | `IDLE` |

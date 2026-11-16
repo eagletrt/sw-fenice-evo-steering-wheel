@@ -115,6 +115,10 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_rx(uint32_t tick_ms) {
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_inputs(uint32_t tick_ms) {
+    // D10, D14: driver controls, PTT and TS-on only while the car is in manual,
+    // refreshed right before the inputs are read.
+    const bool manual = (ui_data_api_get()->autonomous == 0U);
+    input_router_api_set_filter((struct InputRouterFilter){ .parameters = manual, .ptt = manual, .ts_on = manual });
     // Long presses and combo windows are timeouts, run by the scheduler routine.
     scheduler_handler.config.poll_inputs(tick_ms);
 }
@@ -173,6 +177,8 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_scheduler_api_show_mode(enum WheelFsmS
         case WHEEL_FSM_STATE_FLASH:
             return screen_api_set_view(SCREEN_VIEW_FLASH, flash_monitor_api_get_board_name());
         case WHEEL_FSM_STATE_IDLE:
+            // The main page follows the ECU: AS page during an autonomous mission (TODO(#12): Figma "Mission - EBS TEST").
+            return (ui_data_api_get()->autonomous != 0U) ? screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "AUTONOMOUS") : screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
         case WHEEL_FSM_STATE_ERROR:
         case WHEEL_FSM_STATE_COUNT:
         default:

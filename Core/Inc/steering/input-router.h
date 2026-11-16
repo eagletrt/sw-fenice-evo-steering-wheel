@@ -130,9 +130,10 @@ struct InputStateBindings {
 /*!
  * \brief Which groups of actions are allowed.
  *
- * \details All true at init (manual driving). TODO(#11): set from the
- *     driving context, parameters/PTT/TS-on false in an autonomous mission
- *     (D10).
+ * \details All true at init (manual driving). The scheduler's inputs task sets
+ *     them from the driving mode: all false while the ECU is in the AS branch
+ *     (D10, D14: what DEBUG binds is dropped too). TS-on has its own flag so
+ *     it can be re-allowed in autonomous alone.
  */
 struct InputRouterFilter {
     bool parameters; /*!< INPUT_ACTION_GROUP_PARAMETERS */

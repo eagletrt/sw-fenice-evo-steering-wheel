@@ -739,6 +739,24 @@ void test_scheduler_mission_opens_its_placeholder(void) {
     TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_MENU);
 }
 
+void test_scheduler_autonomous_mission_shows_the_as_page_and_ignores_the_driver(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_click_knob;
+    prv_init_skipping_the_logo(&config);
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_READY);
+    prv_run_until(100U);
+
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state(), "Autonomous is not a state: IDLE stays the main mode");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER, "IDLE shows the AS page");
+    TEST_ASSERT_EQUAL_STRING("AUTONOMOUS", screen_handler.placeholder.name.text);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER), "Knobs change nothing in an autonomous mission (D10)");
+
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE);
+    prv_run_until(200U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.view == SCREEN_VIEW_DRIVER, "Back to manual: the driver dashboard (under the knob's popup)");
+    TEST_ASSERT_TRUE_MESSAGE(parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER) > 0U, "and the knobs work again");
+}
+
 void test_scheduler_top_right_sends_driver_action_ok(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_hold_ok;
@@ -945,6 +963,7 @@ int main(void) {
     RUN_TEST(test_scheduler_menu_unlocks_with_the_ecu_idle_and_locks_when_it_goes_silent);
     RUN_TEST(test_scheduler_screen_saver_shows_the_logo_and_the_combo_opens_the_menu);
     RUN_TEST(test_scheduler_mission_opens_its_placeholder);
+    RUN_TEST(test_scheduler_autonomous_mission_shows_the_as_page_and_ignores_the_driver);
     RUN_TEST(test_scheduler_top_right_sends_driver_action_ok);
     RUN_TEST(test_scheduler_render_waits_while_the_last_frame_is_in_flight);
     RUN_TEST(test_scheduler_frame_stuck_in_flight_goes_to_error);

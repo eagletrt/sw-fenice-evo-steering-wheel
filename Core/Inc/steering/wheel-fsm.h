@@ -36,12 +36,12 @@ enum WheelFsmReturnCode {
 /*!
  * \brief States of the wheel, in libfsm id order.
  *
- * \details Manual vs autonomous is not a state: it will be a driving context
- *     inside IDLE, taken from the mission the ECU reports.
+ * \details Manual vs autonomous is not a state: IDLE shows the driver
+ *     dashboard or the AS page depending on what the ECU reports (A1, D5).
  */
 enum WheelFsmState : uint8_t {
     WHEEL_FSM_STATE_INIT,         /*!< Power-on self test, then the boot logo */
-    WHEEL_FSM_STATE_IDLE,         /*!< Normal operation: dashboard, inputs, CAN */
+    WHEEL_FSM_STATE_IDLE,         /*!< Main page (driver dashboard or AS page), inputs, CAN */
     WHEEL_FSM_STATE_MENU,         /*!< Menu page */
     WHEEL_FSM_STATE_DEBUG,        /*!< Debug pages, driver controls still active */
     WHEEL_FSM_STATE_CALIBRATION,  /*!< Sensor calibrations */

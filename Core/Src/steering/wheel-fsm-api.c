@@ -62,13 +62,53 @@ EAGLETRT_STATIC void prv_wheel_fsm_api_do_init(void *data) {
 }
 
 /*!
- * \brief IDLE, MENU, DEBUG, CALIBRATION, SCREEN_SAVER: only follow the flash monitor.
+ * \brief IDLE: the main page (driver dashboard, or the AS page during an autonomous mission).
  *
- * \details Moving between these modes is requested from outside (inputs).
+ * \details Only follows the flash monitor; the menu combo leads to MENU.
  *
  * \param data The WheelFsmConfig of the handler (unused).
  */
-EAGLETRT_STATIC void prv_wheel_fsm_api_do_mode(void *data) {
+EAGLETRT_STATIC void prv_wheel_fsm_api_do_idle(void *data) {
+    EAGLETRT_API_UNUSED(data);
+    EAGLETRT_API_UNUSED(prv_wheel_fsm_api_follow_flash());
+}
+
+/*!
+ * \brief MENU: only follows the flash monitor; the inputs choose where to go.
+ *
+ * \param data The WheelFsmConfig of the handler (unused).
+ */
+EAGLETRT_STATIC void prv_wheel_fsm_api_do_menu(void *data) {
+    EAGLETRT_API_UNUSED(data);
+    EAGLETRT_API_UNUSED(prv_wheel_fsm_api_follow_flash());
+}
+
+/*!
+ * \brief DEBUG: only follows the flash monitor; the menu combo leads back to MENU.
+ *
+ * \param data The WheelFsmConfig of the handler (unused).
+ */
+EAGLETRT_STATIC void prv_wheel_fsm_api_do_debug(void *data) {
+    EAGLETRT_API_UNUSED(data);
+    EAGLETRT_API_UNUSED(prv_wheel_fsm_api_follow_flash());
+}
+
+/*!
+ * \brief CALIBRATION: only follows the flash monitor; BACK leads back to MENU.
+ *
+ * \param data The WheelFsmConfig of the handler (unused).
+ */
+EAGLETRT_STATIC void prv_wheel_fsm_api_do_calibration(void *data) {
+    EAGLETRT_API_UNUSED(data);
+    EAGLETRT_API_UNUSED(prv_wheel_fsm_api_follow_flash());
+}
+
+/*!
+ * \brief SCREEN_SAVER: only follows the flash monitor; the menu combo leads back to MENU.
+ *
+ * \param data The WheelFsmConfig of the handler (unused).
+ */
+EAGLETRT_STATIC void prv_wheel_fsm_api_do_screen_saver(void *data) {
     EAGLETRT_API_UNUSED(data);
     EAGLETRT_API_UNUSED(prv_wheel_fsm_api_follow_flash());
 }
@@ -141,10 +181,19 @@ EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_menu_transitions[] = {
     WHEEL_FSM_TO_ERROR,
 };
 
-/*!
- * \brief DEBUG, CALIBRATION and SCREEN_SAVER all go back through the menu.
- */
-EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_page_transitions[] = {
+EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_debug_transitions[] = {
+    { WHEEL_FSM_STATE_MENU, NULL },
+    WHEEL_FSM_TO_FLASH,
+    WHEEL_FSM_TO_ERROR,
+};
+
+EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_calibration_transitions[] = {
+    { WHEEL_FSM_STATE_MENU, NULL },
+    WHEEL_FSM_TO_FLASH,
+    WHEEL_FSM_TO_ERROR,
+};
+
+EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_screen_saver_transitions[] = {
     { WHEEL_FSM_STATE_MENU, NULL },
     WHEEL_FSM_TO_FLASH,
     WHEEL_FSM_TO_ERROR,
@@ -173,11 +222,11 @@ EAGLETRT_STATIC const struct Transition prv_wheel_fsm_api_flash_transitions[] = 
  */
 EAGLETRT_STATIC const struct State prv_wheel_fsm_api_states[WHEEL_FSM_STATE_COUNT] = {
     WHEEL_FSM_STATE(WHEEL_FSM_STATE_INIT, prv_wheel_fsm_api_do_init, prv_wheel_fsm_api_init_transitions),
-    WHEEL_FSM_STATE(WHEEL_FSM_STATE_IDLE, prv_wheel_fsm_api_do_mode, prv_wheel_fsm_api_idle_transitions),
-    WHEEL_FSM_STATE(WHEEL_FSM_STATE_MENU, prv_wheel_fsm_api_do_mode, prv_wheel_fsm_api_menu_transitions),
-    WHEEL_FSM_STATE(WHEEL_FSM_STATE_DEBUG, prv_wheel_fsm_api_do_mode, prv_wheel_fsm_api_page_transitions),
-    WHEEL_FSM_STATE(WHEEL_FSM_STATE_CALIBRATION, prv_wheel_fsm_api_do_mode, prv_wheel_fsm_api_page_transitions),
-    WHEEL_FSM_STATE(WHEEL_FSM_STATE_SCREEN_SAVER, prv_wheel_fsm_api_do_mode, prv_wheel_fsm_api_page_transitions),
+    WHEEL_FSM_STATE(WHEEL_FSM_STATE_IDLE, prv_wheel_fsm_api_do_idle, prv_wheel_fsm_api_idle_transitions),
+    WHEEL_FSM_STATE(WHEEL_FSM_STATE_MENU, prv_wheel_fsm_api_do_menu, prv_wheel_fsm_api_menu_transitions),
+    WHEEL_FSM_STATE(WHEEL_FSM_STATE_DEBUG, prv_wheel_fsm_api_do_debug, prv_wheel_fsm_api_debug_transitions),
+    WHEEL_FSM_STATE(WHEEL_FSM_STATE_CALIBRATION, prv_wheel_fsm_api_do_calibration, prv_wheel_fsm_api_calibration_transitions),
+    WHEEL_FSM_STATE(WHEEL_FSM_STATE_SCREEN_SAVER, prv_wheel_fsm_api_do_screen_saver, prv_wheel_fsm_api_screen_saver_transitions),
     WHEEL_FSM_STATE(WHEEL_FSM_STATE_FLASH, prv_wheel_fsm_api_do_flash, prv_wheel_fsm_api_flash_transitions),
     [WHEEL_FSM_STATE_ERROR] = { WHEEL_FSM_STATE_ERROR, prv_wheel_fsm_api_do_error, WHEEL_FSM_STATE_ERROR, NULL, 0U },
 };

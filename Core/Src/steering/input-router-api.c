@@ -107,6 +107,8 @@ EAGLETRT_STATIC const struct InputButtonBinding prv_input_router_api_back_button
  *
  * \details INIT, FLASH and ERROR bind nothing: inputs are ignored there
  *     (FLASH also pauses the inputs task); releases still let go of holds.
+ *     During an autonomous mission the filter drops driver controls, PTT
+ *     and TS-on in IDLE and DEBUG (D10, D14).
  *     DEBUG keeps every driver control (D11), the menu combo leads back to
  *     the menu (TODO(#13): page cycling). SCREEN_SAVER only knows the menu
  *     combo (D51).

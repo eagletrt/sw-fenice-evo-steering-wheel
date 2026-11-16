@@ -58,6 +58,7 @@ struct UIData {
 
     /* Vehicle state shown in the center-top box. */
     uint8_t vehicle_state; /*!< UIDataVehicleState as a uint8_t to keep the layout packed */
+    uint8_t autonomous;    /*!< 1 while EcuFsm reports a state of the AS branch (AS_EMERGENCY included) */
 
     /* High-voltage pack. */
     uint8_t soc;     /*!< State of charge, 0..100 */

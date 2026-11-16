@@ -49,6 +49,26 @@ static_assert(sizeof(prv_router_api_primary_filters) / sizeof(prv_router_api_pri
 #define CAN_COMMUNICATIONS_ROUTER_SOC_PERCENT (100.0F)
 
 /*!
+ * \brief Whether an EcuFsm vehicle status belongs to the AS branch (the wheel shows the AS page).
+ *
+ * \details Not taken from prv_router_api_map_vehicle_state: AS_EMERGENCY maps
+ *     to the generic ERROR there, but the car is still running its AS mission.
+ */
+EAGLETRT_STATIC bool prv_router_api_is_autonomous(uint8_t vehicle_status) {
+    switch ((enum CanPrimaryEcufsmVehiclestatus)vehicle_status) {
+        case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_ASOFF:
+        case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_READY:
+        case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_R2D:
+        case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_DRIVING:
+        case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_FINISHED:
+        case CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_EMERGENCY:
+            return true;
+        default:
+            return false;
+    }
+}
+
+/*!
  * \brief EcuFsm silence after which the ECU state is unknown again: three missed frames (A4).
  */
 #define CAN_COMMUNICATIONS_ROUTER_ECU_STALE_MS (3U * (uint32_t)can_primary_cycle_time_ecufsm)
@@ -66,6 +86,7 @@ EAGLETRT_STATIC timeout_id prv_router_api_ecu_timeout;
 EAGLETRT_STATIC void prv_router_api_on_ecu_stale(void *context) {
     EAGLETRT_API_UNUSED(context);
     ui_data_api_get()->vehicle_state = (uint8_t)UI_DATA_VEHICLE_STATE_COUNT;
+    ui_data_api_get()->autonomous = 0U; // D20: an unknown ECU counts as manual (TODO(#11))
 }
 
 enum CanCommunicationReturnCode can_communications_router_api_init(void) {
@@ -254,6 +275,7 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
     switch ((enum CanPrimaryMessageFrameId)frame->id) {
         case CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM:
             ui_data->vehicle_state = (uint8_t)prv_router_api_map_vehicle_state(decoded.ecufsm.vehiclestatus);
+            ui_data->autonomous = prv_router_api_is_autonomous(decoded.ecufsm.vehiclestatus) ? 1U : 0U;
             EAGLETRT_API_UNUSED(timeout_api_start(prv_router_api_ecu_timeout));
             break;
 
