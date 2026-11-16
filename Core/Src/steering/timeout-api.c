@@ -72,7 +72,7 @@ enum TimeoutReturnCode timeout_api_init(timeout_get_tick_callback get_tick) {
 }
 
 enum TimeoutReturnCode timeout_api_create(uint32_t duration_ms, timeout_expired_callback on_expired, void *context, timeout_id *id) {
-    if (on_expired == NULL || id == NULL) {
+    if (id == NULL) {
         return TIMEOUT_RC_NULL_POINTER;
     }
     if (timeout_handler.count >= TIMEOUT_MAX_COUNT) {
@@ -137,7 +137,9 @@ enum TimeoutReturnCode timeout_api_routine(void) {
             continue;
         }
         slot->notified = true;
-        slot->on_expired(slot->context);
+        if (slot->on_expired != NULL) {
+            slot->on_expired(slot->context);
+        }
     }
     return TIMEOUT_RC_OK;
 }

@@ -16,12 +16,13 @@
  * \brief Initialize the popup interface.
  *
  * \details Populates the popup boxes and labels with default values.
- *     The popup starts in the inactive state.
+ *     The popup starts in the inactive state. Takes POPUP_TIMEOUT_COUNT
+ *     timeouts from the pool (timeout_api_init first, call once).
  *
  * \param handler Pointer to the popup handler to initialize.
  *
  * \retval POPUP_RC_OK if initialization was successful.
- * \retval POPUP_RC_ERROR if \p handler is NULL.
+ * \retval POPUP_RC_ERROR if \p handler is NULL or the timeout pool is full.
  */
 enum PopupReturnCode popup_api_init(struct PopupHandler *handler);
 
@@ -31,12 +32,11 @@ enum PopupReturnCode popup_api_init(struct PopupHandler *handler);
  * \param handler Pointer to the popup handler.
  * \param parameter_id The parameter that was changed.
  * \param value The new value of the parameter.
- * \param tick Current tick count in milliseconds, used as the timeout reference.
  *
  * \retval POPUP_RC_OK if the popup was updated successfully.
  * \retval POPUP_RC_ERROR if the arguments are invalid.
  */
-enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value, uint32_t tick);
+enum PopupReturnCode popup_api_show(struct PopupHandler *handler, enum InputsSharedParameterID parameter_id, uint8_t value);
 
 /*!
  * \brief Deactivate the popup regardless of its current state.
@@ -52,10 +52,9 @@ void popup_api_dismiss(struct PopupHandler *handler);
  *     have elapsed since the last parameter change.
  *
  * \param handler Pointer to the popup handler.
- * \param tick Current tick count in milliseconds.
  *
  * \return true if the popup is active, false otherwise.
  */
-bool popup_api_is_active(struct PopupHandler *handler, uint32_t tick);
+bool popup_api_is_active(struct PopupHandler *handler);
 
 #endif // POPUP_API_H
