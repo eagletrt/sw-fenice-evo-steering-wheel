@@ -19,12 +19,13 @@
  *       z/x  manettino FRONT_CENTER (TORQUE VECTORING) -/+
  *       e    button BOTTOM_LEFT  (TELEMETRY LOG toggle)
  *       d    button BOTTOM_RIGHT (LAUNCH CONTROL toggle)
- *       r/f  buttons TOP_LEFT / TOP_RIGHT: driver actions REPEAT / OK (hold);
- *            both together, held 1 s: menu combo (logged)
+ *       r/f  buttons TOP_LEFT / TOP_RIGHT: driver actions REPEAT / OK (hold),
+ *            BACK / SELECT in the menu; both together, held 1 s: menu combo
+ *       z/x  center manettino, also the menu cursor
  *       c/v  paddles TOP_LEFT / TOP_RIGHT (PTT, hold)
  *       b/n  paddles BOTTOM_LEFT / BOTTOM_RIGHT (no function yet)
  *       t    TS-on button (hold)
- *       1    inject EcuFsm with the next vehicle status
+ *       1    next vehicle status of the simulated ECU (EcuFsm every 200 ms)
  *       2    inject one step of telemetry (SoC, temperatures, laps)
  *       p    toggle a continuous telemetry feed
  *       3    toggle flashing traffic of another board (FLASH page, wheel muted)
@@ -614,6 +615,7 @@ int main(int argc, char **argv) {
 
     uint32_t last_frame_ms = 0U;
     uint32_t last_feed_ms = 0U;
+    uint32_t last_ecu_ms = 0U;
     uint32_t last_flash_ms = 0U;
     uint32_t last_replay_ms = simulator_get_tick();
     while (tigrClosed(window) == 0) {
@@ -632,6 +634,11 @@ int main(int argc, char **argv) {
                 replay_step++;
             }
             replay_ecu_phase = !replay_ecu_phase;
+        }
+        // A live ECU repeats EcuFsm: the wheel treats silence as an unknown state.
+        if ((now - last_ecu_ms) >= (uint32_t)can_primary_cycle_time_ecufsm) {
+            last_ecu_ms = now;
+            simulator_inject_ecu_status();
         }
         if (simulator_feed_enabled && (now - last_feed_ms) >= SIMULATOR_FEED_PERIOD_MS) {
             last_feed_ms = now;

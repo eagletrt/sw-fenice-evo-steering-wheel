@@ -62,6 +62,13 @@ void setUp(void) {
     memset(ui_data_api_get(), 0, sizeof(struct UIData));
     TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_init(prv_get_tick));
     TEST_ASSERT_EQUAL(FLASH_MONITOR_RC_OK, flash_monitor_api_init(fake_reset));
+    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, can_communications_router_api_init());
+}
+
+static void prv_receive_ecu(uint8_t vehicle_status) {
+    union CanPrimaryMessages message = { 0 };
+    message.ecufsm.vehiclestatus = vehicle_status;
+    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM, &message));
 }
 
 void tearDown(void) {}
@@ -182,6 +189,31 @@ void test_can_router_get_filters_rejects_null_count(void) {
 
 /*! \} */
 
+void test_can_router_autonomous_follows_the_as_branch(void) {
+    const uint8_t as_branch[] = { CAN_PRIMARY_ECUFSM_VEHICLESTATUS_ASOFF, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_READY, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_R2D, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_DRIVING, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_FINISHED, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_EMERGENCY };
+    const uint8_t manual[] = { CAN_PRIMARY_ECUFSM_VEHICLESTATUS_INIT, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_PRECHARGE, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_TSON, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_R2D, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_DISCHARGE, CAN_PRIMARY_ECUFSM_VEHICLESTATUS_ERROR };
+    for (size_t i = 0U; i < sizeof(as_branch); i++) {
+        prv_receive_ecu(as_branch[i]);
+        TEST_ASSERT_EQUAL_UINT8_MESSAGE(1U, ui_data_api_get()->autonomous, "AS branch, AS_EMERGENCY included: the AS page stays");
+    }
+    for (size_t i = 0U; i < sizeof(manual); i++) {
+        prv_receive_ecu(manual[i]);
+        TEST_ASSERT_EQUAL_UINT8(0U, ui_data_api_get()->autonomous);
+    }
+}
+
+void test_can_router_silent_ecu_becomes_unknown_and_manual(void) {
+    prv_receive_ecu(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_READY);
+    prv_now = 3U * (uint32_t)can_primary_cycle_time_ecufsm - 1U;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
+    TEST_ASSERT_EQUAL_UINT8(UI_DATA_VEHICLE_STATE_AUTONOMOUS, ui_data_api_get()->vehicle_state);
+
+    prv_now++;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(UI_DATA_VEHICLE_STATE_COUNT, ui_data_api_get()->vehicle_state, "Three missed EcuFsm: unknown (A4)");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, ui_data_api_get()->autonomous, "Unknown counts as manual (D20)");
+}
+
 int main(void) {
     UNITY_BEGIN();
 
@@ -199,6 +231,9 @@ int main(void) {
     RUN_TEST(test_can_router_rejects_everything_else);
     RUN_TEST(test_can_router_secondary_accepts_nothing);
     RUN_TEST(test_can_router_get_filters_rejects_null_count);
+
+    RUN_TEST(test_can_router_autonomous_follows_the_as_branch);
+    RUN_TEST(test_can_router_silent_ecu_becomes_unknown_and_manual);
 
     return UNITY_END();
 }

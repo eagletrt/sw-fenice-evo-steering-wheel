@@ -404,18 +404,19 @@ void test_input_events_combo_held_button_can_join_a_new_combo_only_after_release
 }
 
 void test_input_events_only_active_combos_are_recognised(void) {
-    prv_press(INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_LEFT);
-    prv_press(INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_RIGHT);
-    TEST_ASSERT_EQUAL_MESSAGE(2U, prv_count(INPUT_EVENT_SOURCE_BUTTON, INPUT_EVENT_TYPE_PRESS), "Wake is not active: plain buttons");
+    prv_active = 0U;
+    prv_press(TEST_COMBO_FIRST);
+    prv_press(TEST_COMBO_SECOND);
+    TEST_ASSERT_EQUAL_MESSAGE(2U, prv_count(INPUT_EVENT_SOURCE_BUTTON, INPUT_EVENT_TYPE_PRESS), "Menu is not active: plain buttons, right away");
 
     TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_init(prv_get_tick));
     TEST_ASSERT_EQUAL(INPUT_EVENTS_RC_OK, input_events_api_init(fake_sink, prv_active_combos));
     prv_event_count = 0U;
-    prv_active = INPUT_EVENTS_COMBO_BIT(INPUT_EVENTS_COMBO_WAKE);
-    prv_press(INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_LEFT);
-    prv_press(INPUTS_SHARED_BUTTON_ID_PADDLE_BOTTOM_RIGHT);
+    prv_active = INPUT_EVENTS_COMBO_BIT(INPUT_EVENTS_COMBO_MENU);
+    prv_press(TEST_COMBO_FIRST);
+    prv_press(TEST_COMBO_SECOND);
     TEST_ASSERT_EQUAL(1U, prv_event_count);
-    prv_expect(0U, INPUT_EVENT_SOURCE_COMBO, INPUT_EVENT_TYPE_PRESS, INPUT_EVENTS_COMBO_WAKE, prv_now);
+    prv_expect(0U, INPUT_EVENT_SOURCE_COMBO, INPUT_EVENT_TYPE_PRESS, INPUT_EVENTS_COMBO_MENU, prv_now);
 }
 
 /*! \} */

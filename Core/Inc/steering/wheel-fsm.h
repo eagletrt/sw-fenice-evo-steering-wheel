@@ -17,6 +17,9 @@
 
 #include "eagletrt-fsm.h"
 #include "post.h"
+#include "timeout.h"
+
+#include <stdbool.h>
 
 #include <stdint.h>
 
@@ -33,16 +36,23 @@ enum WheelFsmReturnCode {
 /*!
  * \brief States of the wheel, in libfsm id order.
  *
- * \details Manual vs autonomous is not a state: it will be a driving context
- *     inside RUN, taken from the mission the ECU reports.
+ * \details Manual vs autonomous is not a state: IDLE shows the driver
+ *     dashboard or the AS page depending on what the ECU reports (A1, D5).
  */
 enum WheelFsmState : uint8_t {
-    WHEEL_FSM_STATE_INIT,  /*!< Power-on self test */
-    WHEEL_FSM_STATE_IDLE,  /*!< Normal operation: dashboard, inputs, CAN */
-    WHEEL_FSM_STATE_FLASH, /*!< Another board is being flashed: only the FSM status goes on the bus */
-    WHEEL_FSM_STATE_ERROR, /*!< Unrecoverable error, terminal */
+    WHEEL_FSM_STATE_INIT,         /*!< Power-on self test, then the boot logo */
+    WHEEL_FSM_STATE_IDLE,         /*!< Main page (driver dashboard or AS page), inputs, CAN */
+    WHEEL_FSM_STATE_MENU,         /*!< Menu page */
+    WHEEL_FSM_STATE_DEBUG,        /*!< Debug pages, driver controls still active */
+    WHEEL_FSM_STATE_CALIBRATION,  /*!< Sensor calibrations */
+    WHEEL_FSM_STATE_SCREEN_SAVER, /*!< Logo only, every input ignored but the menu combo */
+    WHEEL_FSM_STATE_FLASH,        /*!< Another board is being flashed: only the FSM status goes on the bus */
+    WHEEL_FSM_STATE_ERROR,        /*!< Unrecoverable error, terminal */
     WHEEL_FSM_STATE_COUNT,
 };
+
+#define WHEEL_FSM_BOOT_LOGO_MS (1000U) /*!< Boot logo time after the POST (D13: at least 500 ms) */
+#define WHEEL_FSM_TIMEOUT_COUNT (1U)   /*!< Timeouts the FSM takes from the pool (the boot logo) */
 
 /*!
  * \brief Switch the rest of the wheel into or out of a mode (e.g. pause its tasks).
@@ -54,16 +64,19 @@ typedef void (*wheel_fsm_mode_callback)(void);
  */
 struct WheelFsmConfig {
     struct PostInitData *post;           /*!< Required: handed to the POST by INIT, must outlive the FSM */
-    wheel_fsm_mode_callback enter_flash; /*!< Required: IDLE -> FLASH, silence everything but the FSM status */
-    wheel_fsm_mode_callback leave_flash; /*!< Required: FLASH -> IDLE, undo enter_flash */
+    wheel_fsm_mode_callback enter_flash; /*!< Required: any mode -> FLASH, silence everything but the FSM status */
+    wheel_fsm_mode_callback leave_flash; /*!< Required: FLASH -> the interrupted mode, undo enter_flash */
 };
 
 /*!
  * \brief File-static state of the wheel FSM.
  */
 struct WheelFsmHandler {
-    struct FSMHandler fsm;        /*!< libfsm instance */
-    struct WheelFsmConfig config; /*!< Copy of the configuration, passed to every state function */
+    struct FSMHandler fsm;          /*!< libfsm instance */
+    struct WheelFsmConfig config;   /*!< Copy of the configuration, passed to every state function */
+    enum WheelFsmState interrupted; /*!< Mode FLASH returns to (libfsm has no history) */
+    bool post_done;                 /*!< INIT already ran the POST: now it only waits for the logo */
+    timeout_id boot_logo;           /*!< Boot logo time, started after the POST */
 };
 
 #endif // WHEEL_FSM_H

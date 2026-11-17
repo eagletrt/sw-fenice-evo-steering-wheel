@@ -36,6 +36,8 @@
  */
 #define CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (10U)
 
+#define CAN_COMMUNICATIONS_ROUTER_TIMEOUT_COUNT (1U) /*!< Timeouts the router takes from the pool (EcuFsm staleness) */
+
 /*!
  * \brief A range of standard identifiers the FDCAN lets through (one filter element).
  */
@@ -138,5 +140,13 @@ const struct CanCommunicationsRouterFilter *can_communications_router_api_get_fi
  * \return true if one of the network's filter entries covers \p id.
  */
 bool can_communications_router_api_accepts(enum CanCommunicationNetwork network, uint32_t id);
+
+/*!
+ * \brief Take the router's timeouts from the pool (timeout_api_init first).
+ *
+ * \retval CAN_COMMUNICATION_RC_OK on success.
+ * \retval CAN_COMMUNICATION_RC_ERROR if the pool is full.
+ */
+enum CanCommunicationReturnCode can_communications_router_api_init(void);
 
 #endif // CAN_COMMUNICATIONS_ROUTER_API_H

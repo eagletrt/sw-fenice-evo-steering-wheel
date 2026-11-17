@@ -152,7 +152,6 @@ struct SchedulerHandler {
     struct SchedulerTaskStats stats[SCHEDULER_TASK_COUNT]; /*!< Per-task timing */
     uint16_t dropped_at_last_log;                          /*!< libtimebase dropped-runs counter at the previous stats log */
     timeout_id render_stall_timeout;                       /*!< Runs while the last frame is in flight */
-    bool menu_placeholder;                                 /*!< Menu combo toggled the "MENU" placeholder view (TODO(#9)) */
 };
 
 #endif // SCHEDULER_H

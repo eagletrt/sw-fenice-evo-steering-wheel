@@ -27,26 +27,42 @@ The wheel FSM is a libfsm-sw table in `wheel-fsm-api.c`, run every 5 ms by the s
 task. Any task can request a transition with `wheel_fsm_api_request`; it is applied at the end of
 the next FSM step. A requested `ERROR` can't be replaced by a later request.
 
-FLASH follows `flash-monitor-api.c`: every `<Board>FlashingTx/Rx` frame of another board restarts a 500 ms timeout. While it runs, IDLE moves to FLASH; once it
-expires, FLASH goes back to IDLE. The wheel's own pair (`0x6E`/`0x6F`) resets it into its bootloader
+FLASH follows `flash-monitor-api.c`: every `<Board>FlashingTx/Rx` frame of another board restarts a
+500 ms timeout. While it runs, every mode but ERROR moves to FLASH; once it expires, FLASH goes back
+to the mode it interrupted. The wheel's own pair (`0x6E`/`0x6F`) resets it into its bootloader
 instead, right away and in every state (ERROR included, so a wheel in ERROR can still be reflashed).
 Board names are in the table at the top of `flash-monitor-api.c`.
+
+The modes are moved by the inputs (`input-router-api.c` binds each state, `prv_scheduler_api_on_request`
+turns the requests into transitions): the menu combo (top left + top right held 1 s) opens the menu
+from IDLE, DEBUG and the screen saver; in the menu the center knob moves, top right selects and top
+left goes back. MISSION, CALIBRATIONS and SCREEN SAVER are locked unless `EcuFsm` reports IDLE (an
+ECU silent for 600 ms counts as unknown, so locked).
 
 ```mermaid
 stateDiagram-v2
     [*] --> INIT
-    INIT --> IDLE: POST ok
-    INIT --> ERROR: POST failed
-    IDLE --> FLASH: another board is being flashed
-    IDLE --> ERROR: fatal error
-    FLASH --> IDLE: flashing over
-    FLASH --> ERROR: fatal error
+    INIT --> IDLE: POST ok + 1 s of logo
+    IDLE --> MENU: menu combo
+    MENU --> IDLE: EXIT / back
+    MENU --> DEBUG: DEBUG INFO
+    MENU --> CALIBRATION: CALIBRATIONS
+    MENU --> SCREEN_SAVER: SCREEN SAVER
+    DEBUG --> MENU: menu combo
+    CALIBRATION --> MENU: back
+    SCREEN_SAVER --> MENU: menu combo
+    note right of FLASH: reached from every mode but ERROR,\nreturns to the mode it interrupted
+    note right of ERROR: reached from every state (POST failed, fatal error), terminal
 ```
 
 | State | What happens | `SteeringWheelFsm.status` |
 |---|---|---|
-| `INIT` | power-on self test (runs once, before the first task) | `INIT` |
-| `IDLE` | dashboard, inputs, CAN | `IDLE` |
+| `INIT` | power-on self test (once, before the first task), then the logo for 1 s | `INIT` |
+| `IDLE` | main page: driver dashboard, or the AS page while the ECU runs an autonomous mission (driver controls, PTT and TS-on ignored then) | `IDLE` |
+| `MENU` | menu page; knob and top buttons navigate, driver controls ignored | `IDLE` |
+| `DEBUG` | placeholder page; every driver control still works | `IDLE` |
+| `CALIBRATION` | placeholder page; top left goes back to the menu | `IDLE` |
+| `SCREEN_SAVER` | logo only; every input ignored but the menu combo | `IDLE` |
 | `FLASH` | another board is being flashed: logo, "FLASHING" and the board's name on screen; inputs ignored; `SteeringWheelFsm` is the only frame the wheel sends | `FLASH` |
 | `ERROR` | terminal: the last frame stays on screen, CAN keeps reporting the state | `ERROR` |
 
@@ -82,8 +98,9 @@ Raw inputs (button edges, knob steps) go through two layers before they change a
 `IDLE` today: manettini step power / regen / torque vectoring; bottom buttons toggle telemetry log
 and launch control; top paddles hold PTT; TS-on held while pressed; **top right = driver action
 OK, top left = REPEAT** (1 while held, `DriverAction` on every change); menu combo (both top
-buttons, placeholder) held 1 s requests the menu (only logged until the menu exists). `INIT`,
-`FLASH` and `ERROR` bind nothing.
+buttons) held 1 s opens the menu. `MENU`: center manettino moves, top right selects, top left goes
+back. `DEBUG` binds what `IDLE` does; `CALIBRATION` only top left (back); `SCREEN_SAVER` only the
+menu combo. `INIT`, `FLASH` and `ERROR` bind nothing.
 
 ### Rendering
 
@@ -131,13 +148,13 @@ content changes) and CAN frames can be injected:
 
 | Key | Action |
 |---|---|
-| `q`/`w`, `a`/`s`, `z`/`x` | manettini (power, regen, torque vectoring) −/+ |
+| `q`/`w`, `a`/`s`, `z`/`x` | manettini (power, regen, torque vectoring) −/+; `z`/`x` also move the menu cursor |
 | `e`, `d` | telemetry log, launch control buttons |
 | `c`, `v` (hold) | PTT paddles |
 | `t` (hold) | TS-on |
-| `r`, `f` (hold) | top buttons: REPEAT / OK driver actions; both together, held 1 s: menu combo (logged) |
+| `r`, `f` (hold) | top buttons: REPEAT / OK driver actions, BACK / SELECT in the menu; both together, held 1 s: menu combo |
 | `b`, `n` | bottom paddles (no function yet) |
-| `1` | inject `EcuFsm` with the next vehicle status |
+| `1` | next vehicle status of the simulated ECU (it sends `EcuFsm` every 200 ms; only IDLE unlocks the menu) |
 | `2` | inject one step of telemetry (SoC, temperatures, laps) |
 | `p` | toggle a continuous telemetry feed |
 | `3` | toggle flashing traffic of another board (FLASH page, wheel muted) |

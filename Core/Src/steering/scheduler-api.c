@@ -29,7 +29,7 @@
 #include <string.h>
 
 static_assert(SCHEDULER_TASK_COUNT <= TASKS_MAX_COUNT, "libtimebase cannot hold every scheduler task");
-static_assert(FLASH_MONITOR_TIMEOUT_COUNT + INPUT_EVENTS_TIMEOUT_COUNT + POPUP_TIMEOUT_COUNT + SCHEDULER_TIMEOUT_COUNT <= TIMEOUT_MAX_COUNT, "the timeout pool cannot hold every timeout");
+static_assert(FLASH_MONITOR_TIMEOUT_COUNT + INPUT_EVENTS_TIMEOUT_COUNT + POPUP_TIMEOUT_COUNT + WHEEL_FSM_TIMEOUT_COUNT + CAN_COMMUNICATIONS_ROUTER_TIMEOUT_COUNT + SCHEDULER_TIMEOUT_COUNT <= TIMEOUT_MAX_COUNT, "the timeout pool cannot hold every timeout");
 
 /*!
  * \brief Body of a task, called with the tick of the current routine call.
@@ -49,6 +49,11 @@ EAGLETRT_STATIC struct SchedulerHandler scheduler_handler;
 
 /*!
  * \brief Mirror a parameter transition into the UI snapshot.
+ *
+ * \details TODO: the ECU is the source of truth for the control
+ *     maps (power, regen, torque vectoring, launch control): the dashboard
+ *     must show what the ECU reports (libcan message still to add), not what
+ *     the wheel set. PTT stays local.
  *
  * \param parameter_id Parameter that changed.
  * \param value New value of the parameter.
@@ -115,6 +120,10 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_rx(uint32_t tick_ms) {
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_inputs(uint32_t tick_ms) {
+    // D10, D14: driver controls, PTT and TS-on only while the car is in manual,
+    // refreshed right before the inputs are read.
+    const bool manual = (ui_data_api_get()->autonomous == 0U);
+    input_router_api_set_filter((struct InputRouterFilter){ .parameters = manual, .ptt = manual, .ts_on = manual });
     // Long presses and combo windows are timeouts, run by the scheduler routine.
     scheduler_handler.config.poll_inputs(tick_ms);
 }
@@ -151,25 +160,46 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_tx(uint32_t tick_ms) {
     EAGLETRT_API_UNUSED(can_communications_api_process_tx(CAN_COMMUNICATION_NETWORK_SECONDARY));
 }
 
+/*!
+ * \brief Select the view of a mode.
+ *
+ * \param state The mode.
+ *
+ * \return What screen_api_set_view returned.
+ */
+EAGLETRT_STATIC enum ScreenReturnCode prv_scheduler_api_show_mode(enum WheelFsmState state) {
+    switch (state) {
+        case WHEEL_FSM_STATE_INIT:
+        case WHEEL_FSM_STATE_SCREEN_SAVER:
+            return screen_api_set_view(SCREEN_VIEW_LOGO, NULL);
+        case WHEEL_FSM_STATE_MENU:
+            // TODO(#11): the mission page.
+            return screen_api_menu_is_mission_open() ? screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MISSION") : screen_api_set_view(SCREEN_VIEW_MENU, NULL);
+        case WHEEL_FSM_STATE_DEBUG:
+            return screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "DEBUG"); // TODO(#13)
+        case WHEEL_FSM_STATE_CALIBRATION:
+            return screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "CALIBRATIONS"); // TODO(#14)
+        case WHEEL_FSM_STATE_FLASH:
+            return screen_api_set_view(SCREEN_VIEW_FLASH, flash_monitor_api_get_board_name());
+        case WHEEL_FSM_STATE_IDLE:
+            // The main page follows the ECU: AS page during an autonomous mission (TODO(#12): Figma "Mission - EBS TEST").
+            return (ui_data_api_get()->autonomous != 0U) ? screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "AUTONOMOUS") : screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
+        case WHEEL_FSM_STATE_ERROR:
+        case WHEEL_FSM_STATE_COUNT:
+        default:
+            return screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
+    }
+}
+
 EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
     EAGLETRT_API_UNUSED(tick_ms);
-    // The screen is only driven in IDLE and FLASH: an ERROR leaves the last
-    // frame on screen.
+    // An ERROR leaves the last frame on screen.
     const enum WheelFsmState state = wheel_fsm_api_get_state();
-    if (state != WHEEL_FSM_STATE_IDLE && state != WHEEL_FSM_STATE_FLASH) {
+    if (state == WHEEL_FSM_STATE_ERROR) {
         return;
     }
 
-    // TODO(#9): one view per mode, the menu placeholder goes away.
-    enum ScreenReturnCode view_return_code = SCREEN_RC_OK;
-    if (state == WHEEL_FSM_STATE_FLASH) {
-        view_return_code = screen_api_set_view(SCREEN_VIEW_FLASH, flash_monitor_api_get_board_name());
-    } else if (scheduler_handler.menu_placeholder) {
-        view_return_code = screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MENU");
-    } else {
-        view_return_code = screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
-    }
-    if (view_return_code != SCREEN_RC_OK) {
+    if (prv_scheduler_api_show_mode(state) != SCREEN_RC_OK) {
         EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
         return;
     }
@@ -239,16 +269,45 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
 /*!
  * \brief Input router hook: a request action fired.
  *
- * \details TODO(#9): MENU opens the menu, WAKE leaves the screen saver.
- *     Until those states exist the request is only logged.
+ * \details MENU (the combo) opens the menu from IDLE, DEBUG and the screen
+ *     saver. MOVE, SELECT and BACK drive the menu; BACK from CALIBRATION goes
+ *     back to it.
  *
  * \param request What is asked.
+ * \param amount MOVE: rows to move.
  */
-EAGLETRT_STATIC void prv_scheduler_api_on_request(enum InputRequest request) {
-    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "input request %s", (request == INPUT_REQUEST_MENU) ? "MENU" : "WAKE"));
-    // TODO(#9): stand-in for the MENU mode, to try a view switch at runtime.
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+EAGLETRT_STATIC void prv_scheduler_api_on_request(enum InputRequest request, int8_t amount) {
+    // The bindings decide which state each request can come from (input-router-api.c).
     if (request == INPUT_REQUEST_MENU) {
-        scheduler_handler.menu_placeholder = !scheduler_handler.menu_placeholder;
+        if (wheel_fsm_api_request(WHEEL_FSM_STATE_MENU) == WHEEL_FSM_RC_OK) {
+            screen_api_menu_open();
+        }
+        return;
+    }
+    if (wheel_fsm_api_get_state() != WHEEL_FSM_STATE_MENU) {
+        // CALIBRATION: BACK keeps the menu cursor where it was.
+        EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_MENU));
+        return;
+    }
+
+    const enum MenuInput input = (request == INPUT_REQUEST_MOVE) ? MENU_INPUT_MOVE : ((request == INPUT_REQUEST_SELECT) ? MENU_INPUT_SELECT : MENU_INPUT_BACK);
+    switch (screen_api_menu_handle(input, amount)) {
+        case MENU_ACTION_EXIT:
+            EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_IDLE));
+            break;
+        case MENU_ACTION_CALIBRATIONS:
+            EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_CALIBRATION));
+            break;
+        case MENU_ACTION_SCREEN_SAVER:
+            EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_SCREEN_SAVER));
+            break;
+        case MENU_ACTION_DEBUG:
+            EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_DEBUG));
+            break;
+        case MENU_ACTION_NONE:
+        default:
+            break;
     }
 }
 
@@ -396,7 +455,7 @@ enum SchedulerReturnCode scheduler_api_init(const struct SchedulerConfig *config
     if (timeout_api_create(SCHEDULER_RENDER_STALL_TIMEOUT_MS, prv_scheduler_api_on_render_stall, NULL, &scheduler_handler.render_stall_timeout) != TIMEOUT_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
-    if (flash_monitor_api_init(config->reset) != FLASH_MONITOR_RC_OK) {
+    if (flash_monitor_api_init(config->reset) != FLASH_MONITOR_RC_OK || can_communications_router_api_init() != CAN_COMMUNICATION_RC_OK) {
         return SCHEDULER_RC_ERROR;
     }
     const struct InputRouterConfig router_config = {
