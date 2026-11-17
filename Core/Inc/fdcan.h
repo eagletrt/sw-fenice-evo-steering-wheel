@@ -30,7 +30,7 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
-#include "can-communications.h"
+#include "can/bus/can-communications.h"
 
 #include <stdbool.h>
 

@@ -56,16 +56,16 @@
 #include <time.h>
 
 #include "arena-allocator-api.h"
-#include "can-communications-api.h"
-#include "can-communications-router-api.h"
+#include "can/bus/can-communications-api.h"
+#include "can/router/can-communications-router-api.h"
 #include "can-primary-api.h"
 #include "can-primary.h"
 #include "eagletrt-api.h"
-#include "inputs-api.h"
-#include "logger-api.h"
+#include "inputs/raw/inputs-api.h"
+#include "util/logger/logger-api.h"
 #include "pal-api.h"
-#include "scheduler-api.h"
-#include "wheel-fsm-api.h"
+#include "app/scheduler/scheduler-api.h"
+#include "app/fsm/wheel-fsm-api.h"
 
 #include "tigr.h"
 

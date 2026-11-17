@@ -23,7 +23,7 @@
 /* USER CODE BEGIN 0 */
 
 #include "dma2d.h"
-#include "screen.h"
+#include "ui/screen/screen.h"
 
 /*!
  * \brief The two framebuffers scanned by the LTDC, in the external SDRAM.

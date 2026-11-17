@@ -11,20 +11,26 @@ It also handles **buttons** and **3 rotary switches** for user input in real-tim
 
 ## Codebase structure
 
-- `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules, one subfolder per area (headers and sources mirror each other):
-  - `app/`: scheduler (task table, wiring), wheel state machine, POST.
-  - `can/`: CAN queues, the libcan router, flash monitor, identity broadcasts.
-  - `inputs/`: raw inputs, input events (gestures, combos), per-state input routing, parameters.
-  - `ui/`: screen and its views (dashboard, menu, popup, splash, debug page), styles, the UI data snapshot.
-  - `util/`: logger, timeout pool.
-  - `drivers/`: hardware-agnostic device drivers (MCP23017 GPIO expander, Micron SDRAM).
-- `Core/Src/steering/can/can-communications-router-api.c`: the only place that knows about **libcan**. It decodes every inbound frame, folds the ones the dashboard renders into the UI snapshot, hands the rest to the flash monitor, and owns the list of identifiers the FDCAN hardware filters let through (everything else is rejected before it reaches the CPU; the secondary bus accepts nothing yet). Every value the dashboard shows has a stale timeout (three missed frames, at least 500 ms): a silent source shows "--". It also builds the wheel's own outbound messages (button status carrying TS-on/PTT, control maps, driver action). Identity broadcasts (FSM status, firmware and libcan versions) live in `identity-api.c`.
+- `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules, one folder per module, grouped by area. Headers and sources mirror each other, and every include is written from `Core/Inc/steering` (`#include "ui/debug/wheel/debug-wheel-api.h"`), so an include tells where the file is:
+
+  ```text
+  app/          scheduler/ (task table, wiring)  fsm/ (wheel state machine)  post/
+  can/          bus/ (RX/TX queues)  router/ (libcan decoding)  flash-monitor/  identity/
+  inputs/       inputs-shared.h  raw/ (edges)  events/ (gestures, combos)  router/ (per-state bindings)  parameters/
+  ui/           style.h  data/ (UI snapshot)  screen/ (view table)  dashboard/  menu/  popup/  splash/
+                debug/wheel/ (WHEEL debug page; one folder per debug tab)
+  util/         timeout/  logger/
+  drivers/      mcp23017/  micron-steer-sdram/
+  ```
+
+  Tests mirror the same tree under `test/` (`test/ui/debug/test_debug_wheel`, ...).
+- `Core/Src/steering/can/router/can-communications-router-api.c`: the only place that knows about **libcan**. It decodes every inbound frame, folds the ones the dashboard renders into the UI snapshot, hands the rest to the flash monitor, and owns the list of identifiers the FDCAN hardware filters let through (everything else is rejected before it reaches the CPU; the secondary bus accepts nothing yet). Every value the dashboard shows has a stale timeout (three missed frames, at least 500 ms): a silent source shows "--". It also builds the wheel's own outbound messages (button status carrying TS-on/PTT, control maps, driver action). Identity broadcasts (FSM status, firmware and libcan versions) live in `identity-api.c`.
 - Everything else in `Core/` is CubeMX-generated peripheral code; the hardware glue that wires peripherals to the application modules lives in its user-code sections.
 - `fenice-evo-steering-wheel-bootloader-sw/`: the OpenBLT CAN bootloader (OpenBLT 1.22, own CubeMX project, built from the same `platformio.ini`). It occupies the first 128K flash sector; the firmware linked after it uses `STM32H723XG_FLASH_SHIFTED.ld` (see [Bootloader](#bootloader)).
-- `Core/Src/steering/ui/splash-api.c`: the logo page shared by the firmware's FLASH page and the bootloader screen, so they line up pixel for pixel. The logo is `Core/Src/steering/ui/splash-logo.c`, generated from `assets/eagle-logo.svg` by `tools/generate_logo.py` (needs `rsvg-convert`; run it only when the logo changes).
+- `Core/Src/steering/ui/splash/splash-api.c`: the logo page shared by the firmware's FLASH page and the bootloader screen, so they line up pixel for pixel. The logo is `Core/Src/steering/ui/splash/splash-logo.c`, generated from `assets/eagle-logo.svg` by `tools/generate_logo.py` (needs `rsvg-convert`; run it only when the logo changes).
 - `test/`: host unit tests (Unity + fff) for the hardware-agnostic modules.
 - `simulator/`: host hooks (window, keyboard, CAN, logger) that run the hardware-agnostic firmware on a PC.
-- `Core/Src/steering/app/wheel-fsm-api.c`: the wheel state machine, built on [libfsm-sw](https://github.com/eagletrt/libfsm-sw) (see below).
+- `Core/Src/steering/app/fsm/wheel-fsm-api.c`: the wheel state machine, built on [libfsm-sw](https://github.com/eagletrt/libfsm-sw) (see below).
 
 ## State machine
 

@@ -34,11 +34,11 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "scheduler-api.h"
-#include "can-communications-router-api.h"
+#include "app/scheduler/scheduler-api.h"
+#include "can/router/can-communications-router-api.h"
 #include "arena-allocator-api.h"
 #include "pal-api.h"
-#include "logger-api.h"
+#include "util/logger/logger-api.h"
 
 #include <stdio.h>
 #include <string.h>

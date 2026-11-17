@@ -24,8 +24,8 @@
 
 #include "eagletrt-api.h"
 
-#include "can-communications-api.h"
-#include "can-communications-router-api.h"
+#include "can/bus/can-communications-api.h"
+#include "can/router/can-communications-router-api.h"
 
 /*!
  * \brief Bus-off events since boot, per peripheral (FDCAN1, FDCAN2).

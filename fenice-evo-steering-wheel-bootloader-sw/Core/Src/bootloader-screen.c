@@ -10,7 +10,7 @@
 
 #include "raster-api.h"
 #include "raster-fonts.h"
-#include "splash-api.h"
+#include "ui/splash/splash-api.h"
 
 #include <stddef.h>
 #include <stdint.h>

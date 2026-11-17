@@ -1,0 +1,1011 @@
+/*!
+ * \file test-scheduler.c
+ * \date 2026-10-16
+ * \authors Alessandro Bridi [ale.bridi15@gmail.com]
+ *
+ * \brief Unit tests for the cooperative task scheduler.
+ *
+ * \details The scheduler runs the real modules (POST, CAN router, identity,
+ *     screen); only the hardware hooks are faked. CAN frames are captured at
+ *     the send callback, i.e. after the TX flush task.
+ */
+
+#include "unity.h"
+#include "fff.h"
+#include "app/scheduler/scheduler-api.h"
+#include "can/bus/can-communications-api.h"
+#include "can/router/can-communications-router-api.h"
+#include "can/flash-monitor/flash-monitor.h"
+#include "can-primary.h"
+#include "inputs/events/input-events.h"
+#include "inputs/raw/inputs-api.h"
+#include "inputs/parameters/parameters-api.h"
+#include "ui/screen/screen.h"
+#include "ui/screen/screen-api.h"
+#include "tasks-api.h"
+#include "ui/data/ui-data-api.h"
+#include "can-primary-api.h"
+#include "util/timeout/timeout-api.h"
+#include "app/fsm/wheel-fsm-api.h"
+#include <string.h>
+
+DEFINE_FFF_GLOBALS;
+
+extern struct SchedulerHandler scheduler_handler;
+extern struct ScreenHandler screen_handler;
+extern struct InputEventsHandler input_events_handler;
+#include "inputs/router/input-router.h"
+#include "app/fsm/wheel-fsm-api.h"
+#include "ui/data/ui-data-api.h"
+extern void prv_scheduler_api_on_request(enum InputRequest request, int8_t amount);
+
+FAKE_VALUE_FUNC(uint32_t, fake_get_tick);
+FAKE_VOID_FUNC(fake_poll_inputs, uint32_t);
+FAKE_VOID_FUNC(fake_swap_framebuffers);
+FAKE_VOID_FUNC(fake_reset);
+FAKE_VALUE_FUNC(bool, fake_render_busy);
+FAKE_VALUE_FUNC(uint32_t, fake_get_cycles);
+FAKE_VALUE_FUNC(enum RasterReturnCode, fake_draw_rectangle, uint16_t, uint16_t, uint16_t, uint16_t, struct Color);
+
+#define TEST_SCHEDULER_SENT_CAPACITY (512U)
+#define TEST_SCHEDULER_CYCLES_PER_US (10U)
+#define TEST_SCHEDULER_CYCLES_PER_CALL (250U) /* 25 us between two get_cycles calls */
+
+static uint32_t prv_now;
+static uint32_t prv_cycles;
+static uint32_t prv_sent_ids[TEST_SCHEDULER_SENT_CAPACITY];
+static size_t prv_sent_count;
+static uint8_t prv_last_fsm_status;
+static uint8_t prv_last_driver_action[8];
+static size_t prv_driver_action_count;
+
+static uint32_t prv_get_tick(void) {
+    return prv_now;
+}
+
+static uint32_t prv_get_cycles(void) {
+    prv_cycles += TEST_SCHEDULER_CYCLES_PER_CALL;
+    return prv_cycles;
+}
+
+static enum CanCommunicationReturnCode prv_capture_send(const struct CanCommunicationFrame *frame) {
+    if (prv_sent_count < TEST_SCHEDULER_SENT_CAPACITY) {
+        prv_sent_ids[prv_sent_count++] = frame->id;
+    }
+    if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM) {
+        prv_last_fsm_status = frame->data[0] & 0x07U; /* status: bits 0-2 */
+    }
+    if (frame->id == CAN_PRIMARY_MESSAGE_FRAME_ID_DRIVERACTION) {
+        memcpy(prv_last_driver_action, frame->data, sizeof(prv_last_driver_action));
+        prv_driver_action_count++;
+    }
+    return CAN_COMMUNICATION_RC_OK;
+}
+
+/* Wall clock that moves forward on every read, like HAL_GetTick during a slow I2C poll. */
+static uint32_t prv_get_tick_flowing(void) {
+    return prv_now++;
+}
+
+/* Turns the power knob by one step, as the real inputs task would on a knob click. */
+static void prv_poll_inputs_turn_knob(uint32_t tick_ms) {
+    (void)tick_ms;
+    parameters_api_step(INPUTS_SHARED_PARAMETER_ID_POWER, 1);
+}
+
+/* First tick at which libtimebase runs a task (its staggered start). */
+static uint32_t prv_task_start(enum SchedulerTaskId task_id) {
+    return scheduler_handler.tasks.task_list[task_id].start;
+}
+
+/* Ticks at which inputs and render ran, to check they never share a routine. */
+#define TEST_SCHEDULER_TRACE_CAPACITY (64U)
+static uint32_t prv_inputs_ticks[TEST_SCHEDULER_TRACE_CAPACITY];
+static size_t prv_inputs_count;
+static uint32_t prv_render_ticks[TEST_SCHEDULER_TRACE_CAPACITY];
+static size_t prv_render_count;
+
+static void prv_poll_inputs_trace(uint32_t tick_ms) {
+    if (prv_inputs_count < TEST_SCHEDULER_TRACE_CAPACITY) {
+        prv_inputs_ticks[prv_inputs_count++] = tick_ms;
+    }
+}
+
+static void prv_swap_trace(void) {
+    if (prv_render_count < TEST_SCHEDULER_TRACE_CAPACITY) {
+        prv_render_ticks[prv_render_count++] = scheduler_api_get_tick();
+    }
+}
+
+/* Holds the top-left PTT paddle down. */
+static void prv_poll_inputs_hold_ptt(uint32_t tick_ms) {
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_PADDLE_TOP_LEFT, true);
+}
+
+/* Clicks the power knob once per poll through the inputs module, as the I2C poll does. */
+static int16_t prv_knob_position;
+static void prv_poll_inputs_click_knob(uint32_t tick_ms) {
+    (void)tick_ms;
+    prv_knob_position++;
+    inputs_api_update_knob(INPUTS_SHARED_KNOB_ID_FRONT_LEFT, prv_knob_position);
+}
+
+/* Holds both buttons of the (placeholder) menu combo. */
+static void prv_poll_inputs_hold_menu_combo(uint32_t tick_ms) {
+    (void)tick_ms;
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TOP_LEFT, true);
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TOP_RIGHT, true);
+}
+
+/* Holds the top-right button (driver action OK) until prv_release_top is set. */
+static bool prv_release_top;
+static void prv_poll_inputs_hold_ok(uint32_t tick_ms) {
+    (void)tick_ms;
+    inputs_api_update_button(INPUTS_SHARED_BUTTON_ID_TOP_RIGHT, !prv_release_top);
+}
+
+/* Decode the last DriverAction the wheel sent. */
+static struct CanPrimaryDriveraction prv_decode_driver_action(void) {
+    union CanPrimaryMessages message = { 0 };
+    TEST_ASSERT_EQUAL(0, can_primary_api_deserialize_from_id(CAN_PRIMARY_MESSAGE_FRAME_ID_DRIVERACTION, prv_last_driver_action, &message));
+    return message.driveraction;
+}
+
+static size_t prv_count_sent(uint32_t id) {
+    size_t count = 0U;
+    for (size_t i = 0U; i < prv_sent_count; i++) {
+        if (prv_sent_ids[i] == id) {
+            count++;
+        }
+    }
+    return count;
+}
+
+static struct SchedulerConfig prv_make_config(void) {
+    return (struct SchedulerConfig){
+        .post = {
+            .can_network_configs = {
+                [CAN_COMMUNICATION_NETWORK_PRIMARY] = {
+                    .send = prv_capture_send,
+                    .on_receive = can_communications_router_api_receive_primary,
+                },
+                [CAN_COMMUNICATION_NETWORK_SECONDARY] = {
+                    .send = prv_capture_send,
+                    .on_receive = can_communications_router_api_receive_secondary,
+                },
+            },
+            .draw_rectangle = fake_draw_rectangle,
+        },
+        .get_tick = fake_get_tick,
+        .poll_inputs = fake_poll_inputs,
+        .swap_framebuffers = fake_swap_framebuffers,
+        .reset = fake_reset,
+        .get_cycles = NULL,
+        .cycles_per_us = 0U,
+    };
+}
+
+/*!
+ * \brief Call the routine once per millisecond from the current tick up to \p last_tick included.
+ */
+static void prv_run_until(uint32_t last_tick) {
+    for (;;) {
+        TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
+        if (prv_now >= last_tick) {
+            break;
+        }
+        prv_now++;
+    }
+}
+
+/*!
+ * \brief Like prv_run_until, queueing a frame with \p id every \p period_ms
+ *     from the current tick on (another board being flashed).
+ */
+static void prv_run_until_flashing(uint32_t last_tick, uint32_t id, uint32_t period_ms) {
+    const uint32_t start = prv_now;
+    for (;;) {
+        if ((prv_now - start) % period_ms == 0U) {
+            const struct CanCommunicationFrame frame = { .id = id, .length = 8U };
+            TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame));
+        }
+        TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
+        if (prv_now >= last_tick) {
+            break;
+        }
+        prv_now++;
+    }
+}
+
+/*!
+ * \brief Init the scheduler, then skip the boot logo straight to IDLE (INIT -> IDLE is a table edge).
+ */
+static void prv_init_skipping_the_logo(struct SchedulerConfig *config) {
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(config));
+    if (wheel_fsm_api_request(WHEEL_FSM_STATE_IDLE) == WHEEL_FSM_RC_OK) {
+        TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_run_state());
+    }
+}
+
+/*!
+ * \brief Feed one EcuFsm frame with \p vehicle_status.
+ */
+static void prv_send_ecu_status(uint8_t vehicle_status) {
+    union CanPrimaryMessages message = { 0 };
+    message.ecufsm.vehiclestatus = vehicle_status;
+    struct CanCommunicationFrame frame = { .id = CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM, .length = (uint8_t)can_primary_byte_size_ecufsm };
+    TEST_ASSERT_TRUE(can_primary_api_serialize_from_id(CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM, &message, frame.data) >= 0);
+    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, can_communications_api_add_to_rx_buffer(CAN_COMMUNICATION_NETWORK_PRIMARY, &frame));
+}
+
+void setUp(void) {
+    RESET_FAKE(fake_get_tick);
+    RESET_FAKE(fake_poll_inputs);
+    RESET_FAKE(fake_swap_framebuffers);
+    RESET_FAKE(fake_reset);
+    RESET_FAKE(fake_render_busy);
+    RESET_FAKE(fake_get_cycles);
+    RESET_FAKE(fake_draw_rectangle);
+    FFF_RESET_HISTORY();
+
+    prv_now = 0U;
+    prv_cycles = 0U;
+    prv_sent_count = 0U;
+    prv_knob_position = 0;
+    prv_driver_action_count = 0U;
+    prv_release_top = false;
+    memset(prv_last_driver_action, 0, sizeof(prv_last_driver_action));
+    prv_last_fsm_status = UINT8_MAX;
+    fake_get_tick_fake.custom_fake = prv_get_tick;
+    fake_get_cycles_fake.custom_fake = prv_get_cycles;
+    fake_draw_rectangle_fake.return_val = RASTER_RC_OK;
+    memset(ui_data_api_get(), 0, sizeof(struct UIData));
+    ui_data_api_get()->vehicle_state = (uint8_t)UI_DATA_VEHICLE_STATE_COUNT;
+}
+
+/*!
+ * \defgroup scheduler_api_init Tests for scheduler_api_init function
+ * \{
+ */
+
+void test_scheduler_init_rejects_null_config(void) {
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_NULL_POINTER, scheduler_api_init(NULL));
+}
+
+void test_scheduler_init_rejects_missing_callbacks(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.get_tick = NULL;
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_NULL_POINTER, scheduler_api_init(&config));
+
+    config = prv_make_config();
+    config.poll_inputs = NULL;
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_NULL_POINTER, scheduler_api_init(&config));
+
+    config = prv_make_config();
+    config.swap_framebuffers = NULL;
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_NULL_POINTER, scheduler_api_init(&config));
+
+    config = prv_make_config();
+    config.reset = NULL;
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_NULL_POINTER, scheduler_api_init(&config));
+}
+
+void test_scheduler_init_rejects_cycle_counter_without_frequency(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.get_cycles = fake_get_cycles;
+    config.cycles_per_us = 0U;
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_NULL_POINTER, scheduler_api_init(&config));
+}
+
+void test_scheduler_init_runs_post_into_run(void) {
+    struct SchedulerConfig config = prv_make_config();
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(&config));
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_INIT, scheduler_api_get_fsm_state(), "POST passed: INIT now shows the boot logo");
+}
+
+void test_scheduler_init_post_failure_leaves_fsm_in_error(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.post.draw_rectangle = NULL;
+    TEST_ASSERT_EQUAL_MESSAGE(SCHEDULER_RC_OK, scheduler_api_init(&config), "A failed POST must not stop the scheduler: ERROR still has to reach the bus");
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+}
+
+/*! \} */
+
+/*!
+ * \defgroup scheduler_api_routine Tests for the task table
+ * \{
+ */
+
+void test_scheduler_first_routine_runs_every_unstaggered_task(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(0U);
+
+    TEST_ASSERT_EQUAL(1, fake_poll_inputs_fake.call_count);
+    TEST_ASSERT_EQUAL_MESSAGE(0, fake_swap_framebuffers_fake.call_count, "Render is staggered, it must not run at tick 0");
+    TEST_ASSERT_EQUAL(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET));
+    TEST_ASSERT_EQUAL(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELBUTTONSTATUS));
+    TEST_ASSERT_EQUAL(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM));
+    TEST_ASSERT_EQUAL_MESSAGE(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELVERSION), "Version goes out at boot, not after the first 10 s");
+    TEST_ASSERT_EQUAL(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELVERSIONINFO));
+    TEST_ASSERT_EQUAL(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELLIBCANVERSION));
+    TEST_ASSERT_EQUAL(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELLIBCANVERSIONINFO));
+}
+
+void test_scheduler_first_frame_presented_at_render_start(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
+
+    TEST_ASSERT_EQUAL_MESSAGE(1, fake_swap_framebuffers_fake.call_count, "The first frame is fully dirty and must be presented");
+}
+
+void test_scheduler_inputs_and_render_never_share_a_routine(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_trace;
+    config.swap_framebuffers = prv_swap_trace;
+    prv_inputs_count = 0U;
+    prv_render_count = 0U;
+    prv_init_skipping_the_logo(&config);
+
+    /* Something changes every tick, so every render presents a frame (and is traced). */
+    for (;;) {
+        ui_data_api_get()->power = (uint8_t)(prv_now % 10U);
+        TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
+        if (prv_now >= 199U) {
+            break;
+        }
+        prv_now++;
+    }
+
+    TEST_ASSERT_TRUE(prv_render_count > 0U);
+    for (size_t r = 0U; r < prv_render_count; r++) {
+        for (size_t i = 0U; i < prv_inputs_count; i++) {
+            TEST_ASSERT_NOT_EQUAL_MESSAGE(prv_inputs_ticks[i], prv_render_ticks[r], "The ~1.6 ms I2C poll and a frame must not pile up in the same routine");
+        }
+    }
+}
+
+void test_scheduler_inputs_polled_every_10_ms(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(99U);
+
+    TEST_ASSERT_EQUAL(10, fake_poll_inputs_fake.call_count);
+    TEST_ASSERT_EQUAL_UINT32(90U, fake_poll_inputs_fake.arg0_val);
+}
+
+void test_scheduler_can_messages_follow_libcan_cycle_times(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(599U);
+
+    TEST_ASSERT_EQUAL(600U / (uint32_t)can_primary_cycle_time_controlmapsset, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET));
+    TEST_ASSERT_EQUAL(600U / (uint32_t)can_primary_cycle_time_steeringwheelbuttonstatus, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELBUTTONSTATUS));
+    TEST_ASSERT_EQUAL(600U / (uint32_t)can_primary_cycle_time_steeringwheelfsm, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM));
+    TEST_ASSERT_EQUAL(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELVERSION));
+}
+
+void test_scheduler_render_skipped_outside_run(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
+
+    prv_run_until(100U);
+
+    TEST_ASSERT_EQUAL_MESSAGE(0, fake_swap_framebuffers_fake.call_count, "ERROR freezes the last frame on screen");
+    TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM) > 0U, "The FSM status must still reach the bus in ERROR");
+}
+
+void test_scheduler_render_failure_moves_fsm_to_error(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    fake_draw_rectangle_fake.return_val = RASTER_RC_ERROR;
+
+    prv_run_until(10U);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_fsm_status_reaches_the_bus(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
+
+    prv_run_until(0U);
+
+    TEST_ASSERT_EQUAL_MESSAGE(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM), "The FSM task runs before the status task on the same tick");
+    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR, prv_last_fsm_status);
+}
+
+void test_scheduler_flashing_traffic_mutes_the_wheel(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_run_until(100U);
+    prv_now++;
+
+    prv_run_until_flashing(110U, CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSFLASHINGTX, 50U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_FLASH, scheduler_api_get_fsm_state(), "The first flashing frame moves the wheel to FLASH within an FSM period");
+
+    prv_sent_count = 0U;
+    const unsigned polls = fake_poll_inputs_fake.call_count;
+    prv_now++;
+    prv_run_until_flashing(1000U, CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSFLASHINGTX, 50U);
+
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_FLASH, scheduler_api_get_fsm_state(), "Traffic every 50 ms keeps the wheel in FLASH");
+    TEST_ASSERT_EQUAL_MESSAGE(0, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET), "No control maps while another board is flashed");
+    TEST_ASSERT_EQUAL(0, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELBUTTONSTATUS));
+    TEST_ASSERT_EQUAL(0, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELVERSION));
+    TEST_ASSERT_EQUAL_MESSAGE(prv_sent_count, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM), "The FSM status is the only frame on the bus");
+    TEST_ASSERT_TRUE(prv_sent_count > 0U);
+    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_FLASH, prv_last_fsm_status);
+    TEST_ASSERT_EQUAL_MESSAGE(polls, fake_poll_inputs_fake.call_count, "Inputs are not read in FLASH");
+}
+
+void test_scheduler_flash_page_names_the_board(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until_flashing(100U, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFLASHINGRX, 50U);
+
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_FLASH, "The render task mounts the FLASH page");
+    TEST_ASSERT_EQUAL_STRING(STYLE_FLASH_TITLE, screen_handler.flash.title.text);
+    TEST_ASSERT_EQUAL_STRING("TSAC MAINBOARD", screen_handler.flash.name.text);
+}
+
+void test_scheduler_flash_ends_after_silence(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_run_until_flashing(200U, CAN_PRIMARY_MESSAGE_FRAME_ID_COOLINGFLASHINGTX, 50U);
+    const uint32_t last_frame = 200U;
+
+    prv_run_until(last_frame + FLASH_MONITOR_TIMEOUT_MS - 1U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_FLASH, scheduler_api_get_fsm_state(), "Still FLASH just before the timeout");
+
+    prv_sent_count = 0U;
+    const unsigned polls = fake_poll_inputs_fake.call_count;
+    prv_run_until(last_frame + FLASH_MONITOR_TIMEOUT_MS + 300U);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET) > 0U, "Control maps resume after FLASH");
+    TEST_ASSERT_TRUE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELBUTTONSTATUS) > 0U);
+    TEST_ASSERT_TRUE_MESSAGE(fake_poll_inputs_fake.call_count > polls, "Inputs are read again after FLASH");
+    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE, prv_last_fsm_status);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_DRIVER, "The dashboard comes back");
+}
+
+void test_scheduler_own_flashing_frames_reset_instead_of_flash(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until_flashing(20U, CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX, 50U);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(fake_reset_fake.call_count > 0U);
+}
+
+void test_scheduler_reset_request_resets_the_board(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    const struct CanCommunicationFrame frame = { .id = CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGRX, .length = 0U };
+    can_communications_router_api_receive_primary(&frame);
+    prv_run_until(5U);
+
+    TEST_ASSERT_TRUE(fake_reset_fake.call_count > 0U);
+}
+
+void test_scheduler_own_flashing_frame_resets_even_in_error(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_run_state());
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+
+    prv_run_until_flashing(5U, CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFLASHINGTX, 50U);
+
+    TEST_ASSERT_TRUE_MESSAGE(fake_reset_fake.call_count > 0U, "A wheel in ERROR must still be reflashable");
+}
+
+void test_scheduler_post_fails_when_can_filters_overflow(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.post.can_filters_overflow = true;
+
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(&config));
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_routine_rejects_time_going_backwards(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_now = 100U;
+    prv_init_skipping_the_logo(&config);
+    prv_now = 50U;
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_ERROR, scheduler_api_routine());
+}
+
+void test_scheduler_knob_popup_shows_on_next_frame(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_turn_knob;
+    fake_get_tick_fake.custom_fake = prv_get_tick_flowing;
+    prv_init_skipping_the_logo(&config);
+
+    /* Time keeps flowing on every clock read, like HAL_GetTick during a slow I2C poll. */
+    for (uint32_t calls = 0U; calls < 100U && fake_swap_framebuffers_fake.call_count == 0U; calls++) {
+        TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
+    }
+
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "The popup raised by the knob must be mounted by the next frame");
+}
+
+void test_scheduler_tasks_get_the_tick_libtimebase_acted_on(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_now = 40U;
+
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
+
+    TEST_ASSERT_EQUAL_UINT32(40U, scheduler_api_get_tick());
+    TEST_ASSERT_EQUAL_UINT32(40U, fake_poll_inputs_fake.arg0_val);
+}
+
+void test_scheduler_late_routine_drops_missed_runs(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_run_until(0U);
+    const unsigned polls_before = fake_poll_inputs_fake.call_count;
+
+    prv_now = 100U; /* 10 inputs periods late */
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
+
+    TEST_ASSERT_EQUAL_MESSAGE(polls_before + 1U, fake_poll_inputs_fake.call_count, "A late task runs once, not once per missed trigger");
+    TEST_ASSERT_TRUE(tasks_api_get_dropped_task_executions(&scheduler_handler.tasks) > 0U);
+}
+
+void test_scheduler_parameter_change_reaches_ui_bus_and_popup(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_turn_knob;
+    prv_init_skipping_the_logo(&config);
+    memset(ui_data_api_get(), 0, sizeof(struct UIData));
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
+
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(1U, ui_data_api_get()->power, "The knob step must be mirrored into the UI snapshot");
+    TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET) >= 2U, "The change must go on the bus right away, on top of the cyclic send");
+    TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "A shared parameter must raise the popup");
+}
+
+void test_scheduler_ptt_tints_dashboard_without_popup(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_hold_ptt;
+    prv_init_skipping_the_logo(&config);
+    memset(ui_data_api_get(), 0, sizeof(struct UIData));
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
+
+    TEST_ASSERT_EQUAL_UINT8(1U, ui_data_api_get()->ptt);
+    TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "PTT is not shared: no popup");
+}
+
+void test_scheduler_knob_reaches_the_parameter_through_the_router(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_click_knob;
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(0U);
+
+    TEST_ASSERT_EQUAL_UINT8(1U, parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER));
+}
+
+void test_scheduler_inputs_ignored_in_error(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_click_knob;
+    prv_init_skipping_the_logo(&config);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
+    TEST_ASSERT_EQUAL(WHEEL_FSM_RC_OK, wheel_fsm_api_run_state());
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, wheel_fsm_api_get_state());
+
+    prv_run_until(100U);
+
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER), "Knobs do nothing in ERROR");
+}
+
+void test_scheduler_menu_combo_long_press_through_the_timeout_pool(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_hold_menu_combo;
+    prv_init_skipping_the_logo(&config);
+
+    // Both buttons in the first poll (tick 0): the combo is pressed right away.
+    prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS - 1U);
+    TEST_ASSERT_EQUAL(INPUT_EVENTS_COMBO_MENU, input_events_handler.combo);
+    TEST_ASSERT_TRUE(timeout_api_is_running(input_events_handler.combo_long_press));
+    prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS);
+    TEST_ASSERT_TRUE_MESSAGE(timeout_api_has_expired(input_events_handler.combo_long_press), "The scheduler routine runs the timeout pool");
+    TEST_ASSERT_EQUAL_MESSAGE(0U, prv_driver_action_count, "The menu combo sends neither OK nor REPEAT");
+
+    prv_run_until(INPUT_EVENTS_COMBO_LONG_PRESS_MS + 40U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state(), "The combo opens the menu");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_MENU, "The render task mounts the menu page");
+}
+
+void test_scheduler_boot_logo_then_dashboard(void) {
+    struct SchedulerConfig config = prv_make_config();
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_init(&config));
+
+    prv_run_until(WHEEL_FSM_BOOT_LOGO_MS - 10U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_INIT, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_LOGO, "INIT shows the boot logo");
+    TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_INIT, prv_last_fsm_status);
+
+    prv_run_until(WHEEL_FSM_BOOT_LOGO_MS + 40U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DRIVER);
+}
+
+void test_scheduler_menu_debug_and_back_to_driving(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    TEST_ASSERT_EQUAL_MESSAGE(MENU_ITEM_DEBUG, screen_handler.menu.cursor, "ECU state unknown: the cursor skips the locked items");
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(80U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_DEBUG, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DEBUG);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(100U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MOVE, 1);
+    prv_run_until(120U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL(MENU_ITEM_EXIT, screen_handler.menu.cursor);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(160U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DRIVER);
+}
+
+void test_scheduler_menu_unlocks_with_the_ecu_idle_and_locks_when_it_goes_silent(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE);
+    prv_run_until(20U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.menu.unlocked, "EcuFsm IDLE unlocks the menu");
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MOVE, -4);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MOVE, 1);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(80U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_CALIBRATION, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL_STRING("CALIBRATIONS", screen_handler.placeholder.name.text);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_BACK, 1);
+    prv_run_until(120U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL_MESSAGE(MENU_ITEM_CALIBRATIONS, screen_handler.menu.cursor, "BACK keeps the cursor");
+
+    // The ECU went quiet at tick 0: three missed frames and the state is unknown again.
+    prv_run_until(3U * (uint32_t)can_primary_cycle_time_ecufsm + 40U);
+    TEST_ASSERT_FALSE_MESSAGE(screen_handler.menu.unlocked, "A silent ECU locks the menu (A4)");
+    TEST_ASSERT_EQUAL(MENU_ITEM_DEBUG, screen_handler.menu.cursor);
+}
+
+void test_scheduler_screen_saver_shows_the_logo_and_the_combo_opens_the_menu(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE);
+    prv_run_until(20U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MOVE, 2);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(80U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_SCREEN_SAVER, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_LOGO);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(120U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL_MESSAGE(MENU_ITEM_MISSION, screen_handler.menu.cursor, "The combo reopens the menu from the top");
+}
+
+void test_scheduler_mission_opens_its_placeholder(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE);
+    prv_run_until(20U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
+    prv_run_until(80U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER);
+    TEST_ASSERT_EQUAL_STRING("MISSION", screen_handler.placeholder.name.text);
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_BACK, 1);
+    prv_run_until(120U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_MENU, scheduler_api_get_fsm_state(), "BACK closes the mission page, not the menu");
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_MENU);
+}
+
+void test_scheduler_autonomous_mission_shows_the_as_page_and_ignores_the_driver(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_click_knob;
+    prv_init_skipping_the_logo(&config);
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_AS_READY);
+    prv_run_until(100U);
+
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state(), "Autonomous is not a state: IDLE stays the main mode");
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER, "IDLE shows the AS page");
+    TEST_ASSERT_EQUAL_STRING("AUTONOMOUS", screen_handler.placeholder.name.text);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER), "Knobs change nothing in an autonomous mission (D10)");
+
+    prv_send_ecu_status(CAN_PRIMARY_ECUFSM_VEHICLESTATUS_IDLE);
+    prv_run_until(200U);
+    TEST_ASSERT_TRUE_MESSAGE(screen_handler.view == SCREEN_VIEW_DRIVER, "Back to manual: the driver dashboard (under the knob's popup)");
+    TEST_ASSERT_TRUE_MESSAGE(parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER) > 0U, "and the knobs work again");
+}
+
+static void prv_read_health(struct WheelHealth *health) {
+    health->can_tx_fifo_free = 0U;
+    health->can_tx_fifo_size = 32U;
+    health->reset_cause = WHEEL_HEALTH_RESET_WDG;
+}
+
+#define TEST_SCHEDULER_DEBUG_VALUE(cell) (screen_handler.debug.text[DEBUG_WHEEL_BOX_VALUE(cell)])
+
+void test_scheduler_debug_page_shows_the_wheel_health_every_window(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.read_health = prv_read_health;
+    prv_init_skipping_the_logo(&config);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1); // ECU unknown: the cursor is on DEBUG INFO
+    prv_run_until(80U);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_DEBUG, scheduler_api_get_fsm_state());
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DEBUG);
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("0/32", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_TX_FIFO_FREE), "Hardware fields come from the hook");
+    TEST_ASSERT_EQUAL_STRING("WDG", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_LAST_RESET));
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("0 s", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_UPTIME), "First window closed at boot");
+
+    prv_run_until(SCHEDULER_STATS_LOG_PERIOD_MS + 10U);
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("5 s", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_UPTIME), "A new snapshot every stats window");
+    TEST_ASSERT_EQUAL_UINT32(SCHEDULER_STATS_LOG_PERIOD_MS, scheduler_handler.health.window_ms);
+    TEST_ASSERT_TRUE_MESSAGE(scheduler_handler.health.frames > 0U, "Frames presented in the window are counted");
+}
+
+void test_scheduler_top_right_sends_driver_action_ok(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_hold_ok;
+    prv_init_skipping_the_logo(&config);
+
+    // A combo button: its press arrives when the combo window ends.
+    prv_run_until(INPUT_EVENTS_COMBO_WINDOW_MS - 1U);
+    TEST_ASSERT_EQUAL(0U, prv_driver_action_count);
+    prv_run_until(INPUT_EVENTS_COMBO_WINDOW_MS + 1U);
+    TEST_ASSERT_EQUAL_MESSAGE(1U, prv_driver_action_count, "DriverAction goes out on the press");
+    struct CanPrimaryDriveraction action = prv_decode_driver_action();
+    TEST_ASSERT_EQUAL_UINT8(1U, action.ok);
+    TEST_ASSERT_EQUAL_UINT8(0U, action.repeat);
+
+    prv_release_top = true;
+    prv_run_until(INPUT_EVENTS_COMBO_WINDOW_MS + 30U);
+    TEST_ASSERT_EQUAL_MESSAGE(2U, prv_driver_action_count, "DriverAction goes out again on the release");
+    action = prv_decode_driver_action();
+    TEST_ASSERT_EQUAL_UINT8(0U, action.ok);
+}
+
+void test_scheduler_render_waits_while_the_last_frame_is_in_flight(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_turn_knob;
+    config.render_busy = fake_render_busy;
+    fake_render_busy_fake.return_val = true;
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER) + 100U);
+    TEST_ASSERT_TRUE_MESSAGE(fake_render_busy_fake.call_count > 0U, "The render task asks before drawing");
+    TEST_ASSERT_EQUAL_MESSAGE(0U, fake_draw_rectangle_fake.call_count, "Nothing is drawn while a frame is in flight");
+    TEST_ASSERT_EQUAL_MESSAGE(0U, fake_swap_framebuffers_fake.call_count, "No swap while a frame is in flight");
+
+    fake_render_busy_fake.return_val = false;
+    prv_run_until(prv_now + 20U);
+    TEST_ASSERT_TRUE_MESSAGE(fake_draw_rectangle_fake.call_count > 0U, "The pending changes are drawn once the frame is out");
+    TEST_ASSERT_EQUAL(1U, fake_swap_framebuffers_fake.call_count);
+}
+
+void test_scheduler_frame_stuck_in_flight_goes_to_error(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.render_busy = fake_render_busy;
+    fake_render_busy_fake.return_val = true;
+    prv_init_skipping_the_logo(&config);
+    const uint32_t first_render = prv_task_start(SCHEDULER_TASK_RENDER);
+
+    prv_run_until(first_render + SCHEDULER_RENDER_STALL_TIMEOUT_MS - 1U);
+    TEST_ASSERT_EQUAL_MESSAGE(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state(), "Not stuck yet");
+
+    prv_run_until(first_render + SCHEDULER_RENDER_STALL_TIMEOUT_MS + 10U);
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_ERROR, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_frames_that_finish_never_stall(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.render_busy = fake_render_busy;
+    prv_init_skipping_the_logo(&config);
+
+    /* Every frame stays in flight for most of the timeout, then gets out for one render. */
+    for (uint32_t frame = 0U; frame < 5U; frame++) {
+        fake_render_busy_fake.return_val = true;
+        prv_run_until(prv_now + SCHEDULER_RENDER_STALL_TIMEOUT_MS - 50U);
+        fake_render_busy_fake.return_val = false;
+        prv_run_until(prv_now + 25U);
+    }
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_no_stall_while_nothing_is_in_flight(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.render_busy = fake_render_busy;
+    fake_render_busy_fake.return_val = false;
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(3U * SCHEDULER_RENDER_STALL_TIMEOUT_MS);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_IDLE, scheduler_api_get_fsm_state());
+}
+
+void test_scheduler_render_without_busy_hook_draws_at_once(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.poll_inputs = prv_poll_inputs_turn_knob;
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(prv_task_start(SCHEDULER_TASK_RENDER));
+
+    TEST_ASSERT_EQUAL(1U, fake_swap_framebuffers_fake.call_count);
+}
+
+void test_scheduler_paused_task_stops_until_resumed(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    prv_run_until(0U);
+    const size_t fsm_frames = prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM);
+
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_pause_task(SCHEDULER_TASK_CAN_FSM_STATUS));
+    prv_run_until(1000U);
+    TEST_ASSERT_EQUAL_MESSAGE(fsm_frames, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM), "A paused task must not run");
+    TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_CONTROLMAPSSET) > 1U, "Other tasks keep running");
+
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_resume_task(SCHEDULER_TASK_CAN_FSM_STATUS));
+    prv_run_until(1000U + (uint32_t)can_primary_cycle_time_steeringwheelfsm);
+    TEST_ASSERT_TRUE_MESSAGE(prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM) > fsm_frames, "A resumed task must run again");
+}
+
+void test_scheduler_resume_running_task_is_harmless(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_resume_task(SCHEDULER_TASK_CAN_RX));
+}
+
+void test_scheduler_pause_resume_reject_invalid_task(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_ERROR, scheduler_api_pause_task(SCHEDULER_TASK_COUNT));
+    TEST_ASSERT_EQUAL(SCHEDULER_RC_ERROR, scheduler_api_resume_task(SCHEDULER_TASK_COUNT));
+}
+
+/*! \} */
+
+/*!
+ * \defgroup scheduler_stats Tests for the task timing statistics
+ * \{
+ */
+
+void test_scheduler_stats_record_task_duration(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.get_cycles = fake_get_cycles;
+    config.cycles_per_us = TEST_SCHEDULER_CYCLES_PER_US;
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(0U);
+
+    const struct SchedulerTaskStats *stats = &scheduler_handler.stats[SCHEDULER_TASK_CAN_RX];
+    TEST_ASSERT_EQUAL_UINT32(1U, stats->runs);
+    TEST_ASSERT_EQUAL_UINT32(TEST_SCHEDULER_CYCLES_PER_CALL / TEST_SCHEDULER_CYCLES_PER_US, stats->last_us);
+    TEST_ASSERT_EQUAL_UINT32(stats->last_us, stats->max_us);
+}
+
+void test_scheduler_stats_off_without_cycle_counter(void) {
+    struct SchedulerConfig config = prv_make_config();
+    prv_init_skipping_the_logo(&config);
+
+    prv_run_until(10U);
+
+    TEST_ASSERT_EQUAL_UINT32(0U, scheduler_handler.stats[SCHEDULER_TASK_CAN_RX].runs);
+    TEST_ASSERT_EQUAL(0, fake_get_cycles_fake.call_count);
+}
+
+void test_scheduler_stats_window_reset_by_stats_task(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.get_cycles = fake_get_cycles;
+    config.cycles_per_us = TEST_SCHEDULER_CYCLES_PER_US;
+    prv_init_skipping_the_logo(&config);
+
+    const uint32_t second_log = prv_task_start(SCHEDULER_TASK_STATS) + SCHEDULER_STATS_LOG_PERIOD_MS;
+
+    prv_run_until(second_log - 1U);
+    TEST_ASSERT_NOT_EQUAL_UINT32(0U, scheduler_handler.stats[SCHEDULER_TASK_CAN_RX].window_max_us);
+
+    prv_run_until(second_log);
+    TEST_ASSERT_EQUAL_UINT32_MESSAGE(0U, scheduler_handler.stats[SCHEDULER_TASK_CAN_RX].window_max_us, "The stats task must start a new window");
+    TEST_ASSERT_NOT_EQUAL_UINT32_MESSAGE(0U, scheduler_handler.stats[SCHEDULER_TASK_CAN_RX].max_us, "The all-time max is never reset");
+}
+
+/*! \} */
+
+int main(void) {
+    UNITY_BEGIN();
+
+    RUN_TEST(test_scheduler_init_rejects_null_config);
+    RUN_TEST(test_scheduler_init_rejects_missing_callbacks);
+    RUN_TEST(test_scheduler_init_rejects_cycle_counter_without_frequency);
+    RUN_TEST(test_scheduler_init_runs_post_into_run);
+    RUN_TEST(test_scheduler_init_post_failure_leaves_fsm_in_error);
+
+    RUN_TEST(test_scheduler_first_routine_runs_every_unstaggered_task);
+    RUN_TEST(test_scheduler_first_frame_presented_at_render_start);
+    RUN_TEST(test_scheduler_inputs_and_render_never_share_a_routine);
+    RUN_TEST(test_scheduler_inputs_polled_every_10_ms);
+    RUN_TEST(test_scheduler_can_messages_follow_libcan_cycle_times);
+    RUN_TEST(test_scheduler_render_skipped_outside_run);
+    RUN_TEST(test_scheduler_render_failure_moves_fsm_to_error);
+    RUN_TEST(test_scheduler_fsm_status_reaches_the_bus);
+    RUN_TEST(test_scheduler_flashing_traffic_mutes_the_wheel);
+    RUN_TEST(test_scheduler_flash_page_names_the_board);
+    RUN_TEST(test_scheduler_flash_ends_after_silence);
+    RUN_TEST(test_scheduler_own_flashing_frames_reset_instead_of_flash);
+    RUN_TEST(test_scheduler_reset_request_resets_the_board);
+    RUN_TEST(test_scheduler_own_flashing_frame_resets_even_in_error);
+    RUN_TEST(test_scheduler_post_fails_when_can_filters_overflow);
+    RUN_TEST(test_scheduler_routine_rejects_time_going_backwards);
+    RUN_TEST(test_scheduler_knob_popup_shows_on_next_frame);
+    RUN_TEST(test_scheduler_tasks_get_the_tick_libtimebase_acted_on);
+    RUN_TEST(test_scheduler_late_routine_drops_missed_runs);
+    RUN_TEST(test_scheduler_parameter_change_reaches_ui_bus_and_popup);
+    RUN_TEST(test_scheduler_ptt_tints_dashboard_without_popup);
+    RUN_TEST(test_scheduler_knob_reaches_the_parameter_through_the_router);
+    RUN_TEST(test_scheduler_inputs_ignored_in_error);
+    RUN_TEST(test_scheduler_menu_combo_long_press_through_the_timeout_pool);
+    RUN_TEST(test_scheduler_boot_logo_then_dashboard);
+    RUN_TEST(test_scheduler_menu_debug_and_back_to_driving);
+    RUN_TEST(test_scheduler_debug_page_shows_the_wheel_health_every_window);
+    RUN_TEST(test_scheduler_menu_unlocks_with_the_ecu_idle_and_locks_when_it_goes_silent);
+    RUN_TEST(test_scheduler_screen_saver_shows_the_logo_and_the_combo_opens_the_menu);
+    RUN_TEST(test_scheduler_mission_opens_its_placeholder);
+    RUN_TEST(test_scheduler_autonomous_mission_shows_the_as_page_and_ignores_the_driver);
+    RUN_TEST(test_scheduler_top_right_sends_driver_action_ok);
+    RUN_TEST(test_scheduler_render_waits_while_the_last_frame_is_in_flight);
+    RUN_TEST(test_scheduler_frame_stuck_in_flight_goes_to_error);
+    RUN_TEST(test_scheduler_frames_that_finish_never_stall);
+    RUN_TEST(test_scheduler_no_stall_while_nothing_is_in_flight);
+    RUN_TEST(test_scheduler_render_without_busy_hook_draws_at_once);
+    RUN_TEST(test_scheduler_paused_task_stops_until_resumed);
+    RUN_TEST(test_scheduler_resume_running_task_is_harmless);
+    RUN_TEST(test_scheduler_pause_resume_reject_invalid_task);
+
+    RUN_TEST(test_scheduler_stats_record_task_duration);
+    RUN_TEST(test_scheduler_stats_off_without_cycle_counter);
+    RUN_TEST(test_scheduler_stats_window_reset_by_stats_task);
+
+    return UNITY_END();
+}

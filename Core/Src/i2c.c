@@ -23,9 +23,9 @@
 /* USER CODE BEGIN 0 */
 
 #include "eagletrt-api.h"
-#include "inputs-api.h"
-#include "logger-api.h"
-#include "mcp23017-api.h"
+#include "inputs/raw/inputs-api.h"
+#include "util/logger/logger-api.h"
+#include "drivers/mcp23017/mcp23017-api.h"
 
 #include <string.h>
 

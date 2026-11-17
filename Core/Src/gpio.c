@@ -137,7 +137,7 @@ void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 2 */
 
-#include "inputs-api.h"
+#include "inputs/raw/inputs-api.h"
 
 #include <stdbool.h>
 
