@@ -103,6 +103,14 @@ typedef void (*scheduler_swap_framebuffers_callback)(void);
 typedef bool (*scheduler_render_busy_callback)(void);
 
 /*!
+ * \brief Hardware status shown on the DEBUG page until it has a design (TODO(#13)).
+ *
+ * \return A short line of uppercase text, digits and spaces (NULL for the page name).
+ *     Referenced until the next call: a new text must live in a different buffer.
+ */
+typedef const char *(*scheduler_debug_text_callback)(void);
+
+/*!
  * \brief Sample every physical input and forward changes to the inputs module.
  *
  * \param tick_ms Current time in milliseconds.
@@ -122,6 +130,7 @@ struct SchedulerConfig {
     uint32_t cycles_per_us;                                 /*!< Cycle counter frequency in MHz, required when get_cycles is set */
     scheduler_report_stats_callback report_stats;           /*!< Optional: called by the stats task after the task timings */
     scheduler_render_busy_callback render_busy;             /*!< Optional: asynchronous drawing, NULL when every draw callback completes before returning */
+    scheduler_debug_text_callback debug_text;               /*!< Optional: hardware status on the DEBUG page */
 };
 
 /*!

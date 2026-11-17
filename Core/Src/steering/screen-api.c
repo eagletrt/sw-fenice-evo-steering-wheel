@@ -8,7 +8,7 @@
  *     parameter-change popup and the splash pages (FLASH, placeholder). The
  *     actual layouts live in dashboard-api.c, popup-api.c and splash-api.c;
  *     this file only holds the view table and orchestrates init, view
- *     switches, raster swaps and the per-field setter facade.
+ *     switches, raster swaps and the UI data sync.
  */
 
 #include "screen-api.h"
@@ -191,10 +191,10 @@ enum ScreenReturnCode screen_api_set_view(enum ScreenViewId view, const char *ca
         case SCREEN_VIEW_MENU:
             break;
         case SCREEN_VIEW_FLASH:
-            return_code = splash_api_set_caption(&screen_handler.flash, SCREEN_FLASH_TITLE, caption);
+            return_code = splash_api_set_caption(&screen_handler.flash, STYLE_FLASH_TITLE, caption);
             break;
         case SCREEN_VIEW_PLACEHOLDER:
-            return_code = splash_api_set_caption(&screen_handler.placeholder, SCREEN_PLACEHOLDER_TITLE, caption);
+            return_code = splash_api_set_caption(&screen_handler.placeholder, STYLE_PLACEHOLDER_TITLE, caption);
             break;
         case SCREEN_VIEW_POPUP:
         case SCREEN_VIEW_COUNT:
@@ -208,150 +208,13 @@ enum ScreenReturnCode screen_api_set_view(enum ScreenViewId view, const char *ca
     return SCREEN_RC_OK;
 }
 
-/*!
- * \brief Translate a DashboardReturnCode into a ScreenReturnCode.
- */
-EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_forward_return_code(enum DashboardReturnCode return_code) {
-    return (return_code == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
-}
-
-enum ScreenReturnCode screen_api_set_car_state(const char *text) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_car_state(&screen_handler.dashboard, text));
-}
-
-enum ScreenReturnCode screen_api_set_power(uint8_t value) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_power(&screen_handler.dashboard, value));
-}
-
-enum ScreenReturnCode screen_api_set_regen(uint8_t value) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_regen(&screen_handler.dashboard, value));
-}
-
-enum ScreenReturnCode screen_api_set_torque(uint8_t value) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_torque(&screen_handler.dashboard, value));
-}
-
-enum ScreenReturnCode screen_api_set_slip(bool slip_on) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_slip(&screen_handler.dashboard, slip_on));
-}
-
-enum ScreenReturnCode screen_api_set_ptt(bool active) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_ptt(&screen_handler.dashboard, active));
-}
-
-enum ScreenReturnCode screen_api_set_soc(uint8_t percent) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_soc(&screen_handler.dashboard, percent));
-}
-
-enum ScreenReturnCode screen_api_set_hv_temperature(int16_t celsius) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_hv_temperature(&screen_handler.dashboard, celsius));
-}
-
-enum ScreenReturnCode screen_api_set_inv_temperature(int16_t celsius) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_inverter_temperature(&screen_handler.dashboard, celsius));
-}
-
-enum ScreenReturnCode screen_api_set_lap(uint8_t current, uint8_t total) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_lap(&screen_handler.dashboard, current, total));
-}
-
-enum ScreenReturnCode screen_api_set_lap_delta_ms(int32_t delta_ms) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_lap_delta_ms(&screen_handler.dashboard, delta_ms));
-}
-
-enum ScreenReturnCode screen_api_set_tire_temperatures(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_tire_temperatures(&screen_handler.dashboard, front_left, front_right, rear_left, rear_right));
-}
-
-enum ScreenReturnCode screen_api_set_motor_temperatures(int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
-    return prv_screen_api_forward_return_code(dashboard_api_set_motor_temperatures(&screen_handler.dashboard, front_left, front_right, rear_left, rear_right));
-}
-
-/*!
- * \brief Human-readable name for a UIDataVehicleState value.
- *
- * \details Unknown / out-of-range values fall back to "----" so the dashboard
- *     never shows a NULL pointer.
- */
-EAGLETRT_STATIC const char *prv_screen_api_vehicle_state_name(uint8_t state) {
-    switch ((enum UIDataVehicleState)state) {
-        case UI_DATA_VEHICLE_STATE_IDLE:
-            return "IDLE";
-        case UI_DATA_VEHICLE_STATE_PRECHARGE:
-            return "PRECHARGE";
-        case UI_DATA_VEHICLE_STATE_DISCHARGE:
-            return "DISCHARGE";
-        case UI_DATA_VEHICLE_STATE_TSON:
-            return "TSON";
-        case UI_DATA_VEHICLE_STATE_DRIVE:
-            return "DRIVE";
-        case UI_DATA_VEHICLE_STATE_AUTONOMOUS:
-            return "AUTONOMOUS";
-        case UI_DATA_VEHICLE_STATE_FLASH:
-            return "FLASH";
-        case UI_DATA_VEHICLE_STATE_ERROR:
-            return "ERROR";
-        case UI_DATA_VEHICLE_STATE_COUNT:
-        default:
-            return "----";
-    }
-}
-
 enum ScreenReturnCode screen_api_sync_data(const struct UIData *ui_data) {
     if (ui_data == NULL) {
         return SCREEN_RC_NULL_POINTER;
     }
-
-    enum ScreenReturnCode return_code = SCREEN_RC_OK;
-
     // D22 + A4: only an ECU known to be IDLE unlocks the menu (unknown or stale is not IDLE).
     menu_api_set_unlocked(&screen_handler.menu, ui_data->vehicle_state == UI_DATA_VEHICLE_STATE_IDLE);
-
-    if (screen_api_set_car_state(prv_screen_api_vehicle_state_name(ui_data->vehicle_state)) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-
-    if (screen_api_set_power(ui_data->power) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-    if (screen_api_set_regen(ui_data->regen) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-    if (screen_api_set_torque(ui_data->torque) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-    if (screen_api_set_slip(ui_data->slip_on != 0U) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-    if (screen_api_set_ptt(ui_data->ptt != 0U) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-
-    if (screen_api_set_soc(ui_data->soc) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-    if (screen_api_set_hv_temperature(ui_data->hv_temp) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-    if (screen_api_set_inv_temperature(ui_data->inverter_temp) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-
-    if (screen_api_set_lap(ui_data->lap_current, ui_data->lap_total) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-    if (screen_api_set_lap_delta_ms(ui_data->lap_delta_ms) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-
-    if (screen_api_set_tire_temperatures(ui_data->tire_fl_temp, ui_data->tire_fr_temp, ui_data->tire_rl_temp, ui_data->tire_rr_temp) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-    if (screen_api_set_motor_temperatures(ui_data->motor_fl_temp, ui_data->motor_fr_temp, ui_data->motor_rl_temp, ui_data->motor_rr_temp) != SCREEN_RC_OK) {
-        return_code = SCREEN_RC_ERROR;
-    }
-
-    return return_code;
+    return (dashboard_api_sync(&screen_handler.dashboard, ui_data) == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
 }
 
 bool screen_api_should_redraw(struct Box *boxes, uint16_t count) {

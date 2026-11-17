@@ -1,6 +1,13 @@
 #ifndef STYLE_H
 #define STYLE_H
 
+#define STYLE_SCREEN_WIDTH (800U)
+#define STYLE_SCREEN_HEIGHT (480U)
+
+#define STYLE_POPUP_TIMEOUT_MS (1000U)
+#define STYLE_FLASH_TITLE "FLASHING"            /*!< First caption line of the FLASH page */
+#define STYLE_PLACEHOLDER_TITLE "NO DESIGN YET" /*!< First caption line of the placeholder page */
+
 #define STYLE_DARK_GRAY (0xFF1E1E1EU)
 #define STYLE_LIGHT_GRAY (0xFF838383U)
 #define STYLE_WHITE (0xFFFFFFFFU)

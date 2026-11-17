@@ -82,7 +82,7 @@ void test_menu_layout_matches_the_design(void) {
     const struct BoxRectangle background = menu.boxes[MENU_BOX_BACKGROUND].rect;
     TEST_ASSERT_EQUAL_UINT16(MENU_TITLE_HEIGHT, background.y);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(MENU_HINTS_Y, background.y + background.height, "Title, background and hints tile the screen");
-    TEST_ASSERT_EQUAL_UINT16(MENU_SCREEN_HEIGHT, menu.boxes[MENU_BOX_HINTS].rect.y + menu.boxes[MENU_BOX_HINTS].rect.height);
+    TEST_ASSERT_EQUAL_UINT16(STYLE_SCREEN_HEIGHT, menu.boxes[MENU_BOX_HINTS].rect.y + menu.boxes[MENU_BOX_HINTS].rect.height);
 }
 
 /*! \} */

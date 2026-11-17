@@ -10,8 +10,8 @@
 #include "ui-data-api.h"
 #include "eagletrt.h"
 
-// The ECU state is unknown until its first frame (A4).
-EAGLETRT_STATIC struct UIData ui_data = { .vehicle_state = UI_DATA_VEHICLE_STATE_COUNT };
+// The ECU state is unknown and every CAN value stale until their first frame (A4).
+EAGLETRT_STATIC struct UIData ui_data = { .vehicle_state = UI_DATA_VEHICLE_STATE_COUNT, .stale = UI_DATA_STALE_ALL };
 
 struct UIData *ui_data_api_get(void) {
     return &ui_data;

@@ -29,6 +29,14 @@ FAKE_VALUE_FUNC(enum RasterReturnCode, fake_draw_mask, uint16_t, uint16_t, uint1
 
 static uint8_t mask_scratch[64U * 1024U];
 
+/* UI data snapshot behind the dashboard: change one field and sync. */
+static struct UIData prv_ui;
+#define PRV_SET(field, value)                                           \
+    do {                                                                \
+        prv_ui.field = (value);                                         \
+        TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_sync_data(&prv_ui)); \
+    } while (0)
+
 /* Clock of the timeout pool: the popup expires through it. */
 static uint32_t prv_now;
 static uint32_t prv_get_tick(void) {
@@ -90,6 +98,9 @@ void setUp(void) {
     prv_now = 0U;
     TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_init(prv_get_tick));
     TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_init(fake_draw_rectangle));
+    // First snapshot before the first frame: that frame draws everything once.
+    memset(&prv_ui, 0, sizeof(prv_ui));
+    TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_sync_data(&prv_ui));
 }
 
 /*!
@@ -112,10 +123,10 @@ void test_screen_popup_timeout_starts_at_change_not_at_last_render(void) {
     prv_update(5001U);
     TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "Popup must not expire because the previous render was old");
 
-    prv_update(5000U + SCREEN_POPUP_TIMEOUT_MS - 1U);
+    prv_update(5000U + STYLE_POPUP_TIMEOUT_MS - 1U);
     TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "Popup must stay up for the whole timeout after the change");
 
-    prv_update(5000U + SCREEN_POPUP_TIMEOUT_MS);
+    prv_update(5000U + STYLE_POPUP_TIMEOUT_MS);
     TEST_ASSERT_FALSE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "Popup must go away exactly at the timeout");
 }
 
@@ -124,18 +135,18 @@ void test_screen_popup_new_change_extends_timeout(void) {
     prv_update(1000U);
     prv_change(INPUTS_SHARED_PARAMETER_ID_POWER, 6U, 2000U);
 
-    prv_update(1000U + SCREEN_POPUP_TIMEOUT_MS);
+    prv_update(1000U + STYLE_POPUP_TIMEOUT_MS);
     TEST_ASSERT_TRUE_MESSAGE((screen_handler.mounted == SCREEN_VIEW_POPUP), "A later change must restart the timeout");
     TEST_ASSERT_EQUAL_STRING("6", screen_handler.popup.value_buffer);
 
-    prv_update(2000U + SCREEN_POPUP_TIMEOUT_MS);
+    prv_update(2000U + STYLE_POPUP_TIMEOUT_MS);
     TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_VIEW_POPUP));
 }
 
 void test_screen_popup_dismiss_remounts_dashboard_dirty(void) {
     prv_change(INPUTS_SHARED_PARAMETER_ID_REGEN, 3U, 0U);
     prv_update(0U);
-    prv_update(SCREEN_POPUP_TIMEOUT_MS);
+    prv_update(STYLE_POPUP_TIMEOUT_MS);
 
     TEST_ASSERT_FALSE((screen_handler.mounted == SCREEN_VIEW_POPUP));
     TEST_ASSERT_EQUAL_PTR_MESSAGE(screen_handler.dashboard.boxes, screen_handler.raster.interface, "Dashboard must be mounted again after the popup");
@@ -166,10 +177,10 @@ void test_screen_accelerators_reject_mask_without_buffer(void) {
 void test_screen_labels_go_through_the_mask(void) {
     prv_enable_accelerators();
     prv_settle(0U); /* first frame: every box, also pending for the back buffer */
-    screen_api_set_power(7U);
+    PRV_SET(power, 7U);
     prv_settle(1U); /* back buffer catches up */
 
-    screen_api_set_power(8U);
+    PRV_SET(power, 8U);
     TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, prv_update(2U));
 
     TEST_ASSERT_EQUAL_MESSAGE(1, fake_draw_rectangle_fake.call_count, "only the POW background is a rectangle");
@@ -187,16 +198,16 @@ void test_screen_labels_go_through_the_mask(void) {
 static void prv_settle_both_buffers(void) {
     prv_enable_accelerators();
     prv_settle(0U);
-    screen_api_set_power(1U);
+    PRV_SET(power, 1U);
     prv_settle(1U);
-    screen_api_set_power(2U);
+    PRV_SET(power, 2U);
     prv_settle(2U);
 }
 
 void test_screen_back_buffer_gets_the_previous_change(void) {
     prv_settle_both_buffers(); /* POW changed in the last render */
 
-    screen_api_set_soc(42U);
+    PRV_SET(soc, 42U);
     TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, prv_update(3U));
 
     TEST_ASSERT_EQUAL_MESSAGE(2, fake_draw_rectangle_fake.call_count, "the new SOC box plus the POW box the other buffer missed");
@@ -205,10 +216,10 @@ void test_screen_back_buffer_gets_the_previous_change(void) {
 
 void test_screen_back_buffer_catch_up_happens_once(void) {
     prv_settle_both_buffers();
-    screen_api_set_soc(42U);
+    PRV_SET(soc, 42U);
     prv_settle(3U); /* draws SOC + POW */
 
-    screen_api_set_hv_temperature(55);
+    PRV_SET(hv_temp, 55);
     prv_update(4U);
 
     TEST_ASSERT_EQUAL_MESSAGE(2, fake_draw_rectangle_fake.call_count, "HV temperature plus SOC only: POW is already in both buffers");
@@ -252,12 +263,12 @@ void test_screen_popup_close_redraws_dashboard_into_both_buffers(void) {
     prv_change(INPUTS_SHARED_PARAMETER_ID_POWER, 5U, 10U);
     prv_settle(10U);
 
-    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, prv_update(10U + SCREEN_POPUP_TIMEOUT_MS));
+    TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, prv_update(10U + STYLE_POPUP_TIMEOUT_MS));
     TEST_ASSERT_EQUAL_MESSAGE(DASHBOARD_BOX_COUNT, fake_draw_rectangle_fake.call_count, "whole dashboard back");
-    prv_settle(10U + SCREEN_POPUP_TIMEOUT_MS);
+    prv_settle(10U + STYLE_POPUP_TIMEOUT_MS);
 
-    screen_api_set_soc(42U);
-    prv_update(20U + SCREEN_POPUP_TIMEOUT_MS);
+    PRV_SET(soc, 42U);
+    prv_update(20U + STYLE_POPUP_TIMEOUT_MS);
     TEST_ASSERT_EQUAL_MESSAGE(DASHBOARD_BOX_COUNT, fake_draw_rectangle_fake.call_count, "the other buffer still had the popup: whole dashboard again");
 }
 
@@ -338,7 +349,7 @@ void test_screen_view_placeholder_shows_its_name_and_the_logo(void) {
     TEST_ASSERT_EQUAL(SCREEN_RC_OK, screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MENU"));
     TEST_ASSERT_EQUAL(SCREEN_RC_RENDERED, prv_update(10U));
     TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER);
-    TEST_ASSERT_EQUAL_STRING(SCREEN_PLACEHOLDER_TITLE, screen_handler.placeholder.title.text);
+    TEST_ASSERT_EQUAL_STRING(STYLE_PLACEHOLDER_TITLE, screen_handler.placeholder.title.text);
     TEST_ASSERT_EQUAL_STRING("MENU", screen_handler.placeholder.name.text);
     TEST_ASSERT_TRUE_MESSAGE(prv_logo_blends() > 0U, "The placeholder carries the logo");
 }
@@ -365,7 +376,7 @@ void test_screen_view_switch_redraws_every_box_in_both_buffers(void) {
 
     screen_api_set_view(SCREEN_VIEW_DRIVER, NULL);
     prv_settle(20U);
-    screen_api_set_soc(42U);
+    PRV_SET(soc, 42U);
     prv_update(30U);
     TEST_ASSERT_EQUAL_MESSAGE(DASHBOARD_BOX_COUNT, fake_draw_rectangle_fake.call_count, "The other buffer still had the FLASH page: whole dashboard again");
 }

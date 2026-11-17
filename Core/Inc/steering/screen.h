@@ -10,13 +10,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#define SCREEN_WIDTH (800U)
-#define SCREEN_HEIGHT (480U)
-
-#define SCREEN_POPUP_TIMEOUT_MS (1500U)
-#define SCREEN_FLASH_TITLE "FLASHING"            /*!< First caption line of the FLASH page */
-#define SCREEN_PLACEHOLDER_TITLE "NO DESIGN YET" /*!< First caption line of the placeholder page */
-
 /*!
  * \brief Return codes for screen operations
  */

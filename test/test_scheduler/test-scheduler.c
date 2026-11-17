@@ -353,7 +353,7 @@ void test_scheduler_inputs_and_render_never_share_a_routine(void) {
 
     /* Something changes every tick, so every render presents a frame (and is traced). */
     for (;;) {
-        screen_api_set_power((uint8_t)(prv_now % 10U));
+        ui_data_api_get()->power = (uint8_t)(prv_now % 10U);
         TEST_ASSERT_EQUAL(SCHEDULER_RC_OK, scheduler_api_routine());
         if (prv_now >= 199U) {
             break;
@@ -454,7 +454,7 @@ void test_scheduler_flash_page_names_the_board(void) {
     prv_run_until_flashing(100U, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFLASHINGRX, 50U);
 
     TEST_ASSERT_TRUE_MESSAGE(screen_handler.mounted == SCREEN_VIEW_FLASH, "The render task mounts the FLASH page");
-    TEST_ASSERT_EQUAL_STRING(SCREEN_FLASH_TITLE, screen_handler.flash.title.text);
+    TEST_ASSERT_EQUAL_STRING(STYLE_FLASH_TITLE, screen_handler.flash.title.text);
     TEST_ASSERT_EQUAL_STRING("TSAC MAINBOARD", screen_handler.flash.name.text);
 }
 
@@ -757,6 +757,23 @@ void test_scheduler_autonomous_mission_shows_the_as_page_and_ignores_the_driver(
     TEST_ASSERT_TRUE_MESSAGE(parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER) > 0U, "and the knobs work again");
 }
 
+static const char *prv_debug_text(void) {
+    return "TEC 248 FREE 0";
+}
+
+void test_scheduler_debug_page_shows_the_hardware_status(void) {
+    struct SchedulerConfig config = prv_make_config();
+    config.debug_text = prv_debug_text;
+    prv_init_skipping_the_logo(&config);
+    prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
+    prv_run_until(40U);
+    prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1); // ECU unknown: the cursor is on DEBUG INFO
+    prv_run_until(80U);
+
+    TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_DEBUG, scheduler_api_get_fsm_state());
+    TEST_ASSERT_EQUAL_STRING("TEC 248 FREE 0", screen_handler.placeholder.name.text);
+}
+
 void test_scheduler_top_right_sends_driver_action_ok(void) {
     struct SchedulerConfig config = prv_make_config();
     config.poll_inputs = prv_poll_inputs_hold_ok;
@@ -960,6 +977,7 @@ int main(void) {
     RUN_TEST(test_scheduler_menu_combo_long_press_through_the_timeout_pool);
     RUN_TEST(test_scheduler_boot_logo_then_dashboard);
     RUN_TEST(test_scheduler_menu_debug_and_back_to_driving);
+    RUN_TEST(test_scheduler_debug_page_shows_the_hardware_status);
     RUN_TEST(test_scheduler_menu_unlocks_with_the_ecu_idle_and_locks_when_it_goes_silent);
     RUN_TEST(test_scheduler_screen_saver_shows_the_logo_and_the_combo_opens_the_menu);
     RUN_TEST(test_scheduler_mission_opens_its_placeholder);

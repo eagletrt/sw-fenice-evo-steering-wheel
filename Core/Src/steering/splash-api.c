@@ -155,7 +155,7 @@ enum SplashReturnCode splash_api_init(struct SplashHandler *handler, const struc
 
     memset(handler, 0, sizeof(*handler));
     const struct Color background = { .argb = SPLASH_COLOR_BACKGROUND };
-    const int16_t center_x = (int16_t)(SPLASH_SCREEN_WIDTH / 2U);
+    const int16_t center_x = (int16_t)(STYLE_SCREEN_WIDTH / 2U);
     const uint16_t title_y = SPLASH_LOGO_BOX_HEIGHT;
     const uint16_t name_y = SPLASH_LOGO_BOX_HEIGHT + SPLASH_TITLE_BOX_HEIGHT;
 
@@ -164,9 +164,9 @@ enum SplashReturnCode splash_api_init(struct SplashHandler *handler, const struc
         return SPLASH_RC_ERROR;
     }
 
-    if (box_api_init(&handler->boxes[SPLASH_BOX_LOGO], SPLASH_BOX_LOGO, (struct BoxRectangle){ .x = 0U, .y = 0U, .width = SPLASH_SCREEN_WIDTH, .height = SPLASH_LOGO_BOX_HEIGHT }, background, NULL) != RASTER_RC_OK ||
-        box_api_init(&handler->boxes[SPLASH_BOX_TITLE], SPLASH_BOX_TITLE, (struct BoxRectangle){ .x = 0U, .y = title_y, .width = SPLASH_SCREEN_WIDTH, .height = SPLASH_TITLE_BOX_HEIGHT }, background, &handler->title) != RASTER_RC_OK ||
-        box_api_init(&handler->boxes[SPLASH_BOX_NAME], SPLASH_BOX_NAME, (struct BoxRectangle){ .x = 0U, .y = name_y, .width = SPLASH_SCREEN_WIDTH, .height = (uint16_t)(SPLASH_SCREEN_HEIGHT - name_y) }, background, &handler->name) != RASTER_RC_OK) {
+    if (box_api_init(&handler->boxes[SPLASH_BOX_LOGO], SPLASH_BOX_LOGO, (struct BoxRectangle){ .x = 0U, .y = 0U, .width = STYLE_SCREEN_WIDTH, .height = SPLASH_LOGO_BOX_HEIGHT }, background, NULL) != RASTER_RC_OK ||
+        box_api_init(&handler->boxes[SPLASH_BOX_TITLE], SPLASH_BOX_TITLE, (struct BoxRectangle){ .x = 0U, .y = title_y, .width = STYLE_SCREEN_WIDTH, .height = SPLASH_TITLE_BOX_HEIGHT }, background, &handler->title) != RASTER_RC_OK ||
+        box_api_init(&handler->boxes[SPLASH_BOX_NAME], SPLASH_BOX_NAME, (struct BoxRectangle){ .x = 0U, .y = name_y, .width = STYLE_SCREEN_WIDTH, .height = (uint16_t)(STYLE_SCREEN_HEIGHT - name_y) }, background, &handler->name) != RASTER_RC_OK) {
         return SPLASH_RC_ERROR;
     }
 

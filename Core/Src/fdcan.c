@@ -40,6 +40,24 @@ static volatile uint32_t prv_fdcan_bus_off_count[2];
 static bool prv_fdcan_filter_overflow;
 
 /*!
+ * \brief Consecutive frames refused by a full Tx FIFO after which the pending
+ *     requests are cancelled: about 1 s of the wheel's own traffic.
+ */
+#define FDCAN_TX_STUCK_REFUSALS (50U)
+
+/*!
+ * \brief Transmit-side counters per peripheral (FDCAN1, FDCAN2), see fdcan_get_tx_diagnostics.
+ */
+struct FdcanTxCounters {
+    uint32_t refused;          /*!< Frames the Tx FIFO refused (full) since boot */
+    uint32_t unjams;           /*!< Times every pending request was cancelled */
+    uint32_t restricted_exits; /*!< Times restricted operation mode was left */
+    uint32_t refused_in_a_row; /*!< Refusals since the last accepted frame */
+};
+
+static struct FdcanTxCounters prv_fdcan_tx[2];
+
+/*!
  * \brief Configure the acceptance filters and the notifications of one FDCAN.
  *
  * \details Only the identifiers the router asks for get through (one
@@ -119,9 +137,29 @@ static enum CanCommunicationReturnCode prv_fdcan_send(FDCAN_HandleTypeDef *hfdca
         .MessageMarker = 0,
     };
 
+    struct FdcanTxCounters *tx = &prv_fdcan_tx[(hfdcan == &hfdcan1) ? 0U : 1U];
+
+    // Restricted operation mode (entered by the hardware on a message RAM
+    // access failure) still receives and acknowledges, but never transmits.
+    if (READ_BIT(hfdcan->Instance->CCCR, FDCAN_CCCR_ASM) != 0U) {
+        CLEAR_BIT(hfdcan->Instance->CCCR, FDCAN_CCCR_ASM);
+        tx->restricted_exits++;
+    }
+
     if (HAL_FDCAN_AddMessageToTxFifoQ(hfdcan, &header, frame->data) != HAL_OK) {
+        tx->refused++;
+        // In DAR mode every request completes after one attempt, so a FIFO that
+        // stays full holds a request that never will (ES0491 2.22.3, DAR mode
+        // and lost arbitration): cancel them all, the next periodic frames
+        // replace them.
+        if (++tx->refused_in_a_row >= FDCAN_TX_STUCK_REFUSALS) {
+            EAGLETRT_API_UNUSED(HAL_FDCAN_AbortTxRequest(hfdcan, hfdcan->Instance->TXBRP));
+            tx->unjams++;
+            tx->refused_in_a_row = 0U;
+        }
         return CAN_COMMUNICATION_RC_TRANSMISSION_ERROR;
     }
+    tx->refused_in_a_row = 0U;
     return CAN_COMMUNICATION_RC_OK;
 }
 
@@ -376,25 +414,27 @@ enum CanCommunicationReturnCode fdcan_send_secondary(const struct CanCommunicati
 
 void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs) {
     if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != RESET) {
-        FDCAN_RxHeaderTypeDef header = { 0 };
-        struct CanCommunicationFrame msg = { 0 };
-        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
-        HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, 0);
-        msg.id = header.Identifier;
-        msg.length = (uint8_t)EAGLETRT_API_MIN(header.DataLength, CAN_COMMUNICATIONS_FRAME_DATA_SIZE);
-        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
+        while (HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO0) > 0U) {
+            FDCAN_RxHeaderTypeDef header = { 0 };
+            struct CanCommunicationFrame msg = { 0 };
+            HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &header, msg.data);
+            msg.id = header.Identifier;
+            msg.length = (uint8_t)EAGLETRT_API_MIN(header.DataLength, CAN_COMMUNICATIONS_FRAME_DATA_SIZE);
+            can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
+        }
     }
 }
 
 void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs) {
     if ((RxFifo1ITs & FDCAN_IT_RX_FIFO1_NEW_MESSAGE) != RESET) {
-        FDCAN_RxHeaderTypeDef header = { 0 };
-        struct CanCommunicationFrame msg = { 0 };
-        HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, msg.data);
-        HAL_FDCAN_ActivateNotification(hfdcan, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, 0);
-        msg.id = header.Identifier;
-        msg.length = (uint8_t)EAGLETRT_API_MIN(header.DataLength, CAN_COMMUNICATIONS_FRAME_DATA_SIZE);
-        can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
+        while (HAL_FDCAN_GetRxFifoFillLevel(hfdcan, FDCAN_RX_FIFO1) > 0U) {
+            FDCAN_RxHeaderTypeDef header = { 0 };
+            struct CanCommunicationFrame msg = { 0 };
+            HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &header, msg.data);
+            msg.id = header.Identifier;
+            msg.length = (uint8_t)EAGLETRT_API_MIN(header.DataLength, CAN_COMMUNICATIONS_FRAME_DATA_SIZE);
+            can_communications_api_add_to_rx_buffer(hfdcan == &hfdcan1 ? CAN_COMMUNICATION_NETWORK_PRIMARY : CAN_COMMUNICATION_NETWORK_SECONDARY, &msg);
+        }
     }
 }
 
@@ -423,6 +463,27 @@ uint32_t fdcan_get_bus_off_count(enum CanCommunicationNetwork network) {
 
 bool fdcan_filters_overflow(void) {
     return prv_fdcan_filter_overflow;
+}
+
+void fdcan_get_tx_diagnostics(enum CanCommunicationNetwork network, struct FdcanTxDiagnostics *diagnostics) {
+    if (diagnostics == NULL) {
+        return;
+    }
+    const uint32_t index = (network == CAN_COMMUNICATION_NETWORK_PRIMARY) ? 0U : 1U;
+    const FDCAN_GlobalTypeDef *instance = (index == 0U) ? hfdcan1.Instance : hfdcan2.Instance;
+    const uint32_t ecr = instance->ECR;
+    const uint32_t psr = instance->PSR;
+    *diagnostics = (struct FdcanTxDiagnostics){
+        .transmit_errors = (ecr & FDCAN_ECR_TEC_Msk) >> FDCAN_ECR_TEC_Pos,
+        .receive_errors = (ecr & FDCAN_ECR_REC_Msk) >> FDCAN_ECR_REC_Pos,
+        .last_error_code = (psr & FDCAN_PSR_LEC_Msk) >> FDCAN_PSR_LEC_Pos,
+        .error_passive = (psr & FDCAN_PSR_EP_Msk) != 0U,
+        .tx_fifo_free = (instance->TXFQS & FDCAN_TXFQS_TFFL_Msk) >> FDCAN_TXFQS_TFFL_Pos,
+        .refused = prv_fdcan_tx[index].refused,
+        .unjams = prv_fdcan_tx[index].unjams,
+        .restricted_exits = prv_fdcan_tx[index].restricted_exits,
+        .bus_offs = prv_fdcan_bus_off_count[index],
+    };
 }
 
 /* USER CODE END 1 */

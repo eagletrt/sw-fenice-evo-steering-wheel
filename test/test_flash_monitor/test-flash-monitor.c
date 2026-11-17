@@ -141,7 +141,7 @@ void test_flash_monitor_table_names_fit_the_screen(void) {
         TEST_ASSERT_NOT_NULL(target->name);
         TEST_ASSERT_TRUE(strlen(target->name) > 0U);
         const uint16_t width = font_api_length(target->name, SPLASH_NAME_FONT_SIZE, &font_inter);
-        TEST_ASSERT_TRUE_MESSAGE(width <= SPLASH_SCREEN_WIDTH - 2U * TEST_FLASH_NAME_MARGIN, target->name);
+        TEST_ASSERT_TRUE_MESSAGE(width <= STYLE_SCREEN_WIDTH - 2U * TEST_FLASH_NAME_MARGIN, target->name);
     }
 }
 

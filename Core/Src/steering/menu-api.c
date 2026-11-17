@@ -99,12 +99,12 @@ enum MenuReturnCode menu_api_init(struct MenuHandler *handler, const struct Font
     }
     memset(handler, 0, sizeof(*handler));
 
-    const uint16_t half = MENU_SCREEN_WIDTH / 2U;
+    const uint16_t half = STYLE_SCREEN_WIDTH / 2U;
     const uint16_t status_width = MENU_ROW_WIDTH - MENU_NAME_WIDTH;
-    bool ok = box_api_init(&handler->boxes[MENU_BOX_BACKGROUND], MENU_BOX_BACKGROUND, (struct BoxRectangle){ 0U, MENU_TITLE_HEIGHT, MENU_SCREEN_WIDTH, MENU_HINTS_Y - MENU_TITLE_HEIGHT }, (struct Color){ .argb = MENU_COLOR_BACKGROUND }, NULL) == RASTER_RC_OK;
+    bool ok = box_api_init(&handler->boxes[MENU_BOX_BACKGROUND], MENU_BOX_BACKGROUND, (struct BoxRectangle){ 0U, MENU_TITLE_HEIGHT, STYLE_SCREEN_WIDTH, MENU_HINTS_Y - MENU_TITLE_HEIGHT }, (struct Color){ .argb = MENU_COLOR_BACKGROUND }, NULL) == RASTER_RC_OK;
     ok = ok && prv_menu_api_box(handler, MENU_BOX_TITLE, (struct BoxRectangle){ 0U, 0U, half, MENU_TITLE_HEIGHT }, MENU_COLOR_BAR, MENU_TITLE_TEXT_X, MENU_TITLE_TEXT_Y, font, MENU_TITLE_FONT_SIZE, FONT_ALIGN_LEFT);
     ok = ok && prv_menu_api_box(handler, MENU_BOX_TS, (struct BoxRectangle){ half, 0U, half, MENU_TITLE_HEIGHT }, MENU_COLOR_BAR, (int16_t)(MENU_TS_TEXT_RIGHT - half), MENU_TS_TEXT_Y, font, MENU_TS_FONT_SIZE, FONT_ALIGN_RIGHT);
-    ok = ok && prv_menu_api_box(handler, MENU_BOX_HINTS, (struct BoxRectangle){ 0U, MENU_HINTS_Y, MENU_SCREEN_WIDTH, MENU_SCREEN_HEIGHT - MENU_HINTS_Y }, MENU_COLOR_BAR, (int16_t)half, MENU_HINTS_TEXT_Y, font, MENU_HINTS_FONT_SIZE, FONT_ALIGN_CENTER);
+    ok = ok && prv_menu_api_box(handler, MENU_BOX_HINTS, (struct BoxRectangle){ 0U, MENU_HINTS_Y, STYLE_SCREEN_WIDTH, STYLE_SCREEN_HEIGHT - MENU_HINTS_Y }, MENU_COLOR_BAR, (int16_t)half, MENU_HINTS_TEXT_Y, font, MENU_HINTS_FONT_SIZE, FONT_ALIGN_CENTER);
     for (uint8_t item = 0U; ok && item < MENU_ITEM_COUNT; item++) {
         const uint16_t y = (uint16_t)(MENU_ROW_Y + (item * MENU_ROW_PITCH));
         ok = prv_menu_api_box(handler, (uint8_t)(MENU_BOX_NAME_FIRST + item), (struct BoxRectangle){ MENU_ROW_X, y, MENU_NAME_WIDTH, MENU_ROW_HEIGHT }, MENU_COLOR_BACKGROUND, MENU_ROW_PADDING, MENU_NAME_TEXT_Y, font, MENU_NAME_FONT_SIZE, FONT_ALIGN_LEFT) &&

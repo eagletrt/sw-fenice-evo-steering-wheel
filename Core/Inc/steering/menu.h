@@ -23,9 +23,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MENU_SCREEN_WIDTH (800U)  /*!< Width of the display, in pixels */
-#define MENU_SCREEN_HEIGHT (480U) /*!< Height of the display, in pixels */
-
 #define MENU_TITLE_HEIGHT (72U)     /*!< Title bar, from the top */
 #define MENU_TITLE_TEXT_X (24U)     /*!< "MENU" left edge */
 #define MENU_TITLE_TEXT_Y (14U)     /*!< "MENU" top */

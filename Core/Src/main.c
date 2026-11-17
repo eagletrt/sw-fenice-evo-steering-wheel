@@ -40,6 +40,9 @@
 #include "pal-api.h"
 #include "logger-api.h"
 
+#include <stdio.h>
+#include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -160,6 +163,11 @@ EAGLETRT_STATIC void prv_main_report_stats(void) {
         EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_WARN, "d2d transfer errors %lu", dma2d_errors));
     }
 
+    // Transmit health of the primary bus: tells why a wheel that receives sends nothing.
+    struct FdcanTxDiagnostics can = { 0 };
+    fdcan_get_tx_diagnostics(CAN_COMMUNICATION_NETWORK_PRIMARY, &can);
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "can p tec %lu rec %lu lec %lu ep %u free %lu ref %lu unj %lu asm %lu", can.transmit_errors, can.receive_errors, can.last_error_code, can.error_passive ? 1U : 0U, can.tx_fifo_free, can.refused, can.unjams, can.restricted_exits));
+
     // Bus-off restarts (fdcan.c): logged only when one happened, the UART is slow.
     static uint32_t reported_bus_off[CAN_COMMUNICATION_NETWORK_COUNT];
     const uint32_t primary_bus_off = fdcan_get_bus_off_count(CAN_COMMUNICATION_NETWORK_PRIMARY);
@@ -169,6 +177,27 @@ EAGLETRT_STATIC void prv_main_report_stats(void) {
         reported_bus_off[CAN_COMMUNICATION_NETWORK_SECONDARY] = secondary_bus_off;
         EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_WARN, "can bus-off restarts p %lu s %lu", primary_bus_off, secondary_bus_off));
     }
+}
+
+/*!
+ * \brief Primary-bus transmit health for the DEBUG page (scheduler debug_text hook).
+ *
+ * \details Two buffers: the screen keeps the previous text to see a change,
+ *     so a new text never overwrites the one on display.
+ *
+ * \return E.g. "TEC 0 FREE 32 BO 0 U 0 A 0".
+ */
+EAGLETRT_STATIC const char *prv_main_debug_text(void) {
+    static char texts[2][32];
+    static uint8_t shown;
+    struct FdcanTxDiagnostics can = { 0 };
+    fdcan_get_tx_diagnostics(CAN_COMMUNICATION_NETWORK_PRIMARY, &can);
+    char *next = texts[shown ^ 1U];
+    EAGLETRT_API_UNUSED(snprintf(next, sizeof(texts[0]), "TEC %lu FREE %lu BO %lu U %lu A %lu", can.transmit_errors, can.tx_fifo_free, can.bus_offs, can.unjams, can.restricted_exits));
+    if (strcmp(next, texts[shown]) != 0) {
+        shown ^= 1U;
+    }
+    return texts[shown];
 }
 
 /*!
@@ -318,6 +347,7 @@ int main(void) {
         .cycles_per_us = SystemCoreClock / MAIN_CYCLES_PER_US_DIVIDER,
         .report_stats = prv_main_report_stats,
         .render_busy = prv_main_render_busy,
+        .debug_text = prv_main_debug_text,
     };
 
     if (scheduler_api_init(&scheduler_config) != SCHEDULER_RC_OK) {

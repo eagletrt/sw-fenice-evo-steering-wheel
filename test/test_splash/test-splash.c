@@ -22,8 +22,8 @@ FAKE_VALUE_FUNC(enum RasterReturnCode, fake_draw_rectangle, uint16_t, uint16_t, 
 FAKE_VALUE_FUNC(enum RasterReturnCode, fake_draw_mask, uint16_t, uint16_t, uint16_t, uint16_t, const uint8_t *, struct Color);
 
 /* Logo coverage drawn by the callbacks, indexed [y][x] in screen coordinates. */
-static uint8_t prv_canvas[SPLASH_SCREEN_HEIGHT][SPLASH_SCREEN_WIDTH];
-static uint8_t prv_reference[SPLASH_SCREEN_HEIGHT][SPLASH_SCREEN_WIDTH];
+static uint8_t prv_canvas[STYLE_SCREEN_HEIGHT][STYLE_SCREEN_WIDTH];
+static uint8_t prv_reference[STYLE_SCREEN_HEIGHT][STYLE_SCREEN_WIDTH];
 static uint8_t prv_scratch[SPLASH_LOGO_WIDTH * SPLASH_LOGO_HEIGHT];
 static bool prv_out_of_bounds;
 
@@ -97,16 +97,16 @@ void test_splash_boxes_tile_the_screen(void) {
     for (uint8_t i = 0U; i < SPLASH_BOX_COUNT; i++) {
         const struct BoxRectangle rect = prv_splash.boxes[i].rect;
         TEST_ASSERT_EQUAL_UINT16(0U, rect.x);
-        TEST_ASSERT_EQUAL_UINT16(SPLASH_SCREEN_WIDTH, rect.width);
+        TEST_ASSERT_EQUAL_UINT16(STYLE_SCREEN_WIDTH, rect.width);
         TEST_ASSERT_EQUAL_UINT16_MESSAGE(y, rect.y, "Boxes must stack with no gap: a gap keeps the previous page's pixels");
         y += rect.height;
     }
-    TEST_ASSERT_EQUAL_UINT32(SPLASH_SCREEN_HEIGHT, y);
+    TEST_ASSERT_EQUAL_UINT32(STYLE_SCREEN_HEIGHT, y);
 }
 
 void test_splash_logo_sits_inside_its_box(void) {
     TEST_ASSERT_TRUE(SPLASH_LOGO_Y + SPLASH_LOGO_HEIGHT <= SPLASH_LOGO_BOX_HEIGHT);
-    TEST_ASSERT_TRUE(SPLASH_LOGO_X + SPLASH_LOGO_WIDTH <= SPLASH_SCREEN_WIDTH);
+    TEST_ASSERT_TRUE(SPLASH_LOGO_X + SPLASH_LOGO_WIDTH <= STYLE_SCREEN_WIDTH);
 }
 
 void test_splash_init_flags_every_box_with_empty_caption(void) {

@@ -34,10 +34,12 @@ static const uint32_t prv_dashboard_ids[] = {
     CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDTEMPERATUREINFO,
     CAN_PRIMARY_MESSAGE_FRAME_ID_INVERTERTEMPERATURE,
     CAN_PRIMARY_MESSAGE_FRAME_ID_MOTORTEMPERATURE,
-    CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREFRONT,
-    CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREREAR,
     CAN_PRIMARY_MESSAGE_FRAME_ID_CURRENTLAP,
-    CAN_PRIMARY_MESSAGE_FRAME_ID_LAPS,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_LVACESTIMATEDSOC,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_ESTIMATEDVEHICLEVELOCITY,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSTHROTTLE,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSBRAKE,
+    CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACKSHUTDOWN,
 };
 
 #define TEST_ROUTER_DASHBOARD_COUNT (sizeof(prv_dashboard_ids) / sizeof(prv_dashboard_ids[0]))
@@ -84,11 +86,13 @@ void test_can_router_rejects_null_frame(void) {
 
 void test_can_router_decodes_dashboard_messages(void) {
     union CanPrimaryMessages message = { 0 };
-    message.laps.totalnumber = 7U;
+    message.currentlap.number = 7U;
+    message.currentlap.deltabestlap = -0.42F;
 
-    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_LAPS, &message));
+    TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_CURRENTLAP, &message));
 
-    TEST_ASSERT_EQUAL_UINT(7U, ui_data_api_get()->lap_total);
+    TEST_ASSERT_EQUAL_UINT(7U, ui_data_api_get()->lap_current);
+    TEST_ASSERT_INT32_WITHIN(1, -420, ui_data_api_get()->lap_delta_ms);
     TEST_ASSERT_FALSE(flash_monitor_api_is_active());
 }
 
@@ -214,6 +218,64 @@ void test_can_router_silent_ecu_becomes_unknown_and_manual(void) {
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, ui_data_api_get()->autonomous, "Unknown counts as manual (D20)");
 }
 
+void test_can_router_decodes_the_driver_values(void) {
+    union CanPrimaryMessages message = { 0 };
+    message.lvacestimatedsoc.soc = 0.82F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_LVACESTIMATEDSOC, &message);
+    memset(&message, 0, sizeof(message));
+    message.estimatedvehiclevelocity.u = 24.2F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_ESTIMATEDVEHICLEVELOCITY, &message);
+    memset(&message, 0, sizeof(message));
+    message.pedalsthrottle.travel = 0.72F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSTHROTTLE, &message);
+
+    const struct UIData *ui = ui_data_api_get();
+    TEST_ASSERT_UINT8_WITHIN(1, 82U, ui->lv_soc);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(87U, ui->speed_kmh, "24.2 m/s rounded to km/h");
+    TEST_ASSERT_UINT8_WITHIN(1, 72U, ui->throttle_percent);
+}
+
+void test_can_router_brake_is_the_highest_pressure_one_percent_per_bar(void) {
+    union CanPrimaryMessages message = { 0 };
+    message.pedalsbrake.pressurefl = 40.0F;
+    message.pedalsbrake.pressurefr = 40.0F;
+    message.pedalsbrake.pressurerl = 65.4F;
+    message.pedalsbrake.pressurerr = 65.4F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSBRAKE, &message);
+    TEST_ASSERT_EQUAL_UINT8(65U, ui_data_api_get()->brake_percent);
+
+    memset(&message, 0, sizeof(message));
+    message.pedalsbrake.pressurefl = 0.9F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSBRAKE, &message);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, ui_data_api_get()->brake_percent, "0-1 bar is 0 %");
+}
+
+void test_can_router_shutdown_closed_above_the_threshold(void) {
+    union CanPrimaryMessages message = { 0 };
+    message.tsacmainboardfeedbackshutdown.sdend = 24.0F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACKSHUTDOWN, &message);
+    TEST_ASSERT_EQUAL_UINT8(1U, ui_data_api_get()->shutdown_closed);
+    message.tsacmainboardfeedbackshutdown.sdend = 3.0F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACKSHUTDOWN, &message);
+    TEST_ASSERT_EQUAL_UINT8(0U, ui_data_api_get()->shutdown_closed);
+}
+
+void test_can_router_a_frame_makes_its_source_fresh_until_it_goes_silent(void) {
+    ui_data_api_get()->stale = UI_DATA_STALE_ALL;
+    union CanPrimaryMessages message = { 0 };
+    message.pedalsthrottle.travel = 0.5F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSTHROTTLE, &message);
+    TEST_ASSERT_EQUAL_HEX16_MESSAGE(UI_DATA_STALE_ALL & (uint16_t)~UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE), ui_data_api_get()->stale, "only the throttle is fresh");
+
+    // 5 ms message: stale after the 500 ms floor, not after 15 ms.
+    prv_now = 499U;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
+    TEST_ASSERT_EQUAL_HEX16(0U, ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE));
+    prv_now = 500U;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
+    TEST_ASSERT_EQUAL_HEX16(UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE), ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE));
+}
+
 int main(void) {
     UNITY_BEGIN();
 
@@ -234,6 +296,11 @@ int main(void) {
 
     RUN_TEST(test_can_router_autonomous_follows_the_as_branch);
     RUN_TEST(test_can_router_silent_ecu_becomes_unknown_and_manual);
+
+    RUN_TEST(test_can_router_decodes_the_driver_values);
+    RUN_TEST(test_can_router_brake_is_the_highest_pressure_one_percent_per_bar);
+    RUN_TEST(test_can_router_shutdown_closed_above_the_threshold);
+    RUN_TEST(test_can_router_a_frame_makes_its_source_fresh_until_it_goes_silent);
 
     return UNITY_END();
 }

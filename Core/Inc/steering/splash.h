@@ -19,15 +19,12 @@
 
 #include "box.h"
 #include "label.h"
-#include "splash-logo.h"
 #include "style.h"
+#include "splash-logo.h"
 
 #include <stdint.h>
 
-#define SPLASH_SCREEN_WIDTH (800U)  /*!< Width of the display, in pixels */
-#define SPLASH_SCREEN_HEIGHT (480U) /*!< Height of the display, in pixels */
-
-#define SPLASH_LOGO_X ((SPLASH_SCREEN_WIDTH - SPLASH_LOGO_WIDTH) / 2U) /*!< Left edge of the logo */
+#define SPLASH_LOGO_X ((STYLE_SCREEN_WIDTH - SPLASH_LOGO_WIDTH) / 2U) /*!< Left edge of the logo */
 #define SPLASH_LOGO_Y (112U)                                           /*!< Top edge of the logo */
 
 #define SPLASH_LOGO_BOX_HEIGHT (320U) /*!< Logo box: top of the screen down to the caption */

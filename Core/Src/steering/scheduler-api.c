@@ -175,8 +175,11 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_scheduler_api_show_mode(enum WheelFsmS
         case WHEEL_FSM_STATE_MENU:
             // TODO(#11): the mission page.
             return screen_api_menu_is_mission_open() ? screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MISSION") : screen_api_set_view(SCREEN_VIEW_MENU, NULL);
-        case WHEEL_FSM_STATE_DEBUG:
-            return screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "DEBUG"); // TODO(#13)
+        case WHEEL_FSM_STATE_DEBUG: {
+            // TODO(#13): the debug pages. Until then the hardware status, if any.
+            const char *text = (scheduler_handler.config.debug_text != NULL) ? scheduler_handler.config.debug_text() : NULL;
+            return screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, (text != NULL) ? text : "DEBUG");
+        }
         case WHEEL_FSM_STATE_CALIBRATION:
             return screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "CALIBRATIONS"); // TODO(#14)
         case WHEEL_FSM_STATE_FLASH:

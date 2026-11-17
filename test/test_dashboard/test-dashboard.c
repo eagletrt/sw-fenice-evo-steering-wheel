@@ -3,389 +3,294 @@
  * \date 2026-06-07
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  *
- * \brief Unit tests for the dashboard API.
+ * \brief Unit tests for the driver dashboard: layout, formatting, colours,
+ *     stale values and the pedal bars.
  */
 
 #include "unity.h"
 #include "dashboard-api.h"
-#include "raster-fonts.h"
 #include <string.h>
 
-struct DashboardHandler dashboard_handler;
+static struct DashboardHandler dashboard;
+static struct UIData ui;
 
-/* Private helper, reachable because the test build defines EAGLETRT_STATIC as empty. */
-void prv_dashboard_api_set_label_color(struct DashboardHandler *handler, enum DashboardFieldId field_id, uint32_t argb);
+/* Clear every redraw flag, as a render does. */
+static void prv_rendered(void) {
+    for (uint8_t i = 0U; i < DASHBOARD_BOX_COUNT; i++) {
+        dashboard.boxes[i].updated = false;
+    }
+}
+
+static void prv_sync(void) {
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_OK, dashboard_api_sync(&dashboard, &ui));
+}
+
+static const char *prv_text(enum DashboardFieldId field) {
+    return dashboard.text[field];
+}
+
+static uint32_t prv_text_color(enum DashboardFieldId field) {
+    return dashboard.labels[field].color.argb;
+}
+
+static uint32_t prv_fill(enum DashboardFieldId field) {
+    return dashboard.boxes[field].color.argb;
+}
+
+/* A plausible driving snapshot, every source fresh. */
+static void prv_driving(void) {
+    memset(&ui, 0, sizeof(ui));
+    ui.vehicle_state = UI_DATA_VEHICLE_STATE_DRIVE;
+    ui.soc = 69U;
+    ui.hv_temp = 41;
+    ui.lv_soc = 82U;
+    ui.speed_kmh = 87U;
+    ui.shutdown_closed = 1U;
+    ui.inverter_temp = 52;
+    ui.motor_fl_temp = 70;
+    ui.motor_fr_temp = 74;
+    ui.motor_rl_temp = 66;
+    ui.motor_rr_temp = 68;
+    ui.lap_current = 7U;
+    ui.lap_delta_ms = -420;
+    ui.power = 6U;
+    ui.regen = 4U;
+    ui.torque = 3U;
+    ui.slip_on = 1U;
+    ui.throttle_percent = 72U;
+}
 
 void setUp(void) {
-    memset(&dashboard_handler, 0, sizeof(dashboard_handler));
-    dashboard_api_init(&dashboard_handler);
-    // Clear updated flags so each test only sees what the test itself triggered.
-    for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
-        dashboard_handler.boxes[i].updated = false;
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_OK, dashboard_api_init(&dashboard));
+    prv_driving();
+}
+
+void tearDown(void) {
+}
+
+/*!
+ * \defgroup dashboard_layout Tests for init and layout
+ * \{
+ */
+
+void test_dashboard_init_rejects_null(void) {
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, dashboard_api_init(NULL));
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, dashboard_api_sync(NULL, &ui));
+    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, dashboard_api_sync(&dashboard, NULL));
+}
+
+void test_dashboard_init_flags_every_box_inside_the_screen(void) {
+    for (uint8_t i = 0U; i < DASHBOARD_BOX_COUNT; i++) {
+        const struct BoxRectangle r = dashboard.boxes[i].rect;
+        TEST_ASSERT_TRUE(dashboard.boxes[i].updated);
+        TEST_ASSERT_TRUE_MESSAGE(r.width > 0U && r.height > 0U, "a box must have an area");
+        TEST_ASSERT_TRUE(r.x + r.width <= 800U && r.y + r.height <= 480U);
+    }
+    TEST_ASSERT_EQUAL_MESSAGE(DASHBOARD_FIELD_BACKGROUND, 0, "the grid background is drawn first");
+}
+
+void test_dashboard_label_and_value_share_their_cell(void) {
+    const enum DashboardFieldId pairs[][2] = {
+        { DASHBOARD_FIELD_MISSION_LABEL, DASHBOARD_FIELD_MISSION },
+        { DASHBOARD_FIELD_STATE_LABEL, DASHBOARD_FIELD_STATE },
+        { DASHBOARD_FIELD_HV_LABEL, DASHBOARD_FIELD_HV_SOC },
+        { DASHBOARD_FIELD_HV_SOC, DASHBOARD_FIELD_HV_TEMPERATURE },
+        { DASHBOARD_FIELD_LV_LABEL, DASHBOARD_FIELD_LV_SOC },
+        { DASHBOARD_FIELD_SPEED, DASHBOARD_FIELD_SPEED_UNIT },
+        { DASHBOARD_FIELD_SHUTDOWN_LABEL, DASHBOARD_FIELD_SHUTDOWN },
+        { DASHBOARD_FIELD_MOTOR_LABEL, DASHBOARD_FIELD_MOTOR },
+        { DASHBOARD_FIELD_POWER_LABEL, DASHBOARD_FIELD_POWER },
+        { DASHBOARD_FIELD_SLIP_LABEL, DASHBOARD_FIELD_SLIP },
+        { DASHBOARD_FIELD_THROTTLE_LABEL, DASHBOARD_FIELD_THROTTLE },
+    };
+    for (size_t i = 0U; i < sizeof(pairs) / sizeof(pairs[0]); i++) {
+        const struct BoxRectangle top = dashboard.boxes[pairs[i][0]].rect;
+        const struct BoxRectangle bottom = dashboard.boxes[pairs[i][1]].rect;
+        TEST_ASSERT_EQUAL_UINT16(top.x, bottom.x);
+        TEST_ASSERT_EQUAL_UINT16(top.width, bottom.width);
+        TEST_ASSERT_EQUAL_UINT16_MESSAGE(top.y + top.height, bottom.y, "the value box starts where the label box ends");
     }
 }
 
+/*! \} */
+
 /*!
- * \defgroup dashboard_api_init Test cases for dashboard_api_init function
+ * \defgroup dashboard_values Tests for formatting and colours
  * \{
  */
 
-void test_dashboard_init_success(void) {
-    enum DashboardReturnCode rc = dashboard_api_init(&dashboard_handler);
-    TEST_ASSERT_EQUAL_MESSAGE(DASHBOARD_RC_OK, rc, "init must return DASHBOARD_RC_OK on a valid handler");
+void test_dashboard_shows_a_driving_snapshot(void) {
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING("MANUAL", prv_text(DASHBOARD_FIELD_MISSION));
+    TEST_ASSERT_EQUAL_STRING("DRIVE", prv_text(DASHBOARD_FIELD_STATE));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ALL_OK, prv_text_color(DASHBOARD_FIELD_STATE));
+    TEST_ASSERT_EQUAL_STRING("LAP 7", prv_text(DASHBOARD_FIELD_LAP_LABEL));
+    TEST_ASSERT_EQUAL_STRING("-0.420", prv_text(DASHBOARD_FIELD_LAP_DELTA));
+    TEST_ASSERT_EQUAL_STRING("69%", prv_text(DASHBOARD_FIELD_HV_SOC));
+    TEST_ASSERT_EQUAL_STRING("41°C", prv_text(DASHBOARD_FIELD_HV_TEMPERATURE));
+    TEST_ASSERT_EQUAL_STRING("82%", prv_text(DASHBOARD_FIELD_LV_SOC));
+    TEST_ASSERT_EQUAL_STRING("87", prv_text(DASHBOARD_FIELD_SPEED));
+    TEST_ASSERT_EQUAL_STRING("CLOSED", prv_text(DASHBOARD_FIELD_SHUTDOWN));
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("74°C", prv_text(DASHBOARD_FIELD_MOTOR), "MOTOR MAX is the hottest of the four");
+    TEST_ASSERT_EQUAL_STRING("52°C", prv_text(DASHBOARD_FIELD_INVERTER));
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("--", prv_text(DASHBOARD_FIELD_BRAKE_BIAS), "no brake bias on the bus yet");
+    TEST_ASSERT_EQUAL_STRING("6", prv_text(DASHBOARD_FIELD_POWER));
+    TEST_ASSERT_EQUAL_STRING("4", prv_text(DASHBOARD_FIELD_REGEN));
+    TEST_ASSERT_EQUAL_STRING("3", prv_text(DASHBOARD_FIELD_TORQUE));
+    TEST_ASSERT_EQUAL_STRING("ON", prv_text(DASHBOARD_FIELD_SLIP));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ALL_OK, prv_text_color(DASHBOARD_FIELD_SLIP));
+    TEST_ASSERT_EQUAL_STRING("0%", prv_text(DASHBOARD_FIELD_BRAKE));
+    TEST_ASSERT_EQUAL_STRING("72%", prv_text(DASHBOARD_FIELD_THROTTLE));
 }
 
-void test_dashboard_init_null_handler(void) {
-    enum DashboardReturnCode rc = dashboard_api_init(NULL);
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, rc);
+void test_dashboard_lap_delta_colours(void) {
+    prv_sync();
+    TEST_ASSERT_EQUAL_HEX32_MESSAGE(DASHBOARD_COLOR_ALL_OK, prv_text_color(DASHBOARD_FIELD_LAP_DELTA), "faster: green");
+    ui.lap_delta_ms = 183;
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING("+0.183", prv_text(DASHBOARD_FIELD_LAP_DELTA));
+    TEST_ASSERT_EQUAL_HEX32_MESSAGE(DASHBOARD_COLOR_ERROR, prv_text_color(DASHBOARD_FIELD_LAP_DELTA), "slower: red");
+    ui.lap_delta_ms = 0;
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING("0.000", prv_text(DASHBOARD_FIELD_LAP_DELTA));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_VALUE, prv_text_color(DASHBOARD_FIELD_LAP_DELTA));
 }
 
-void test_dashboard_init_populates_every_box(void) {
-    dashboard_api_init(&dashboard_handler);
+void test_dashboard_thresholds(void) {
+    ui.soc = 18U;
+    ui.hv_temp = 47;
+    ui.motor_rr_temp = 100;
+    ui.inverter_temp = 60;
+    prv_sync();
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_WARNING, prv_text_color(DASHBOARD_FIELD_HV_SOC));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_WARNING, prv_text_color(DASHBOARD_FIELD_HV_TEMPERATURE));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, prv_text_color(DASHBOARD_FIELD_MOTOR));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_WARNING, prv_text_color(DASHBOARD_FIELD_INVERTER));
+    ui.soc = 10U;
+    prv_sync();
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, prv_text_color(DASHBOARD_FIELD_HV_SOC));
+}
 
-    uint16_t expected_ids[DASHBOARD_FIELD_COUNT];
-    uint16_t actual_ids[DASHBOARD_FIELD_COUNT];
-    const struct Label *expected_labels[DASHBOARD_FIELD_COUNT];
-    const struct Label *actual_labels[DASHBOARD_FIELD_COUNT];
-    for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
-        expected_ids[i] = i;
-        actual_ids[i] = dashboard_handler.boxes[i].id;
-        actual_labels[i] = dashboard_handler.boxes[i].label;
-        expected_labels[i] = (actual_labels[i] == NULL) ? NULL : &dashboard_handler.labels[i];
+void test_dashboard_state_names_and_colours(void) {
+    ui.vehicle_state = UI_DATA_VEHICLE_STATE_ERROR;
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING("ERROR", prv_text(DASHBOARD_FIELD_STATE));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, prv_text_color(DASHBOARD_FIELD_STATE));
+    ui.vehicle_state = UI_DATA_VEHICLE_STATE_IDLE;
+    prv_sync();
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_VALUE, prv_text_color(DASHBOARD_FIELD_STATE));
+    ui.vehicle_state = UI_DATA_VEHICLE_STATE_COUNT;
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("----", prv_text(DASHBOARD_FIELD_STATE), "unknown ECU state");
+}
+
+void test_dashboard_open_shutdown_turns_the_cell_red(void) {
+    ui.shutdown_closed = 0U;
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING("OPEN", prv_text(DASHBOARD_FIELD_SHUTDOWN));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, prv_fill(DASHBOARD_FIELD_SHUTDOWN));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, prv_fill(DASHBOARD_FIELD_SHUTDOWN_LABEL));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_VALUE, prv_text_color(DASHBOARD_FIELD_SHUTDOWN_LABEL));
+
+    ui.shutdown_closed = 1U;
+    prv_sync();
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_CELL, prv_fill(DASHBOARD_FIELD_SHUTDOWN_LABEL));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ALL_OK, prv_text_color(DASHBOARD_FIELD_SHUTDOWN));
+}
+
+void test_dashboard_ptt_turns_the_mission_cell_blue(void) {
+    ui.ptt = 1U;
+    prv_sync();
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_PTT, prv_fill(DASHBOARD_FIELD_MISSION));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_PTT, prv_fill(DASHBOARD_FIELD_MISSION_LABEL));
+    prv_rendered();
+    ui.ptt = 0U;
+    prv_sync();
+    TEST_ASSERT_TRUE_MESSAGE(dashboard.boxes[DASHBOARD_FIELD_MISSION].updated, "only the fill changes: still redrawn");
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_CELL, prv_fill(DASHBOARD_FIELD_MISSION));
+}
+
+void test_dashboard_stale_sources_show_dashes(void) {
+    ui.stale = UI_DATA_STALE_ALL;
+    ui.shutdown_closed = 0U;
+    prv_sync();
+    const enum DashboardFieldId values[] = { DASHBOARD_FIELD_LAP_DELTA, DASHBOARD_FIELD_HV_SOC, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_FIELD_LV_SOC, DASHBOARD_FIELD_SPEED, DASHBOARD_FIELD_SHUTDOWN, DASHBOARD_FIELD_MOTOR, DASHBOARD_FIELD_INVERTER, DASHBOARD_FIELD_BRAKE, DASHBOARD_FIELD_THROTTLE };
+    for (size_t i = 0U; i < sizeof(values) / sizeof(values[0]); i++) {
+        TEST_ASSERT_EQUAL_STRING("--", prv_text(values[i]));
     }
-
-    TEST_ASSERT_EQUAL_UINT16_ARRAY_MESSAGE(expected_ids, actual_ids, DASHBOARD_FIELD_COUNT, "Each box id must match its field index");
-    TEST_ASSERT_EQUAL_PTR_ARRAY_MESSAGE(expected_labels, actual_labels, DASHBOARD_FIELD_COUNT, "Labelled boxes must reference their matching label slot; background boxes must carry a NULL label");
+    TEST_ASSERT_EQUAL_STRING("LAP --", prv_text(DASHBOARD_FIELD_LAP_LABEL));
+    TEST_ASSERT_EQUAL_HEX32_MESSAGE(DASHBOARD_COLOR_VALUE, prv_text_color(DASHBOARD_FIELD_BRAKE), "a stale pedal is not red");
+    TEST_ASSERT_EQUAL_HEX32_MESSAGE(DASHBOARD_COLOR_CELL, prv_fill(DASHBOARD_FIELD_SHUTDOWN), "a silent shutdown is unknown, not open");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(1U, dashboard.boxes[DASHBOARD_FIELD_THROTTLE_BAR].rect.width, "no bar for a stale pedal");
 }
 
-void test_dashboard_init_labels_point_at_internal_buffers(void) {
-    dashboard_api_init(&dashboard_handler);
+void test_dashboard_one_stale_source_leaves_the_others(void) {
+    ui.stale = UI_DATA_STALE_BIT(UI_DATA_SOURCE_SPEED);
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING("--", prv_text(DASHBOARD_FIELD_SPEED));
+    TEST_ASSERT_EQUAL_STRING("69%", prv_text(DASHBOARD_FIELD_HV_SOC));
+}
 
-    for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
-        if (dashboard_handler.boxes[i].label == NULL) {
-            continue;
-        }
-        TEST_ASSERT_EQUAL_PTR_MESSAGE(dashboard_handler.text[i], dashboard_handler.labels[i].text, "Each labelled box's label.text must reference the handler's per-field buffer");
-        TEST_ASSERT_EQUAL_PTR_MESSAGE(&font_inter, dashboard_handler.labels[i].font, "All labels must use font_konexy");
+void test_dashboard_same_snapshot_twice_flags_nothing(void) {
+    prv_sync();
+    prv_rendered();
+    prv_sync();
+    for (uint8_t i = 0U; i < DASHBOARD_BOX_COUNT; i++) {
+        TEST_ASSERT_FALSE(dashboard.boxes[i].updated);
     }
 }
 
-void test_dashboard_init_seeds_placeholder_text(void) {
-    dashboard_api_init(&dashboard_handler);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("SCENARIO", dashboard_handler.text[DASHBOARD_FIELD_SCENARIO_HEADER], "Scenario header carries its static label");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("HV", dashboard_handler.text[DASHBOARD_FIELD_HV_HEADER], "HV header carries its static label");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("TRS", dashboard_handler.text[DASHBOARD_FIELD_TIRES_HEADER], "TRS header carries its static label");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("MTR", dashboard_handler.text[DASHBOARD_FIELD_MOTORS_HEADER], "MTR header carries its static label");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("RGN", dashboard_handler.text[DASHBOARD_FIELD_REGEN_LABEL], "Regen inline label is initialised once");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("TQ", dashboard_handler.text[DASHBOARD_FIELD_TORQUE_LABEL], "Torque inline label is initialised once");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("POW", dashboard_handler.text[DASHBOARD_FIELD_POWER_LABEL], "Power inline label is initialised once");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("SLIP", dashboard_handler.text[DASHBOARD_FIELD_SLIP_LABEL], "Slip inline label is initialised once");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("INV", dashboard_handler.text[DASHBOARD_FIELD_INVERTER_LABEL], "Inverter inline label is initialised once");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("LAP", dashboard_handler.text[DASHBOARD_FIELD_LAP_LABEL], "Lap inline label is initialised once");
-}
-
-void test_dashboard_init_box_count_matches_field_count(void) {
-    TEST_ASSERT_EQUAL_MESSAGE(DASHBOARD_FIELD_COUNT, DASHBOARD_BOX_COUNT, "Box count macro must mirror field count enum");
+void test_dashboard_one_change_flags_one_box(void) {
+    prv_sync();
+    prv_rendered();
+    ui.lv_soc = 81U;
+    prv_sync();
+    for (uint8_t i = 0U; i < DASHBOARD_BOX_COUNT; i++) {
+        TEST_ASSERT_EQUAL(i == DASHBOARD_FIELD_LV_SOC, dashboard.boxes[i].updated);
+    }
 }
 
 /*! \} */
 
 /*!
- * \defgroup dashboard_api_set_car_state Tests for dashboard_api_set_car_state
+ * \defgroup dashboard_pedals Tests for the pedal bars
  * \{
  */
 
-void test_dashboard_set_car_state_writes_text_and_flags_updated(void) {
-    enum DashboardReturnCode rc = dashboard_api_set_car_state(&dashboard_handler, "DRIVE");
-    TEST_ASSERT_EQUAL_MESSAGE(DASHBOARD_RC_OK, rc, "Setter must return OK on a valid call");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("DRIVE", dashboard_handler.text[DASHBOARD_FIELD_CAR_STATE], "State buffer must hold the new text");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_CAR_STATE].updated, "Box must be flagged updated after a real change");
+void test_dashboard_throttle_bar_grows_right_of_the_marker(void) {
+    prv_sync();
+    const struct Box *bar = &dashboard.boxes[DASHBOARD_FIELD_THROTTLE_BAR];
+    TEST_ASSERT_EQUAL_UINT16(DASHBOARD_PEDAL_BAR_X, bar->rect.x);
+    TEST_ASSERT_EQUAL_UINT16((72U * DASHBOARD_PEDAL_BAR_MAX) / 100U, bar->rect.width);
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ALL_OK, bar->color.argb);
 }
 
-void test_dashboard_set_car_fsm_state_null_handler(void) {
-    enum DashboardReturnCode rc = dashboard_api_set_car_state(NULL, "DRIVE");
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, rc);
+void test_dashboard_brake_bar_grows_left_of_the_marker(void) {
+    ui.brake_percent = 100U;
+    prv_sync();
+    const struct Box *bar = &dashboard.boxes[DASHBOARD_FIELD_BRAKE_BAR];
+    TEST_ASSERT_EQUAL_UINT16(DASHBOARD_PEDAL_BAR_MAX, bar->rect.width);
+    TEST_ASSERT_EQUAL_UINT16(DASHBOARD_PEDAL_CENTER_X - DASHBOARD_PEDAL_BAR_MAX, bar->rect.x);
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, bar->color.argb);
+    TEST_ASSERT_EQUAL_STRING("100%", prv_text(DASHBOARD_FIELD_BRAKE));
 }
 
-void test_dashboard_set_car_fsm_state_null_text(void) {
-    enum DashboardReturnCode rc = dashboard_api_set_car_state(&dashboard_handler, NULL);
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, rc);
+void test_dashboard_released_pedal_leaves_a_hidden_bar(void) {
+    prv_sync();
+    const struct Box *bar = &dashboard.boxes[DASHBOARD_FIELD_BRAKE_BAR];
+    TEST_ASSERT_EQUAL_UINT16(1U, bar->rect.width);
+    TEST_ASSERT_EQUAL_HEX32_MESSAGE(DASHBOARD_COLOR_TRACK, bar->color.argb, "a 0 % bar is drawn in the track colour");
 }
 
-/*! \} */
-
-/*!
- * \defgroup dashboard_api_set_numeric Tests for the power/regen/torque setters
- * \{
- */
-
-void test_dashboard_set_power_formats_value(void) {
-    dashboard_api_set_power(&dashboard_handler, 7U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("7", dashboard_handler.text[DASHBOARD_FIELD_POWER], "Power value field holds only the number; the 'POW' label is its own box");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated, "Power box must be flagged updated");
-}
-
-void test_dashboard_set_regen_formats_value(void) {
-    dashboard_api_set_regen(&dashboard_handler, 3U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("3", dashboard_handler.text[DASHBOARD_FIELD_REGEN], "Regen value field holds only the number; the 'RGN' label is its own box");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_REGEN].updated, "Regen box must be flagged updated");
-}
-
-void test_dashboard_set_torque_formats_value(void) {
-    dashboard_api_set_torque(&dashboard_handler, 10U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("10", dashboard_handler.text[DASHBOARD_FIELD_TORQUE], "Torque value field holds only the number; the 'TQ' label is its own box");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TORQUE].updated, "Torque box must be flagged updated");
-}
-
-void test_dashboard_set_power_null_handler(void) {
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, dashboard_api_set_power(NULL, 5U));
-}
-
-/*! \} */
-
-/*!
- * \defgroup dashboard_api_set_slip Tests for dashboard_api_set_slip
- * \{
- */
-
-void test_dashboard_set_slip_on(void) {
-    dashboard_api_set_slip(&dashboard_handler, true);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("ON", dashboard_handler.text[DASHBOARD_FIELD_SLIP], "Slip value holds only 'ON'; the 'SLIP' label is its own box");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_SLIP].updated, "Slip box must be flagged updated");
-}
-
-void test_dashboard_set_slip_off(void) {
-    dashboard_api_set_slip(&dashboard_handler, false);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("OFF", dashboard_handler.text[DASHBOARD_FIELD_SLIP], "Slip value holds only 'OFF'; the 'SLIP' label is its own box");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_SLIP].updated, "Slip box must be flagged updated");
-}
-
-void test_dashboard_set_slip_null_handler(void) {
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, dashboard_api_set_slip(NULL, true));
-}
-
-/*! \} */
-
-/*!
- * \defgroup dashboard_api_set_soc Tests for dashboard_api_set_soc
- * \{
- */
-
-void test_dashboard_set_soc_formats_percent(void) {
-    dashboard_api_set_soc(&dashboard_handler, 69U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("69%", dashboard_handler.text[DASHBOARD_FIELD_HV_SOC], "SoC must format as '<percent>%'");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to white");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated, "SoC box must be flagged updated");
-}
-
-void test_dashboard_set_soc_clamps_above_100(void) {
-    dashboard_api_set_soc(&dashboard_handler, 200U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("100%", dashboard_handler.text[DASHBOARD_FIELD_HV_SOC], "Values above 100 must clamp to '100%%'");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to white");
-}
-
-void test_dashboard_set_soc_zero(void) {
-    dashboard_api_set_soc(&dashboard_handler, 0U);
-    TEST_ASSERT_EQUAL_STRING("0%", dashboard_handler.text[DASHBOARD_FIELD_HV_SOC]);
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb, "SoC color must be set to red");
-}
-
-/*! \} */
-
-/*!
- * \defgroup dashboard_api_set_temps Tests for the temperature setters
- * \{
- */
-
-void test_dashboard_set_hv_temperature_positive(void) {
-    dashboard_api_set_hv_temperature(&dashboard_handler, 104);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("104°C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMPERATURE], "HV temp must format as '<value>°C'");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_TEMPERATURE].color.argb, "HV temp color must be set to red");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_TEMPERATURE].updated, "HV temp box must be flagged updated");
-}
-
-void test_dashboard_set_hv_temperature_negative(void) {
-    dashboard_api_set_hv_temperature(&dashboard_handler, -5);
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_HV_TEMPERATURE].color.argb, "HV temp color must be set to white");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("-5°C", dashboard_handler.text[DASHBOARD_FIELD_HV_TEMPERATURE], "HV temp must format negative values with a '-' sign as '<value>°C'");
-}
-
-void test_dashboard_set_inverter_temperature_formats_value(void) {
-    dashboard_api_set_inverter_temperature(&dashboard_handler, 22);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22°C", dashboard_handler.text[DASHBOARD_FIELD_INVERTER], "Inverter value field holds only the temperature; the 'INV' label is its own box");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_INVERTER].color.argb, "Inverter temp color must be set to white");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_INVERTER].updated, "INV box must be flagged updated");
-}
-
-/*! \} */
-
-/*!
- * \defgroup dashboard_api_set_lap Tests for the lap counter and delta
- * \{
- */
-
-void test_dashboard_set_lap_formats_current_over_total(void) {
-    dashboard_api_set_lap(&dashboard_handler, 9U, 11U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("9/11", dashboard_handler.text[DASHBOARD_FIELD_LAP], "Lap value field holds only 'current/total'; the 'LAP' label is its own box");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_LAP].updated, "Lap box must be flagged updated");
-}
-
-void test_dashboard_set_lap_delta_positive(void) {
-    dashboard_api_set_lap_delta_ms(&dashboard_handler, 1234);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("+1.234", dashboard_handler.text[DASHBOARD_FIELD_LAP_DELTA], "Positive delta must keep the '+' sign and 3-digit ms");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_LAP_DELTA].updated, "Lap delta box must be flagged updated");
-}
-
-void test_dashboard_set_lap_delta_negative(void) {
-    dashboard_api_set_lap_delta_ms(&dashboard_handler, -420);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("-0.420", dashboard_handler.text[DASHBOARD_FIELD_LAP_DELTA], "Negative delta must use a '-' sign and keep 3-digit ms");
-}
-
-void test_dashboard_set_lap_delta_zero(void) {
-    dashboard_api_set_lap_delta_ms(&dashboard_handler, 0);
-    TEST_ASSERT_EQUAL_STRING("+0.000", dashboard_handler.text[DASHBOARD_FIELD_LAP_DELTA]);
-}
-
-/*! \} */
-
-/*!
- * \defgroup dashboard_api_set_tire_motor_temps Tests for the four-temp setters
- * \{
- */
-
-void test_dashboard_set_tire_temperatures_updates_all_four(void) {
-    dashboard_api_set_tire_temperatures(&dashboard_handler, 95, 60, 10, 40);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("95°C", dashboard_handler.text[DASHBOARD_FIELD_TIRES_FRONT_LEFT], "Front-left tire reads the FL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("60°C", dashboard_handler.text[DASHBOARD_FIELD_TIRES_FRONT_RIGHT], "Front-right tire reads the FR argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("10°C", dashboard_handler.text[DASHBOARD_FIELD_TIRES_REAR_LEFT], "Rear-left tire reads the RL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("40°C", dashboard_handler.text[DASHBOARD_FIELD_TIRES_REAR_RIGHT], "Rear-right tire reads the RR argument");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_WARNING, dashboard_handler.labels[DASHBOARD_FIELD_TIRES_FRONT_LEFT].color.argb, "Front left tire color must be set to yellow");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_TIRES_FRONT_RIGHT].color.argb, "Front right tire color must be set to white");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_COLD_TIRES, dashboard_handler.labels[DASHBOARD_FIELD_TIRES_REAR_LEFT].color.argb, "Rear left tire color must be set to cyan");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_TIRES_REAR_RIGHT].color.argb, "Rear right tire color must be set to white");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TIRES_FRONT_LEFT].updated, "FL tire box must be flagged updated");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TIRES_REAR_RIGHT].updated, "RR tire box must be flagged updated");
-}
-
-void test_dashboard_set_motor_temperatures_updates_all_four(void) {
-    dashboard_api_set_motor_temperatures(&dashboard_handler, 22, 23, 81, 105);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("22°C", dashboard_handler.text[DASHBOARD_FIELD_MOTORS_FRONT_LEFT], "Front-left motor reads the FL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("23°C", dashboard_handler.text[DASHBOARD_FIELD_MOTORS_FRONT_RIGHT], "Front-right motor reads the FR argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("81°C", dashboard_handler.text[DASHBOARD_FIELD_MOTORS_REAR_LEFT], "Rear-left motor reads the RL argument");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("105°C", dashboard_handler.text[DASHBOARD_FIELD_MOTORS_REAR_RIGHT], "Rear-right motor reads the RR argument");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_MOTORS_FRONT_LEFT].color.argb, "Front left motor color must be set to white");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_SECONDARY, dashboard_handler.labels[DASHBOARD_FIELD_MOTORS_FRONT_RIGHT].color.argb, "Front right motor color must be set to white");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_WARNING, dashboard_handler.labels[DASHBOARD_FIELD_MOTORS_REAR_LEFT].color.argb, "Rear left motor color must be set to yellow");
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_MOTORS_REAR_RIGHT].color.argb, "Rear right motor color must be set to red");
-}
-
-/*! \} */
-
-/*!
- * \defgroup dashboard_api_set_ptt Tests for dashboard_api_set_ptt function
- * \{
- */
-
-void test_dashboard_set_ptt_tints_scenario_header_blue(void) {
-    enum DashboardReturnCode rc = dashboard_api_set_ptt(&dashboard_handler, true);
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_OK, rc);
-    TEST_ASSERT_EQUAL_UINT32_MESSAGE(DASHBOARD_COLOR_PTT, dashboard_handler.boxes[DASHBOARD_FIELD_SCENARIO_HEADER].color.argb, "PTT must paint the scenario header blue");
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_SCENARIO_HEADER].updated, "A fill-only change must still flag the box, or the raster skips it");
-}
-
-void test_dashboard_set_ptt_release_restores_primary_color(void) {
-    dashboard_api_set_ptt(&dashboard_handler, true);
-    dashboard_handler.boxes[DASHBOARD_FIELD_SCENARIO_HEADER].updated = false;
-
-    dashboard_api_set_ptt(&dashboard_handler, false);
-
-    TEST_ASSERT_EQUAL_UINT32(DASHBOARD_COLOR_PRIMARY, dashboard_handler.boxes[DASHBOARD_FIELD_SCENARIO_HEADER].color.argb);
-    TEST_ASSERT_TRUE(dashboard_handler.boxes[DASHBOARD_FIELD_SCENARIO_HEADER].updated);
-}
-
-void test_dashboard_set_ptt_unchanged_does_not_re_flag(void) {
-    dashboard_api_set_ptt(&dashboard_handler, true);
-    dashboard_handler.boxes[DASHBOARD_FIELD_SCENARIO_HEADER].updated = false;
-
-    dashboard_api_set_ptt(&dashboard_handler, true);
-
-    TEST_ASSERT_FALSE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_SCENARIO_HEADER].updated, "Re-applying the same PTT state must not force a redraw");
-}
-
-void test_dashboard_set_ptt_only_touches_scenario_header(void) {
-    dashboard_api_set_ptt(&dashboard_handler, true);
-    TEST_ASSERT_EQUAL_UINT32(DASHBOARD_COLOR_PRIMARY, dashboard_handler.boxes[DASHBOARD_FIELD_REGEN_BACKGROUND].color.argb);
-    TEST_ASSERT_FALSE(dashboard_handler.boxes[DASHBOARD_FIELD_REGEN_BACKGROUND].updated);
-}
-
-void test_dashboard_set_ptt_null_handler(void) {
-    TEST_ASSERT_EQUAL(DASHBOARD_RC_NULL_POINTER, dashboard_api_set_ptt(NULL, true));
-}
-
-/*! \} */
-
-/*!
- * \defgroup dashboard_label_color Tests for threshold colour changes
- * \{
- */
-
-void test_dashboard_label_color_change_flags_box(void) {
-    prv_dashboard_api_set_label_color(&dashboard_handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_ERROR);
-    TEST_ASSERT_EQUAL_UINT32(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb);
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated, "A colour-only change must flag the box, or the raster skips the redraw");
-}
-
-void test_dashboard_label_color_same_value_does_not_flag(void) {
-    prv_dashboard_api_set_label_color(&dashboard_handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_ERROR);
-    dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated = false;
-
-    prv_dashboard_api_set_label_color(&dashboard_handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_ERROR);
-
-    TEST_ASSERT_FALSE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated);
-}
-
-void test_dashboard_threshold_crossing_recolors_and_flags(void) {
-    dashboard_api_set_soc(&dashboard_handler, 80U);
-    dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated = false;
-
-    dashboard_api_set_soc(&dashboard_handler, DASHBOARD_THRESHOLD_HV_SOC_PERCENT_ERROR);
-
-    TEST_ASSERT_EQUAL_UINT32(DASHBOARD_COLOR_ERROR, dashboard_handler.labels[DASHBOARD_FIELD_HV_SOC].color.argb);
-    TEST_ASSERT_TRUE(dashboard_handler.boxes[DASHBOARD_FIELD_HV_SOC].updated);
-}
-
-/*! \} */
-
-/*!
- * \defgroup dashboard_no_op Tests for the no-op skip optimization
- * \{
- */
-
-void test_dashboard_setter_does_not_re_flag_when_value_unchanged(void) {
-    dashboard_api_set_power(&dashboard_handler, 5U);
-    dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated = false;
-
-    dashboard_api_set_power(&dashboard_handler, 5U);
-
-    TEST_ASSERT_FALSE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated, "Setting the same value twice must not re-flag the box");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("5", dashboard_handler.text[DASHBOARD_FIELD_POWER], "The text buffer must still hold the previous value");
-}
-
-void test_dashboard_setter_flags_on_real_change(void) {
-    dashboard_api_set_power(&dashboard_handler, 5U);
-    dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated = false;
-
-    dashboard_api_set_power(&dashboard_handler, 6U);
-
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated, "A genuine change must flag the box as updated");
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("6", dashboard_handler.text[DASHBOARD_FIELD_POWER], "The text buffer must hold the new value");
-}
-
-void test_dashboard_setter_only_touches_target_box(void) {
-    dashboard_api_set_power(&dashboard_handler, 5U);
-    TEST_ASSERT_TRUE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_POWER].updated, "Power box must be updated");
-    TEST_ASSERT_FALSE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_REGEN].updated, "Regen box must stay clean when only power changed");
-    TEST_ASSERT_FALSE_MESSAGE(dashboard_handler.boxes[DASHBOARD_FIELD_TORQUE].updated, "Torque box must stay clean when only power changed");
+void test_dashboard_a_shrinking_bar_redraws_the_track(void) {
+    prv_sync();
+    prv_rendered();
+    ui.throttle_percent = 30U;
+    prv_sync();
+    TEST_ASSERT_TRUE_MESSAGE(dashboard.boxes[DASHBOARD_FIELD_PEDAL_TRACK].updated, "the old bar pixels must be covered");
+    TEST_ASSERT_TRUE(dashboard.boxes[DASHBOARD_FIELD_THROTTLE_BAR].updated);
+    TEST_ASSERT_TRUE(dashboard.boxes[DASHBOARD_FIELD_BRAKE_BAR].updated);
+    TEST_ASSERT_TRUE_MESSAGE(dashboard.boxes[DASHBOARD_FIELD_PEDAL_CENTER].updated, "the marker goes back on top");
 }
 
 /*! \} */
@@ -393,55 +298,25 @@ void test_dashboard_setter_only_touches_target_box(void) {
 int main(void) {
     UNITY_BEGIN();
 
-    RUN_TEST(test_dashboard_init_success);
-    RUN_TEST(test_dashboard_init_null_handler);
-    RUN_TEST(test_dashboard_init_populates_every_box);
-    RUN_TEST(test_dashboard_init_labels_point_at_internal_buffers);
-    RUN_TEST(test_dashboard_init_seeds_placeholder_text);
-    RUN_TEST(test_dashboard_init_box_count_matches_field_count);
+    RUN_TEST(test_dashboard_init_rejects_null);
+    RUN_TEST(test_dashboard_init_flags_every_box_inside_the_screen);
+    RUN_TEST(test_dashboard_label_and_value_share_their_cell);
 
-    RUN_TEST(test_dashboard_set_car_state_writes_text_and_flags_updated);
-    RUN_TEST(test_dashboard_set_car_fsm_state_null_handler);
-    RUN_TEST(test_dashboard_set_car_fsm_state_null_text);
+    RUN_TEST(test_dashboard_shows_a_driving_snapshot);
+    RUN_TEST(test_dashboard_lap_delta_colours);
+    RUN_TEST(test_dashboard_thresholds);
+    RUN_TEST(test_dashboard_state_names_and_colours);
+    RUN_TEST(test_dashboard_open_shutdown_turns_the_cell_red);
+    RUN_TEST(test_dashboard_ptt_turns_the_mission_cell_blue);
+    RUN_TEST(test_dashboard_stale_sources_show_dashes);
+    RUN_TEST(test_dashboard_one_stale_source_leaves_the_others);
+    RUN_TEST(test_dashboard_same_snapshot_twice_flags_nothing);
+    RUN_TEST(test_dashboard_one_change_flags_one_box);
 
-    RUN_TEST(test_dashboard_set_power_formats_value);
-    RUN_TEST(test_dashboard_set_regen_formats_value);
-    RUN_TEST(test_dashboard_set_torque_formats_value);
-    RUN_TEST(test_dashboard_set_power_null_handler);
-
-    RUN_TEST(test_dashboard_set_slip_on);
-    RUN_TEST(test_dashboard_set_slip_off);
-    RUN_TEST(test_dashboard_set_slip_null_handler);
-
-    RUN_TEST(test_dashboard_set_soc_formats_percent);
-    RUN_TEST(test_dashboard_set_soc_clamps_above_100);
-    RUN_TEST(test_dashboard_set_soc_zero);
-
-    RUN_TEST(test_dashboard_set_hv_temperature_positive);
-    RUN_TEST(test_dashboard_set_hv_temperature_negative);
-    RUN_TEST(test_dashboard_set_inverter_temperature_formats_value);
-
-    RUN_TEST(test_dashboard_set_lap_formats_current_over_total);
-    RUN_TEST(test_dashboard_set_lap_delta_positive);
-    RUN_TEST(test_dashboard_set_lap_delta_negative);
-    RUN_TEST(test_dashboard_set_lap_delta_zero);
-
-    RUN_TEST(test_dashboard_set_tire_temperatures_updates_all_four);
-    RUN_TEST(test_dashboard_set_motor_temperatures_updates_all_four);
-
-    RUN_TEST(test_dashboard_set_ptt_tints_scenario_header_blue);
-    RUN_TEST(test_dashboard_set_ptt_release_restores_primary_color);
-    RUN_TEST(test_dashboard_set_ptt_unchanged_does_not_re_flag);
-    RUN_TEST(test_dashboard_set_ptt_only_touches_scenario_header);
-    RUN_TEST(test_dashboard_set_ptt_null_handler);
-
-    RUN_TEST(test_dashboard_label_color_change_flags_box);
-    RUN_TEST(test_dashboard_label_color_same_value_does_not_flag);
-    RUN_TEST(test_dashboard_threshold_crossing_recolors_and_flags);
-
-    RUN_TEST(test_dashboard_setter_does_not_re_flag_when_value_unchanged);
-    RUN_TEST(test_dashboard_setter_flags_on_real_change);
-    RUN_TEST(test_dashboard_setter_only_touches_target_box);
+    RUN_TEST(test_dashboard_throttle_bar_grows_right_of_the_marker);
+    RUN_TEST(test_dashboard_brake_bar_grows_left_of_the_marker);
+    RUN_TEST(test_dashboard_released_pedal_leaves_a_hidden_bar);
+    RUN_TEST(test_dashboard_a_shrinking_bar_redraws_the_track);
 
     return UNITY_END();
 }

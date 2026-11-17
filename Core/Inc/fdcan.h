@@ -42,6 +42,27 @@ extern FDCAN_HandleTypeDef hfdcan2;
 
 /* USER CODE BEGIN Private defines */
 
+/*!
+ * \brief Transmit health of one FDCAN, to tell apart why frames don't go out.
+ *
+ * \details A wheel that receives but sends nothing shows one of three
+ *     patterns: bus_offs and transmit_errors climbing (the frames leave the
+ *     controller but never reach the bus: transceiver / TX line), unjams
+ *     climbing with transmit_errors low (requests stuck in the Tx FIFO), or
+ *     restricted_exits climbing (restricted operation mode).
+ */
+struct FdcanTxDiagnostics {
+    uint32_t transmit_errors;  /*!< ECR.TEC, 0..255 (bus-off past 255) */
+    uint32_t receive_errors;   /*!< ECR.REC, 0..127 */
+    uint32_t last_error_code;  /*!< PSR.LEC: 0 none, 1 stuff, 2 form, 3 ack, 4 bit1, 5 bit0, 6 crc, 7 unchanged */
+    bool error_passive;        /*!< PSR.EP */
+    uint32_t tx_fifo_free;     /*!< TXFQS.TFFL, free Tx FIFO elements */
+    uint32_t refused;          /*!< Frames refused by a full Tx FIFO since boot */
+    uint32_t unjams;           /*!< Times every pending request was cancelled */
+    uint32_t restricted_exits; /*!< Times restricted operation mode was left */
+    uint32_t bus_offs;         /*!< Bus-off restarts since boot */
+};
+
 /* USER CODE END Private defines */
 
 void MX_FDCAN1_Init(void);
@@ -98,6 +119,14 @@ uint32_t fdcan_get_bus_off_count(enum CanCommunicationNetwork network);
  * \return true if some identifiers the router decodes are dropped in hardware.
  */
 bool fdcan_filters_overflow(void);
+
+/*!
+ * \brief Read the transmit health of a network.
+ *
+ * \param network CAN_COMMUNICATION_NETWORK_PRIMARY or CAN_COMMUNICATION_NETWORK_SECONDARY.
+ * \param[out] diagnostics Filled with the current registers and counters (ignored if NULL).
+ */
+void fdcan_get_tx_diagnostics(enum CanCommunicationNetwork network, struct FdcanTxDiagnostics *diagnostics);
 
 /* USER CODE END Prototypes */
 

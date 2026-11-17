@@ -112,7 +112,7 @@ void test_popup_api_show_after_dismiss_redraws_name_box(void) {
 
 void test_popup_api_show_after_timeout_redraws_name_box(void) {
     popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
-    prv_at(SCREEN_POPUP_TIMEOUT_MS);
+    prv_at(STYLE_POPUP_TIMEOUT_MS);
     popup_handler.boxes[1].updated = false;
 
     popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5);
@@ -162,10 +162,10 @@ void test_popup_api_is_active_until_the_timeout(void) {
     prv_at(100U);
     popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 4);
 
-    prv_at(100U + SCREEN_POPUP_TIMEOUT_MS - 1U);
+    prv_at(100U + STYLE_POPUP_TIMEOUT_MS - 1U);
     TEST_ASSERT_TRUE_MESSAGE(popup_api_is_active(&popup_handler), "Popup should be active within timeout");
 
-    prv_at(100U + SCREEN_POPUP_TIMEOUT_MS);
+    prv_at(100U + STYLE_POPUP_TIMEOUT_MS);
     TEST_ASSERT_FALSE_MESSAGE(popup_api_is_active(&popup_handler), "Popup should be inactive exactly at the timeout");
 }
 
@@ -174,10 +174,10 @@ void test_popup_api_is_active_new_change_restarts_the_timeout(void) {
     prv_at(1000U);
     popup_api_show(&popup_handler, INPUTS_SHARED_PARAMETER_ID_POWER, 5);
 
-    prv_at(SCREEN_POPUP_TIMEOUT_MS);
+    prv_at(STYLE_POPUP_TIMEOUT_MS);
     TEST_ASSERT_TRUE_MESSAGE(popup_api_is_active(&popup_handler), "The second change restarted the timeout");
 
-    prv_at(1000U + SCREEN_POPUP_TIMEOUT_MS);
+    prv_at(1000U + STYLE_POPUP_TIMEOUT_MS);
     TEST_ASSERT_FALSE(popup_api_is_active(&popup_handler));
 }
 

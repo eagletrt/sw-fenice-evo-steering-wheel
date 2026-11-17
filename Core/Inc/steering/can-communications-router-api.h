@@ -23,6 +23,7 @@
 
 #include "can-communications.h"
 #include "inputs-shared.h"
+#include "ui-data.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -34,9 +35,9 @@
  * \details Must not exceed FDCAN1 StdFiltersNbr in the .ioc (64 slots are
  *     reserved there, so new messages need no CubeMX change until then).
  */
-#define CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (10U)
+#define CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (12U)
 
-#define CAN_COMMUNICATIONS_ROUTER_TIMEOUT_COUNT (1U) /*!< Timeouts the router takes from the pool (EcuFsm staleness) */
+#define CAN_COMMUNICATIONS_ROUTER_TIMEOUT_COUNT (1U + (uint8_t)UI_DATA_SOURCE_COUNT) /*!< Timeouts the router takes from the pool: EcuFsm + one per UIDataSource */
 
 /*!
  * \brief A range of standard identifiers the FDCAN lets through (one filter element).

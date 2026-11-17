@@ -4,141 +4,112 @@
  * \authors Alessandro Bridi [ale.bridi15@gmail.com]
  * \ingroup Core
  *
- * \brief Implementation of the dashboard layout and setters.
+ * \brief Implementation of the driver dashboard layout and its sync.
  *
- * \details The layout table drives initialization: each entry pins one
- *     field to a screen rectangle, a font size and a text color. Setters
- *     each touch exactly one field's value buffer and flag its box as
- *     updated. Adding a new field is a row in the table + (if needed) a
- *     setter; no other module needs to change.
+ * \details The layout table drives initialization: each row pins one box to
+ *     a rectangle, a font size, a text offset and colours (coordinates 1:1
+ *     from the Figma draft). dashboard_api_sync formats the UI data snapshot
+ *     into the boxes and flags only what changed.
  */
 
 #include "dashboard-api.h"
-#include "dashboard.h"
+
 #include "box-api.h"
-#include "style.h"
+#include "eagletrt-api.h"
 #include "label-api.h"
 #include "raster-fonts.h"
-#include "eagletrt-api.h"
+
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-/* ----- layout table -----
- *
- * The 800x480 surface is split into three vertical strips:
- *   left   (  0..220) — scenario presets and toggles
- *   center (220..520) — vehicle state and HV/INV telemetry
- *   right  (520..800) — lap counter and tire/motor temperatures
- */
-
 /*!
- * \brief Static descriptor for one drawable on the dashboard.
+ * \brief Static descriptor of one box.
  */
 struct DashboardFieldLayout {
-    struct BoxRectangle rect; /*!< Where the box sits on the 800x480 canvas */
-    uint16_t font_size;       /*!< Pixel height of the rendered text (labelled boxes only) */
-    uint32_t background_argb; /*!< Fill colour of the box itself */
-    uint32_t text_argb;       /*!< Foreground colour of the label (labelled boxes only) */
-    const char *initial_text; /*!< Placeholder shown until the first setter call, or NULL for background-only */
+    struct BoxRectangle rect; /*!< Where the box sits on the 800x480 screen */
+    uint16_t font_size;       /*!< Pixel height of the text (labelled boxes only) */
+    int16_t offset_y;         /*!< Text top, from the top of the box (Figma text y) */
+    uint32_t background_argb; /*!< Box fill */
+    uint32_t text_argb;       /*!< Text colour (labelled boxes only) */
+    const char *initial_text; /*!< Text until the first sync, NULL for a box without a label */
 };
 
+#define DASHBOARD_LABEL(x, y, w, h, size, offset, text) { { x, y, w, h }, size, offset, DASHBOARD_COLOR_CELL, DASHBOARD_COLOR_LABEL, text }
+#define DASHBOARD_VALUE(x, y, w, h, size, offset) { { x, y, w, h }, size, offset, DASHBOARD_COLOR_CELL, DASHBOARD_COLOR_VALUE, DASHBOARD_NO_VALUE }
+#define DASHBOARD_FILL(x, y, w, h, argb) { { x, y, w, h }, 0U, 0, argb, 0U, NULL }
+#define DASHBOARD_SECTOR(i) DASHBOARD_FILL(578U + (27U * (i)), 81U, 25U, 8U, DASHBOARD_COLOR_SECTOR)
+
 // clang-format off
+EAGLETRT_STATIC const struct DashboardFieldLayout prv_dashboard_api_layout[DASHBOARD_FIELD_COUNT] = {
+    [DASHBOARD_FIELD_BACKGROUND]       = DASHBOARD_FILL(  0,   0, 800, 480, DASHBOARD_COLOR_SCREEN),
 
-EAGLETRT_STATIC const struct DashboardFieldLayout prv_dashboard_layout[DASHBOARD_FIELD_COUNT] = {
-    /*
-     * Z-order: every entry is drawn in array order, so the dashboard-wide white
-     * background paints first; the dark section backgrounds paint on top of it
-     * (leaving 2px of white visible as inter-section dividers); the labels and
-     * values paint last on top of their section background.
-     *
-     * `initial_text == NULL` marks a background-only box: no glyphs, no Label
-     * slot consumed — the renderer just fills the rectangle with the box's
-     * background colour.
-     */
-    [DASHBOARD_FIELD_DASHBOARD_BACKGROUND] = { {   0,   0, 800, 480 }, 0,                                 STYLE_LIGHT_GRAY, 0,                         NULL       },
+    [DASHBOARD_FIELD_MISSION_LABEL]    = DASHBOARD_LABEL(  1,   1, 230,  38, 20, 10, "MISSION"),
+    [DASHBOARD_FIELD_MISSION]          = DASHBOARD_VALUE(  1,  39, 230,  56, 40,  0),
+    [DASHBOARD_FIELD_STATE_LABEL]      = DASHBOARD_LABEL(233,   1, 334,  38, 20, 10, "STATE"),
+    [DASHBOARD_FIELD_STATE]            = DASHBOARD_VALUE(233,  39, 334,  56, 40,  0),
+    [DASHBOARD_FIELD_LAP_LABEL]        = DASHBOARD_LABEL(569,   1, 230,  26, 20,  6, "LAP --"),
+    [DASHBOARD_FIELD_LAP_DELTA]        = DASHBOARD_VALUE(569,  27, 230,  53, 40,  0),
+    [DASHBOARD_FIELD_LAP_STRIP]        = DASHBOARD_FILL(569,  80, 230,  15, DASHBOARD_COLOR_CELL),
+    [DASHBOARD_FIELD_MICROSECTOR_1]    = DASHBOARD_SECTOR(0),
+    [DASHBOARD_FIELD_MICROSECTOR_2]    = DASHBOARD_SECTOR(1),
+    [DASHBOARD_FIELD_MICROSECTOR_3]    = DASHBOARD_SECTOR(2),
+    [DASHBOARD_FIELD_MICROSECTOR_4]    = DASHBOARD_SECTOR(3),
+    [DASHBOARD_FIELD_MICROSECTOR_5]    = DASHBOARD_SECTOR(4),
+    [DASHBOARD_FIELD_MICROSECTOR_6]    = DASHBOARD_SECTOR(5),
+    [DASHBOARD_FIELD_MICROSECTOR_7]    = DASHBOARD_SECTOR(6),
+    [DASHBOARD_FIELD_MICROSECTOR_8]    = DASHBOARD_SECTOR(7),
 
-    /* left strip: small label box on the left, big value box on the right of each row. */
-    [DASHBOARD_FIELD_SCENARIO_HEADER]      = { {   0,   0, 262,  92 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "SCENARIO" },
-    [DASHBOARD_FIELD_REGEN_BACKGROUND]     = { {   0,  94, 262,  95 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_REGEN_LABEL]          = { {  14, 117, 118,  52 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "RGN"      },
-    [DASHBOARD_FIELD_REGEN]                = { { 132, 117, 118,  52 }, DASHBOARD_FONT_SIZE_VALUE,         DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--"       },
-    [DASHBOARD_FIELD_TORQUE_BACKGROUND]    = { {   0, 191, 262,  94 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_TORQUE_LABEL]         = { {  14, 212, 118,  52 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "TQ"       },
-    [DASHBOARD_FIELD_TORQUE]               = { { 132, 212, 118,  52 }, DASHBOARD_FONT_SIZE_VALUE,         DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--"       },
-    [DASHBOARD_FIELD_POWER_BACKGROUND]     = { {   0, 287, 262,  94 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_POWER_LABEL]          = { {  14, 308, 118,  52 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "POW"      },
-    [DASHBOARD_FIELD_POWER]                = { { 132, 308, 118,  52 }, DASHBOARD_FONT_SIZE_VALUE,         DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--"       },
-    [DASHBOARD_FIELD_SLIP_BACKGROUND]      = { {   0, 383, 262,  97 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_SLIP_LABEL]           = { {  14, 405, 118,  52 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "SLIP"     },
-    [DASHBOARD_FIELD_SLIP]                 = { { 132, 405, 118,  52 }, DASHBOARD_FONT_SIZE_VALUE,         DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--"       },
+    [DASHBOARD_FIELD_HV_LABEL]         = DASHBOARD_LABEL(  1,  97, 230,  35, 20,  7, "HV"),
+    [DASHBOARD_FIELD_HV_SOC]           = DASHBOARD_VALUE(  1, 132, 230,  72, 56,  0),
+    [DASHBOARD_FIELD_HV_TEMPERATURE]   = DASHBOARD_VALUE(  1, 204, 230,  33, 22,  0),
+    [DASHBOARD_FIELD_LV_LABEL]         = DASHBOARD_LABEL(  1, 239, 230,  39, 20, 15, "LV"),
+    [DASHBOARD_FIELD_LV_SOC]           = DASHBOARD_VALUE(  1, 278, 230,  63, 40,  0),
 
-    /* center strip */
-    [DASHBOARD_FIELD_CAR_STATE]            = { { 264,   0, 272,  92 }, DASHBOARD_FONT_SIZE_STATE,         DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "----"     },
-    [DASHBOARD_FIELD_HV_BACKGROUND]        = { { 264,  94, 272, 252 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_HV_HEADER]            = { { 351, 110,  98,  35 }, DASHBOARD_FONT_SIZE_HEADER,        DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "HV"       },
-    [DASHBOARD_FIELD_HV_SOC]               = { { 284, 158, 231, 118 }, DASHBOARD_FONT_SIZE_SOC,           DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--%"      },
-    [DASHBOARD_FIELD_HV_TEMPERATURE]       = { { 329, 286, 141,  48 }, DASHBOARD_FONT_SIZE_HEADER,        DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_WARNING,   "--°C"},
-    [DASHBOARD_FIELD_INVERTER_BACKGROUND]  = { { 264, 348, 272, 132 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_INVERTER_LABEL]       = { { 368, 362,  64,  38 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "INV"      },
-    [DASHBOARD_FIELD_INVERTER]             = { { 339, 406, 121,  61 }, DASHBOARD_FONT_SIZE_VALUE,         DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"},
+    [DASHBOARD_FIELD_SPEED]            = DASHBOARD_VALUE(233,  97, 334, 138, 112, 2),
+    [DASHBOARD_FIELD_SPEED_UNIT]       = DASHBOARD_LABEL(233, 235, 334,  26, 20,  0, "KM/H"),
+    [DASHBOARD_FIELD_SHUTDOWN_LABEL]   = DASHBOARD_LABEL(233, 263, 334,  29, 16, 10, "SHUTDOWN"),
+    [DASHBOARD_FIELD_SHUTDOWN]         = DASHBOARD_VALUE(233, 292, 334,  49, 32,  0),
 
-    /* right strip */
-    [DASHBOARD_FIELD_LAP_BACKGROUND]       = { { 538,   0, 264, 131 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_LAP_LABEL]            = { { 574,  21,  70,  35 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "LAP"      },
-    [DASHBOARD_FIELD_LAP]                  = { { 667,  11, 120,  45 }, DASHBOARD_FONT_SIZE_VALUE,         DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "-/-"      },
-    [DASHBOARD_FIELD_LAP_DELTA]            = { { 565,  73, 203,  42 }, DASHBOARD_FONT_SIZE_DELTA,         DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "0.000"    },
-    [DASHBOARD_FIELD_TIRES_BACKGROUND]     = { { 538, 133, 264, 175 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_TIRES_HEADER]         = { { 609, 139, 118,  25 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "TRS"      },
-    [DASHBOARD_FIELD_TIRES_FRONT_LEFT]     = { { 565, 176,  88,  42 }, DASHBOARD_FONT_SIZE_MOTORS_PIXELS, DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"     },
-    [DASHBOARD_FIELD_TIRES_FRONT_RIGHT]    = { { 683, 176,  88,  42 }, DASHBOARD_FONT_SIZE_MOTORS_PIXELS, DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"     },
-    [DASHBOARD_FIELD_TIRES_REAR_LEFT]      = { { 565, 249,  88,  42 }, DASHBOARD_FONT_SIZE_MOTORS_PIXELS, DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"     },
-    [DASHBOARD_FIELD_TIRES_REAR_RIGHT]     = { { 682, 249,  88,  42 }, DASHBOARD_FONT_SIZE_MOTORS_PIXELS, DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"     },
-    [DASHBOARD_FIELD_MOTORS_BACKGROUND]    = { { 538, 310, 264, 170 }, 0,                                 DASHBOARD_COLOR_PRIMARY,   0,                         NULL       },
-    [DASHBOARD_FIELD_MOTORS_HEADER]        = { { 609, 312, 118,  25 }, DASHBOARD_FONT_SIZE_FIELD_LABEL,   DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "MTR"      },
-    [DASHBOARD_FIELD_MOTORS_FRONT_LEFT]    = { { 565, 348,  88,  42 }, DASHBOARD_FONT_SIZE_MOTORS_PIXELS, DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"     },
-    [DASHBOARD_FIELD_MOTORS_FRONT_RIGHT]   = { { 683, 348,  88,  42 }, DASHBOARD_FONT_SIZE_MOTORS_PIXELS, DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"     },
-    [DASHBOARD_FIELD_MOTORS_REAR_LEFT]     = { { 565, 422,  88,  42 }, DASHBOARD_FONT_SIZE_MOTORS_PIXELS, DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"     },
-    [DASHBOARD_FIELD_MOTORS_REAR_RIGHT]    = { { 682, 422,  88,  42 }, DASHBOARD_FONT_SIZE_MOTORS_PIXELS, DASHBOARD_COLOR_PRIMARY,   DASHBOARD_COLOR_SECONDARY, "--°C"     },
+    [DASHBOARD_FIELD_MOTOR_LABEL]      = DASHBOARD_LABEL(569,  97, 230,  28, 16,  9, "MOTOR MAX"),
+    [DASHBOARD_FIELD_MOTOR]            = DASHBOARD_VALUE(569, 125, 230,  52, 36,  0),
+    [DASHBOARD_FIELD_INVERTER_LABEL]   = DASHBOARD_LABEL(569, 179, 230,  28, 16,  9, "INVERTER MAX"),
+    [DASHBOARD_FIELD_INVERTER]         = DASHBOARD_VALUE(569, 207, 230,  52, 36,  0),
+    [DASHBOARD_FIELD_BRAKE_BIAS_LABEL] = DASHBOARD_LABEL(569, 261, 230,  28, 16,  9, "BRAKE BIAS"),
+    [DASHBOARD_FIELD_BRAKE_BIAS]       = DASHBOARD_VALUE(569, 289, 230,  52, 36,  0),
+
+    [DASHBOARD_FIELD_POWER_LABEL]      = DASHBOARD_LABEL(  1, 343, 198,  25, 16,  6, "POWER"),
+    [DASHBOARD_FIELD_POWER]            = DASHBOARD_VALUE(  1, 368, 198,  53, 40,  0),
+    [DASHBOARD_FIELD_REGEN_LABEL]      = DASHBOARD_LABEL(201, 343, 198,  25, 16,  6, "REGEN"),
+    [DASHBOARD_FIELD_REGEN]            = DASHBOARD_VALUE(201, 368, 198,  53, 40,  0),
+    [DASHBOARD_FIELD_TORQUE_LABEL]     = DASHBOARD_LABEL(401, 343, 198,  25, 16,  6, "TORQUE"),
+    [DASHBOARD_FIELD_TORQUE]           = DASHBOARD_VALUE(401, 368, 198,  53, 40,  0),
+    [DASHBOARD_FIELD_SLIP_LABEL]       = DASHBOARD_LABEL(601, 343, 198,  25, 16,  6, "SLIP"),
+    [DASHBOARD_FIELD_SLIP]             = DASHBOARD_VALUE(601, 368, 198,  53, 40,  0),
+
+    [DASHBOARD_FIELD_BRAKE_LABEL]      = DASHBOARD_LABEL(  1, 423, 118,  22, 16,  4, "BRAKE"),
+    [DASHBOARD_FIELD_BRAKE]            = DASHBOARD_VALUE(  1, 445, 118,  34, 24,  0),
+    [DASHBOARD_FIELD_PEDAL_PANEL]      = DASHBOARD_FILL(119, 423, 562,  56, DASHBOARD_COLOR_CELL),
+    [DASHBOARD_FIELD_PEDAL_TRACK]      = DASHBOARD_FILL(120, 431, 560,  40, DASHBOARD_COLOR_TRACK),
+    [DASHBOARD_FIELD_BRAKE_BAR]        = DASHBOARD_FILL(398, 435,   1,  32, DASHBOARD_COLOR_TRACK),
+    [DASHBOARD_FIELD_THROTTLE_BAR]     = DASHBOARD_FILL(403, 435,   1,  32, DASHBOARD_COLOR_TRACK),
+    [DASHBOARD_FIELD_PEDAL_CENTER]     = DASHBOARD_FILL(DASHBOARD_PEDAL_CENTER_X, 427, 4, 48, STYLE_WHITE),
+    [DASHBOARD_FIELD_THROTTLE_LABEL]   = DASHBOARD_LABEL(681, 423, 118,  22, 16,  4, "THROTTLE"),
+    [DASHBOARD_FIELD_THROTTLE]         = DASHBOARD_VALUE(681, 445, 118,  34, 24,  0),
 };
 // clang-format on
 
 /*!
- * \brief Pixel offset from a box's top-left to its label anchor.
- *
- * \details With FONT_ALIGN_CENTER the X anchor is the horizontal middle of
- *     the box; the Y anchor is the top of the rendered glyphs, so we center
- *     the line vertically against the box height.
+ * \brief Set a field's text, flagging its box only on a real change.
  */
-EAGLETRT_STATIC int16_t prv_dashboard_api_label_offset_y(uint16_t box_height, uint16_t font_size) {
-    if (box_height <= font_size) {
-        return 0;
-    }
-    return (int16_t)((box_height - font_size) / 2U);
-}
-
-/*!
- * \brief Refresh one field's text buffer and mark its box dirty if it changed.
- *
- * \details Formats into a scratch buffer first and compares to the current
- *     content: if identical we leave the box's \c updated flag alone so the
- *     raster stays in partial mode when the consumer calls every setter each
- *     tick. The label keeps the per-field buffer pointer set at init, so
- *     updating it in place is enough to drive the next render.
- */
-EAGLETRT_STATIC void prv_dashboard_api_format_field(struct DashboardHandler *handler, enum DashboardFieldId field_id, const char *fmt, ...) {
+__attribute__((format(printf, 3, 4))) EAGLETRT_STATIC void prv_dashboard_api_format_field(struct DashboardHandler *handler, enum DashboardFieldId field_id, const char *fmt, ...) {
     char scratch[DASHBOARD_TEXT_BUFFER_SIZE];
     va_list args;
     va_start(args, fmt);
-    if (vsnprintf(scratch, sizeof(scratch), fmt, args) < 0) {
-        /* Formatting error, leave the field unchanged. */
-        va_end(args);
-        return;
-    }
+    const int written = vsnprintf(scratch, sizeof(scratch), fmt, args);
     va_end(args);
-
-    if (strncmp(scratch, handler->text[field_id], DASHBOARD_TEXT_BUFFER_SIZE) == 0) {
+    if (written < 0 || strncmp(scratch, handler->text[field_id], DASHBOARD_TEXT_BUFFER_SIZE) == 0) {
         return;
     }
     memcpy(handler->text[field_id], scratch, sizeof(scratch));
@@ -146,283 +117,243 @@ EAGLETRT_STATIC void prv_dashboard_api_format_field(struct DashboardHandler *han
 }
 
 /*!
- * \brief Set the text colour of a field, flagging the box only on a real change.
- *
- * \details Threshold colours are applied after the text. Today a colour change
- *     always comes with a text change, but a colour can also depend on something
- *     the text doesn't show (staleness, a limit from another message), and then
- *     nothing else would mark the box dirty and the raster would skip it.
- *
- * \param[in,out] handler  Dashboard storage.
- * \param[in]     field_id Field whose label colour is set.
- * \param[in]     argb     New label colour.
+ * \brief Set a field's background and text colours, flagging its box only on a real change.
  */
-EAGLETRT_STATIC void prv_dashboard_api_set_label_color(struct DashboardHandler *handler, enum DashboardFieldId field_id, uint32_t argb) {
-    if (handler->labels[field_id].color.argb == argb) {
+EAGLETRT_STATIC void prv_dashboard_api_set_colors(struct DashboardHandler *handler, enum DashboardFieldId field_id, uint32_t background_argb, uint32_t text_argb) {
+    struct Box *box = &handler->boxes[field_id];
+    if (box->color.argb == background_argb && handler->labels[field_id].color.argb == text_argb) {
         return;
     }
-    handler->labels[field_id].color.argb = argb;
-    handler->boxes[field_id].updated = true;
+    box->color.argb = background_argb;
+    handler->labels[field_id].color.argb = text_argb;
+    box->updated = true;
+}
+
+/*!
+ * \brief Text colour of a value against a "higher is worse" warning/error pair.
+ */
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+EAGLETRT_STATIC uint32_t prv_dashboard_api_high_color(int32_t value, int32_t warning, int32_t error) {
+    if (value >= error) {
+        return DASHBOARD_COLOR_ERROR;
+    }
+    return (value >= warning) ? DASHBOARD_COLOR_WARNING : DASHBOARD_COLOR_VALUE;
+}
+
+/*!
+ * \brief Show a temperature, "--" when stale.
+ */
+EAGLETRT_STATIC void prv_dashboard_api_temperature(struct DashboardHandler *handler, enum DashboardFieldId field_id, bool stale, int16_t celsius, int32_t warning, int32_t error) {
+    if (stale) {
+        prv_dashboard_api_format_field(handler, field_id, "%s", DASHBOARD_NO_VALUE);
+        prv_dashboard_api_set_colors(handler, field_id, DASHBOARD_COLOR_CELL, DASHBOARD_COLOR_VALUE);
+        return;
+    }
+    prv_dashboard_api_format_field(handler, field_id, "%" PRId16 "°C", celsius);
+    prv_dashboard_api_set_colors(handler, field_id, DASHBOARD_COLOR_CELL, prv_dashboard_api_high_color(celsius, warning, error));
+}
+
+/*!
+ * \brief Show a 0..100 percentage, "--" when stale.
+ */
+EAGLETRT_STATIC void prv_dashboard_api_percent(struct DashboardHandler *handler, enum DashboardFieldId field_id, bool stale, uint8_t percent) {
+    if (stale) {
+        prv_dashboard_api_format_field(handler, field_id, "%s", DASHBOARD_NO_VALUE);
+        return;
+    }
+    prv_dashboard_api_format_field(handler, field_id, "%" PRIu8 "%%", (uint8_t)EAGLETRT_API_MIN(percent, 100U));
+}
+
+/*!
+ * \brief Name and colour of a vehicle state (Figma: DRIVE green, ERROR red).
+ */
+EAGLETRT_STATIC const char *prv_dashboard_api_state(uint8_t state, uint32_t *argb) {
+    *argb = DASHBOARD_COLOR_VALUE;
+    switch ((enum UIDataVehicleState)state) {
+        case UI_DATA_VEHICLE_STATE_IDLE:
+            return "IDLE";
+        case UI_DATA_VEHICLE_STATE_PRECHARGE:
+            *argb = DASHBOARD_COLOR_WARNING;
+            return "PRECHARGE";
+        case UI_DATA_VEHICLE_STATE_DISCHARGE:
+            *argb = DASHBOARD_COLOR_WARNING;
+            return "DISCHARGE";
+        case UI_DATA_VEHICLE_STATE_TSON:
+            *argb = DASHBOARD_COLOR_WARNING;
+            return "TSON";
+        case UI_DATA_VEHICLE_STATE_DRIVE:
+            *argb = DASHBOARD_COLOR_ALL_OK;
+            return "DRIVE";
+        case UI_DATA_VEHICLE_STATE_AUTONOMOUS:
+            return "AUTONOMOUS";
+        case UI_DATA_VEHICLE_STATE_FLASH:
+            return "FLASH";
+        case UI_DATA_VEHICLE_STATE_ERROR:
+            *argb = DASHBOARD_COLOR_ERROR;
+            return "ERROR";
+        case UI_DATA_VEHICLE_STATE_COUNT:
+        default:
+            return "----";
+    }
+}
+
+/*!
+ * \brief Lap number and delta to the best lap: green faster, red slower.
+ */
+EAGLETRT_STATIC void prv_dashboard_api_lap(struct DashboardHandler *handler, const struct UIData *ui_data, bool stale) {
+    if (stale) {
+        prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP_LABEL, "%s", "LAP " DASHBOARD_NO_VALUE);
+        prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP_DELTA, "%s", DASHBOARD_NO_VALUE);
+        prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_LAP_DELTA, DASHBOARD_COLOR_CELL, DASHBOARD_COLOR_VALUE);
+        return;
+    }
+    constexpr int32_t ms_per_second = 1000;
+    const int32_t delta = ui_data->lap_delta_ms;
+    const int32_t magnitude = (delta < 0) ? -delta : delta;
+    const char *sign = (delta < 0) ? "-" : ((delta > 0) ? "+" : "");
+    uint32_t argb = DASHBOARD_COLOR_VALUE;
+    if (delta != 0) {
+        argb = (delta < 0) ? DASHBOARD_COLOR_ALL_OK : DASHBOARD_COLOR_ERROR;
+    }
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP_LABEL, "LAP %" PRIu8, ui_data->lap_current);
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP_DELTA, "%s%" PRId32 ".%03" PRId32, sign, magnitude / ms_per_second, magnitude % ms_per_second);
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_LAP_DELTA, DASHBOARD_COLOR_CELL, argb);
+}
+
+/*!
+ * \brief Shutdown cell: green CLOSED, whole cell red when OPEN, "--" when stale.
+ */
+EAGLETRT_STATIC void prv_dashboard_api_shutdown(struct DashboardHandler *handler, bool stale, bool closed) {
+    const bool open = !stale && !closed;
+    const uint32_t background = open ? DASHBOARD_COLOR_ERROR : DASHBOARD_COLOR_CELL;
+    uint32_t value_argb = DASHBOARD_COLOR_VALUE;
+    if (!stale && closed) {
+        value_argb = DASHBOARD_COLOR_ALL_OK;
+    }
+    // TODO(design): the first open node instead of "OPEN" once the node order is defined.
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SHUTDOWN, "%s", stale ? DASHBOARD_NO_VALUE : (closed ? "CLOSED" : "OPEN"));
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_SHUTDOWN, background, value_argb);
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_SHUTDOWN_LABEL, background, open ? DASHBOARD_COLOR_VALUE : DASHBOARD_COLOR_LABEL);
+}
+
+/*!
+ * \brief Place one pedal bar; a 0 % bar is a 1 px box in the track colour.
+ *
+ * \retval true if its geometry or colour changed.
+ */
+EAGLETRT_STATIC bool prv_dashboard_api_place_bar(struct Box *bar, uint16_t x, uint16_t width, uint32_t argb) {
+    if (bar->rect.x == x && bar->rect.width == width && bar->color.argb == argb) {
+        return false;
+    }
+    bar->rect.x = x;
+    bar->rect.width = width;
+    bar->color.argb = argb;
+    return true;
+}
+
+/*!
+ * \brief Pedal values and bars: brake grows left, throttle right of the centre marker.
+ *
+ * \details A bar that shrinks leaves its old pixels on the track, so any bar
+ *     change redraws the track, both bars and the marker (in that order).
+ */
+EAGLETRT_STATIC void prv_dashboard_api_pedals(struct DashboardHandler *handler, const struct UIData *ui_data, bool brake_stale, bool throttle_stale) {
+    prv_dashboard_api_percent(handler, DASHBOARD_FIELD_BRAKE, brake_stale, ui_data->brake_percent);
+    prv_dashboard_api_percent(handler, DASHBOARD_FIELD_THROTTLE, throttle_stale, ui_data->throttle_percent);
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_BRAKE, DASHBOARD_COLOR_CELL, brake_stale ? DASHBOARD_COLOR_VALUE : DASHBOARD_COLOR_ERROR);
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_THROTTLE, DASHBOARD_COLOR_CELL, throttle_stale ? DASHBOARD_COLOR_VALUE : DASHBOARD_COLOR_ALL_OK);
+
+    const uint16_t brake = brake_stale ? 0U : (uint16_t)((EAGLETRT_API_MIN(ui_data->brake_percent, 100U) * DASHBOARD_PEDAL_BAR_MAX) / 100U);
+    const uint16_t throttle = throttle_stale ? 0U : (uint16_t)((EAGLETRT_API_MIN(ui_data->throttle_percent, 100U) * DASHBOARD_PEDAL_BAR_MAX) / 100U);
+    bool changed = prv_dashboard_api_place_bar(&handler->boxes[DASHBOARD_FIELD_BRAKE_BAR],
+                                               (uint16_t)(DASHBOARD_PEDAL_CENTER_X - EAGLETRT_API_MAX(brake, 1U)),
+                                               (uint16_t)EAGLETRT_API_MAX(brake, 1U),
+                                               (brake > 0U) ? DASHBOARD_COLOR_ERROR : DASHBOARD_COLOR_TRACK);
+    changed = prv_dashboard_api_place_bar(&handler->boxes[DASHBOARD_FIELD_THROTTLE_BAR],
+                                          DASHBOARD_PEDAL_BAR_X,
+                                          (uint16_t)EAGLETRT_API_MAX(throttle, 1U),
+                                          (throttle > 0U) ? DASHBOARD_COLOR_ALL_OK : DASHBOARD_COLOR_TRACK) ||
+              changed;
+    if (changed) {
+        handler->boxes[DASHBOARD_FIELD_PEDAL_TRACK].updated = true;
+        handler->boxes[DASHBOARD_FIELD_BRAKE_BAR].updated = true;
+        handler->boxes[DASHBOARD_FIELD_THROTTLE_BAR].updated = true;
+        handler->boxes[DASHBOARD_FIELD_PEDAL_CENTER].updated = true;
+    }
 }
 
 enum DashboardReturnCode dashboard_api_init(struct DashboardHandler *handler) {
     if (handler == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-
     memset(handler, 0, sizeof(*handler));
 
-    for (uint16_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
-        const struct DashboardFieldLayout *field_layout = &prv_dashboard_layout[i];
-        const struct Color background = { .argb = field_layout->background_argb };
-
-        // used by background-only boxes
-        if (field_layout->initial_text == NULL) {
-            if (box_api_init(&handler->boxes[i], i, field_layout->rect, background, NULL) != RASTER_RC_OK) {
+    for (uint8_t i = 0U; i < DASHBOARD_FIELD_COUNT; i++) {
+        const struct DashboardFieldLayout *layout = &prv_dashboard_api_layout[i];
+        struct Label *label = NULL;
+        if (layout->initial_text != NULL) {
+            (void)snprintf(handler->text[i], DASHBOARD_TEXT_BUFFER_SIZE, "%s", layout->initial_text);
+            label = &handler->labels[i];
+            if (label_api_init(label, handler->text[i], (int16_t)(layout->rect.width / 2U), layout->offset_y, &font_inter, layout->font_size, FONT_ALIGN_CENTER, (struct Color){ .argb = layout->text_argb }) != RASTER_RC_OK) {
                 return DASHBOARD_RC_ERROR;
             }
-            continue;
         }
-
-        (void)snprintf(handler->text[i], DASHBOARD_TEXT_BUFFER_SIZE, "%s", field_layout->initial_text);
-
-        const int16_t offset_x = (int16_t)(field_layout->rect.width / 2U);
-        const int16_t offset_y = prv_dashboard_api_label_offset_y(field_layout->rect.height, field_layout->font_size);
-        const struct Color text_color = { .argb = field_layout->text_argb };
-
-        if (label_api_init(&handler->labels[i], handler->text[i], offset_x, offset_y, &font_inter, field_layout->font_size, FONT_ALIGN_CENTER, text_color) != RASTER_RC_OK) {
+        if (box_api_init(&handler->boxes[i], i, layout->rect, (struct Color){ .argb = layout->background_argb }, label) != RASTER_RC_OK) {
             return DASHBOARD_RC_ERROR;
         }
-        if (box_api_init(&handler->boxes[i], i, field_layout->rect, background, &handler->labels[i]) != RASTER_RC_OK) {
-            return DASHBOARD_RC_ERROR;
-        }
+        handler->boxes[i].updated = true;
     }
-
     return DASHBOARD_RC_OK;
 }
 
-enum DashboardReturnCode dashboard_api_set_car_state(struct DashboardHandler *handler, const char *text) {
-    if (handler == NULL || text == NULL) {
+enum DashboardReturnCode dashboard_api_sync(struct DashboardHandler *handler, const struct UIData *ui_data) {
+    if (handler == NULL || ui_data == NULL) {
         return DASHBOARD_RC_NULL_POINTER;
     }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_CAR_STATE, "%s", text);
-    return DASHBOARD_RC_OK;
-}
+    const uint16_t stale = ui_data->stale;
+#define DASHBOARD_STALE(source) ((stale & UI_DATA_STALE_BIT(source)) != 0U)
 
-enum DashboardReturnCode dashboard_api_set_power(struct DashboardHandler *handler, uint8_t value) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
+    const uint32_t mission_background = (ui_data->ptt != 0U) ? DASHBOARD_COLOR_PTT : DASHBOARD_COLOR_CELL;
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_MISSION, "%s", DASHBOARD_MISSION_MANUAL);
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_MISSION, mission_background, DASHBOARD_COLOR_VALUE);
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_MISSION_LABEL, mission_background, DASHBOARD_COLOR_LABEL);
+
+    uint32_t state_argb = DASHBOARD_COLOR_VALUE;
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_STATE, "%s", prv_dashboard_api_state(ui_data->vehicle_state, &state_argb));
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_STATE, DASHBOARD_COLOR_CELL, state_argb);
+
+    prv_dashboard_api_lap(handler, ui_data, DASHBOARD_STALE(UI_DATA_SOURCE_LAP));
+
+    prv_dashboard_api_percent(handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_STALE(UI_DATA_SOURCE_HV_SOC), ui_data->soc);
+    uint32_t soc_argb = DASHBOARD_COLOR_VALUE;
+    if (!DASHBOARD_STALE(UI_DATA_SOURCE_HV_SOC) && ui_data->soc <= DASHBOARD_THRESHOLD_HV_SOC_PERCENT_ERROR) {
+        soc_argb = DASHBOARD_COLOR_ERROR;
+    } else if (!DASHBOARD_STALE(UI_DATA_SOURCE_HV_SOC) && ui_data->soc <= DASHBOARD_THRESHOLD_HV_SOC_PERCENT_WARNING) {
+        soc_argb = DASHBOARD_COLOR_WARNING;
     }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_POWER, "%" PRIu8, value);
-    return DASHBOARD_RC_OK;
-}
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_CELL, soc_argb);
+    prv_dashboard_api_temperature(handler, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_STALE(UI_DATA_SOURCE_HV_TEMP), ui_data->hv_temp, DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_WARNING, DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_ERROR);
+    prv_dashboard_api_percent(handler, DASHBOARD_FIELD_LV_SOC, DASHBOARD_STALE(UI_DATA_SOURCE_LV_SOC), ui_data->lv_soc);
 
-enum DashboardReturnCode dashboard_api_set_regen(struct DashboardHandler *handler, uint8_t value) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_REGEN, "%" PRIu8, value);
-    return DASHBOARD_RC_OK;
-}
-
-enum DashboardReturnCode dashboard_api_set_torque(struct DashboardHandler *handler, uint8_t value) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_TORQUE, "%" PRIu8, value);
-    return DASHBOARD_RC_OK;
-}
-
-enum DashboardReturnCode dashboard_api_set_slip(struct DashboardHandler *handler, bool slip_on) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SLIP, "%s", slip_on ? "ON" : "OFF");
-    return DASHBOARD_RC_OK;
-}
-
-enum DashboardReturnCode dashboard_api_set_ptt(struct DashboardHandler *handler, bool active) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-
-    const uint32_t color = active ? DASHBOARD_COLOR_PTT : DASHBOARD_COLOR_PRIMARY;
-    struct Box *box = &handler->boxes[DASHBOARD_FIELD_SCENARIO_HEADER];
-    if (box->color.argb == color) {
-        return DASHBOARD_RC_OK;
-    }
-
-    /* Only the fill changes, so nothing marks the box dirty for us the way
-     * a text change would - do it here or the raster skips the redraw. */
-    box->color.argb = color;
-    box->updated = true;
-
-    return DASHBOARD_RC_OK;
-}
-
-enum DashboardReturnCode dashboard_api_set_soc(struct DashboardHandler *handler, uint8_t percent) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    percent = EAGLETRT_API_CLAMP(percent, 0U, 100U);
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_SOC, "%" PRIu8 "%%", percent);
-
-    if (percent <= DASHBOARD_THRESHOLD_HV_SOC_PERCENT_ERROR) {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_ERROR);
-    } else if (percent <= DASHBOARD_THRESHOLD_HV_SOC_PERCENT_WARNING) {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_WARNING);
+    if (DASHBOARD_STALE(UI_DATA_SOURCE_SPEED)) {
+        prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SPEED, "%s", DASHBOARD_NO_VALUE);
     } else {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_SOC, DASHBOARD_COLOR_SECONDARY);
+        prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SPEED, "%" PRIu16, ui_data->speed_kmh);
     }
+    prv_dashboard_api_shutdown(handler, DASHBOARD_STALE(UI_DATA_SOURCE_SHUTDOWN), ui_data->shutdown_closed != 0U);
 
-    return DASHBOARD_RC_OK;
-}
+    const int16_t motor = EAGLETRT_API_MAX(EAGLETRT_API_MAX(ui_data->motor_fl_temp, ui_data->motor_fr_temp), EAGLETRT_API_MAX(ui_data->motor_rl_temp, ui_data->motor_rr_temp));
+    prv_dashboard_api_temperature(handler, DASHBOARD_FIELD_MOTOR, DASHBOARD_STALE(UI_DATA_SOURCE_MOTOR), motor, DASHBOARD_THRESHOLD_MOTOR_TEMPERATURE_CELSIUS_WARNING, DASHBOARD_THRESHOLD_MOTOR_TEMPERATURE_CELSIUS_ERROR);
+    prv_dashboard_api_temperature(handler, DASHBOARD_FIELD_INVERTER, DASHBOARD_STALE(UI_DATA_SOURCE_INVERTER), ui_data->inverter_temp, DASHBOARD_THRESHOLD_INVERTER_TEMPERATURE_CELSIUS_WARNING, DASHBOARD_THRESHOLD_INVERTER_TEMPERATURE_CELSIUS_ERROR);
 
-enum DashboardReturnCode dashboard_api_set_hv_temperature(struct DashboardHandler *handler, int16_t celsius) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_HV_TEMPERATURE, "%" PRId16 "°C", celsius);
+    // TODO(#10, D58): the maps the ECU reports, not the wheel's own parameters.
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_POWER, "%" PRIu8, ui_data->power);
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_REGEN, "%" PRIu8, ui_data->regen);
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_TORQUE, "%" PRIu8, ui_data->torque);
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SLIP, "%s", (ui_data->slip_on != 0U) ? "ON" : "OFF");
+    prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_SLIP, DASHBOARD_COLOR_CELL, (ui_data->slip_on != 0U) ? DASHBOARD_COLOR_ALL_OK : DASHBOARD_COLOR_VALUE);
 
-    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_ERROR) {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_COLOR_ERROR);
-    } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_HV_TEMP_CELSIUS_WARNING) {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_COLOR_WARNING);
-    } else {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_COLOR_SECONDARY);
-    }
-
-    return DASHBOARD_RC_OK;
-}
-
-enum DashboardReturnCode dashboard_api_set_inverter_temperature(struct DashboardHandler *handler, int16_t celsius) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_INVERTER, "%" PRId16 "°C", celsius);
-
-    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INVERTER_TEMPERATURE_CELSIUS_ERROR) {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_INVERTER, DASHBOARD_COLOR_ERROR);
-    } else if (celsius >= (int16_t)DASHBOARD_THRESHOLD_INVERTER_TEMPERATURE_CELSIUS_WARNING) {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_INVERTER, DASHBOARD_COLOR_WARNING);
-    } else {
-        prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_INVERTER, DASHBOARD_COLOR_SECONDARY);
-    }
-
-    return DASHBOARD_RC_OK;
-}
-
-enum DashboardReturnCode dashboard_api_set_lap(struct DashboardHandler *handler, uint8_t current, uint8_t total) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP, "%" PRIu8 "/%" PRIu8, current, total);
-    return DASHBOARD_RC_OK;
-}
-
-enum DashboardReturnCode dashboard_api_set_lap_delta_ms(struct DashboardHandler *handler, int32_t delta_ms) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    constexpr int32_t divider = 1000;
-    const char sign = (delta_ms < 0) ? '-' : '+';
-    int32_t magnitude = (delta_ms < 0) ? -delta_ms : delta_ms;
-    int32_t integer = magnitude / divider;
-    int32_t decimal = magnitude % divider;
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_LAP_DELTA, "%c%" PRId32 ".%03" PRId32, sign, integer, decimal);
-    return DASHBOARD_RC_OK;
-}
-
-/*!
- * \brief Shared helper for the TRS / MTR 4-temperature blocks.
- *
- * \param[in,out] handler         Dashboard storage.
- * \param[in]     front_left_id   Field ID for the front-left temperature.
- * \param[in]     front_right_id  Field ID for the front-right temperature.
- * \param[in]     rear_left_id    Field ID for the rear-left temperature.
- * \param[in]     rear_right_id   Field ID for the rear-right temperature.
- * \param[in]     front_left      Front-left temperature in °C.
- * \param[in]     front_right     Front-right temperature in °C.
- * \param[in]     rear_left       Rear-left temperature in °C.
- * \param[in]     rear_right      Rear-right temperature in °C.
- */
-EAGLETRT_STATIC void prv_dashboard_api_set_temperature_quad(
-    struct DashboardHandler *handler,
-    enum DashboardFieldId front_left_id,
-    enum DashboardFieldId front_right_id,
-    enum DashboardFieldId rear_left_id,
-    enum DashboardFieldId rear_right_id,
-    int16_t front_left,
-    int16_t front_right,
-    int16_t rear_left,
-    int16_t rear_right) {
-    prv_dashboard_api_format_field(handler, front_left_id, "%" PRId16 "°C", front_left);
-    prv_dashboard_api_format_field(handler, front_right_id, "%" PRId16 "°C", front_right);
-    prv_dashboard_api_format_field(handler, rear_left_id, "%" PRId16 "°C", rear_left);
-    prv_dashboard_api_format_field(handler, rear_right_id, "%" PRId16 "°C", rear_right);
-}
-
-/*!
- * \brief Helper to determine the color for a tire temperature value based on thresholds.
- *
- * \param temp Tire temperature in °C.
- *
- * \return ARGB color code corresponding to the temperature thresholds:
- */
-EAGLETRT_STATIC uint32_t prv_dashboard_api_tire_temp_color(int16_t celsius) {
-    if (celsius <= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMPERATURE_CELSIUS_LOW) {
-        return DASHBOARD_COLOR_COLD_TIRES;
-    }
-    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMPERATURE_CELSIUS_ERROR) {
-        return DASHBOARD_COLOR_ERROR;
-    }
-    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_TIRE_TEMPERATURE_CELSIUS_WARNING) {
-        return DASHBOARD_COLOR_WARNING;
-    }
-    return DASHBOARD_COLOR_SECONDARY;
-}
-
-/*!
- * \brief Helper to determine the color for a motor temperature value based on thresholds.
- *
- * \param temp Motor temperature in °C.
- *
- * \return ARGB color code corresponding to the temperature thresholds:
- */
-EAGLETRT_STATIC uint32_t prv_dashboard_api_motor_temp_color(int16_t celsius) {
-    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_MOTOR_TEMPERATURE_CELSIUS_ERROR) {
-        return DASHBOARD_COLOR_ERROR;
-    }
-    if (celsius >= (int16_t)DASHBOARD_THRESHOLD_MOTOR_TEMPERATURE_CELSIUS_WARNING) {
-        return DASHBOARD_COLOR_WARNING;
-    }
-    return DASHBOARD_COLOR_SECONDARY;
-}
-
-enum DashboardReturnCode dashboard_api_set_tire_temperatures(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    prv_dashboard_api_set_temperature_quad(handler, DASHBOARD_FIELD_TIRES_FRONT_LEFT, DASHBOARD_FIELD_TIRES_FRONT_RIGHT, DASHBOARD_FIELD_TIRES_REAR_LEFT, DASHBOARD_FIELD_TIRES_REAR_RIGHT, front_left, front_right, rear_left, rear_right);
-
-    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_TIRES_FRONT_LEFT, prv_dashboard_api_tire_temp_color(front_left));
-    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_TIRES_FRONT_RIGHT, prv_dashboard_api_tire_temp_color(front_right));
-    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_TIRES_REAR_LEFT, prv_dashboard_api_tire_temp_color(rear_left));
-    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_TIRES_REAR_RIGHT, prv_dashboard_api_tire_temp_color(rear_right));
-
-    return DASHBOARD_RC_OK;
-}
-
-enum DashboardReturnCode dashboard_api_set_motor_temperatures(struct DashboardHandler *handler, int16_t front_left, int16_t front_right, int16_t rear_left, int16_t rear_right) {
-    if (handler == NULL) {
-        return DASHBOARD_RC_NULL_POINTER;
-    }
-    prv_dashboard_api_set_temperature_quad(handler, DASHBOARD_FIELD_MOTORS_FRONT_LEFT, DASHBOARD_FIELD_MOTORS_FRONT_RIGHT, DASHBOARD_FIELD_MOTORS_REAR_LEFT, DASHBOARD_FIELD_MOTORS_REAR_RIGHT, front_left, front_right, rear_left, rear_right);
-
-    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_MOTORS_FRONT_LEFT, prv_dashboard_api_motor_temp_color(front_left));
-    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_MOTORS_FRONT_RIGHT, prv_dashboard_api_motor_temp_color(front_right));
-    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_MOTORS_REAR_LEFT, prv_dashboard_api_motor_temp_color(rear_left));
-    prv_dashboard_api_set_label_color(handler, DASHBOARD_FIELD_MOTORS_REAR_RIGHT, prv_dashboard_api_motor_temp_color(rear_right));
-
+    prv_dashboard_api_pedals(handler, ui_data, DASHBOARD_STALE(UI_DATA_SOURCE_BRAKE), DASHBOARD_STALE(UI_DATA_SOURCE_THROTTLE));
+#undef DASHBOARD_STALE
     return DASHBOARD_RC_OK;
 }
