@@ -13,6 +13,7 @@
 
 #include "screen-api.h"
 #include "dashboard-api.h"
+#include "debug-wheel-api.h"
 #include "menu-api.h"
 #include "eagletrt.h"
 #include "popup-api.h"
@@ -44,6 +45,7 @@ EAGLETRT_STATIC const struct ScreenView screen_views[SCREEN_VIEW_COUNT] = {
     // TODO(#15): Figma centres the screen-saver logo (y 152), the boot logo is at y 112.
     [SCREEN_VIEW_LOGO] = { screen_handler.logo.boxes, SPLASH_BOX_COUNT, false, true },
     [SCREEN_VIEW_MENU] = { screen_handler.menu.boxes, MENU_BOX_COUNT, false, false },
+    [SCREEN_VIEW_DEBUG] = { screen_handler.debug.boxes, DEBUG_WHEEL_BOX_COUNT, false, false },
     [SCREEN_VIEW_POPUP] = { screen_handler.popup.boxes, POPUP_BOX_COUNT, false, false },
 };
 
@@ -72,7 +74,8 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
     if (splash_api_init(&screen_handler.flash, &font_inter) != SPLASH_RC_OK ||
         splash_api_init(&screen_handler.placeholder, &font_inter) != SPLASH_RC_OK ||
         splash_api_init(&screen_handler.logo, &font_inter) != SPLASH_RC_OK ||
-        menu_api_init(&screen_handler.menu, &font_inter) != MENU_RC_OK) {
+        menu_api_init(&screen_handler.menu, &font_inter) != MENU_RC_OK ||
+        debug_wheel_api_init(&screen_handler.debug) != DEBUG_WHEEL_RC_OK) {
         return SCREEN_RC_ERROR;
     }
     screen_handler.view = SCREEN_VIEW_DRIVER;
@@ -189,6 +192,7 @@ enum ScreenReturnCode screen_api_set_view(enum ScreenViewId view, const char *ca
         case SCREEN_VIEW_DRIVER:
         case SCREEN_VIEW_LOGO:
         case SCREEN_VIEW_MENU:
+        case SCREEN_VIEW_DEBUG:
             break;
         case SCREEN_VIEW_FLASH:
             return_code = splash_api_set_caption(&screen_handler.flash, STYLE_FLASH_TITLE, caption);
@@ -215,6 +219,10 @@ enum ScreenReturnCode screen_api_sync_data(const struct UIData *ui_data) {
     // D22 + A4: only an ECU known to be IDLE unlocks the menu (unknown or stale is not IDLE).
     menu_api_set_unlocked(&screen_handler.menu, ui_data->vehicle_state == UI_DATA_VEHICLE_STATE_IDLE);
     return (dashboard_api_sync(&screen_handler.dashboard, ui_data) == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
+}
+
+enum ScreenReturnCode screen_api_sync_health(const struct WheelHealth *health) {
+    return (debug_wheel_api_sync(&screen_handler.debug, health) == DEBUG_WHEEL_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_NULL_POINTER;
 }
 
 bool screen_api_should_redraw(struct Box *boxes, uint16_t count) {

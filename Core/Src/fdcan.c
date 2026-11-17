@@ -478,6 +478,7 @@ void fdcan_get_tx_diagnostics(enum CanCommunicationNetwork network, struct Fdcan
         .receive_errors = (ecr & FDCAN_ECR_REC_Msk) >> FDCAN_ECR_REC_Pos,
         .last_error_code = (psr & FDCAN_PSR_LEC_Msk) >> FDCAN_PSR_LEC_Pos,
         .error_passive = (psr & FDCAN_PSR_EP_Msk) != 0U,
+        .bus_off = (psr & FDCAN_PSR_BO_Msk) != 0U,
         .tx_fifo_free = (instance->TXFQS & FDCAN_TXFQS_TFFL_Msk) >> FDCAN_TXFQS_TFFL_Pos,
         .refused = prv_fdcan_tx[index].refused,
         .unjams = prv_fdcan_tx[index].unjams,

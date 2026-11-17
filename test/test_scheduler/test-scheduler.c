@@ -658,8 +658,7 @@ void test_scheduler_menu_debug_and_back_to_driving(void) {
     prv_scheduler_api_on_request(INPUT_REQUEST_SELECT, 1);
     prv_run_until(80U);
     TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_DEBUG, scheduler_api_get_fsm_state());
-    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_PLACEHOLDER);
-    TEST_ASSERT_EQUAL_STRING("DEBUG", screen_handler.placeholder.name.text);
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DEBUG);
 
     prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
     prv_run_until(100U);
@@ -757,13 +756,17 @@ void test_scheduler_autonomous_mission_shows_the_as_page_and_ignores_the_driver(
     TEST_ASSERT_TRUE_MESSAGE(parameters_api_get(INPUTS_SHARED_PARAMETER_ID_POWER) > 0U, "and the knobs work again");
 }
 
-static const char *prv_debug_text(void) {
-    return "TEC 248 FREE 0";
+static void prv_read_health(struct WheelHealth *health) {
+    health->can_tx_fifo_free = 0U;
+    health->can_tx_fifo_size = 32U;
+    health->reset_cause = WHEEL_HEALTH_RESET_WDG;
 }
 
-void test_scheduler_debug_page_shows_the_hardware_status(void) {
+#define TEST_SCHEDULER_DEBUG_VALUE(cell) (screen_handler.debug.text[DEBUG_WHEEL_BOX_VALUE(cell)])
+
+void test_scheduler_debug_page_shows_the_wheel_health_every_window(void) {
     struct SchedulerConfig config = prv_make_config();
-    config.debug_text = prv_debug_text;
+    config.read_health = prv_read_health;
     prv_init_skipping_the_logo(&config);
     prv_scheduler_api_on_request(INPUT_REQUEST_MENU, 1);
     prv_run_until(40U);
@@ -771,7 +774,15 @@ void test_scheduler_debug_page_shows_the_hardware_status(void) {
     prv_run_until(80U);
 
     TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_DEBUG, scheduler_api_get_fsm_state());
-    TEST_ASSERT_EQUAL_STRING("TEC 248 FREE 0", screen_handler.placeholder.name.text);
+    TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DEBUG);
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("0/32", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_TX_FIFO_FREE), "Hardware fields come from the hook");
+    TEST_ASSERT_EQUAL_STRING("WDG", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_LAST_RESET));
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("0 s", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_UPTIME), "First window closed at boot");
+
+    prv_run_until(SCHEDULER_STATS_LOG_PERIOD_MS + 10U);
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("5 s", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_UPTIME), "A new snapshot every stats window");
+    TEST_ASSERT_EQUAL_UINT32(SCHEDULER_STATS_LOG_PERIOD_MS, scheduler_handler.health.window_ms);
+    TEST_ASSERT_TRUE_MESSAGE(scheduler_handler.health.frames > 0U, "Frames presented in the window are counted");
 }
 
 void test_scheduler_top_right_sends_driver_action_ok(void) {
@@ -977,7 +988,7 @@ int main(void) {
     RUN_TEST(test_scheduler_menu_combo_long_press_through_the_timeout_pool);
     RUN_TEST(test_scheduler_boot_logo_then_dashboard);
     RUN_TEST(test_scheduler_menu_debug_and_back_to_driving);
-    RUN_TEST(test_scheduler_debug_page_shows_the_hardware_status);
+    RUN_TEST(test_scheduler_debug_page_shows_the_wheel_health_every_window);
     RUN_TEST(test_scheduler_menu_unlocks_with_the_ecu_idle_and_locks_when_it_goes_silent);
     RUN_TEST(test_scheduler_screen_saver_shows_the_logo_and_the_combo_opens_the_menu);
     RUN_TEST(test_scheduler_mission_opens_its_placeholder);

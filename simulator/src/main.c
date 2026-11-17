@@ -289,6 +289,15 @@ EAGLETRT_STATIC void simulator_reset(void) {
 }
 
 /*!
+ * \brief Hardware part of the WHEEL debug page: an idle bus, a power-on reset.
+ */
+EAGLETRT_STATIC void simulator_read_health(struct WheelHealth *health) {
+    health->can_tx_fifo_free = 32U;
+    health->can_tx_fifo_size = 32U;
+    health->reset_cause = WHEEL_HEALTH_RESET_POR;
+}
+
+/*!
  * \brief Print a frame the firmware sends, only when its content changes.
  */
 EAGLETRT_STATIC enum CanCommunicationReturnCode simulator_can_send(enum CanCommunicationNetwork network, const struct CanCommunicationFrame *frame) {
@@ -608,6 +617,7 @@ int main(int argc, char **argv) {
         .poll_inputs = simulator_poll_inputs,
         .swap_framebuffers = simulator_swap_framebuffers,
         .reset = simulator_reset,
+        .read_health = simulator_read_health,
         .get_cycles = simulator_get_cycles,
         .cycles_per_us = SIMULATOR_NS_PER_US,
     };

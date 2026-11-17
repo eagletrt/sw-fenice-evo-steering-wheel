@@ -17,6 +17,7 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
+#include "debug-wheel.h"
 #include "flash-monitor.h"
 #include "post.h"
 #include "tasks.h"
@@ -103,12 +104,14 @@ typedef void (*scheduler_swap_framebuffers_callback)(void);
 typedef bool (*scheduler_render_busy_callback)(void);
 
 /*!
- * \brief Hardware status shown on the DEBUG page until it has a design (TODO(#13)).
+ * \brief Fill the hardware part of a health snapshot (CAN, DMA2D, reset cause).
  *
- * \return A short line of uppercase text, digits and spaces (NULL for the page name).
- *     Referenced until the next call: a new text must live in a different buffer.
+ * \details Called by the statistics task once per window, before
+ *     report_stats starts a new one. The scheduler's own fields are already set.
+ *
+ * \param[in,out] health Snapshot for the WHEEL debug page.
  */
-typedef const char *(*scheduler_debug_text_callback)(void);
+typedef void (*scheduler_read_health_callback)(struct WheelHealth *health);
 
 /*!
  * \brief Sample every physical input and forward changes to the inputs module.
@@ -130,7 +133,7 @@ struct SchedulerConfig {
     uint32_t cycles_per_us;                                 /*!< Cycle counter frequency in MHz, required when get_cycles is set */
     scheduler_report_stats_callback report_stats;           /*!< Optional: called by the stats task after the task timings */
     scheduler_render_busy_callback render_busy;             /*!< Optional: asynchronous drawing, NULL when every draw callback completes before returning */
-    scheduler_debug_text_callback debug_text;               /*!< Optional: hardware status on the DEBUG page */
+    scheduler_read_health_callback read_health;             /*!< Optional: hardware fields of the WHEEL debug page */
 };
 
 /*!
@@ -160,6 +163,9 @@ struct SchedulerHandler {
     uint32_t tick;                                         /*!< Last tick read by libtimebase: the time base of every task */
     struct SchedulerTaskStats stats[SCHEDULER_TASK_COUNT]; /*!< Per-task timing */
     uint16_t dropped_at_last_log;                          /*!< libtimebase dropped-runs counter at the previous stats log */
+    uint32_t window_start_ms;                              /*!< Tick of the previous stats run */
+    uint32_t frames_in_window;                             /*!< Frames presented since the previous stats run */
+    struct WheelHealth health;                             /*!< Last snapshot shown on the WHEEL debug page */
     timeout_id render_stall_timeout;                       /*!< Runs while the last frame is in flight */
 };
 

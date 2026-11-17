@@ -135,6 +135,12 @@ EAGLETRT_STATIC bool prv_main_render_busy(void) {
     return busy;
 }
 
+/*! \brief Primary-bus diagnostics of the last statistics window. */
+EAGLETRT_STATIC struct FdcanTxDiagnostics prv_main_can;
+
+/*! \brief Reset cause read at boot (RCC_RSR), for the WHEEL debug page. */
+EAGLETRT_STATIC enum WheelHealthResetCause prv_main_reset_cause;
+
 /*!
  * \brief Log the DMA2D timings of the last stats window, then reset them.
  *
@@ -164,9 +170,9 @@ EAGLETRT_STATIC void prv_main_report_stats(void) {
     }
 
     // Transmit health of the primary bus: tells why a wheel that receives sends nothing.
-    struct FdcanTxDiagnostics can = { 0 };
-    fdcan_get_tx_diagnostics(CAN_COMMUNICATION_NETWORK_PRIMARY, &can);
-    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "can p tec %lu rec %lu lec %lu ep %u free %lu ref %lu unj %lu asm %lu", can.transmit_errors, can.receive_errors, can.last_error_code, can.error_passive ? 1U : 0U, can.tx_fifo_free, can.refused, can.unjams, can.restricted_exits));
+    // Read by prv_main_read_health just before: a second PSR read would clear LEC.
+    const struct FdcanTxDiagnostics *can = &prv_main_can;
+    EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "can p tec %lu rec %lu lec %lu ep %u free %lu ref %lu unj %lu asm %lu", can->transmit_errors, can->receive_errors, can->last_error_code, can->error_passive ? 1U : 0U, can->tx_fifo_free, can->refused, can->unjams, can->restricted_exits));
 
     // Bus-off restarts (fdcan.c): logged only when one happened, the UART is slow.
     static uint32_t reported_bus_off[CAN_COMMUNICATION_NETWORK_COUNT];
@@ -180,24 +186,29 @@ EAGLETRT_STATIC void prv_main_report_stats(void) {
 }
 
 /*!
- * \brief Primary-bus transmit health for the DEBUG page (scheduler debug_text hook).
+ * \brief Hardware part of the WHEEL debug page (scheduler read_health hook).
  *
- * \details Two buffers: the screen keeps the previous text to see a change,
- *     so a new text never overwrites the one on display.
+ * \details The stats task calls it right before prv_main_report_stats, which
+ *     logs the same CAN snapshot and then resets the DMA2D statistics.
  *
- * \return E.g. "TEC 0 FREE 32 BO 0 U 0 A 0".
+ * \param[in,out] health Snapshot whose scheduler fields are already set.
  */
-EAGLETRT_STATIC const char *prv_main_debug_text(void) {
-    static char texts[2][32];
-    static uint8_t shown;
-    struct FdcanTxDiagnostics can = { 0 };
-    fdcan_get_tx_diagnostics(CAN_COMMUNICATION_NETWORK_PRIMARY, &can);
-    char *next = texts[shown ^ 1U];
-    EAGLETRT_API_UNUSED(snprintf(next, sizeof(texts[0]), "TEC %lu FREE %lu BO %lu U %lu A %lu", can.transmit_errors, can.tx_fifo_free, can.bus_offs, can.unjams, can.restricted_exits));
-    if (strcmp(next, texts[shown]) != 0) {
-        shown ^= 1U;
-    }
-    return texts[shown];
+EAGLETRT_STATIC void prv_main_read_health(struct WheelHealth *health) {
+    fdcan_get_tx_diagnostics(CAN_COMMUNICATION_NETWORK_PRIMARY, &prv_main_can);
+    const struct FdcanTxDiagnostics *can = &prv_main_can;
+    health->can_bus_state = can->bus_off ? WHEEL_HEALTH_BUS_OFF : (can->error_passive ? WHEEL_HEALTH_BUS_PASSIVE : WHEEL_HEALTH_BUS_ACTIVE);
+    health->can_last_error = (uint8_t)can->last_error_code;
+    health->can_transmit_errors = can->transmit_errors;
+    health->can_receive_errors = can->receive_errors;
+    health->can_bus_offs = can->bus_offs;
+    health->can_tx_fifo_free = can->tx_fifo_free;
+    health->can_tx_fifo_size = hfdcan1.Init.TxFifoQueueElmtsNbr;
+    health->can_tx_refused = can->refused;
+    health->can_tx_unjams = can->unjams;
+    health->can_restricted = can->restricted_exits;
+    health->frame_max_us = dma2d_get_queue_stats()->frames.max_us;
+    health->dma2d_errors = dma2d_get_error_count();
+    health->reset_cause = prv_main_reset_cause;
 }
 
 /*!
@@ -210,6 +221,18 @@ EAGLETRT_STATIC const char *prv_main_debug_text(void) {
 EAGLETRT_STATIC void prv_main_log_reset_cause(void) {
     const uint32_t flags = RCC->RSR;
     __HAL_RCC_CLEAR_RESET_FLAGS();
+    // A power-on also sets BOR and PIN, every reset sets PIN: most telling first.
+    if ((flags & (RCC_RSR_IWDG1RSTF | RCC_RSR_WWDG1RSTF)) != 0U) {
+        prv_main_reset_cause = WHEEL_HEALTH_RESET_WDG;
+    } else if ((flags & RCC_RSR_SFTRSTF) != 0U) {
+        prv_main_reset_cause = WHEEL_HEALTH_RESET_SFT;
+    } else if ((flags & RCC_RSR_PORRSTF) != 0U) {
+        prv_main_reset_cause = WHEEL_HEALTH_RESET_POR;
+    } else if ((flags & RCC_RSR_BORRSTF) != 0U) {
+        prv_main_reset_cause = WHEEL_HEALTH_RESET_BOR;
+    } else if ((flags & RCC_RSR_PINRSTF) != 0U) {
+        prv_main_reset_cause = WHEEL_HEALTH_RESET_PIN;
+    }
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO,
                                        "reset 0x%08lX%s%s%s%s%s",
                                        flags,
@@ -347,7 +370,7 @@ int main(void) {
         .cycles_per_us = SystemCoreClock / MAIN_CYCLES_PER_US_DIVIDER,
         .report_stats = prv_main_report_stats,
         .render_busy = prv_main_render_busy,
-        .debug_text = prv_main_debug_text,
+        .read_health = prv_main_read_health,
     };
 
     if (scheduler_api_init(&scheduler_config) != SCHEDULER_RC_OK) {

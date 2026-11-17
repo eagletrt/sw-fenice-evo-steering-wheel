@@ -175,11 +175,8 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_scheduler_api_show_mode(enum WheelFsmS
         case WHEEL_FSM_STATE_MENU:
             // TODO(#11): the mission page.
             return screen_api_menu_is_mission_open() ? screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "MISSION") : screen_api_set_view(SCREEN_VIEW_MENU, NULL);
-        case WHEEL_FSM_STATE_DEBUG: {
-            // TODO(#13): the debug pages. Until then the hardware status, if any.
-            const char *text = (scheduler_handler.config.debug_text != NULL) ? scheduler_handler.config.debug_text() : NULL;
-            return screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, (text != NULL) ? text : "DEBUG");
-        }
+        case WHEEL_FSM_STATE_DEBUG:
+            return screen_api_set_view(SCREEN_VIEW_DEBUG, NULL); // TODO(#13): the other tabs
         case WHEEL_FSM_STATE_CALIBRATION:
             return screen_api_set_view(SCREEN_VIEW_PLACEHOLDER, "CALIBRATIONS"); // TODO(#14)
         case WHEEL_FSM_STATE_FLASH:
@@ -232,6 +229,7 @@ EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
             break;
         case SCREEN_RC_RENDERED:
             scheduler_handler.config.swap_framebuffers();
+            scheduler_handler.frames_in_window++;
             break;
         case SCREEN_RC_ERROR:
         case SCREEN_RC_NULL_POINTER:
@@ -241,8 +239,38 @@ EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
     }
 }
 
+/*!
+ * \brief Close the statistics window into the health snapshot of the WHEEL debug page.
+ *
+ * \param tick_ms Current tick.
+ * \param dropped_in_window libtimebase runs dropped in the window.
+ */
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+EAGLETRT_STATIC void prv_scheduler_api_update_health(uint32_t tick_ms, uint16_t dropped_in_window) {
+    struct WheelHealth *health = &scheduler_handler.health;
+    health->window_ms = tick_ms - scheduler_handler.window_start_ms;
+    health->frames = scheduler_handler.frames_in_window;
+    health->render_max_us = scheduler_handler.stats[SCHEDULER_TASK_RENDER].window_max_us;
+    health->inputs_max_us = scheduler_handler.stats[SCHEDULER_TASK_INPUTS].window_max_us;
+    health->dropped_runs = dropped_in_window;
+    health->uptime_s = tick_ms / 1000U;
+    scheduler_handler.window_start_ms = tick_ms;
+    scheduler_handler.frames_in_window = 0U;
+    if (scheduler_handler.config.read_health != NULL) {
+        scheduler_handler.config.read_health(health);
+    }
+    EAGLETRT_API_UNUSED(screen_api_sync_health(health));
+}
+
 EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
-    EAGLETRT_API_UNUSED(tick_ms);
+    // Executions libtimebase skipped in this window because a task was late by
+    // more than its period. libtimebase's counter is cumulative and saturates
+    // at UINT16_MAX, after that the delta reads 0.
+    const uint16_t dropped = tasks_api_get_dropped_task_executions(&scheduler_handler.tasks);
+    const uint16_t dropped_in_window = (uint16_t)(dropped - scheduler_handler.dropped_at_last_log);
+    scheduler_handler.dropped_at_last_log = dropped;
+    prv_scheduler_api_update_health(tick_ms, dropped_in_window);
+
     if (scheduler_handler.config.get_cycles == NULL) {
         return;
     }
@@ -252,12 +280,6 @@ EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
     struct SchedulerTaskStats *stats = scheduler_handler.stats;
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "tasks 0-4 max us %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32, stats[0].window_max_us, stats[1].window_max_us, stats[2].window_max_us, stats[3].window_max_us, stats[4].window_max_us));
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "tasks 5-9 max us %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32, stats[5].window_max_us, stats[6].window_max_us, stats[7].window_max_us, stats[8].window_max_us, stats[9].window_max_us));
-    // Executions libtimebase skipped in this window because a task was late by
-    // more than its period. libtimebase's counter is cumulative and saturates
-    // at UINT16_MAX, after that the delta reads 0.
-    const uint16_t dropped = tasks_api_get_dropped_task_executions(&scheduler_handler.tasks);
-    const uint16_t dropped_in_window = (uint16_t)(dropped - scheduler_handler.dropped_at_last_log);
-    scheduler_handler.dropped_at_last_log = dropped;
     EAGLETRT_API_UNUSED(logger_api_log(LOGGER_LEVEL_INFO, "tasks dropped runs %" PRIu16 " (total %" PRIu16 ")", dropped_in_window, dropped));
 
     for (uint8_t i = 0U; i < SCHEDULER_TASK_COUNT; i++) {

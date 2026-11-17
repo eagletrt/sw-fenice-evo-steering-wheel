@@ -99,6 +99,16 @@ enum ScreenReturnCode screen_api_set_view(enum ScreenViewId view, const char *ca
 enum ScreenReturnCode screen_api_sync_data(const struct UIData *ui_data);
 
 /*!
+ * \brief Show a health snapshot on the WHEEL debug page.
+ *
+ * \param health The snapshot.
+ *
+ * \retval SCREEN_RC_OK on success.
+ * \retval SCREEN_RC_NULL_POINTER if \p health is NULL.
+ */
+enum ScreenReturnCode screen_api_sync_health(const struct WheelHealth *health);
+
+/*!
  * \brief Check if any of the given boxes needs to be redrawn.
  *
  * \param boxes Pointer to an array of Box structures to check.

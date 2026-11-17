@@ -56,6 +56,7 @@ struct FdcanTxDiagnostics {
     uint32_t receive_errors;   /*!< ECR.REC, 0..127 */
     uint32_t last_error_code;  /*!< PSR.LEC: 0 none, 1 stuff, 2 form, 3 ack, 4 bit1, 5 bit0, 6 crc, 7 unchanged */
     bool error_passive;        /*!< PSR.EP */
+    bool bus_off;              /*!< PSR.BO */
     uint32_t tx_fifo_free;     /*!< TXFQS.TFFL, free Tx FIFO elements */
     uint32_t refused;          /*!< Frames refused by a full Tx FIFO since boot */
     uint32_t unjams;           /*!< Times every pending request was cancelled */
