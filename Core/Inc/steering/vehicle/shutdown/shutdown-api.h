@@ -36,4 +36,12 @@
  */
 bool shutdown_api_evaluate(const float *voltage, uint32_t available, struct ShutdownChain *chain);
 
+/*!
+ * \brief Name of a node as the screens show it ("BSPD", "REAR LEFT A-ARM").
+ *
+ * \param node The node.
+ * \return Its name, "" for SHUTDOWN_NODE_COUNT or an invalid node.
+ */
+const char *shutdown_api_node_name(enum ShutdownNode node);
+
 #endif // SHUTDOWN_API_H

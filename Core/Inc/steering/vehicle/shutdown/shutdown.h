@@ -19,22 +19,23 @@
  * \brief Shutdown circuit nodes, in circuit order (the first open one is the cause).
  */
 enum ShutdownNode : uint8_t {
-    SHUTDOWN_NODE_AMS,
-    SHUTDOWN_NODE_IMD,
-    SHUTDOWN_NODE_TSMS,
-    SHUTDOWN_NODE_BOTS,
-    SHUTDOWN_NODE_INERTIA,
-    SHUTDOWN_NODE_BSPD,
-    SHUTDOWN_NODE_COCKPIT_MUSHROOM,
-    SHUTDOWN_NODE_LEFT_MUSHROOM,
-    SHUTDOWN_NODE_RIGHT_MUSHROOM,
-    SHUTDOWN_NODE_HVD,
-    SHUTDOWN_NODE_TSAC_INTERLOCK,
-    SHUTDOWN_NODE_INVERTER_INTERLOCK, /*!< TODO(libcan) */
-    SHUTDOWN_NODE_ASMS,
-    SHUTDOWN_NODE_RES,
-    SHUTDOWN_NODE_EBS,
-    SHUTDOWN_NODE_SDC_RELAY, /*!< TODO(libcan) */
+    SHUTDOWN_NODE_ECU,                /*!< After the ECU (ShutdownState.voltageOut) */
+    SHUTDOWN_NODE_COCKPIT_MUSHROOM,   /*!< DasShutdown */
+    SHUTDOWN_NODE_FRONT_RIGHT_A_ARM,  /*!< TODO(libcan): not read */
+    SHUTDOWN_NODE_BOTS,               /*!< PedalsBrake */
+    SHUTDOWN_NODE_FRONT_LEFT_A_ARM,   /*!< TODO(libcan): not read */
+    SHUTDOWN_NODE_INERTIA,            /*!< DasShutdown */
+    SHUTDOWN_NODE_INVERTER_INTERLOCK, /*!< TODO(libcan): the five interlocks, not read */
+    SHUTDOWN_NODE_REAR_LEFT_A_ARM,    /*!< TODO(libcan): not read */
+    SHUTDOWN_NODE_BSPD,               /*!< PipoShutdown */
+    SHUTDOWN_NODE_HVD,                /*!< PipoShutdown */
+    SHUTDOWN_NODE_LEFT_MUSHROOM,      /*!< DasShutdown */
+    SHUTDOWN_NODE_RIGHT_MUSHROOM,     /*!< DasShutdown */
+    SHUTDOWN_NODE_AMS,                /*!< TsacMainboardShutdown */
+    SHUTDOWN_NODE_IMD,                /*!< TsacMainboardShutdown */
+    SHUTDOWN_NODE_REAR_RIGHT_A_ARM,   /*!< TODO(libcan): not read */
+    SHUTDOWN_NODE_TSMS,               /*!< PipoShutdown */
+    SHUTDOWN_NODE_SD_END,             /*!< sdEnd: AIRs and inverter enable (TsacMainboardFeedbackShutdown) */
     SHUTDOWN_NODE_COUNT,
 };
 

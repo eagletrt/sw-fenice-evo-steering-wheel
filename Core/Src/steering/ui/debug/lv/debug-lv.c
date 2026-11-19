@@ -73,8 +73,8 @@ EAGLETRT_STATIC void prv_debug_lv_sync(struct DebugHandler *handler, const struc
     }
 
     const bool shutdown_stale = debug_api_stale(ui, UI_DATA_SOURCE_PIPO_SHUTDOWN);
-    debug_api_contact(handler, DEBUG_LV_RES, shutdown_stale, ui->shutdown_v[SHUTDOWN_NODE_RES]);
-    debug_api_switch(handler, DEBUG_LV_ASMS, shutdown_stale, ui->shutdown_v[SHUTDOWN_NODE_ASMS]);
+    debug_api_contact(handler, DEBUG_LV_RES, shutdown_stale, ui->res_v);
+    debug_api_switch(handler, DEBUG_LV_ASMS, shutdown_stale, ui->asms_v);
     debug_api_switch(handler, DEBUG_LV_TSMS, shutdown_stale, ui->shutdown_v[SHUTDOWN_NODE_TSMS]);
 
     if (debug_api_stale(ui, UI_DATA_SOURCE_PIPO_FUSES)) {

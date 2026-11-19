@@ -174,7 +174,7 @@ void test_debug_hv_rules(void) {
     TEST_ASSERT_EQUAL_STRING("ON/ON", prv_value(10U));
     TEST_ASSERT_EQUAL_HEX32(DEBUG_COLOR_OK, prv_color(10U));
     ui.hv.airp_mec_v = UI_DATA_AIR_CLOSED_V; // mechanically open while commanded closed: stuck
-    ui.boards[UI_DATA_BOARD_BMS_HV].status = CAN_PRIMARY_TSACSTATUS_MAINBOARDSTATUS_PRECHARGE;
+    ui.boards[UI_DATA_BOARD_TSAC].status = CAN_PRIMARY_TSACSTATUS_MAINBOARDSTATUS_PRECHARGE;
     ui.hv.imd_fault = 1U;
     ui.hv.tsal_green_v = 0.0F;
     debug_api_sync(&debug, &ui);
@@ -184,7 +184,7 @@ void test_debug_hv_rules(void) {
     TEST_ASSERT_EQUAL_STRING("RED", prv_value(14U));
     TEST_ASSERT_EQUAL_STRING("FAULT/OK", prv_value(15U));
     TEST_ASSERT_EQUAL_HEX32(DEBUG_COLOR_ERROR, prv_color(15U));
-    ui.boards[UI_DATA_BOARD_BMS_HV].status = CAN_PRIMARY_TSACSTATUS_MAINBOARDSTATUS_TS_ON;
+    ui.boards[UI_DATA_BOARD_TSAC].status = CAN_PRIMARY_TSACSTATUS_MAINBOARDSTATUS_TS_ON;
     debug_api_sync(&debug, &ui);
     TEST_ASSERT_EQUAL_STRING("DONE", prv_value(12U));
 }
@@ -204,12 +204,12 @@ void test_debug_motors_show_the_window_maxima(void) {
 
 void test_debug_shutdown_first_open_node_is_the_cause(void) {
     prv_fill();
-    ui.shutdown_v[SHUTDOWN_NODE_INERTIA] = 23.9F;
+    ui.shutdown_v[SHUTDOWN_NODE_REAR_LEFT_A_ARM] = 23.9F;
     ui.shutdown_v[SHUTDOWN_NODE_BSPD] = 0.0F;
     ui.shutdown_v[SHUTDOWN_NODE_HVD] = 0.0F;
     prv_show(DEBUG_TAB_SHUTDOWN);
-    TEST_ASSERT_EQUAL_STRING("CLOSED", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_INERTIA)));
-    TEST_ASSERT_EQUAL_STRING("23.9 V", prv_value(TEST_DEBUG_VOLTAGE(SHUTDOWN_NODE_INERTIA)));
+    TEST_ASSERT_EQUAL_STRING("CLOSED", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_REAR_LEFT_A_ARM)));
+    TEST_ASSERT_EQUAL_STRING("23.9 V", prv_value(TEST_DEBUG_VOLTAGE(SHUTDOWN_NODE_REAR_LEFT_A_ARM)));
     TEST_ASSERT_EQUAL_STRING("OPEN", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_BSPD)));
     TEST_ASSERT_EQUAL_STRING("0.0 V", prv_value(TEST_DEBUG_VOLTAGE(SHUTDOWN_NODE_BSPD)));
     TEST_ASSERT_EQUAL_HEX32_MESSAGE(DEBUG_COLOR_ERROR, TEST_DEBUG_ROW_COLOR(SHUTDOWN_NODE_BSPD, -1), "Name");
@@ -228,11 +228,11 @@ void test_debug_shutdown_missing_readings_do_not_break_the_chain(void) {
     prv_fill();
     ui.stale = UI_DATA_STALE_BIT(UI_DATA_SOURCE_DAS_SHUTDOWN) | UI_DATA_STALE_BIT(UI_DATA_SOURCE_SHUTDOWN_EXTRA);
     prv_show(DEBUG_TAB_SHUTDOWN);
-    TEST_ASSERT_EQUAL_STRING("UNAVAIL", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_INERTIA)));
-    TEST_ASSERT_EQUAL_STRING(DEBUG_NO_VALUE, prv_value(TEST_DEBUG_VOLTAGE(SHUTDOWN_NODE_INERTIA)));
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("CLOSED", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_BSPD)), "Past the hole the chain goes on");
-    TEST_ASSERT_EQUAL_STRING("UNAVAIL", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_SDC_RELAY)));
-    TEST_ASSERT_EQUAL_STRING("CLOSED", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_EBS)));
+    TEST_ASSERT_EQUAL_STRING("UNAVAIL", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_COCKPIT_MUSHROOM)));
+    TEST_ASSERT_EQUAL_STRING(DEBUG_NO_VALUE, prv_value(TEST_DEBUG_VOLTAGE(SHUTDOWN_NODE_COCKPIT_MUSHROOM)));
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("CLOSED", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_BOTS)), "Past the hole the chain goes on");
+    TEST_ASSERT_EQUAL_STRING("UNAVAIL", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_LEFT_MUSHROOM)));
+    TEST_ASSERT_EQUAL_STRING("CLOSED", prv_value(TEST_DEBUG_STATUS(SHUTDOWN_NODE_SD_END)));
 }
 
 void test_debug_sw_states(void) {
@@ -243,11 +243,23 @@ void test_debug_sw_states(void) {
     prv_show(DEBUG_TAB_SW);
     TEST_ASSERT_EQUAL_STRING("AS READY", prv_value(2U));
     TEST_ASSERT_EQUAL_STRING("-", prv_value(1U));
-    TEST_ASSERT_EQUAL_STRING("v17.0.0", prv_value(9U));
-    TEST_ASSERT_EQUAL_STRING("3d2e9aa", prv_value(10U));
-    TEST_ASSERT_EQUAL_STRING("CANLIB MISMATCH", prv_value(11U));
-    TEST_ASSERT_EQUAL_HEX32(DEBUG_COLOR_ERROR, prv_color(9U));
+    const uint8_t pipo = (uint8_t)(3U * UI_DATA_BOARD_PIPO);
+    TEST_ASSERT_EQUAL_STRING("v17.0.0", prv_value(pipo));
+    TEST_ASSERT_EQUAL_STRING("3d2e9aa", prv_value((uint8_t)(pipo + 1U)));
+    TEST_ASSERT_EQUAL_STRING("CANLIB MISMATCH", prv_value((uint8_t)(pipo + 2U)));
+    TEST_ASSERT_EQUAL_HEX32(DEBUG_COLOR_ERROR, prv_color(pipo));
     TEST_ASSERT_EQUAL_STRING("OFFLINE", prv_value((uint8_t)((3U * UI_DATA_BOARD_STEERING) + 2U)));
+}
+
+void test_debug_sw_telemetry_names_and_own_row(void) {
+    prv_fill();
+    ui.boards[UI_DATA_BOARD_TELEMETRY].status = CAN_PRIMARY_TELEMETRYFSM_STATUS_RUN;
+    ui.boards[UI_DATA_BOARD_STEERING_WHEEL].status = CAN_PRIMARY_STEERINGWHEELFSM_STATUS_IDLE;
+    ui.stale = UINT64_MAX & ~UI_DATA_STALE_BIT(UI_DATA_SOURCE_TELEMETRY_STATUS); // every bit, even past the last source
+    prv_show(DEBUG_TAB_SW);
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("RUN", prv_value((uint8_t)((3U * UI_DATA_BOARD_TELEMETRY) + 2U)), "TelemetryFsm has its own names");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("IDLE", prv_value((uint8_t)((3U * UI_DATA_BOARD_STEERING_WHEEL) + 2U)), "This board is never offline");
+    TEST_ASSERT_EQUAL_STRING("OFFLINE", prv_value((uint8_t)((3U * UI_DATA_BOARD_DAS_REAR) + 2U)));
 }
 
 void test_debug_pipo_blown_fuse_is_red(void) {
@@ -263,13 +275,32 @@ void test_debug_pipo_blown_fuse_is_red(void) {
     TEST_ASSERT_EQUAL_STRING("1 BLOWN", prv_value(14U));
 }
 
-void test_debug_brake_bias_is_the_front_share(void) {
+void test_debug_inverters_control_enable_is_one_for_all_four(void) {
     prv_fill();
-    prv_show(DEBUG_TAB_PEDALS);
-    TEST_ASSERT_EQUAL_STRING("55.0%", prv_value(10U));
-    ui.pedals.pressure_bar = (struct UIDataCorners){ 0.2F, 0.2F, 0.2F, 0.2F };
+    ui.stale = UI_DATA_STALE_BIT(UI_DATA_SOURCE_INVERTER_STATUS);
+    prv_show(DEBUG_TAB_INVERTERS);
+    TEST_ASSERT_EQUAL_STRING(DEBUG_NO_VALUE, prv_value(16U));
+    ui.stale = 0U;
+    ui.powertrain.control_enable = 1U;
     debug_api_sync(&debug, &ui);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE(DEBUG_NO_VALUE, prv_value(10U), "No braking, no bias");
+    TEST_ASSERT_EQUAL_STRING("ON", prv_value(16U));
+    TEST_ASSERT_EQUAL_HEX32(DEBUG_COLOR_OK, prv_color(16U));
+    TEST_ASSERT_EQUAL_MESSAGE(DEBUG_NO_SLOT, debug.slot_box[18U], "A single value, not four");
+}
+
+void test_debug_brake_bias_comes_from_the_pedals_board(void) {
+    prv_fill();
+    ui.pedals.pressure_bar = (struct UIDataCorners){ 12.0F, 12.0F, 8.0F, 8.0F };
+    ui.stale = UI_DATA_STALE_BIT(UI_DATA_SOURCE_BRAKE_BIAS);
+    prv_show(DEBUG_TAB_PEDALS);
+    TEST_ASSERT_EQUAL_STRING_MESSAGE(DEBUG_NO_VALUE, prv_value(10U), "Not computed from the pressures");
+    TEST_ASSERT_EQUAL_STRING(DEBUG_NO_VALUE, prv_value(11U));
+    ui.stale = 0U;
+    ui.pedals.bias = 54.2F;
+    ui.pedals.bias_set = 55.0F;
+    debug_api_sync(&debug, &ui);
+    TEST_ASSERT_EQUAL_STRING("54.2%", prv_value(10U));
+    TEST_ASSERT_EQUAL_STRING("55.0%", prv_value(11U));
 }
 
 void test_debug_wheel_rules(void) {
@@ -312,8 +343,10 @@ int main(void) {
     RUN_TEST(test_debug_shutdown_first_open_node_is_the_cause);
     RUN_TEST(test_debug_shutdown_missing_readings_do_not_break_the_chain);
     RUN_TEST(test_debug_sw_states);
+    RUN_TEST(test_debug_sw_telemetry_names_and_own_row);
     RUN_TEST(test_debug_pipo_blown_fuse_is_red);
-    RUN_TEST(test_debug_brake_bias_is_the_front_share);
+    RUN_TEST(test_debug_inverters_control_enable_is_one_for_all_four);
+    RUN_TEST(test_debug_brake_bias_comes_from_the_pedals_board);
     RUN_TEST(test_debug_wheel_rules);
     return UNITY_END();
 }

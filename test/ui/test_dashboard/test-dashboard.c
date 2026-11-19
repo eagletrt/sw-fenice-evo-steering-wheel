@@ -9,6 +9,9 @@
 
 #include "unity.h"
 #include "ui/dashboard/dashboard-api.h"
+#include "vehicle/shutdown/shutdown-api.h"
+#include "font-api.h"
+#include "raster-fonts.h"
 #include <string.h>
 
 static struct DashboardHandler dashboard;
@@ -45,7 +48,9 @@ static void prv_driving(void) {
     ui.hv_temp = 41;
     ui.lv_soc = 82U;
     ui.speed_kmh = 87U;
-    ui.shutdown_closed = 1U;
+    for (uint8_t node = 0U; node < SHUTDOWN_NODE_COUNT; node++) {
+        ui.shutdown_v[node] = 24.0F;
+    }
     ui.inverter_temp = 52;
     ui.motor_fl_temp = 70;
     ui.motor_fr_temp = 74;
@@ -185,17 +190,47 @@ void test_dashboard_state_names_and_colours(void) {
 }
 
 void test_dashboard_open_shutdown_turns_the_cell_red(void) {
-    ui.shutdown_closed = 0U;
+    ui.shutdown_v[SHUTDOWN_NODE_BSPD] = 0.0F;
+    ui.shutdown_v[SHUTDOWN_NODE_HVD] = 0.0F;
+    ui.shutdown_v[SHUTDOWN_NODE_SD_END] = 0.0F;
     prv_sync();
-    TEST_ASSERT_EQUAL_STRING("OPEN", prv_text(DASHBOARD_FIELD_SHUTDOWN));
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("BSPD", prv_text(DASHBOARD_FIELD_SHUTDOWN), "The first open node, not the ones after it");
     TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, prv_fill(DASHBOARD_FIELD_SHUTDOWN));
     TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, prv_fill(DASHBOARD_FIELD_SHUTDOWN_LABEL));
     TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_VALUE, prv_text_color(DASHBOARD_FIELD_SHUTDOWN_LABEL));
 
-    ui.shutdown_closed = 1U;
+    ui.shutdown_v[SHUTDOWN_NODE_BSPD] = 24.0F;
+    ui.shutdown_v[SHUTDOWN_NODE_HVD] = 24.0F;
+    ui.shutdown_v[SHUTDOWN_NODE_SD_END] = 24.0F;
     prv_sync();
+    TEST_ASSERT_EQUAL_STRING("CLOSED", prv_text(DASHBOARD_FIELD_SHUTDOWN));
     TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_CELL, prv_fill(DASHBOARD_FIELD_SHUTDOWN_LABEL));
     TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ALL_OK, prv_text_color(DASHBOARD_FIELD_SHUTDOWN));
+}
+
+void test_dashboard_shutdown_agrees_with_the_chain_even_if_sd_end_reads_closed(void) {
+    ui.shutdown_v[SHUTDOWN_NODE_HVD] = 0.0F; // sdEnd still reads 24 V: the SHUTDOWN tab says HVD open, so does the dashboard
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING("HVD", prv_text(DASHBOARD_FIELD_SHUTDOWN));
+}
+
+void test_dashboard_open_node_without_a_reading_shows_sd_end(void) {
+    // An A-arm opened: it has no reading and BOTS (after it) is stale too, so sdEnd is the first open node seen.
+    ui.stale = UI_DATA_STALE_BIT(UI_DATA_SOURCE_SHUTDOWN_EXTRA) | UI_DATA_STALE_BIT(UI_DATA_SOURCE_BRAKE);
+    ui.shutdown_v[SHUTDOWN_NODE_BOTS] = 0.0F;
+    ui.shutdown_v[SHUTDOWN_NODE_SD_END] = 0.0F;
+    prv_sync();
+    TEST_ASSERT_EQUAL_STRING("SD END", prv_text(DASHBOARD_FIELD_SHUTDOWN));
+    TEST_ASSERT_EQUAL_HEX32(DASHBOARD_COLOR_ERROR, prv_fill(DASHBOARD_FIELD_SHUTDOWN));
+}
+
+void test_dashboard_every_shutdown_node_name_fits_the_cell(void) {
+    const struct BoxRectangle cell = dashboard.boxes[DASHBOARD_FIELD_SHUTDOWN].rect;
+    for (uint8_t node = 0U; node < SHUTDOWN_NODE_COUNT; node++) {
+        struct FontBounds bounds = { 0 };
+        TEST_ASSERT_EQUAL(RASTER_RC_OK, font_api_bounds(0U, 0U, FONT_ALIGN_LEFT, &font_inter, shutdown_api_node_name((enum ShutdownNode)node), 32U, &bounds));
+        TEST_ASSERT_LESS_OR_EQUAL_UINT16_MESSAGE(cell.width - 16U, bounds.width, shutdown_api_node_name((enum ShutdownNode)node));
+    }
 }
 
 void test_dashboard_ptt_turns_the_mission_cell_blue(void) {
@@ -212,7 +247,6 @@ void test_dashboard_ptt_turns_the_mission_cell_blue(void) {
 
 void test_dashboard_stale_sources_show_dashes(void) {
     ui.stale = UI_DATA_STALE_ALL;
-    ui.shutdown_closed = 0U;
     prv_sync();
     const enum DashboardFieldId values[] = { DASHBOARD_FIELD_LAP_DELTA, DASHBOARD_FIELD_HV_SOC, DASHBOARD_FIELD_HV_TEMPERATURE, DASHBOARD_FIELD_LV_SOC, DASHBOARD_FIELD_SPEED, DASHBOARD_FIELD_SHUTDOWN, DASHBOARD_FIELD_MOTOR, DASHBOARD_FIELD_INVERTER, DASHBOARD_FIELD_BRAKE, DASHBOARD_FIELD_THROTTLE };
     for (size_t i = 0U; i < sizeof(values) / sizeof(values[0]); i++) {
@@ -307,6 +341,9 @@ int main(void) {
     RUN_TEST(test_dashboard_thresholds);
     RUN_TEST(test_dashboard_state_names_and_colours);
     RUN_TEST(test_dashboard_open_shutdown_turns_the_cell_red);
+    RUN_TEST(test_dashboard_open_node_without_a_reading_shows_sd_end);
+    RUN_TEST(test_dashboard_shutdown_agrees_with_the_chain_even_if_sd_end_reads_closed);
+    RUN_TEST(test_dashboard_every_shutdown_node_name_fits_the_cell);
     RUN_TEST(test_dashboard_ptt_turns_the_mission_cell_blue);
     RUN_TEST(test_dashboard_stale_sources_show_dashes);
     RUN_TEST(test_dashboard_one_stale_source_leaves_the_others);

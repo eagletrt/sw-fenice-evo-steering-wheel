@@ -63,34 +63,39 @@ enum UIDataSource : uint8_t {
     UI_DATA_SOURCE_BRAKE,    /*!< PedalsBrake */
     UI_DATA_SOURCE_LAP,      /*!< CurrentLap */
 
-    UI_DATA_SOURCE_HV_VOLTAGE,      /*!< TsacMainboardVoltageInfo */
-    UI_DATA_SOURCE_HV_CURRENT,      /*!< TsacMainboardCurrentInfo */
-    UI_DATA_SOURCE_HV_FEEDBACK,     /*!< TsacMainboardFeedback */
-    UI_DATA_SOURCE_HV_STATUS,       /*!< TsacStatus */
-    UI_DATA_SOURCE_HV_SHUTDOWN,     /*!< TsacMainboardShutdown */
-    UI_DATA_SOURCE_HV_COOLING_1,    /*!< TsacMainboardCoolingTemperature1 */
-    UI_DATA_SOURCE_HV_COOLING_2,    /*!< TsacMainboardCoolingTemperature2 */
-    UI_DATA_SOURCE_TORQUE,          /*!< MotorTorque */
-    UI_DATA_SOURCE_COOLING_MOTOR,   /*!< CoolingMotorTemperature */
-    UI_DATA_SOURCE_COOLING_CIRCUIT, /*!< CoolingCircuitTemperature */
-    UI_DATA_SOURCE_COOLING_OUT,     /*!< CoolingOut */
-    UI_DATA_SOURCE_TYRE_FRONT,      /*!< TyreTemperatureFront */
-    UI_DATA_SOURCE_TYRE_REAR,       /*!< TyreTemperatureRear */
-    UI_DATA_SOURCE_DAS_SHUTDOWN,    /*!< DasShutdown */
-    UI_DATA_SOURCE_PIPO_SHUTDOWN,   /*!< PipoShutdown */
-    UI_DATA_SOURCE_EBS,             /*!< BrakesEBS */
-    UI_DATA_SOURCE_LV_VOLTAGE,      /*!< LvacVoltageInfo */
-    UI_DATA_SOURCE_LV_TEMP,         /*!< LvacTemperatureInfo */
-    UI_DATA_SOURCE_LV_STATUS,       /*!< LvacFsm */
-    UI_DATA_SOURCE_PIPO_SUPPLY,     /*!< PowerSupply */
-    UI_DATA_SOURCE_PIPO_LINES_LOW,  /*!< LineCurrentLowPower */
-    UI_DATA_SOURCE_PIPO_LINES_HIGH, /*!< LineCurrentHighPower */
-    UI_DATA_SOURCE_PIPO_LINES_AS,   /*!< LineCurrentHighPowerAs */
-    UI_DATA_SOURCE_PIPO_STATUS,     /*!< PipoFsm */
-    UI_DATA_SOURCE_IMU_ACC,         /*!< ImuAcceleration */
-    UI_DATA_SOURCE_IMU_GYRO,        /*!< ImuAngularRate */
-    UI_DATA_SOURCE_POSITION,        /*!< EstimatedVehiclePosition */
-    UI_DATA_SOURCE_STEERING_STATUS, /*!< SteeringFsm */
+    UI_DATA_SOURCE_HV_VOLTAGE,       /*!< TsacMainboardVoltageInfo */
+    UI_DATA_SOURCE_HV_CURRENT,       /*!< TsacMainboardCurrentInfo */
+    UI_DATA_SOURCE_HV_FEEDBACK,      /*!< TsacMainboardFeedback */
+    UI_DATA_SOURCE_HV_STATUS,        /*!< TsacStatus */
+    UI_DATA_SOURCE_HV_SHUTDOWN,      /*!< TsacMainboardShutdown */
+    UI_DATA_SOURCE_ECU_SHUTDOWN,     /*!< ShutdownState */
+    UI_DATA_SOURCE_HV_COOLING_1,     /*!< TsacMainboardCoolingTemperature1 */
+    UI_DATA_SOURCE_HV_COOLING_2,     /*!< TsacMainboardCoolingTemperature2 */
+    UI_DATA_SOURCE_TORQUE,           /*!< MotorTorque */
+    UI_DATA_SOURCE_COOLING_MOTOR,    /*!< CoolingMotorTemperature */
+    UI_DATA_SOURCE_COOLING_CIRCUIT,  /*!< CoolingCircuitTemperature */
+    UI_DATA_SOURCE_COOLING_OUT,      /*!< CoolingOut */
+    UI_DATA_SOURCE_TYRE_FRONT,       /*!< TyreTemperatureFront */
+    UI_DATA_SOURCE_TYRE_REAR,        /*!< TyreTemperatureRear */
+    UI_DATA_SOURCE_DAS_SHUTDOWN,     /*!< DasShutdown */
+    UI_DATA_SOURCE_PIPO_SHUTDOWN,    /*!< PipoShutdown */
+    UI_DATA_SOURCE_EBS,              /*!< BrakesEBS */
+    UI_DATA_SOURCE_LV_VOLTAGE,       /*!< LvacVoltageInfo */
+    UI_DATA_SOURCE_LV_TEMP,          /*!< LvacTemperatureInfo */
+    UI_DATA_SOURCE_LV_STATUS,        /*!< LvacFsm */
+    UI_DATA_SOURCE_PIPO_SUPPLY,      /*!< PowerSupply */
+    UI_DATA_SOURCE_PIPO_LINES_LOW,   /*!< LineCurrentLowPower */
+    UI_DATA_SOURCE_PIPO_LINES_HIGH,  /*!< LineCurrentHighPower */
+    UI_DATA_SOURCE_PIPO_LINES_AS,    /*!< LineCurrentHighPowerAs */
+    UI_DATA_SOURCE_PIPO_STATUS,      /*!< PipoFsm */
+    UI_DATA_SOURCE_IMU_ACC,          /*!< ImuAcceleration */
+    UI_DATA_SOURCE_IMU_GYRO,         /*!< ImuAngularRate */
+    UI_DATA_SOURCE_POSITION,         /*!< EstimatedVehiclePosition */
+    UI_DATA_SOURCE_STEERING_STATUS,  /*!< SteeringFsm */
+    UI_DATA_SOURCE_PEDALS_STATUS,    /*!< PedalsFsm */
+    UI_DATA_SOURCE_DAS_FRONT_STATUS, /*!< DasFrontFsm */
+    UI_DATA_SOURCE_DAS_REAR_STATUS,  /*!< DasRearFsm */
+    UI_DATA_SOURCE_TELEMETRY_STATUS, /*!< TelemetryFsm */
 
     UI_DATA_SOURCE_INVERTER_STATUS, /*!< TODO(libcan): inverter status, control enable, DC link */
     UI_DATA_SOURCE_MOTOR_SPEED,     /*!< TODO(libcan): motor speed (rpm) */
@@ -98,7 +103,7 @@ enum UIDataSource : uint8_t {
     UI_DATA_SOURCE_TYRE_PRESSURE,   /*!< TODO(libcan) */
     UI_DATA_SOURCE_DISC_TEMP,       /*!< TODO(libcan) */
     UI_DATA_SOURCE_COOLING_TANK,    /*!< TODO(libcan): tank temperature and level */
-    UI_DATA_SOURCE_BRAKE_BIAS_SET,  /*!< TODO(libcan): commanded brake bias */
+    UI_DATA_SOURCE_BRAKE_BIAS,      /*!< TODO(libcan): measured and commanded brake bias (pedals board) */
     UI_DATA_SOURCE_PEDALS_VOLTAGE,  /*!< TODO(libcan): APPS and brake sensor voltages */
     UI_DATA_SOURCE_GPS,             /*!< TODO(libcan): latitude, longitude, GPS speed */
     UI_DATA_SOURCE_PC_AS,           /*!< TODO(libcan): AS computer status */
@@ -106,7 +111,7 @@ enum UIDataSource : uint8_t {
     UI_DATA_SOURCE_EBS_STATE,       /*!< TODO(libcan): EBS armed state */
     UI_DATA_SOURCE_PIPO_FUSES,      /*!< TODO(libcan): fuse status per line */
     UI_DATA_SOURCE_PIPO_CHARGER,    /*!< TODO(libcan): charger input voltage */
-    UI_DATA_SOURCE_SHUTDOWN_EXTRA,  /*!< TODO(libcan): inverter interlock, SDC relay */
+    UI_DATA_SOURCE_SHUTDOWN_EXTRA,  /*!< TODO(libcan): A-arms, inverter interlock */
     UI_DATA_SOURCE_SUSPENSION,      /*!< TODO(libcan): travel per corner (today heave and roll) */
     UI_DATA_SOURCE_LV_REASON,       /*!< TODO(libcan): LV state reason */
     UI_DATA_SOURCE_COUNT,
@@ -166,12 +171,16 @@ enum UIDataPipoLine : uint8_t {
  */
 enum UIDataBoard : uint8_t {
     UI_DATA_BOARD_ECU,
-    UI_DATA_BOARD_BMS_HV,    /*!< TSAC mainboard */
-    UI_DATA_BOARD_PORCHETTO, /*!< LVAC */
+    UI_DATA_BOARD_PEDALS,
     UI_DATA_BOARD_PIPO,
-    UI_DATA_BOARD_INVERTERS, /*!< TODO(libcan) */
-    UI_DATA_BOARD_STEERING,
+    UI_DATA_BOARD_PORCHETTO, /*!< LVAC */
+    UI_DATA_BOARD_DAS_FRONT,
+    UI_DATA_BOARD_DAS_REAR,
+    UI_DATA_BOARD_TSAC, /*!< TSAC mainboard */
+    UI_DATA_BOARD_TELEMETRY,
     UI_DATA_BOARD_PC_AS, /*!< TODO(libcan) */
+    UI_DATA_BOARD_STEERING,
+    UI_DATA_BOARD_STEERING_WHEEL, /*!< This board: filled by the scheduler, never offline */
     UI_DATA_BOARD_COUNT,
 };
 
@@ -274,7 +283,7 @@ struct UIDataPowertrain {
     struct UIDataCorners inverter_temp; /*!< InverterTemperature, °C */
     float dc_link_v;                    /*!< Inverter DC link (TODO(libcan)) */
     uint8_t inverter_status[4];         /*!< UIDataInverterStatus per wheel (TODO(libcan)) */
-    uint8_t control_enable[4];          /*!< Enable input as read by each inverter (TODO(libcan)) */
+    uint8_t control_enable;             /*!< sdEnd as the inverters read it, one for all four (TODO(libcan)) */
 };
 
 /*!
@@ -309,7 +318,8 @@ struct UIDataPedals {
     float brake_sensor_v;  /*!< TODO(libcan) */
     float brake_travel;    /*!< Brake pedal, 0..100 */
     float bots_v;          /*!< Brake over-travel switch, shutdown voltage */
-    float bias_set;        /*!< Commanded brake bias, % front (TODO(libcan)) */
+    float bias;            /*!< Measured brake bias, % front, from the pedals board (TODO(libcan)) */
+    float bias_set;        /*!< Commanded brake bias, % front, from the pedals board (TODO(libcan)) */
     float ebs_tank_bar[2]; /*!< EBS tanks 1, 2 */
     float ebs_line_bar[2]; /*!< EBS lines 1, 2 */
     float ebs_load_n[2];   /*!< EBS strain gauges 1, 2 */
@@ -381,7 +391,6 @@ struct UIData {
 
     /* Driving. */
     uint16_t speed_kmh;       /*!< Vehicle speed in km/h */
-    uint8_t shutdown_closed;  /*!< 1 while the shutdown circuit is closed (sdEnd above the threshold) */
     uint8_t throttle_percent; /*!< Throttle pedal travel, 0..100 */
     uint8_t brake_percent;    /*!< Highest brake pressure, 1 % per bar, 0..100 */
 
@@ -406,6 +415,8 @@ struct UIData {
     struct UIDataChassis chassis;
     struct UIDataLv lv;
     float shutdown_v[SHUTDOWN_NODE_COUNT]; /*!< Voltage after each node */
+    float asms_v;                          /*!< ASMS (PipoShutdown), not a node of the chain */
+    float res_v;                           /*!< RES (PipoShutdown), not a node of the chain */
     struct UIDataBoardInfo boards[UI_DATA_BOARD_COUNT];
     struct WheelHealth wheel;
 

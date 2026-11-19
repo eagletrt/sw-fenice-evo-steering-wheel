@@ -90,7 +90,7 @@ EAGLETRT_STATIC void prv_debug_hv_sync(struct DebugHandler *handler, const struc
     if (debug_api_stale(ui, UI_DATA_SOURCE_HV_STATUS)) {
         debug_api_no_value(handler, DEBUG_HV_PRECHARGE);
     } else {
-        const uint8_t status = ui->boards[UI_DATA_BOARD_BMS_HV].status;
+        const uint8_t status = ui->boards[UI_DATA_BOARD_TSAC].status;
         if (status == CAN_PRIMARY_TSACSTATUS_MAINBOARDSTATUS_PRECHARGE) {
             debug_api_text(handler, DEBUG_HV_PRECHARGE, DEBUG_COLOR_WARNING, "ACTIVE");
         } else if (status == CAN_PRIMARY_TSACSTATUS_MAINBOARDSTATUS_AIRP_CHECK || status == CAN_PRIMARY_TSACSTATUS_MAINBOARDSTATUS_TS_ON) {

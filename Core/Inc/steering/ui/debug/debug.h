@@ -115,11 +115,11 @@ struct DebugElement {
 /*! \brief A QUAD: LABEL_Y and PITCH from the Figma panel (52 / 89 for 28 px values, 55 / 89 for 24 px, 46 / 71 in 174 px panels). */
 #define DEBUG_QUAD(X, Y, W, H, CAPTION, LABELS, SLOT, SIZE, LABEL_Y, PITCH) { .kind = DEBUG_ELEMENT_QUAD, .rect = { (X), (Y), (W), (H) }, .caption = (CAPTION), .labels = (LABELS), .slot = (SLOT), .value_size = (SIZE), .label_y = (LABEL_Y), .pitch = (PITCH) }
 /*! \brief A STATUS_ROW. */
-#define DEBUG_STATUS_ROW(X, Y, CAPTION, SLOT) { .kind = DEBUG_ELEMENT_STATUS_ROW, .rect = { (X), (Y), 398U, 51U }, .caption = (CAPTION), .slot = (SLOT) }
+#define DEBUG_STATUS_ROW(X, Y, CAPTION, SLOT) { .kind = DEBUG_ELEMENT_STATUS_ROW, .rect = { (X), (Y), 398U, 45U }, .caption = (CAPTION), .slot = (SLOT) }
 /*! \brief A LINE (PIPO output). */
 #define DEBUG_LINE(X, Y, W, CAPTION, SLOT) { .kind = DEBUG_ELEMENT_LINE, .rect = { (X), (Y), (W), 80U }, .caption = (CAPTION), .slot = (SLOT), .value_size = 32U }
 /*! \brief A TABLE_ROW (SW tab). */
-#define DEBUG_TABLE_ROW(Y, CAPTION, SLOT) { .kind = DEBUG_ELEMENT_TABLE_ROW, .rect = { 1U, (Y), 798U, 46U }, .caption = (CAPTION), .slot = (SLOT), .value_size = 22U }
+#define DEBUG_TABLE_ROW(Y, CAPTION, SLOT) { .kind = DEBUG_ELEMENT_TABLE_ROW, .rect = { 1U, (Y), 798U, 33U }, .caption = (CAPTION), .slot = (SLOT), .value_size = 20U }
 
 struct DebugHandler;
 

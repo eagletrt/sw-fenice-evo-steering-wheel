@@ -8,6 +8,7 @@
  */
 
 #include "ui/data/ui-data-api.h"
+#include "vehicle/shutdown/shutdown-api.h"
 #include "eagletrt-api.h"
 #include "eagletrt.h"
 
@@ -18,6 +19,27 @@
 EAGLETRT_STATIC struct UIData ui_data = {
     .vehicle_state = UI_DATA_VEHICLE_STATE_COUNT,
     .stale = UI_DATA_STALE_ALL,
+};
+
+/*! \brief The message each shutdown node's voltage comes in. */
+EAGLETRT_STATIC const enum UIDataSource ui_data_shutdown_sources[SHUTDOWN_NODE_COUNT] = {
+    [SHUTDOWN_NODE_ECU] = UI_DATA_SOURCE_ECU_SHUTDOWN,
+    [SHUTDOWN_NODE_COCKPIT_MUSHROOM] = UI_DATA_SOURCE_DAS_SHUTDOWN,
+    [SHUTDOWN_NODE_FRONT_RIGHT_A_ARM] = UI_DATA_SOURCE_SHUTDOWN_EXTRA,
+    [SHUTDOWN_NODE_BOTS] = UI_DATA_SOURCE_BRAKE,
+    [SHUTDOWN_NODE_FRONT_LEFT_A_ARM] = UI_DATA_SOURCE_SHUTDOWN_EXTRA,
+    [SHUTDOWN_NODE_INERTIA] = UI_DATA_SOURCE_DAS_SHUTDOWN,
+    [SHUTDOWN_NODE_INVERTER_INTERLOCK] = UI_DATA_SOURCE_SHUTDOWN_EXTRA,
+    [SHUTDOWN_NODE_REAR_LEFT_A_ARM] = UI_DATA_SOURCE_SHUTDOWN_EXTRA,
+    [SHUTDOWN_NODE_BSPD] = UI_DATA_SOURCE_PIPO_SHUTDOWN,
+    [SHUTDOWN_NODE_HVD] = UI_DATA_SOURCE_PIPO_SHUTDOWN,
+    [SHUTDOWN_NODE_LEFT_MUSHROOM] = UI_DATA_SOURCE_DAS_SHUTDOWN,
+    [SHUTDOWN_NODE_RIGHT_MUSHROOM] = UI_DATA_SOURCE_DAS_SHUTDOWN,
+    [SHUTDOWN_NODE_AMS] = UI_DATA_SOURCE_HV_SHUTDOWN,
+    [SHUTDOWN_NODE_IMD] = UI_DATA_SOURCE_HV_SHUTDOWN,
+    [SHUTDOWN_NODE_REAR_RIGHT_A_ARM] = UI_DATA_SOURCE_SHUTDOWN_EXTRA,
+    [SHUTDOWN_NODE_TSMS] = UI_DATA_SOURCE_PIPO_SHUTDOWN,
+    [SHUTDOWN_NODE_SD_END] = UI_DATA_SOURCE_SHUTDOWN,
 };
 
 struct UIData *ui_data_api_get(void) {
@@ -66,4 +88,15 @@ EAGLETRT_STATIC void prv_ui_data_api_rotate(struct UIDataWindow *window) {
 void ui_data_api_rotate_windows(void) {
     prv_ui_data_api_rotate(&ui_data.powertrain.torque_window);
     prv_ui_data_api_rotate(&ui_data.powertrain.rpm_window);
+}
+
+bool ui_data_api_shutdown(const struct UIData *ui_data, struct ShutdownChain *chain) {
+    if (ui_data == NULL) {
+        return false;
+    }
+    uint32_t available = 0U;
+    for (uint8_t node = 0U; node < SHUTDOWN_NODE_COUNT; node++) {
+        available |= ((ui_data->stale & UI_DATA_STALE_BIT(ui_data_shutdown_sources[node])) != 0U) ? 0U : SHUTDOWN_NODE_BIT(node);
+    }
+    return shutdown_api_evaluate(ui_data->shutdown_v, available, chain);
 }

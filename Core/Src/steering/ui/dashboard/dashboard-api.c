@@ -13,6 +13,8 @@
  */
 
 #include "ui/dashboard/dashboard-api.h"
+#include "ui/data/ui-data-api.h"
+#include "vehicle/shutdown/shutdown-api.h"
 
 #include "box-api.h"
 #include "eagletrt-api.h"
@@ -221,17 +223,23 @@ EAGLETRT_STATIC void prv_dashboard_api_lap(struct DashboardHandler *handler, con
 }
 
 /*!
- * \brief Shutdown cell: green CLOSED, whole cell red when OPEN, "--" when stale.
+ * \brief Shutdown cell: green CLOSED; when open the whole cell red with the
+ *     first open node (the cause, from the shutdown module); "--" while sdEnd
+ *     is stale. With sdEnd read there is always a cause: "SD END" when no node
+ *     before it with a reading is open.
  */
-EAGLETRT_STATIC void prv_dashboard_api_shutdown(struct DashboardHandler *handler, bool stale, bool closed) {
+EAGLETRT_STATIC void prv_dashboard_api_shutdown(struct DashboardHandler *handler, const struct UIData *ui_data) {
+    const bool stale = (ui_data->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_SHUTDOWN)) != 0U;
+    struct ShutdownChain chain;
+    EAGLETRT_API_UNUSED(ui_data_api_shutdown(ui_data, &chain));
+    const bool closed = chain.state[SHUTDOWN_NODE_SD_END] == SHUTDOWN_STATE_CLOSED;
     const bool open = !stale && !closed;
     const uint32_t background = open ? DASHBOARD_COLOR_ERROR : DASHBOARD_COLOR_CELL;
     uint32_t value_argb = DASHBOARD_COLOR_VALUE;
     if (!stale && closed) {
         value_argb = DASHBOARD_COLOR_ALL_OK;
     }
-    // TODO(design): the first open node instead of "OPEN" once the node order is defined.
-    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SHUTDOWN, "%s", stale ? DASHBOARD_NO_VALUE : (closed ? "CLOSED" : "OPEN"));
+    prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SHUTDOWN, "%s", stale ? DASHBOARD_NO_VALUE : (closed ? "CLOSED" : shutdown_api_node_name(chain.cause)));
     prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_SHUTDOWN, background, value_argb);
     prv_dashboard_api_set_colors(handler, DASHBOARD_FIELD_SHUTDOWN_LABEL, background, open ? DASHBOARD_COLOR_VALUE : DASHBOARD_COLOR_LABEL);
 }
@@ -340,7 +348,7 @@ enum DashboardReturnCode dashboard_api_sync(struct DashboardHandler *handler, co
     } else {
         prv_dashboard_api_format_field(handler, DASHBOARD_FIELD_SPEED, "%" PRIu16, ui_data->speed_kmh);
     }
-    prv_dashboard_api_shutdown(handler, DASHBOARD_STALE(UI_DATA_SOURCE_SHUTDOWN), ui_data->shutdown_closed != 0U);
+    prv_dashboard_api_shutdown(handler, ui_data);
 
     const int16_t motor = EAGLETRT_API_MAX(EAGLETRT_API_MAX(ui_data->motor_fl_temp, ui_data->motor_fr_temp), EAGLETRT_API_MAX(ui_data->motor_rl_temp, ui_data->motor_rr_temp));
     prv_dashboard_api_temperature(handler, DASHBOARD_FIELD_MOTOR, DASHBOARD_STALE(UI_DATA_SOURCE_MOTOR), motor, DASHBOARD_THRESHOLD_MOTOR_TEMPERATURE_CELSIUS_WARNING, DASHBOARD_THRESHOLD_MOTOR_TEMPERATURE_CELSIUS_ERROR);

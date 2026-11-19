@@ -25,27 +25,38 @@
 
 EAGLETRT_STATIC const char *const debug_sw_header[4] = { "BOARD", "CANLIB", "COMMIT", "STATE" };
 
+/*! \brief Row of a board: header 57-92, rows 33 px tall every 35 px from y 95. */
+#define DEBUG_SW_ROW(BOARD, CAPTION) DEBUG_TABLE_ROW((uint16_t)(95U + (35U * (uint8_t)(BOARD))), CAPTION, DEBUG_SW_SLOT(BOARD))
+
 // clang-format off
 EAGLETRT_STATIC const struct DebugElement debug_sw_elements[] = {
-    { .kind = DEBUG_ELEMENT_TABLE_HEADER, .rect = { 1U, 57U, 798U, 38U }, .labels = debug_sw_header },
-    DEBUG_TABLE_ROW( 97U, "ECU", DEBUG_SW_SLOT(UI_DATA_BOARD_ECU)),
-    DEBUG_TABLE_ROW(145U, "BMS HV", DEBUG_SW_SLOT(UI_DATA_BOARD_BMS_HV)),
-    DEBUG_TABLE_ROW(193U, "PORCHETTO", DEBUG_SW_SLOT(UI_DATA_BOARD_PORCHETTO)),
-    DEBUG_TABLE_ROW(241U, "PIPO", DEBUG_SW_SLOT(UI_DATA_BOARD_PIPO)),
-    DEBUG_TABLE_ROW(289U, "INVERTERS", DEBUG_SW_SLOT(UI_DATA_BOARD_INVERTERS)),
-    DEBUG_TABLE_ROW(337U, "STEERING", DEBUG_SW_SLOT(UI_DATA_BOARD_STEERING)),
-    DEBUG_TABLE_ROW(385U, "PC AS", DEBUG_SW_SLOT(UI_DATA_BOARD_PC_AS)),
+    { .kind = DEBUG_ELEMENT_TABLE_HEADER, .rect = { 1U, 57U, 798U, 36U }, .labels = debug_sw_header },
+    DEBUG_SW_ROW(UI_DATA_BOARD_ECU, "ECU"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_PEDALS, "PEDALS"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_PIPO, "PIPO"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_PORCHETTO, "PORCHETTO"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_DAS_FRONT, "DAS FRONT"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_DAS_REAR, "DAS REAR"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_TSAC, "TSAC"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_TELEMETRY, "TELEMETRY"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_PC_AS, "PC AS"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_STEERING, "STEERING"),
+    DEBUG_SW_ROW(UI_DATA_BOARD_STEERING_WHEEL, "STEERING WHEEL"),
 };
 
 /*! \brief The message telling each board's state (its staleness = OFFLINE). */
 EAGLETRT_STATIC const enum UIDataSource debug_sw_sources[UI_DATA_BOARD_COUNT] = {
     [UI_DATA_BOARD_ECU] = UI_DATA_SOURCE_COUNT, // EcuFsm: the router's ECU timeout (vehicle_state unknown)
-    [UI_DATA_BOARD_BMS_HV] = UI_DATA_SOURCE_HV_STATUS,
-    [UI_DATA_BOARD_PORCHETTO] = UI_DATA_SOURCE_LV_STATUS,
+    [UI_DATA_BOARD_PEDALS] = UI_DATA_SOURCE_PEDALS_STATUS,
     [UI_DATA_BOARD_PIPO] = UI_DATA_SOURCE_PIPO_STATUS,
-    [UI_DATA_BOARD_INVERTERS] = UI_DATA_SOURCE_INVERTER_STATUS,
-    [UI_DATA_BOARD_STEERING] = UI_DATA_SOURCE_STEERING_STATUS,
+    [UI_DATA_BOARD_PORCHETTO] = UI_DATA_SOURCE_LV_STATUS,
+    [UI_DATA_BOARD_DAS_FRONT] = UI_DATA_SOURCE_DAS_FRONT_STATUS,
+    [UI_DATA_BOARD_DAS_REAR] = UI_DATA_SOURCE_DAS_REAR_STATUS,
+    [UI_DATA_BOARD_TSAC] = UI_DATA_SOURCE_HV_STATUS,
+    [UI_DATA_BOARD_TELEMETRY] = UI_DATA_SOURCE_TELEMETRY_STATUS,
     [UI_DATA_BOARD_PC_AS] = UI_DATA_SOURCE_PC_AS,
+    [UI_DATA_BOARD_STEERING] = UI_DATA_SOURCE_STEERING_STATUS,
+    [UI_DATA_BOARD_STEERING_WHEEL] = UI_DATA_SOURCE_COUNT, // this board: never offline
 };
 // clang-format on
 
@@ -53,6 +64,8 @@ EAGLETRT_STATIC const enum UIDataSource debug_sw_sources[UI_DATA_BOARD_COUNT] = 
 EAGLETRT_STATIC const char *const debug_sw_ecu_states[] = { "INIT", "IDLE", "PRECHARGE", "TSON", "DISCHARGE", "ASOFF", "AS READY", "AS DRIVING", "ERROR", "R2D", "AS R2D", "AS FINISHED", "AS EMERGENCY" };
 /*! \brief TsacStatus mainboard names (libcan TsacMainboardStatus order). */
 EAGLETRT_STATIC const char *const debug_sw_tsac_states[] = { "INIT", "IDLE", "ERROR", "FLASH", "BALANCING", "AIRN CHECK", "PRECHARGE", "AIRP CHECK", "TS ON" };
+/*! \brief TelemetryFsm names (libcan TelemetryStatus order). */
+EAGLETRT_STATIC const char *const debug_sw_telemetry_states[] = { "INIT", "IDLE", "SETUP RUN", "RUN", "ERROR" };
 /*! \brief Every other board's FSM (INIT, IDLE, ERROR, FLASH). */
 EAGLETRT_STATIC const char *const debug_sw_states[] = { "INIT", "IDLE", "ERROR", "FLASH" };
 
@@ -66,7 +79,10 @@ EAGLETRT_STATIC void prv_debug_sw_state(struct DebugHandler *handler, uint8_t sl
     if (board == UI_DATA_BOARD_ECU) {
         names = debug_sw_ecu_states;
         count = sizeof(debug_sw_ecu_states) / sizeof(debug_sw_ecu_states[0]);
-    } else if (board == UI_DATA_BOARD_BMS_HV) {
+    } else if (board == UI_DATA_BOARD_TELEMETRY) {
+        names = debug_sw_telemetry_states;
+        count = sizeof(debug_sw_telemetry_states) / sizeof(debug_sw_telemetry_states[0]);
+    } else if (board == UI_DATA_BOARD_TSAC) {
         names = debug_sw_tsac_states;
         count = sizeof(debug_sw_tsac_states) / sizeof(debug_sw_tsac_states[0]);
     }
@@ -101,7 +117,12 @@ EAGLETRT_STATIC void prv_debug_sw_sync(struct DebugHandler *handler, const struc
             debug_api_text(handler, (uint8_t)(slot + 1U), DEBUG_COLOR_VALUE, "-");
         }
 
-        const bool offline = (board == UI_DATA_BOARD_ECU) ? (ui->vehicle_state == UI_DATA_VEHICLE_STATE_COUNT) : debug_api_stale(ui, debug_sw_sources[board]);
+        bool offline = false;
+        if (board == UI_DATA_BOARD_ECU) {
+            offline = ui->vehicle_state == UI_DATA_VEHICLE_STATE_COUNT;
+        } else if (board != UI_DATA_BOARD_STEERING_WHEEL) {
+            offline = debug_api_stale(ui, debug_sw_sources[board]);
+        }
         if (offline) {
             debug_api_text(handler, (uint8_t)(slot + 2U), DEBUG_COLOR_LABEL, "OFFLINE");
         } else if (mismatch) {

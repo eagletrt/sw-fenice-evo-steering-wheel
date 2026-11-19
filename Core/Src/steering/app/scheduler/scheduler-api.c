@@ -12,6 +12,7 @@
 #include "can/bus/can-communications-api.h"
 #include "can/router/can-communications-router-api.h"
 #include "can-primary.h"
+#include "can-version.h"
 #include "eagletrt-api.h"
 #include "can/flash-monitor/flash-monitor-api.h"
 #include "can/identity/identity-api.h"
@@ -145,7 +146,15 @@ EAGLETRT_STATIC void prv_scheduler_api_task_can_button_status(uint32_t tick_ms) 
 
 EAGLETRT_STATIC void prv_scheduler_api_task_can_fsm_status(uint32_t tick_ms) {
     EAGLETRT_API_UNUSED(tick_ms);
-    EAGLETRT_API_UNUSED(identity_api_send_state(wheel_fsm_api_get_can_status(wheel_fsm_api_get_state())));
+    const enum CanPrimarySteeringwheelfsmStatus status = wheel_fsm_api_get_can_status(wheel_fsm_api_get_state());
+    EAGLETRT_API_UNUSED(identity_api_send_state(status));
+    // The SW debug tab's own row: what this board reports about itself.
+    ui_data_api_get()->boards[UI_DATA_BOARD_STEERING_WHEEL] = (struct UIDataBoardInfo){
+        .commit = IDENTITY_VERSION_INFO_COMMIT_HASH,
+        .libcan = { (uint16_t)can_version_major, (uint16_t)can_version_minor, (uint16_t)can_version_patch },
+        .status = (uint8_t)status,
+        .known = UI_DATA_BOARD_KNOWN_COMMIT | UI_DATA_BOARD_KNOWN_LIBCAN,
+    };
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_can_version(uint32_t tick_ms) {

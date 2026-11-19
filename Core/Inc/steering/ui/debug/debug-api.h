@@ -107,7 +107,7 @@ void debug_api_switch(struct DebugHandler *handler, uint8_t slot, bool stale, fl
 void debug_api_bots(struct DebugHandler *handler, uint8_t slot, const struct UIData *ui_data);
 
 /*!
- * \brief Measured brake bias (front share of the pressures) and the commanded one.
+ * \brief Measured and commanded brake bias, both as the pedals board sends them.
  */
 void debug_api_bias(struct DebugHandler *handler, uint8_t slot, uint8_t set_slot, const struct UIData *ui_data);
 

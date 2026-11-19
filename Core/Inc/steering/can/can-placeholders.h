@@ -14,15 +14,16 @@
  *
  *     Expected (next libcan update):
  *     - Inverters: status (run / derate / fault), control enable as read by
- *       each inverter, DC link voltage, motor speed (rpm), delivered torque, version.
+ *       the inverters, DC link voltage, motor speed (rpm), delivered torque.
  *     - Tyre pressure, disc temperature (per wheel).
  *     - Cooling tanks: temperature and level, left and right.
- *     - Commanded brake bias.
+ *     - Brake bias, measured and commanded (pedals board).
  *     - Pedal sensor voltages: APPS 1-3, brake sensor.
  *     - GPS: latitude, longitude, speed.
  *     - AS computer status and version; selected mission (#11); EBS armed state.
  *     - PIPO: fuse status per line, charger input voltage.
- *     - Shutdown nodes: inverter interlock, SDC relay.
+ *     - Shutdown nodes not read yet: front right / front left / rear left /
+ *       rear right A-arm, inverter interlocks.
  *     - Suspension travel per corner (SuspensionFront/Rear carry heave and roll today).
  *     - LV state reason.
  */

@@ -41,12 +41,12 @@ EAGLETRT_STATIC const struct CanCommunicationsRouterFilter prv_router_api_primar
     { CAN_COMMUNICATIONS_ROUTER_ID(PIPOFSM), CAN_COMMUNICATIONS_ROUTER_ID(STEERINGFSM) },                                               // 0x4CE-0x4DE: PIPO, LVAC, cooling, steering board
     { CAN_COMMUNICATIONS_ROUTER_ID(DASFRONTFSM), CAN_COMMUNICATIONS_ROUTER_ID(TYRETEMPERATUREFRONT) },                                  // 0x4E0-0x4E1
     { CAN_COMMUNICATIONS_ROUTER_ID(INVERTERTEMPERATURE), CAN_COMMUNICATIONS_ROUTER_ID(IMUACCELERATION) },                               // 0x4E4-0x4ED: ECU, telemetry, IMU
-    { CAN_COMMUNICATIONS_ROUTER_ID(PEDALSBRAKE), CAN_COMMUNICATIONS_ROUTER_ID(PEDALSBRAKE) },                                           // 0x4F2
+    { CAN_COMMUNICATIONS_ROUTER_ID(PEDALSFSM), CAN_COMMUNICATIONS_ROUTER_ID(PEDALSBRAKE) },                                             // 0x4F1-0x4F2
     { CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDTEMPERATUREINFO), CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDTEMPERATUREINFO) },         // 0x4F9
     { CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDCOOLINGTEMPERATURE1), CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDCOOLINGTEMPERATURE2) }, // 0x500-0x501
     { CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDFEEDBACK), CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDFEEDBACK) },                       // 0x50E
     { CAN_COMMUNICATIONS_ROUTER_ID(DASREARVERSION), CAN_COMMUNICATIONS_ROUTER_ID(ECULIBCANVERSIONINFO) },                               // 0x664-0x684: board versions
-    { CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDVERSION), CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDLIBCANVERSIONINFO) },               // 0x691-0x694
+    { CAN_COMMUNICATIONS_ROUTER_ID(TELEMETRYVERSIONINFO), CAN_COMMUNICATIONS_ROUTER_ID(TSACMAINBOARDLIBCANVERSIONINFO) },               // 0x686-0x694: telemetry, pedals, TSAC versions
 };
 
 static_assert(sizeof(prv_router_api_primary_filters) / sizeof(prv_router_api_primary_filters[0]) == CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT,
@@ -127,6 +127,7 @@ EAGLETRT_STATIC const struct CanCommunicationsRouterSource prv_router_api_source
     [UI_DATA_SOURCE_HV_FEEDBACK] = CAN_COMMUNICATIONS_ROUTER_SOURCE(tsacmainboardfeedback, TSACMAINBOARDFEEDBACK),
     [UI_DATA_SOURCE_HV_STATUS] = CAN_COMMUNICATIONS_ROUTER_SOURCE(tsacstatus, TSACSTATUS),
     [UI_DATA_SOURCE_HV_SHUTDOWN] = CAN_COMMUNICATIONS_ROUTER_SOURCE(tsacmainboardshutdown, TSACMAINBOARDSHUTDOWN),
+    [UI_DATA_SOURCE_ECU_SHUTDOWN] = CAN_COMMUNICATIONS_ROUTER_SOURCE(shutdownstate, SHUTDOWNSTATE),
     [UI_DATA_SOURCE_HV_COOLING_1] = CAN_COMMUNICATIONS_ROUTER_SOURCE(tsacmainboardcoolingtemperature1, TSACMAINBOARDCOOLINGTEMPERATURE1),
     [UI_DATA_SOURCE_HV_COOLING_2] = CAN_COMMUNICATIONS_ROUTER_SOURCE(tsacmainboardcoolingtemperature2, TSACMAINBOARDCOOLINGTEMPERATURE2),
     [UI_DATA_SOURCE_TORQUE] = CAN_COMMUNICATIONS_ROUTER_SOURCE(motortorque, MOTORTORQUE),
@@ -150,6 +151,10 @@ EAGLETRT_STATIC const struct CanCommunicationsRouterSource prv_router_api_source
     [UI_DATA_SOURCE_IMU_GYRO] = CAN_COMMUNICATIONS_ROUTER_SOURCE(imuangularrate, IMUANGULARRATE),
     [UI_DATA_SOURCE_POSITION] = CAN_COMMUNICATIONS_ROUTER_SOURCE(estimatedvehicleposition, ESTIMATEDVEHICLEPOSITION),
     [UI_DATA_SOURCE_STEERING_STATUS] = CAN_COMMUNICATIONS_ROUTER_SOURCE(steeringfsm, STEERINGFSM),
+    [UI_DATA_SOURCE_PEDALS_STATUS] = CAN_COMMUNICATIONS_ROUTER_SOURCE(pedalsfsm, PEDALSFSM),
+    [UI_DATA_SOURCE_DAS_FRONT_STATUS] = CAN_COMMUNICATIONS_ROUTER_SOURCE(dasfrontfsm, DASFRONTFSM),
+    [UI_DATA_SOURCE_DAS_REAR_STATUS] = CAN_COMMUNICATIONS_ROUTER_SOURCE(dasrearfsm, DASREARFSM),
+    [UI_DATA_SOURCE_TELEMETRY_STATUS] = CAN_COMMUNICATIONS_ROUTER_SOURCE(telemetryfsm, TELEMETRYFSM),
     // TODO(libcan): no message yet (can-placeholders.h), they stay stale.
     [UI_DATA_SOURCE_INVERTER_STATUS] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
     [UI_DATA_SOURCE_MOTOR_SPEED] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
@@ -157,7 +162,7 @@ EAGLETRT_STATIC const struct CanCommunicationsRouterSource prv_router_api_source
     [UI_DATA_SOURCE_TYRE_PRESSURE] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
     [UI_DATA_SOURCE_DISC_TEMP] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
     [UI_DATA_SOURCE_COOLING_TANK] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
-    [UI_DATA_SOURCE_BRAKE_BIAS_SET] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
+    [UI_DATA_SOURCE_BRAKE_BIAS] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
     [UI_DATA_SOURCE_PEDALS_VOLTAGE] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
     [UI_DATA_SOURCE_GPS] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
     [UI_DATA_SOURCE_PC_AS] = { CAN_PLACEHOLDER_MESSAGE_ID, 0U },
@@ -514,7 +519,7 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
         }
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACKSHUTDOWN:
-            ui_data->shutdown_closed = (decoded.tsacmainboardfeedbackshutdown.sdend >= SHUTDOWN_CLOSED_V) ? 1U : 0U;
+            ui_data->shutdown_v[SHUTDOWN_NODE_SD_END] = decoded.tsacmainboardfeedbackshutdown.sdend;
             break;
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDVOLTAGEINFO:
@@ -542,13 +547,16 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
             break;
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACSTATUS:
-            ui_data->boards[UI_DATA_BOARD_BMS_HV].status = decoded.tsacstatus.mainboardstatus;
+            ui_data->boards[UI_DATA_BOARD_TSAC].status = decoded.tsacstatus.mainboardstatus;
             break;
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDSHUTDOWN:
             ui_data->shutdown_v[SHUTDOWN_NODE_AMS] = decoded.tsacmainboardshutdown.amsvoltage;
             ui_data->shutdown_v[SHUTDOWN_NODE_IMD] = decoded.tsacmainboardshutdown.imdvoltage;
-            ui_data->shutdown_v[SHUTDOWN_NODE_TSAC_INTERLOCK] = decoded.tsacmainboardshutdown.interlocktsacvoltage;
+            break;
+
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_SHUTDOWNSTATE:
+            ui_data->shutdown_v[SHUTDOWN_NODE_ECU] = decoded.shutdownstate.voltageout;
             break;
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDCOOLINGTEMPERATURE1:
@@ -601,8 +609,8 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
             break;
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_DASSHUTDOWN:
-            ui_data->shutdown_v[SHUTDOWN_NODE_INERTIA] = decoded.dasshutdown.inertia;
             ui_data->shutdown_v[SHUTDOWN_NODE_COCKPIT_MUSHROOM] = decoded.dasshutdown.mushroomcockpit;
+            ui_data->shutdown_v[SHUTDOWN_NODE_INERTIA] = decoded.dasshutdown.inertia;
             ui_data->shutdown_v[SHUTDOWN_NODE_LEFT_MUSHROOM] = decoded.dasshutdown.mushroomleft;
             ui_data->shutdown_v[SHUTDOWN_NODE_RIGHT_MUSHROOM] = decoded.dasshutdown.mushroomright;
             break;
@@ -611,8 +619,8 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
             ui_data->shutdown_v[SHUTDOWN_NODE_TSMS] = decoded.piposhutdown.tsms;
             ui_data->shutdown_v[SHUTDOWN_NODE_BSPD] = decoded.piposhutdown.bspd;
             ui_data->shutdown_v[SHUTDOWN_NODE_HVD] = decoded.piposhutdown.hvd;
-            ui_data->shutdown_v[SHUTDOWN_NODE_ASMS] = decoded.piposhutdown.asms;
-            ui_data->shutdown_v[SHUTDOWN_NODE_RES] = decoded.piposhutdown.res;
+            ui_data->asms_v = decoded.piposhutdown.asms;
+            ui_data->res_v = decoded.piposhutdown.res;
             break;
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_BRAKESEBS:
@@ -622,7 +630,6 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
             ui_data->pedals.ebs_line_bar[1] = decoded.brakesebs.pressureline2;
             ui_data->pedals.ebs_load_n[0] = decoded.brakesebs.loadline1;
             ui_data->pedals.ebs_load_n[1] = decoded.brakesebs.loadline2;
-            ui_data->shutdown_v[SHUTDOWN_NODE_EBS] = decoded.brakesebs.shutdownvoltage;
             break;
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_LVACVOLTAGEINFO:
@@ -690,6 +697,18 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
         case CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGFSM:
             ui_data->boards[UI_DATA_BOARD_STEERING].status = decoded.steeringfsm.status;
             break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSFSM:
+            ui_data->boards[UI_DATA_BOARD_PEDALS].status = decoded.pedalsfsm.status;
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_DASFRONTFSM:
+            ui_data->boards[UI_DATA_BOARD_DAS_FRONT].status = decoded.dasfrontfsm.status;
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_DASREARFSM:
+            ui_data->boards[UI_DATA_BOARD_DAS_REAR].status = decoded.dasrearfsm.status;
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_TELEMETRYFSM:
+            ui_data->boards[UI_DATA_BOARD_TELEMETRY].status = decoded.telemetryfsm.status;
+            break;
 
         case CAN_PRIMARY_MESSAGE_FRAME_ID_ECUVERSIONINFO:
             prv_router_api_board_commit(UI_DATA_BOARD_ECU, decoded.ecuversioninfo.commithash);
@@ -698,10 +717,10 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
             prv_router_api_board_libcan(UI_DATA_BOARD_ECU, decoded.eculibcanversion.major, decoded.eculibcanversion.minor, decoded.eculibcanversion.patch);
             break;
         case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDVERSIONINFO:
-            prv_router_api_board_commit(UI_DATA_BOARD_BMS_HV, decoded.tsacmainboardversioninfo.commithash);
+            prv_router_api_board_commit(UI_DATA_BOARD_TSAC, decoded.tsacmainboardversioninfo.commithash);
             break;
         case CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDLIBCANVERSION:
-            prv_router_api_board_libcan(UI_DATA_BOARD_BMS_HV, decoded.tsacmainboardlibcanversion.major, decoded.tsacmainboardlibcanversion.minor, decoded.tsacmainboardlibcanversion.patch);
+            prv_router_api_board_libcan(UI_DATA_BOARD_TSAC, decoded.tsacmainboardlibcanversion.major, decoded.tsacmainboardlibcanversion.minor, decoded.tsacmainboardlibcanversion.patch);
             break;
         case CAN_PRIMARY_MESSAGE_FRAME_ID_LVACVERSIONINFO:
             prv_router_api_board_commit(UI_DATA_BOARD_PORCHETTO, decoded.lvacversioninfo.commithash);
@@ -715,6 +734,30 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
         case CAN_PRIMARY_MESSAGE_FRAME_ID_PIPOLIBCANVERSION:
             prv_router_api_board_libcan(UI_DATA_BOARD_PIPO, decoded.pipolibcanversion.major, decoded.pipolibcanversion.minor, decoded.pipolibcanversion.patch);
             break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSVERSIONINFO:
+            prv_router_api_board_commit(UI_DATA_BOARD_PEDALS, decoded.pedalsversioninfo.commithash);
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSLIBCANVERSION:
+            prv_router_api_board_libcan(UI_DATA_BOARD_PEDALS, decoded.pedalslibcanversion.major, decoded.pedalslibcanversion.minor, decoded.pedalslibcanversion.patch);
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_DASFRONTVERSIONINFO:
+            prv_router_api_board_commit(UI_DATA_BOARD_DAS_FRONT, decoded.dasfrontversioninfo.commithash);
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_DASFRONTLIBCANVERSION:
+            prv_router_api_board_libcan(UI_DATA_BOARD_DAS_FRONT, decoded.dasfrontlibcanversion.major, decoded.dasfrontlibcanversion.minor, decoded.dasfrontlibcanversion.patch);
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_DASREARVERSIONINFO:
+            prv_router_api_board_commit(UI_DATA_BOARD_DAS_REAR, decoded.dasrearversioninfo.commithash);
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_DASREARLIBCANVERSION:
+            prv_router_api_board_libcan(UI_DATA_BOARD_DAS_REAR, decoded.dasrearlibcanversion.major, decoded.dasrearlibcanversion.minor, decoded.dasrearlibcanversion.patch);
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_TELEMETRYVERSIONINFO:
+            prv_router_api_board_commit(UI_DATA_BOARD_TELEMETRY, decoded.telemetryversioninfo.commithash);
+            break;
+        case CAN_PRIMARY_MESSAGE_FRAME_ID_TELEMETRYLIBCANVERSION:
+            prv_router_api_board_libcan(UI_DATA_BOARD_TELEMETRY, decoded.telemetrylibcanversion.major, decoded.telemetrylibcanversion.minor, decoded.telemetrylibcanversion.patch);
+            break;
         case CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGVERSIONINFO:
             prv_router_api_board_commit(UI_DATA_BOARD_STEERING, decoded.steeringversioninfo.commithash);
             break;
@@ -723,8 +766,8 @@ enum CanCommunicationReturnCode can_communications_router_api_receive_primary(co
             break;
 
             // TODO(libcan): inverters, motor speed (push into rpm_window), delivered torque (push into torque_window), tyre pressure, disc
-            // temperature, cooling tanks, brake bias set, pedal voltages, GPS, AS computer,
-            // mission, EBS state, fuses, charger, inverter interlock / SDC relay, suspension
+            // temperature, cooling tanks, brake bias (measured + commanded), pedal voltages, GPS, AS computer,
+            // mission, EBS state, fuses, charger, unread shutdown nodes (A-arms, inverter interlocks), suspension
             // per corner, LV reason (can-placeholders.h).
 
         default:

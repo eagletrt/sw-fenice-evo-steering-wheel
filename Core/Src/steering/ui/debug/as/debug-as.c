@@ -77,8 +77,8 @@ EAGLETRT_STATIC void prv_debug_as_sync(struct DebugHandler *handler, const struc
     debug_api_number(handler, DEBUG_AS_STRAIN_2, ebs_stale, ui->pedals.ebs_load_n[1], 0U, " N");
 
     const bool shutdown_stale = debug_api_stale(ui, UI_DATA_SOURCE_PIPO_SHUTDOWN);
-    debug_api_contact(handler, DEBUG_AS_RES, shutdown_stale, ui->shutdown_v[SHUTDOWN_NODE_RES]);
-    debug_api_switch(handler, DEBUG_AS_ASMS, shutdown_stale, ui->shutdown_v[SHUTDOWN_NODE_ASMS]);
+    debug_api_contact(handler, DEBUG_AS_RES, shutdown_stale, ui->res_v);
+    debug_api_switch(handler, DEBUG_AS_ASMS, shutdown_stale, ui->asms_v);
     debug_api_switch(handler, DEBUG_AS_TSMS, shutdown_stale, ui->shutdown_v[SHUTDOWN_NODE_TSMS]);
 
     // TODO(libcan): AS computer status, selected mission (#11), EBS armed state.

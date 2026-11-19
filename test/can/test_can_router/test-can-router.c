@@ -256,14 +256,14 @@ void test_can_router_brake_is_the_highest_pressure_one_percent_per_bar(void) {
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, ui_data_api_get()->brake_percent, "0-1 bar is 0 %");
 }
 
-void test_can_router_shutdown_closed_above_the_threshold(void) {
+void test_can_router_sd_end_voltage(void) {
     union CanPrimaryMessages message = { 0 };
     message.tsacmainboardfeedbackshutdown.sdend = 24.0F;
     prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACKSHUTDOWN, &message);
-    TEST_ASSERT_EQUAL_UINT8(1U, ui_data_api_get()->shutdown_closed);
+    TEST_ASSERT_FLOAT_WITHIN(0.1F, 24.0F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_SD_END]);
     message.tsacmainboardfeedbackshutdown.sdend = 3.0F;
     prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACKSHUTDOWN, &message);
-    TEST_ASSERT_EQUAL_UINT8(0U, ui_data_api_get()->shutdown_closed);
+    TEST_ASSERT_FLOAT_WITHIN(0.1F, 3.0F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_SD_END]);
 }
 
 void test_can_router_a_frame_makes_its_source_fresh_until_it_goes_silent(void) {
@@ -295,10 +295,24 @@ void test_can_router_decodes_the_debug_values(void) {
 
     memset(&message, 0, sizeof(message));
     message.piposhutdown.bspd = 23.5F;
+    message.piposhutdown.asms = 20.0F;
     message.piposhutdown.res = 1.0F;
     prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PIPOSHUTDOWN, &message);
     TEST_ASSERT_FLOAT_WITHIN(0.05F, 23.5F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_BSPD]);
-    TEST_ASSERT_FLOAT_WITHIN(0.05F, 1.0F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_RES]);
+    TEST_ASSERT_FLOAT_WITHIN(0.05F, 1.0F, ui_data_api_get()->res_v);
+
+    memset(&message, 0, sizeof(message));
+    message.dasshutdown.mushroomcockpit = 22.0F;
+    message.dasshutdown.inertia = 21.0F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_DASSHUTDOWN, &message);
+    TEST_ASSERT_FLOAT_WITHIN(0.1F, 22.0F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_COCKPIT_MUSHROOM]);
+    TEST_ASSERT_FLOAT_WITHIN(0.1F, 21.0F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_INERTIA]);
+    TEST_ASSERT_FLOAT_WITHIN(0.1F, 20.0F, ui_data_api_get()->asms_v);
+
+    memset(&message, 0, sizeof(message));
+    message.shutdownstate.voltageout = 23.0F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_SHUTDOWNSTATE, &message);
+    TEST_ASSERT_FLOAT_WITHIN(0.1F, 23.0F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_ECU]);
 
     memset(&message, 0, sizeof(message));
     message.linecurrenthighpoweras.steering = 0.4F;
@@ -336,6 +350,14 @@ void test_can_router_board_versions_and_states(void) {
     TEST_ASSERT_EQUAL_HEX32(0x3d2e9aaU, pipo->commit);
     TEST_ASSERT_EQUAL_UINT8(UI_DATA_BOARD_KNOWN_COMMIT | UI_DATA_BOARD_KNOWN_LIBCAN, pipo->known);
     TEST_ASSERT_EQUAL_UINT8(CAN_PRIMARY_PIPOFSM_STATUS_ERROR, pipo->status);
+
+    message.telemetryfsm.status = CAN_PRIMARY_TELEMETRYFSM_STATUS_RUN;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_TELEMETRYFSM, &message);
+    TEST_ASSERT_EQUAL_UINT8(CAN_PRIMARY_TELEMETRYFSM_STATUS_RUN, ui_data_api_get()->boards[UI_DATA_BOARD_TELEMETRY].status);
+    TEST_ASSERT_TRUE((ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_TELEMETRY_STATUS)) == 0U);
+    message.dasrearversioninfo = (struct CanPrimaryDasrearversioninfo){ .commithash = 0x1234567U };
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_DASREARVERSIONINFO, &message);
+    TEST_ASSERT_EQUAL_HEX32(0x1234567U, ui_data_api_get()->boards[UI_DATA_BOARD_DAS_REAR].commit);
 }
 
 void test_can_router_a_message_without_cycle_time_stays_fresh_for_the_minimum(void) {
@@ -382,7 +404,7 @@ int main(void) {
 
     RUN_TEST(test_can_router_decodes_the_driver_values);
     RUN_TEST(test_can_router_brake_is_the_highest_pressure_one_percent_per_bar);
-    RUN_TEST(test_can_router_shutdown_closed_above_the_threshold);
+    RUN_TEST(test_can_router_sd_end_voltage);
     RUN_TEST(test_can_router_a_frame_makes_its_source_fresh_until_it_goes_silent);
 
     RUN_TEST(test_can_router_decodes_the_debug_values);

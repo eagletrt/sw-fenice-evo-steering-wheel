@@ -421,6 +421,9 @@ void test_scheduler_fsm_status_reaches_the_bus(void) {
 
     TEST_ASSERT_EQUAL_MESSAGE(1, prv_count_sent(CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM), "The FSM task runs before the status task on the same tick");
     TEST_ASSERT_EQUAL(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR, prv_last_fsm_status);
+    const struct UIDataBoardInfo *own = &ui_data_api_get()->boards[UI_DATA_BOARD_STEERING_WHEEL];
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CAN_PRIMARY_STEERINGWHEELFSM_STATUS_ERROR, own->status, "The SW tab's own row follows what goes on the bus");
+    TEST_ASSERT_EQUAL_UINT8(UI_DATA_BOARD_KNOWN_COMMIT | UI_DATA_BOARD_KNOWN_LIBCAN, own->known);
 }
 
 void test_scheduler_flashing_traffic_mutes_the_wheel(void) {

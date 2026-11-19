@@ -80,18 +80,18 @@
 #define SIMULATOR_WIDTH (SIMULATOR_DASHBOARD_WIDTH)
 #define SIMULATOR_HEIGHT (SIMULATOR_DASHBOARD_HEIGHT + SIMULATOR_STATUS_HEIGHT)
 
-#define SIMULATOR_FRAME_PERIOD_MS (16U)        /*!< Window refresh, ~60 Hz like the LTDC scanout */
-#define SIMULATOR_IDLE_SLEEP_NS (500000L)      /*!< Sleep between scheduler routines, keeps the 1 ms tasks on time */
-#define SIMULATOR_FEED_PERIOD_MS (200U)        /*!< Continuous telemetry feed period */
-#define SIMULATOR_FLASH_PERIOD_MS (50U)        /*!< Flashing traffic period, well inside FLASH_MONITOR_TIMEOUT_MS */
-#define SIMULATOR_NS_PER_US (1000U)            /*!< "Cycles" are nanoseconds on the PC */
-#define SIMULATOR_CAN_ID_COUNT (2048U)         /*!< Standard 11-bit identifiers */
-#define SIMULATOR_LOGGER_RX_CAPACITY (1U)      /*!< Same sizes as the wheel's logger */
+#define SIMULATOR_FRAME_PERIOD_MS (16U)   /*!< Window refresh, ~60 Hz like the LTDC scanout */
+#define SIMULATOR_IDLE_SLEEP_NS (500000L) /*!< Sleep between scheduler routines, keeps the 1 ms tasks on time */
+#define SIMULATOR_FEED_PERIOD_MS (200U)   /*!< Continuous telemetry feed period */
+#define SIMULATOR_FLASH_PERIOD_MS (50U)   /*!< Flashing traffic period, well inside FLASH_MONITOR_TIMEOUT_MS */
+#define SIMULATOR_NS_PER_US (1000U)       /*!< "Cycles" are nanoseconds on the PC */
+#define SIMULATOR_CAN_ID_COUNT (2048U)    /*!< Standard 11-bit identifiers */
+#define SIMULATOR_LOGGER_RX_CAPACITY (1U) /*!< Same sizes as the wheel's logger */
 #define SIMULATOR_LOGGER_TX_CAPACITY (10U)
 #define SIMULATOR_LOGGER_MAX_MSG_SIZE (64U)
 #define SIMULATOR_SCREENSHOT_DELAY_MS (1500U)
-#define SIMULATOR_REPLAY_PERIOD_MS (30U)       /*!< Longer than the render period: one step per frame */
-#define SIMULATOR_MASK_SIZE (128U * 1024U)     /*!< Same scratch size as the wheel (ltdc.c) */  /*!< Boot + first telemetry rendered well before this */
+#define SIMULATOR_REPLAY_PERIOD_MS (30U)                                                   /*!< Longer than the render period: one step per frame */
+#define SIMULATOR_MASK_SIZE (128U * 1024U) /*!< Same scratch size as the wheel (ltdc.c) */ /*!< Boot + first telemetry rendered well before this */
 
 /*!
  * \brief Keyboard key held for each physical button (0 = not mapped).
@@ -121,8 +121,19 @@ EAGLETRT_STATIC const int simulator_knob_keys[INPUTS_SHARED_KNOB_ID_COUNT][2] = 
  * \brief Names of the EcuFsm vehicle statuses, indexed by value.
  */
 EAGLETRT_STATIC const char *const simulator_ecu_status_names[] = {
-    "INIT", "IDLE", "PRECHARGE", "TSON", "DISCHARGE", "ASOFF", "AS_READY",
-    "AS_DRIVING", "ERROR", "R2D", "AS_R2D", "AS_FINISHED", "AS_EMERGENCY",
+    "INIT",
+    "IDLE",
+    "PRECHARGE",
+    "TSON",
+    "DISCHARGE",
+    "ASOFF",
+    "AS_READY",
+    "AS_DRIVING",
+    "ERROR",
+    "R2D",
+    "AS_R2D",
+    "AS_FINISHED",
+    "AS_EMERGENCY",
 };
 
 /*!
@@ -498,6 +509,8 @@ EAGLETRT_STATIC void simulator_inject_debug(uint32_t step) {
     const float sdc = ((step % 50U) < 45U) ? 24.0F : 0.0F;
     message.dasshutdown = (struct CanPrimaryDasshutdown){ .mushroomright = 24.0F, .mushroomleft = 24.0F, .mushroomcockpit = 24.0F, .inertia = 24.0F };
     SIMULATOR_SEND(dasshutdown, DASSHUTDOWN);
+    message.shutdownstate = (struct CanPrimaryShutdownstate){ .voltagein = 24.0F, .voltageout = 24.0F };
+    SIMULATOR_SEND(shutdownstate, SHUTDOWNSTATE);
     message.piposhutdown = (struct CanPrimaryPiposhutdown){ .lvms = 24.0F, .hvd = 24.0F, .bspd = sdc, .asms = 0.0F, .res = 24.0F, .tsms = 24.0F };
     SIMULATOR_SEND(piposhutdown, PIPOSHUTDOWN);
     message.brakesebs = (struct CanPrimaryBrakesebs){ .pressuretank1 = 6.1F, .pressuretank2 = 6.0F, .pressureline1 = 6.2F, .pressureline2 = 6.1F, .loadline1 = 312.0F, .loadline2 = 298.0F, .shutdownvoltage = 24.0F };
@@ -515,6 +528,14 @@ EAGLETRT_STATIC void simulator_inject_debug(uint32_t step) {
     SIMULATOR_SEND(pipofsm, PIPOFSM);
     message.steeringfsm.status = CAN_PRIMARY_STEERINGFSM_STATUS_IDLE;
     SIMULATOR_SEND(steeringfsm, STEERINGFSM);
+    message.pedalsfsm.status = CAN_PRIMARY_PEDALSFSM_STATUS_IDLE;
+    SIMULATOR_SEND(pedalsfsm, PEDALSFSM);
+    message.dasfrontfsm.status = CAN_PRIMARY_DASFRONTFSM_STATUS_IDLE;
+    SIMULATOR_SEND(dasfrontfsm, DASFRONTFSM);
+    message.dasrearfsm.status = CAN_PRIMARY_DASREARFSM_STATUS_FLASH;
+    SIMULATOR_SEND(dasrearfsm, DASREARFSM);
+    message.telemetryfsm.status = CAN_PRIMARY_TELEMETRYFSM_STATUS_RUN;
+    SIMULATOR_SEND(telemetryfsm, TELEMETRYFSM);
     memset(&message, 0, sizeof(message));
     message.powersupply = (struct CanPrimaryPowersupply){ .voltage = 24.1F, .current = 21.4F, .power = 142.0F, .voltageout = 24.0F };
     SIMULATOR_SEND(powersupply, POWERSUPPLY);
@@ -544,6 +565,10 @@ EAGLETRT_STATIC void simulator_inject_debug(uint32_t step) {
     SIMULATOR_SEND(pipolibcanversion, PIPOLIBCANVERSION);
     message.pipoversioninfo = (struct CanPrimaryPipoversioninfo){ .commithash = 0x3d2e9aaU };
     SIMULATOR_SEND(pipoversioninfo, PIPOVERSIONINFO);
+    message.pedalslibcanversion = (struct CanPrimaryPedalslibcanversion){ .major = (uint16_t)can_version_major, .minor = (uint16_t)can_version_minor, .patch = (uint16_t)can_version_patch };
+    SIMULATOR_SEND(pedalslibcanversion, PEDALSLIBCANVERSION);
+    message.telemetryversioninfo = (struct CanPrimaryTelemetryversioninfo){ .commithash = 0x5e11af7U };
+    SIMULATOR_SEND(telemetryversioninfo, TELEMETRYVERSIONINFO);
 }
 
 /*!
@@ -626,15 +651,8 @@ EAGLETRT_STATIC void simulator_draw_status(void) {
     const TPixel background = tigrRGB(16, 16, 16);
     const TPixel text = tigrRGB(200, 200, 200);
     tigrFill(window, 0, SIMULATOR_DASHBOARD_HEIGHT, SIMULATOR_WIDTH, SIMULATOR_STATUS_HEIGHT, background);
-    tigrPrint(window, tfont, 6, SIMULATOR_DASHBOARD_HEIGHT + 6, text,
-              "knobs q/w a/s z/x | buttons e d r f | PTT c v | b n | TSon t | 1 ECU | 2 telemetry | p feed | 3 flash | 4 board");
-    tigrPrint(window, tfont, 6, SIMULATOR_DASHBOARD_HEIGHT + 24, text,
-              "FSM %s   ECU vehicleStatus %s   telemetry feed %s   flashing 0x%03X %s",
-              wheel_fsm_api_get_state_name(scheduler_api_get_fsm_state()),
-              simulator_ecu_status_names[simulator_ecu_status],
-              simulator_feed_enabled ? "ON" : "off",
-              (unsigned)simulator_flash_id,
-              simulator_flash_enabled ? "ON" : "off");
+    tigrPrint(window, tfont, 6, SIMULATOR_DASHBOARD_HEIGHT + 6, text, "knobs q/w a/s z/x | buttons e d r f | PTT c v | b n | TSon t | 1 ECU | 2 telemetry | p feed | 3 flash | 4 board");
+    tigrPrint(window, tfont, 6, SIMULATOR_DASHBOARD_HEIGHT + 24, text, "FSM %s   ECU vehicleStatus %s   telemetry feed %s   flashing 0x%03X %s", wheel_fsm_api_get_state_name(scheduler_api_get_fsm_state()), simulator_ecu_status_names[simulator_ecu_status], simulator_feed_enabled ? "ON" : "off", (unsigned)simulator_flash_id, simulator_flash_enabled ? "ON" : "off");
 }
 
 /*!

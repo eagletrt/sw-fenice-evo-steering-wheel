@@ -48,4 +48,14 @@ struct UIDataCorners ui_data_api_window_max(const struct UIDataWindow *window);
  */
 void ui_data_api_rotate_windows(void);
 
+/*!
+ * \brief Evaluate the shutdown chain: a node whose message is stale (or not on
+ *     CAN yet) has no reading and does not break the chain.
+ *
+ * \param ui_data The UI data.
+ * \param chain Filled with every node's state and the cause.
+ * \return false on NULL arguments.
+ */
+bool ui_data_api_shutdown(const struct UIData *ui_data, struct ShutdownChain *chain);
+
 #endif // UI_DATA_API_H

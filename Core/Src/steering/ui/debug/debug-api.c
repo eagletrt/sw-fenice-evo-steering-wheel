@@ -30,12 +30,11 @@
 #define DEBUG_SUBLABEL_SIZE (12U)    /*!< FL / FR / RL / RR */
 #define DEBUG_CELL_CAPTION_H (36U)   /*!< Caption part of a cell (Figma: caption at y 12, value at y 39) */
 #define DEBUG_ROW_STATUS_W (130U)    /*!< Status part of a STATUS_ROW */
-#define DEBUG_ROW_STATUS_H (30U)     /*!< Status line height, the voltage below it */
+#define DEBUG_ROW_STATUS_H (26U)     /*!< Status line height, the voltage below it */
 #define DEBUG_LINE_VALUE_W (110U)    /*!< Value part of a LINE */
 #define DEBUG_STRIP_CAPTION_W (104U) /*!< Caption part of a STRIP */
 #define DEBUG_STRIP_VALUE_W (92U)    /*!< One value of a STRIP */
 #define DEBUG_PAD (16)               /*!< Left / right text inset */
-#define DEBUG_BIAS_MIN_BAR (1.0F)    /*!< Below this total brake pressure the bias means nothing */
 
 const char *const debug_api_corner_labels[4] = { "FL", "FR", "RL", "RR" };
 const char *const debug_api_ebs_labels[4] = { "TANK 1", "TANK 2", "LINE 1", "LINE 2" };
@@ -165,7 +164,7 @@ EAGLETRT_STATIC enum DebugReturnCode prv_debug_api_table(struct DebugHandler *ha
         const char *text = header ? element->labels[column] : ((column == 0U) ? element->caption : "");
         const uint16_t size = header ? DEBUG_CAPTION_SIZE : ((column == 3U) ? 18U : element->value_size);
         const uint32_t argb = header ? DEBUG_COLOR_LABEL : DEBUG_COLOR_VALUE;
-        const int16_t y = (!header && column == 3U) ? 12 : 10;
+        const int16_t y = header ? 10 : ((column == 3U) ? 8 : 6);
         struct DebugText t = DEBUG_LEFT(y, size, argb, text);
         if (column == 3U) {
             t = DEBUG_RIGHT(w, y, size, argb, text);
@@ -199,9 +198,9 @@ EAGLETRT_STATIC enum DebugReturnCode prv_debug_api_element(struct DebugHandler *
             return prv_debug_api_strip(handler, element);
         case DEBUG_ELEMENT_STATUS_ROW: {
             const uint16_t name_w = r.width - DEBUG_ROW_STATUS_W;
-            const struct DebugText name = DEBUG_LEFT(13, 20U, DEBUG_COLOR_VALUE, element->caption);
-            const struct DebugText status = DEBUG_RIGHT(DEBUG_ROW_STATUS_W, 8, DEBUG_CAPTION_SIZE, DEBUG_COLOR_VALUE, "");
-            const struct DebugText voltage = DEBUG_RIGHT(DEBUG_ROW_STATUS_W, 1, 14U, DEBUG_COLOR_LABEL, "");
+            const struct DebugText name = DEBUG_LEFT(11, 20U, DEBUG_COLOR_VALUE, element->caption);
+            const struct DebugText status = DEBUG_RIGHT(DEBUG_ROW_STATUS_W, 6, DEBUG_CAPTION_SIZE, DEBUG_COLOR_VALUE, "");
+            const struct DebugText voltage = DEBUG_RIGHT(DEBUG_ROW_STATUS_W, 0, 14U, DEBUG_COLOR_LABEL, "");
             rc = prv_debug_api_box(handler, DEBUG_RECT(r.x, r.y, name_w, r.height), DEBUG_COLOR_CELL, &name, DEBUG_NO_SLOT);
             rc = (rc == DEBUG_RC_OK) ? prv_debug_api_box(handler, DEBUG_RECT(r.x + name_w, r.y, DEBUG_ROW_STATUS_W, DEBUG_ROW_STATUS_H), DEBUG_COLOR_CELL, &status, element->slot) : rc;
             return (rc == DEBUG_RC_OK) ? prv_debug_api_box(handler, DEBUG_RECT(r.x + name_w, r.y + DEBUG_ROW_STATUS_H, DEBUG_ROW_STATUS_W, r.height - DEBUG_ROW_STATUS_H), DEBUG_COLOR_CELL, &voltage, (uint8_t)(element->slot + 1U)) : rc;
@@ -383,12 +382,10 @@ void debug_api_bots(struct DebugHandler *handler, uint8_t slot, const struct UID
 }
 
 void debug_api_bias(struct DebugHandler *handler, uint8_t slot, uint8_t set_slot, const struct UIData *ui_data) {
-    const struct UIDataCorners *pressure = &ui_data->pedals.pressure_bar;
-    const float front = pressure->fl + pressure->fr;
-    const float total = front + pressure->rl + pressure->rr;
-    const bool stale = debug_api_stale(ui_data, UI_DATA_SOURCE_BRAKE) || total < DEBUG_BIAS_MIN_BAR;
-    debug_api_number(handler, slot, stale, stale ? 0.0F : (front * 100.0F) / total, 1U, "%");
-    debug_api_number(handler, set_slot, debug_api_stale(ui_data, UI_DATA_SOURCE_BRAKE_BIAS_SET), ui_data->pedals.bias_set, 1U, "%");
+    // Both come from the pedals board: the wheel computes nothing.
+    const bool stale = debug_api_stale(ui_data, UI_DATA_SOURCE_BRAKE_BIAS);
+    debug_api_number(handler, slot, stale, ui_data->pedals.bias, 1U, "%");
+    debug_api_number(handler, set_slot, stale, ui_data->pedals.bias_set, 1U, "%");
 }
 
 void debug_api_ebs(struct DebugHandler *handler, uint8_t slot, const struct UIData *ui_data) {
