@@ -32,7 +32,7 @@
  *       4    next board for the flashing traffic
  *
  *     Options:
- *       --screenshot <file.ppm>  run for SIMULATOR_SCREENSHOT_DELAY_MS, save the
+ *       --screenshot <file.ppm>  run for SIMULATOR_SCREENSHOT_DELAY_MS (past the boot logo), save the
  *                                whole window (dashboard + status strip) as a
  *                                binary PPM and exit.
  *       --replay <from> <to>     for each step from \p from to \p to: one frame
@@ -56,22 +56,21 @@
 #include <time.h>
 
 #include "arena-allocator-api.h"
-#include "can-communications-api.h"
-#include "can-communications-router-api.h"
+#include "can/bus/can-communications-api.h"
+#include "can/router/can-communications-router-api.h"
 #include "can-primary-api.h"
 #include "can-primary.h"
 #include "eagletrt-api.h"
-#include "inputs-api.h"
-#include "logger-api.h"
+#include "inputs/raw/inputs-api.h"
+#include "util/logger/logger-api.h"
 #include "pal-api.h"
-#include "scheduler-api.h"
-#include "screen.h"
-#include "wheel-fsm-api.h"
+#include "app/scheduler/scheduler-api.h"
+#include "app/fsm/wheel-fsm-api.h"
 
 #include "tigr.h"
 
-#define SIMULATOR_DASHBOARD_WIDTH (SCREEN_WIDTH)
-#define SIMULATOR_DASHBOARD_HEIGHT (SCREEN_HEIGHT)
+#define SIMULATOR_DASHBOARD_WIDTH (STYLE_SCREEN_WIDTH)
+#define SIMULATOR_DASHBOARD_HEIGHT (STYLE_SCREEN_HEIGHT)
 #define SIMULATOR_STATUS_HEIGHT (44)
 #define SIMULATOR_WIDTH (SIMULATOR_DASHBOARD_WIDTH)
 #define SIMULATOR_HEIGHT (SIMULATOR_DASHBOARD_HEIGHT + SIMULATOR_STATUS_HEIGHT)
@@ -85,7 +84,7 @@
 #define SIMULATOR_LOGGER_RX_CAPACITY (1U)      /*!< Same sizes as the wheel's logger */
 #define SIMULATOR_LOGGER_TX_CAPACITY (10U)
 #define SIMULATOR_LOGGER_MAX_MSG_SIZE (64U)
-#define SIMULATOR_SCREENSHOT_DELAY_MS (1000U)
+#define SIMULATOR_SCREENSHOT_DELAY_MS (1500U)
 #define SIMULATOR_REPLAY_PERIOD_MS (30U)       /*!< Longer than the render period: one step per frame */
 #define SIMULATOR_MASK_SIZE (128U * 1024U)     /*!< Same scratch size as the wheel (ltdc.c) */  /*!< Boot + first telemetry rendered well before this */
 
@@ -290,6 +289,15 @@ EAGLETRT_STATIC void simulator_reset(void) {
 }
 
 /*!
+ * \brief Hardware part of the WHEEL debug page: an idle bus, a power-on reset.
+ */
+EAGLETRT_STATIC void simulator_read_health(struct WheelHealth *health) {
+    health->can_tx_fifo_free = 32U;
+    health->can_tx_fifo_size = 32U;
+    health->reset_cause = WHEEL_HEALTH_RESET_POR;
+}
+
+/*!
  * \brief Print a frame the firmware sends, only when its content changes.
  */
 EAGLETRT_STATIC enum CanCommunicationReturnCode simulator_can_send(enum CanCommunicationNetwork network, const struct CanCommunicationFrame *frame) {
@@ -398,23 +406,35 @@ EAGLETRT_STATIC void simulator_inject_telemetry(uint32_t step) {
     simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_MOTORTEMPERATURE, &message, can_primary_byte_size_motortemperature);
 
     memset(&message, 0, sizeof(message));
-    message.tyretemperaturefront.frontleft = (uint8_t)(40U + (step % 50U));
-    message.tyretemperaturefront.frontright = (uint8_t)(45U + (step % 50U));
-    simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREFRONT, &message, can_primary_byte_size_tyretemperaturefront);
-
-    memset(&message, 0, sizeof(message));
-    message.tyretemperaturerear.rearleft = (uint8_t)(50U + (step % 50U));
-    message.tyretemperaturerear.rearright = (uint8_t)(55U + (step % 50U));
-    simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_TYRETEMPERATUREREAR, &message, can_primary_byte_size_tyretemperaturerear);
-
-    memset(&message, 0, sizeof(message));
     message.currentlap.number = (uint8_t)(1U + ((step / 10U) % 22U));
     message.currentlap.deltabestlap = (sweep * 4.0F) - 2.0F;
     simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_CURRENTLAP, &message, can_primary_byte_size_currentlap);
 
     memset(&message, 0, sizeof(message));
-    message.laps.totalnumber = 22U;
-    simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_LAPS, &message, can_primary_byte_size_laps);
+    message.lvacestimatedsoc.soc = 0.9F - (sweep * 0.3F);
+    simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_LVACESTIMATEDSOC, &message, can_primary_byte_size_lvacestimatedsoc);
+
+    memset(&message, 0, sizeof(message));
+    message.estimatedvehiclevelocity.u = sweep * 33.0F;
+    simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_ESTIMATEDVEHICLEVELOCITY, &message, can_primary_byte_size_estimatedvehiclevelocity);
+
+    /* First half of the sweep on the throttle, second half on the brake. */
+    memset(&message, 0, sizeof(message));
+    message.pedalsthrottle.travel = (sweep < 0.5F) ? sweep * 2.0F : 0.0F;
+    simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSTHROTTLE, &message, can_primary_byte_size_pedalsthrottle);
+
+    memset(&message, 0, sizeof(message));
+    const float bar = (sweep < 0.5F) ? 0.0F : (sweep - 0.5F) * 200.0F;
+    message.pedalsbrake.pressurefl = bar;
+    message.pedalsbrake.pressurefr = bar;
+    message.pedalsbrake.pressurerl = bar * 0.6F;
+    message.pedalsbrake.pressurerr = bar * 0.6F;
+    simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSBRAKE, &message, can_primary_byte_size_pedalsbrake);
+
+    /* The shutdown opens at the end of every sweep. */
+    memset(&message, 0, sizeof(message));
+    message.tsacmainboardfeedbackshutdown.sdend = ((step % 50U) < 45U) ? 24.0F : 0.0F;
+    simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACKSHUTDOWN, &message, can_primary_byte_size_tsacmainboardfeedbackshutdown);
 }
 
 /*!
@@ -597,6 +617,7 @@ int main(int argc, char **argv) {
         .poll_inputs = simulator_poll_inputs,
         .swap_framebuffers = simulator_swap_framebuffers,
         .reset = simulator_reset,
+        .read_health = simulator_read_health,
         .get_cycles = simulator_get_cycles,
         .cycles_per_us = SIMULATOR_NS_PER_US,
     };
@@ -627,6 +648,7 @@ int main(int argc, char **argv) {
         if (replay && replay_step <= replay_to && (now - last_replay_ms) >= SIMULATOR_REPLAY_PERIOD_MS) {
             last_replay_ms = now;
             if (!replay_ecu_phase) {
+                simulator_feed_step = replay_step; /* resent below until the next step */
                 simulator_inject_telemetry(replay_step);
             } else {
                 simulator_ecu_status = (uint8_t)(replay_step % (sizeof(simulator_ecu_status_names) / sizeof(simulator_ecu_status_names[0])));
@@ -640,9 +662,10 @@ int main(int argc, char **argv) {
             last_ecu_ms = now;
             simulator_inject_ecu_status();
         }
-        if (simulator_feed_enabled && (now - last_feed_ms) >= SIMULATOR_FEED_PERIOD_MS) {
+        // Telemetry is resent even without the feed: the wheel shows "--" for silent messages.
+        if ((now - last_feed_ms) >= SIMULATOR_FEED_PERIOD_MS) {
             last_feed_ms = now;
-            simulator_inject_telemetry(simulator_feed_step++);
+            simulator_inject_telemetry(simulator_feed_enabled ? simulator_feed_step++ : simulator_feed_step);
         }
 
         if (simulator_flash_enabled && (now - last_flash_ms) >= SIMULATOR_FLASH_PERIOD_MS) {

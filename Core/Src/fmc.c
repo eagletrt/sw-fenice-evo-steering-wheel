@@ -24,7 +24,7 @@
 /* USER CODE BEGIN 0 */
 
 #include "eagletrt-api.h"
-#include "micron-steer-sdram-api.h"
+#include "drivers/micron-steer-sdram/micron-steer-sdram-api.h"
 
 /*!
  * \brief SDRAM refresh counter for this board's FMC clock.

@@ -23,7 +23,7 @@
 /* USER CODE BEGIN 0 */
 
 #include "dma2d.h"
-#include "screen.h"
+#include "ui/screen/screen.h"
 
 /*!
  * \brief The two framebuffers scanned by the LTDC, in the external SDRAM.
@@ -360,38 +360,38 @@ uint32_t ltdc_mask_size(void) {
 }
 
 enum RasterReturnCode ltdc_draw_mask(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint8_t *mask, struct Color color) {
-    if (w == 0 || h == 0 || x >= (int)SCREEN_WIDTH || y >= (int)SCREEN_HEIGHT) {
+    if (w == 0 || h == 0 || x >= (int)STYLE_SCREEN_WIDTH || y >= (int)STYLE_SCREEN_HEIGHT) {
         return RASTER_RC_OK;
     }
 
     /* Clip right and bottom: the mask keeps its full stride. */
     const uint16_t stride = w;
-    if (x + w > SCREEN_WIDTH) {
-        w = (int)SCREEN_WIDTH - x;
+    if (x + w > STYLE_SCREEN_WIDTH) {
+        w = (int)STYLE_SCREEN_WIDTH - x;
     }
-    if (y + h > SCREEN_HEIGHT) {
-        h = (int)SCREEN_HEIGHT - y;
+    if (y + h > STYLE_SCREEN_HEIGHT) {
+        h = (int)STYLE_SCREEN_HEIGHT - y;
     }
 
     return dma2d_enqueue_mask(draw_framebuffer, x, y, w, h, mask, stride, color);
 }
 
 enum RasterReturnCode ltdc_draw_rectangle(uint16_t x, uint16_t y, uint16_t w, uint16_t h, struct Color color) {
-    if (w == 0 || h == 0 || x >= (int)SCREEN_WIDTH || y >= (int)SCREEN_HEIGHT) {
+    if (w == 0 || h == 0 || x >= (int)STYLE_SCREEN_WIDTH || y >= (int)STYLE_SCREEN_HEIGHT) {
         return RASTER_RC_OK;
     }
-    if (x + w > SCREEN_WIDTH) {
-        w = (int)SCREEN_WIDTH - x;
+    if (x + w > STYLE_SCREEN_WIDTH) {
+        w = (int)STYLE_SCREEN_WIDTH - x;
     }
-    if (y + h > SCREEN_HEIGHT) {
-        h = (int)SCREEN_HEIGHT - y;
+    if (y + h > STYLE_SCREEN_HEIGHT) {
+        h = (int)STYLE_SCREEN_HEIGHT - y;
     }
 
     return dma2d_enqueue_rectangle(draw_framebuffer, x, y, w, h, color);
 }
 
 enum RasterReturnCode ltdc_clear_screen(void) {
-    return dma2d_enqueue_rectangle(draw_framebuffer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, (struct Color){ .argb = 0xFF000000 });
+    return dma2d_enqueue_rectangle(draw_framebuffer, 0, 0, STYLE_SCREEN_WIDTH, STYLE_SCREEN_HEIGHT, (struct Color){ .argb = 0xFF000000 });
 }
 
 /* USER CODE END 1 */

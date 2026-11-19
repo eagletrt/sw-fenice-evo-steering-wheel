@@ -10,7 +10,7 @@
 
 #include "raster-api.h"
 #include "raster-fonts.h"
-#include "splash-api.h"
+#include "ui/splash/splash-api.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -66,13 +66,13 @@ static void bootloader_screen_blend_pixel(uint32_t *pixel, struct Color color, u
  * \brief libraster rectangle callback: fill, or blend when the colour is translucent.
  */
 static enum RasterReturnCode bootloader_screen_draw_rectangle(uint16_t x, uint16_t y, uint16_t width, uint16_t height, struct Color color) {
-    if (x >= SPLASH_SCREEN_WIDTH || y >= SPLASH_SCREEN_HEIGHT) {
+    if (x >= STYLE_SCREEN_WIDTH || y >= STYLE_SCREEN_HEIGHT) {
         return RASTER_RC_OK;
     }
-    const uint32_t right = (x + width > SPLASH_SCREEN_WIDTH) ? SPLASH_SCREEN_WIDTH : (uint32_t)x + width;
-    const uint32_t bottom = (y + height > SPLASH_SCREEN_HEIGHT) ? SPLASH_SCREEN_HEIGHT : (uint32_t)y + height;
+    const uint32_t right = (x + width > STYLE_SCREEN_WIDTH) ? STYLE_SCREEN_WIDTH : (uint32_t)x + width;
+    const uint32_t bottom = (y + height > STYLE_SCREEN_HEIGHT) ? STYLE_SCREEN_HEIGHT : (uint32_t)y + height;
     for (uint32_t row = y; row < bottom; row++) {
-        uint32_t *line = &BOOTLOADER_SCREEN_FRAMEBUFFER[row * SPLASH_SCREEN_WIDTH];
+        uint32_t *line = &BOOTLOADER_SCREEN_FRAMEBUFFER[row * STYLE_SCREEN_WIDTH];
         for (uint32_t column = x; column < right; column++) {
             bootloader_screen_blend_pixel(&line[column], color, color.a);
         }
@@ -84,10 +84,10 @@ static enum RasterReturnCode bootloader_screen_draw_rectangle(uint16_t x, uint16
  * \brief libraster mask callback: blend \p color through an A8 coverage mask.
  */
 static enum RasterReturnCode bootloader_screen_draw_mask(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *mask, struct Color color) {
-    for (uint32_t row = 0U; row < height && (uint32_t)y + row < SPLASH_SCREEN_HEIGHT; row++) {
-        uint32_t *line = &BOOTLOADER_SCREEN_FRAMEBUFFER[(y + row) * SPLASH_SCREEN_WIDTH];
+    for (uint32_t row = 0U; row < height && (uint32_t)y + row < STYLE_SCREEN_HEIGHT; row++) {
+        uint32_t *line = &BOOTLOADER_SCREEN_FRAMEBUFFER[(y + row) * STYLE_SCREEN_WIDTH];
         const uint8_t *coverage = &mask[row * width];
-        for (uint32_t column = 0U; column < width && (uint32_t)x + column < SPLASH_SCREEN_WIDTH; column++) {
+        for (uint32_t column = 0U; column < width && (uint32_t)x + column < STYLE_SCREEN_WIDTH; column++) {
             bootloader_screen_blend_pixel(&line[x + column], color, ((uint32_t)coverage[column] * color.a) / UINT8_MAX);
         }
     }
