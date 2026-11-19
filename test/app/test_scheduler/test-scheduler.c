@@ -762,7 +762,11 @@ static void prv_read_health(struct WheelHealth *health) {
     health->reset_cause = WHEEL_HEALTH_RESET_WDG;
 }
 
-#define TEST_SCHEDULER_DEBUG_VALUE(cell) (screen_handler.debug.text[DEBUG_WHEEL_BOX_VALUE(cell)])
+/* WHEEL tab slots (debug-wheel.c). */
+#define TEST_SCHEDULER_WHEEL_TX_FIFO_FREE (4U)
+#define TEST_SCHEDULER_WHEEL_UPTIME (14U)
+#define TEST_SCHEDULER_WHEEL_LAST_RESET (15U)
+#define TEST_SCHEDULER_DEBUG_VALUE(slot) (screen_handler.debug.text[screen_handler.debug.slot_box[slot]])
 
 void test_scheduler_debug_page_shows_the_wheel_health_every_window(void) {
     struct SchedulerConfig config = prv_make_config();
@@ -775,14 +779,30 @@ void test_scheduler_debug_page_shows_the_wheel_health_every_window(void) {
 
     TEST_ASSERT_EQUAL(WHEEL_FSM_STATE_DEBUG, scheduler_api_get_fsm_state());
     TEST_ASSERT_TRUE(screen_handler.mounted == SCREEN_VIEW_DEBUG);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("0/32", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_TX_FIFO_FREE), "Hardware fields come from the hook");
-    TEST_ASSERT_EQUAL_STRING("WDG", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_LAST_RESET));
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("0 s", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_UPTIME), "First window closed at boot");
+    TEST_ASSERT_EQUAL_MESSAGE(DEBUG_TAB_HV, screen_handler.debug.tab, "DEBUG opens on the first tab");
+
+    const uint16_t hv_boxes = screen_handler.raster.box_count;
+    prv_scheduler_api_on_request(INPUT_REQUEST_TAB, 1); // bottom right paddle: MOTORS, more boxes than HV
+    prv_run_until(100U);
+    TEST_ASSERT_EQUAL(DEBUG_TAB_MOTORS, screen_handler.debug.tab);
+    TEST_ASSERT_NOT_EQUAL(hv_boxes, screen_handler.debug.box_count);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(screen_handler.debug.box_count, screen_handler.raster.box_count, "The new tab is mounted");
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_TAB, -2); // bottom left paddle twice: back, wrapping to WHEEL
+    prv_run_until(120U);
+    TEST_ASSERT_EQUAL(DEBUG_TAB_WHEEL, screen_handler.debug.tab);
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("0/32", TEST_SCHEDULER_DEBUG_VALUE(TEST_SCHEDULER_WHEEL_TX_FIFO_FREE), "Hardware fields come from the hook");
+    TEST_ASSERT_EQUAL_STRING("WDG", TEST_SCHEDULER_DEBUG_VALUE(TEST_SCHEDULER_WHEEL_LAST_RESET));
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("0 s", TEST_SCHEDULER_DEBUG_VALUE(TEST_SCHEDULER_WHEEL_UPTIME), "First window closed at boot");
 
     prv_run_until(SCHEDULER_STATS_LOG_PERIOD_MS + 10U);
-    TEST_ASSERT_EQUAL_STRING_MESSAGE("5 s", TEST_SCHEDULER_DEBUG_VALUE(DEBUG_WHEEL_CELL_UPTIME), "A new snapshot every stats window");
-    TEST_ASSERT_EQUAL_UINT32(SCHEDULER_STATS_LOG_PERIOD_MS, scheduler_handler.health.window_ms);
-    TEST_ASSERT_TRUE_MESSAGE(scheduler_handler.health.frames > 0U, "Frames presented in the window are counted");
+    TEST_ASSERT_EQUAL_STRING_MESSAGE("5 s", TEST_SCHEDULER_DEBUG_VALUE(TEST_SCHEDULER_WHEEL_UPTIME), "A new snapshot every stats window");
+    TEST_ASSERT_EQUAL_UINT32(SCHEDULER_STATS_LOG_PERIOD_MS, ui_data_api_get()->wheel.window_ms);
+    TEST_ASSERT_TRUE_MESSAGE(ui_data_api_get()->wheel.frames > 0U, "Frames presented in the window are counted");
+
+    prv_scheduler_api_on_request(INPUT_REQUEST_TAB, 1); // bottom right paddle: forward, wrapping to HV
+    prv_run_until(SCHEDULER_STATS_LOG_PERIOD_MS + 40U);
+    TEST_ASSERT_EQUAL(DEBUG_TAB_HV, screen_handler.debug.tab);
 }
 
 void test_scheduler_top_right_sends_driver_action_ok(void) {

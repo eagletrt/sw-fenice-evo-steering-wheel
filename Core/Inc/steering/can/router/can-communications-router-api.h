@@ -35,9 +35,9 @@
  * \details Must not exceed FDCAN1 StdFiltersNbr in the .ioc (64 slots are
  *     reserved there, so new messages need no CubeMX change until then).
  */
-#define CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (12U)
+#define CAN_COMMUNICATIONS_ROUTER_PRIMARY_FILTER_COUNT (13U)
 
-#define CAN_COMMUNICATIONS_ROUTER_TIMEOUT_COUNT (1U + (uint8_t)UI_DATA_SOURCE_COUNT) /*!< Timeouts the router takes from the pool: EcuFsm + one per UIDataSource */
+#define CAN_COMMUNICATIONS_ROUTER_TIMEOUT_COUNT (1U + (uint8_t)UI_DATA_SOURCE_FIRST_PLACEHOLDER) /*!< Timeouts the router takes from the pool: EcuFsm + one per UIDataSource with a message */
 
 /*!
  * \brief A range of standard identifiers the FDCAN lets through (one filter element).

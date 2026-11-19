@@ -85,7 +85,7 @@ enum ScreenReturnCode screen_api_update(void);
 enum ScreenReturnCode screen_api_set_view(enum ScreenViewId view, const char *caption);
 
 /*!
- * \brief Show a UI data snapshot: dashboard values and menu locking.
+ * \brief Show a UI data snapshot: dashboard values, menu locking, the shown debug tab.
  *
  * \details Only boxes whose look changes are flagged, so calling it every
  *     frame is cheap.
@@ -99,14 +99,12 @@ enum ScreenReturnCode screen_api_set_view(enum ScreenViewId view, const char *ca
 enum ScreenReturnCode screen_api_sync_data(const struct UIData *ui_data);
 
 /*!
- * \brief Show a health snapshot on the WHEEL debug page.
- *
- * \param health The snapshot.
+ * \brief Show the debug tab \p delta tabs away (negative: back), wrapping around.
  *
  * \retval SCREEN_RC_OK on success.
- * \retval SCREEN_RC_NULL_POINTER if \p health is NULL.
+ * \retval SCREEN_RC_ERROR if the tab could not be built.
  */
-enum ScreenReturnCode screen_api_sync_health(const struct WheelHealth *health);
+enum ScreenReturnCode screen_api_debug_step(int8_t delta);
 
 /*!
  * \brief Check if any of the given boxes needs to be redrawn.

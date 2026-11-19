@@ -69,6 +69,7 @@ enum InputRequest : uint8_t {
     INPUT_REQUEST_MOVE,   /*!< Move the cursor by the amount (knob detents) */
     INPUT_REQUEST_SELECT, /*!< Select the item under the cursor */
     INPUT_REQUEST_BACK,   /*!< Leave the current page */
+    INPUT_REQUEST_TAB,    /*!< Next (amount 1) or previous (amount -1) debug tab */
 };
 
 /*!

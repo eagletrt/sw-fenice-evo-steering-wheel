@@ -39,7 +39,7 @@
 /*!
  * \brief Depth of the per-network reception queue.
  */
-#define CAN_COMMUNICATIONS_RX_QUEUE_CAPACITY (32U)
+#define CAN_COMMUNICATIONS_RX_QUEUE_CAPACITY (64U) /* ~50 accepted IDs: room for a burst while a task blocks (the logger: ~18 ms) */
 
 /*!
  * \brief Depth of the per-network transmission queue.

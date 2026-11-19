@@ -13,7 +13,8 @@
 
 #include "ui/screen/screen-api.h"
 #include "ui/dashboard/dashboard-api.h"
-#include "ui/debug/wheel/debug-wheel-api.h"
+#include "ui/debug/debug-api.h"
+#include "ui/debug/debug-tabs.h"
 #include "ui/menu/menu-api.h"
 #include "eagletrt.h"
 #include "ui/popup/popup-api.h"
@@ -45,7 +46,7 @@ EAGLETRT_STATIC const struct ScreenView screen_views[SCREEN_VIEW_COUNT] = {
     // TODO(#15): Figma centres the screen-saver logo (y 152), the boot logo is at y 112.
     [SCREEN_VIEW_LOGO] = { screen_handler.logo.boxes, SPLASH_BOX_COUNT, false, true },
     [SCREEN_VIEW_MENU] = { screen_handler.menu.boxes, MENU_BOX_COUNT, false, false },
-    [SCREEN_VIEW_DEBUG] = { screen_handler.debug.boxes, DEBUG_WHEEL_BOX_COUNT, false, false },
+    [SCREEN_VIEW_DEBUG] = { screen_handler.debug.boxes, 0U, false, false }, // box count: the shown tab's
     [SCREEN_VIEW_POPUP] = { screen_handler.popup.boxes, POPUP_BOX_COUNT, false, false },
 };
 
@@ -75,7 +76,7 @@ enum ScreenReturnCode screen_api_init(raster_draw_rectangle_callback draw_rectan
         splash_api_init(&screen_handler.placeholder, &font_inter) != SPLASH_RC_OK ||
         splash_api_init(&screen_handler.logo, &font_inter) != SPLASH_RC_OK ||
         menu_api_init(&screen_handler.menu, &font_inter) != MENU_RC_OK ||
-        debug_wheel_api_init(&screen_handler.debug) != DEBUG_WHEEL_RC_OK) {
+        debug_api_init(&screen_handler.debug, debug_tabs) != DEBUG_RC_OK) {
         return SCREEN_RC_ERROR;
     }
     screen_handler.view = SCREEN_VIEW_DRIVER;
@@ -165,11 +166,12 @@ EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_render(void) {
  */
 EAGLETRT_STATIC enum ScreenReturnCode prv_screen_api_mount(enum ScreenViewId view) {
     const struct ScreenView *page = &screen_views[view];
-    if (raster_api_set_interface(&screen_handler.raster, page->boxes, page->box_count) != RASTER_RC_OK) {
+    const uint16_t count = (view == SCREEN_VIEW_DEBUG) ? screen_handler.debug.box_count : page->box_count;
+    if (raster_api_set_interface(&screen_handler.raster, page->boxes, count) != RASTER_RC_OK) {
         return SCREEN_RC_ERROR;
     }
     // Everything is redrawn, in both framebuffers over two renders.
-    prv_screen_api_dirty_all(page->boxes, page->box_count);
+    prv_screen_api_dirty_all(page->boxes, count);
     memset(screen_handler.redraw_in_back_buffer, 0, sizeof(screen_handler.redraw_in_back_buffer));
     screen_handler.mounted = view;
     return SCREEN_RC_OK;
@@ -218,11 +220,22 @@ enum ScreenReturnCode screen_api_sync_data(const struct UIData *ui_data) {
     }
     // D22 + A4: only an ECU known to be IDLE unlocks the menu (unknown or stale is not IDLE).
     menu_api_set_unlocked(&screen_handler.menu, ui_data->vehicle_state == UI_DATA_VEHICLE_STATE_IDLE);
+    // The debug tabs are many values: only the shown one, only while shown.
+    if (screen_handler.view == SCREEN_VIEW_DEBUG && debug_api_sync(&screen_handler.debug, ui_data) != DEBUG_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
     return (dashboard_api_sync(&screen_handler.dashboard, ui_data) == DASHBOARD_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_ERROR;
 }
 
-enum ScreenReturnCode screen_api_sync_health(const struct WheelHealth *health) {
-    return (debug_wheel_api_sync(&screen_handler.debug, health) == DEBUG_WHEEL_RC_OK) ? SCREEN_RC_OK : SCREEN_RC_NULL_POINTER;
+enum ScreenReturnCode screen_api_debug_step(int8_t delta) {
+    if (debug_api_step(&screen_handler.debug, delta) != DEBUG_RC_OK) {
+        return SCREEN_RC_ERROR;
+    }
+    // The new tab's boxes replace the old ones in the same storage: mount them again.
+    if (screen_handler.mounted == SCREEN_VIEW_DEBUG) {
+        screen_handler.mounted = SCREEN_VIEW_COUNT;
+    }
+    return SCREEN_RC_OK;
 }
 
 bool screen_api_should_redraw(struct Box *boxes, uint16_t count) {

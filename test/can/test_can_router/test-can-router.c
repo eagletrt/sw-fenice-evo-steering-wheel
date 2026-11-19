@@ -73,7 +73,8 @@ static void prv_receive_ecu(uint8_t vehicle_status) {
     TEST_ASSERT_EQUAL(CAN_COMMUNICATION_RC_OK, prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM, &message));
 }
 
-void tearDown(void) {}
+void tearDown(void) {
+}
 
 /*!
  * \defgroup can_router_receive Tests for can_communications_router_api_receive_primary
@@ -171,13 +172,18 @@ void test_can_router_accepts_every_flashing_and_dashboard_identifier(void) {
     }
 }
 
-void test_can_router_rejects_everything_else(void) {
-    size_t accepted = 0U;
-    for (uint32_t id = 0U; id < (1U << 11U); id++) {
-        accepted += can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, id) ? 1U : 0U;
+void test_can_router_accepts_every_source_and_skips_the_fast_messages(void) {
+    // Every message a page decodes gets through (sources with a frame ID).
+    TEST_ASSERT_TRUE(can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM));
+    static const uint32_t ids[] = { CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDVOLTAGEINFO, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACK, CAN_PRIMARY_MESSAGE_FRAME_ID_MOTORTORQUE, CAN_PRIMARY_MESSAGE_FRAME_ID_COOLINGOUT, CAN_PRIMARY_MESSAGE_FRAME_ID_PIPOSHUTDOWN, CAN_PRIMARY_MESSAGE_FRAME_ID_BRAKESEBS, CAN_PRIMARY_MESSAGE_FRAME_ID_IMUACCELERATION, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDCOOLINGTEMPERATURE2, CAN_PRIMARY_MESSAGE_FRAME_ID_ECULIBCANVERSION, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDVERSIONINFO };
+    for (size_t i = 0U; i < sizeof(ids) / sizeof(ids[0]); i++) {
+        TEST_ASSERT_TRUE(can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, ids[i]));
     }
-    TEST_ASSERT_EQUAL_UINT(2U * TEST_ROUTER_FLASH_PAIRS + TEST_ROUTER_DASHBOARD_COUNT, accepted);
-    TEST_ASSERT_FALSE(can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGWHEELFSM));
+    // 3-5 ms messages nobody shows stay out of the CPU.
+    TEST_ASSERT_FALSE(can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, CAN_PRIMARY_MESSAGE_FRAME_ID_SUSPENSIONFRONT));
+    TEST_ASSERT_FALSE(can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, CAN_PRIMARY_MESSAGE_FRAME_ID_SUSPENSIONREAR));
+    TEST_ASSERT_FALSE(can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, CAN_PRIMARY_MESSAGE_FRAME_ID_STEERINGENCODER));
+    TEST_ASSERT_FALSE(can_communications_router_api_accepts(CAN_COMMUNICATION_NETWORK_PRIMARY, CAN_PRIMARY_MESSAGE_FRAME_ID_TSACCELLBOARD1BALANCING));
 }
 
 void test_can_router_secondary_accepts_nothing(void) {
@@ -265,15 +271,92 @@ void test_can_router_a_frame_makes_its_source_fresh_until_it_goes_silent(void) {
     union CanPrimaryMessages message = { 0 };
     message.pedalsthrottle.travel = 0.5F;
     prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSTHROTTLE, &message);
-    TEST_ASSERT_EQUAL_HEX16_MESSAGE(UI_DATA_STALE_ALL & (uint16_t)~UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE), ui_data_api_get()->stale, "only the throttle is fresh");
+    TEST_ASSERT_TRUE_MESSAGE((UI_DATA_STALE_ALL & ~UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE)) == ui_data_api_get()->stale, "only the throttle is fresh");
 
     // 5 ms message: stale after the 500 ms floor, not after 15 ms.
     prv_now = 499U;
     TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
-    TEST_ASSERT_EQUAL_HEX16(0U, ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE));
+    TEST_ASSERT_TRUE((ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE)) == 0U);
     prv_now = 500U;
     TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
-    TEST_ASSERT_EQUAL_HEX16(UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE), ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE));
+    TEST_ASSERT_TRUE((ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_THROTTLE)) != 0U);
+}
+
+void test_can_router_decodes_the_debug_values(void) {
+    union CanPrimaryMessages message = { 0 };
+    message.tsacmainboardfeedback.airpopencom = 1U;
+    message.tsacmainboardfeedback.airnopenmec = 4.5F;
+    message.tsacmainboardfeedback.imdfaultcockpitled = 1U;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACK, &message);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0U, ui_data_api_get()->hv.airp_closed, "Open command set: AIR+ commanded open");
+    TEST_ASSERT_EQUAL_UINT8(1U, ui_data_api_get()->hv.airn_closed);
+    TEST_ASSERT_FLOAT_WITHIN(0.05F, 4.5F, ui_data_api_get()->hv.airn_mec_v);
+    TEST_ASSERT_EQUAL_UINT8(1U, ui_data_api_get()->hv.imd_fault);
+
+    memset(&message, 0, sizeof(message));
+    message.piposhutdown.bspd = 23.5F;
+    message.piposhutdown.res = 1.0F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PIPOSHUTDOWN, &message);
+    TEST_ASSERT_FLOAT_WITHIN(0.05F, 23.5F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_BSPD]);
+    TEST_ASSERT_FLOAT_WITHIN(0.05F, 1.0F, ui_data_api_get()->shutdown_v[SHUTDOWN_NODE_RES]);
+
+    memset(&message, 0, sizeof(message));
+    message.linecurrenthighpoweras.steering = 0.4F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_LINECURRENTHIGHPOWERAS, &message);
+    TEST_ASSERT_FLOAT_WITHIN(0.05F, 0.4F, ui_data_api_get()->lv.line_a[UI_DATA_PIPO_LINE_STEERING]);
+
+    memset(&message, 0, sizeof(message));
+    message.brakesebs.pressureline2 = 6.0F;
+    message.brakesebs.loadline1 = 312.0F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_BRAKESEBS, &message);
+    TEST_ASSERT_FLOAT_WITHIN(0.1F, 6.0F, ui_data_api_get()->pedals.ebs_line_bar[1]);
+    TEST_ASSERT_FLOAT_WITHIN(1.0F, 312.0F, ui_data_api_get()->pedals.ebs_load_n[0]);
+    TEST_ASSERT_TRUE_MESSAGE((ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_EBS)) == 0U, "BrakesEBS is fresh");
+}
+
+void test_can_router_motor_torque_is_the_set_point_not_the_delivered_torque(void) {
+    union CanPrimaryMessages message = { 0 };
+    message.motortorque.torquerl = 24.0F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_MOTORTORQUE, &message);
+    TEST_ASSERT_FLOAT_WITHIN(0.5F, 24.0F, ui_data_api_get()->powertrain.torque.rl);
+    TEST_ASSERT_EQUAL_HEX16_MESSAGE(0U, ui_data_api_get()->powertrain.torque_window.filled, "The 10 s maximum is of the delivered torque, not on CAN yet");
+}
+
+void test_can_router_board_versions_and_states(void) {
+    union CanPrimaryMessages message = { 0 };
+    message.pipolibcanversion = (struct CanPrimaryPipolibcanversion){ .major = 17U, .minor = 2U, .patch = 1U };
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PIPOLIBCANVERSION, &message);
+    message.pipoversioninfo = (struct CanPrimaryPipoversioninfo){ .commithash = 0x3d2e9aaU };
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PIPOVERSIONINFO, &message);
+    message.pipofsm.status = CAN_PRIMARY_PIPOFSM_STATUS_ERROR;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_PIPOFSM, &message);
+    const struct UIDataBoardInfo *pipo = &ui_data_api_get()->boards[UI_DATA_BOARD_PIPO];
+    TEST_ASSERT_EQUAL_UINT16(17U, pipo->libcan[0]);
+    TEST_ASSERT_EQUAL_UINT16(1U, pipo->libcan[2]);
+    TEST_ASSERT_EQUAL_HEX32(0x3d2e9aaU, pipo->commit);
+    TEST_ASSERT_EQUAL_UINT8(UI_DATA_BOARD_KNOWN_COMMIT | UI_DATA_BOARD_KNOWN_LIBCAN, pipo->known);
+    TEST_ASSERT_EQUAL_UINT8(CAN_PRIMARY_PIPOFSM_STATUS_ERROR, pipo->status);
+}
+
+void test_can_router_a_message_without_cycle_time_stays_fresh_for_the_minimum(void) {
+    // ImuAcceleration is can_oneshot (-1) in libcan: 3 x -1 used to wrap to an instant timeout.
+    ui_data_api_get()->stale = UI_DATA_STALE_ALL;
+    union CanPrimaryMessages message = { 0 };
+    message.imuacceleration.z = 0.98F;
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_IMUACCELERATION, &message);
+    prv_now = 499U;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
+    TEST_ASSERT_TRUE_MESSAGE((ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_IMU_ACC)) == 0U, "Fresh for 500 ms");
+    prv_now = 500U;
+    TEST_ASSERT_EQUAL(TIMEOUT_RC_OK, timeout_api_routine());
+    TEST_ASSERT_TRUE((ui_data_api_get()->stale & UI_DATA_STALE_BIT(UI_DATA_SOURCE_IMU_ACC)) != 0U);
+}
+
+void test_can_router_heading_is_0_to_360_degrees(void) {
+    union CanPrimaryMessages message = { 0 };
+    message.estimatedvehicleposition.psi = 1.5707963F; // TODO(libcan): psi says 0..2 pi but 18 bits x 1e-5 stop at 2.62 rad
+    prv_receive(CAN_PRIMARY_MESSAGE_FRAME_ID_ESTIMATEDVEHICLEPOSITION, &message);
+    TEST_ASSERT_FLOAT_WITHIN(0.5F, 90.0F, ui_data_api_get()->chassis.heading_deg);
 }
 
 int main(void) {
@@ -290,7 +373,7 @@ int main(void) {
     RUN_TEST(test_can_router_primary_filters_are_valid_ranges);
     RUN_TEST(test_can_router_flashing_traffic_is_the_first_filter);
     RUN_TEST(test_can_router_accepts_every_flashing_and_dashboard_identifier);
-    RUN_TEST(test_can_router_rejects_everything_else);
+    RUN_TEST(test_can_router_accepts_every_source_and_skips_the_fast_messages);
     RUN_TEST(test_can_router_secondary_accepts_nothing);
     RUN_TEST(test_can_router_get_filters_rejects_null_count);
 
@@ -302,5 +385,10 @@ int main(void) {
     RUN_TEST(test_can_router_shutdown_closed_above_the_threshold);
     RUN_TEST(test_can_router_a_frame_makes_its_source_fresh_until_it_goes_silent);
 
+    RUN_TEST(test_can_router_decodes_the_debug_values);
+    RUN_TEST(test_can_router_motor_torque_is_the_set_point_not_the_delivered_torque);
+    RUN_TEST(test_can_router_board_versions_and_states);
+    RUN_TEST(test_can_router_a_message_without_cycle_time_stays_fresh_for_the_minimum);
+    RUN_TEST(test_can_router_heading_is_0_to_360_degrees);
     return UNITY_END();
 }

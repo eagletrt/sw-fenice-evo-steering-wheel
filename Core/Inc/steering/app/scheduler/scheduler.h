@@ -17,7 +17,7 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
-#include "ui/debug/wheel/debug-wheel.h"
+#include "ui/data/ui-data.h"
 #include "can/flash-monitor/flash-monitor.h"
 #include "app/post/post.h"
 #include "tasks.h"
@@ -70,6 +70,7 @@ enum SchedulerTaskId : uint8_t {
     SCHEDULER_TASK_CAN_TX,            /*!< Flush both TX queues to the bus */
     SCHEDULER_TASK_RENDER,            /*!< Sync UI data, redraw dirty boxes, swap framebuffers */
     SCHEDULER_TASK_STATS,             /*!< Log the task timing statistics */
+    SCHEDULER_TASK_WINDOWS,           /*!< Start a new second in the "max in the last 10 s" windows */
     SCHEDULER_TASK_COUNT,
 };
 
@@ -165,7 +166,6 @@ struct SchedulerHandler {
     uint16_t dropped_at_last_log;                          /*!< libtimebase dropped-runs counter at the previous stats log */
     uint32_t window_start_ms;                              /*!< Tick of the previous stats run */
     uint32_t frames_in_window;                             /*!< Frames presented since the previous stats run */
-    struct WheelHealth health;                             /*!< Last snapshot shown on the WHEEL debug page */
     timeout_id render_stall_timeout;                       /*!< Runs while the last frame is in flight */
 };
 

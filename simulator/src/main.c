@@ -23,7 +23,7 @@
  *            BACK / SELECT in the menu; both together, held 1 s: menu combo
  *       z/x  center manettino, also the menu cursor
  *       c/v  paddles TOP_LEFT / TOP_RIGHT (PTT, hold)
- *       b/n  paddles BOTTOM_LEFT / BOTTOM_RIGHT (no function yet)
+ *       b/n  paddles BOTTOM_LEFT / BOTTOM_RIGHT (DEBUG: previous / next tab)
  *       t    TS-on button (hold)
  *       1    next vehicle status of the simulated ECU (EcuFsm every 200 ms)
  *       2    inject one step of telemetry (SoC, temperatures, laps)
@@ -43,6 +43,9 @@
  *                                boxes, so with --screenshot replaying 0..N must
  *                                give the same image as N..N: any box missing
  *                                from a back buffer shows up.
+ *       --debug <tab>            go to DEBUG after the boot logo and show
+ *                                tab \p tab (0 = HV ... 12 = WHEEL), e.g.
+ *                                with --screenshot.
  *       --flash <id>             start with flashing traffic on, from the
  *                                board whose FlashingTx ID is \p id (e.g. 0x66
  *                                for the pedals).
@@ -60,6 +63,8 @@
 #include "can/router/can-communications-router-api.h"
 #include "can-primary-api.h"
 #include "can-primary.h"
+#include "can-version.h"
+#include "ui/screen/screen-api.h"
 #include "eagletrt-api.h"
 #include "inputs/raw/inputs-api.h"
 #include "util/logger/logger-api.h"
@@ -152,6 +157,7 @@ EAGLETRT_STATIC uint8_t simulator_ecu_status = CAN_PRIMARY_ECUFSM_VEHICLESTATUS_
 EAGLETRT_STATIC uint32_t simulator_feed_step;
 EAGLETRT_STATIC bool simulator_feed_enabled;
 EAGLETRT_STATIC bool simulator_flash_enabled;
+EAGLETRT_STATIC int simulator_debug_tab = -1; /*!< --debug: tab to open, -1 for none */
 EAGLETRT_STATIC uint32_t simulator_flash_id = CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSFLASHINGTX;
 
 EAGLETRT_STATIC struct ArenaAllocatorHandler simulator_arena;
@@ -373,6 +379,8 @@ EAGLETRT_STATIC void simulator_inject_ecu_status(void) {
     simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_ECUFSM, &message, can_primary_byte_size_ecufsm);
 }
 
+EAGLETRT_STATIC void simulator_inject_debug(uint32_t step);
+
 /*!
  * \brief Inject one step of every telemetry message the dashboard renders.
  *
@@ -429,12 +437,113 @@ EAGLETRT_STATIC void simulator_inject_telemetry(uint32_t step) {
     message.pedalsbrake.pressurefr = bar;
     message.pedalsbrake.pressurerl = bar * 0.6F;
     message.pedalsbrake.pressurerr = bar * 0.6F;
+    message.pedalsbrake.botsvoltage = 24.0F;
     simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_PEDALSBRAKE, &message, can_primary_byte_size_pedalsbrake);
 
     /* The shutdown opens at the end of every sweep. */
     memset(&message, 0, sizeof(message));
     message.tsacmainboardfeedbackshutdown.sdend = ((step % 50U) < 45U) ? 24.0F : 0.0F;
     simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_TSACMAINBOARDFEEDBACKSHUTDOWN, &message, can_primary_byte_size_tsacmainboardfeedbackshutdown);
+
+    simulator_inject_debug(step);
+}
+
+/*! \brief Serialize and receive one message whose union member was filled. */
+#define SIMULATOR_SEND(member, name) simulator_inject(CAN_PRIMARY_MESSAGE_FRAME_ID_##name, &message, can_primary_byte_size_##member)
+
+/*!
+ * \brief Inject one step of every message the debug tabs show.
+ */
+EAGLETRT_STATIC void simulator_inject_debug(uint32_t step) {
+    union CanPrimaryMessages message;
+    const float sweep = (float)(step % 50U) / 50.0F; /* 0..1 */
+
+    memset(&message, 0, sizeof(message));
+    message.tsacmainboardvoltageinfo = (struct CanPrimaryTsacmainboardvoltageinfo){ .ts = 505.0F + (sweep * 5.0F), .total = 512.0F, .min = 4.05F, .max = 4.12F };
+    SIMULATOR_SEND(tsacmainboardvoltageinfo, TSACMAINBOARDVOLTAGEINFO);
+    message.tsacmainboardcurrentinfo = (struct CanPrimaryTsacmainboardcurrentinfo){ .current = 12.4F + (sweep * 100.0F), .power = 6.3F + (sweep * 50.0F) };
+    SIMULATOR_SEND(tsacmainboardcurrentinfo, TSACMAINBOARDCURRENTINFO);
+    memset(&message, 0, sizeof(message));
+    message.tsacmainboardtemperatureinfo = (struct CanPrimaryTsacmainboardtemperatureinfo){ .min = 31.0F, .max = 38.0F + (sweep * 10.0F) };
+    SIMULATOR_SEND(tsacmainboardtemperatureinfo, TSACMAINBOARDTEMPERATUREINFO);
+    memset(&message, 0, sizeof(message));
+    message.tsacmainboardfeedback.plausiblestate = 1U;
+    message.tsacmainboardfeedback.tsalgreen = 5.0F;
+    SIMULATOR_SEND(tsacmainboardfeedback, TSACMAINBOARDFEEDBACK);
+    memset(&message, 0, sizeof(message));
+    message.tsacstatus.mainboardstatus = CAN_PRIMARY_TSACSTATUS_MAINBOARDSTATUS_TS_ON;
+    SIMULATOR_SEND(tsacstatus, TSACSTATUS);
+    memset(&message, 0, sizeof(message));
+    message.tsacmainboardshutdown = (struct CanPrimaryTsacmainboardshutdown){ .interlocktsacvoltage = 24.0F, .amsvoltage = 24.0F, .imdvoltage = 24.0F };
+    SIMULATOR_SEND(tsacmainboardshutdown, TSACMAINBOARDSHUTDOWN);
+    message.tsacmainboardcoolingtemperature1 = (struct CanPrimaryTsacmainboardcoolingtemperature1){ .inlet = 31.0F, .outlet1 = 33.0F, .outlet2 = 35.0F, .outlet3 = 38.0F };
+    SIMULATOR_SEND(tsacmainboardcoolingtemperature1, TSACMAINBOARDCOOLINGTEMPERATURE1);
+    message.tsacmainboardcoolingtemperature2 = (struct CanPrimaryTsacmainboardcoolingtemperature2){ .outlet4 = 34.0F, .outlet5 = 32.0F, .outlet6 = 36.0F };
+    SIMULATOR_SEND(tsacmainboardcoolingtemperature2, TSACMAINBOARDCOOLINGTEMPERATURE2);
+
+    message.motortorque = (struct CanPrimaryMotortorque){ .torquefl = 21.0F * sweep, .torquefr = 21.0F * sweep, .torquerl = 24.0F * sweep, .torquerr = 23.0F * sweep };
+    SIMULATOR_SEND(motortorque, MOTORTORQUE);
+    message.coolingmotortemperature = (struct CanPrimaryCoolingmotortemperature){ .frontleft = 44.0F, .frontright = 45.0F, .rearleft = 47.0F, .rearright = 46.0F };
+    SIMULATOR_SEND(coolingmotortemperature, COOLINGMOTORTEMPERATURE);
+    message.coolingcircuittemperature = (struct CanPrimaryCoolingcircuittemperature){ .radiatorleft = 41.0F, .radiatorright = 40.0F };
+    SIMULATOR_SEND(coolingcircuittemperature, COOLINGCIRCUITTEMPERATURE);
+    message.coolingout = (struct CanPrimaryCoolingout){ .pumpleft = 0.8F, .pumpright = 0.78F, .fanleft = 0.45F, .fanright = 0.45F };
+    SIMULATOR_SEND(coolingout, COOLINGOUT);
+    message.tyretemperaturefront = (struct CanPrimaryTyretemperaturefront){ .frontleft = 28.0F, .frontright = 31.0F };
+    SIMULATOR_SEND(tyretemperaturefront, TYRETEMPERATUREFRONT);
+    message.tyretemperaturerear = (struct CanPrimaryTyretemperaturerear){ .rearleft = 42.0F, .rearright = 44.0F };
+    SIMULATOR_SEND(tyretemperaturerear, TYRETEMPERATUREREAR);
+
+    /* BSPD opens at the end of every sweep: the first open node is the cause. */
+    const float sdc = ((step % 50U) < 45U) ? 24.0F : 0.0F;
+    message.dasshutdown = (struct CanPrimaryDasshutdown){ .mushroomright = 24.0F, .mushroomleft = 24.0F, .mushroomcockpit = 24.0F, .inertia = 24.0F };
+    SIMULATOR_SEND(dasshutdown, DASSHUTDOWN);
+    message.piposhutdown = (struct CanPrimaryPiposhutdown){ .lvms = 24.0F, .hvd = 24.0F, .bspd = sdc, .asms = 0.0F, .res = 24.0F, .tsms = 24.0F };
+    SIMULATOR_SEND(piposhutdown, PIPOSHUTDOWN);
+    message.brakesebs = (struct CanPrimaryBrakesebs){ .pressuretank1 = 6.1F, .pressuretank2 = 6.0F, .pressureline1 = 6.2F, .pressureline2 = 6.1F, .loadline1 = 312.0F, .loadline2 = 298.0F, .shutdownvoltage = 24.0F };
+    SIMULATOR_SEND(brakesebs, BRAKESEBS);
+
+    memset(&message, 0, sizeof(message));
+    message.lvacvoltageinfo = (struct CanPrimaryLvacvoltageinfo){ .total = 25.1F, .min = 4.15F, .max = 4.19F, .current = 5.7F };
+    SIMULATOR_SEND(lvacvoltageinfo, LVACVOLTAGEINFO);
+    memset(&message, 0, sizeof(message));
+    message.lvactemperatureinfo = (struct CanPrimaryLvactemperatureinfo){ .max = 34.0F };
+    SIMULATOR_SEND(lvactemperatureinfo, LVACTEMPERATUREINFO);
+    message.lvacfsm.status = CAN_PRIMARY_LVACFSM_STATUS_IDLE;
+    SIMULATOR_SEND(lvacfsm, LVACFSM);
+    message.pipofsm.status = CAN_PRIMARY_PIPOFSM_STATUS_IDLE;
+    SIMULATOR_SEND(pipofsm, PIPOFSM);
+    message.steeringfsm.status = CAN_PRIMARY_STEERINGFSM_STATUS_IDLE;
+    SIMULATOR_SEND(steeringfsm, STEERINGFSM);
+    memset(&message, 0, sizeof(message));
+    message.powersupply = (struct CanPrimaryPowersupply){ .voltage = 24.1F, .current = 21.4F, .power = 142.0F, .voltageout = 24.0F };
+    SIMULATOR_SEND(powersupply, POWERSUPPLY);
+    message.linecurrentlowpower = (struct CanPrimaryLinecurrentlowpower){ .tlm = 0.3F, .powertrain = 3.4F, .lights = 0.2F, .driver = 0.9F, .shutdown = 0.6F };
+    SIMULATOR_SEND(linecurrentlowpower, LINECURRENTLOWPOWER);
+    message.linecurrenthighpower = (struct CanPrimaryLinecurrenthighpower){ .coolingright = 5.0F, .coolingleft = 5.1F };
+    SIMULATOR_SEND(linecurrenthighpower, LINECURRENTHIGHPOWER);
+    message.linecurrenthighpoweras = (struct CanPrimaryLinecurrenthighpoweras){ .vision = 1.2F, .pcas = 2.2F, .steering = 0.4F, .ebs = 0.2F };
+    SIMULATOR_SEND(linecurrenthighpoweras, LINECURRENTHIGHPOWERAS);
+
+    memset(&message, 0, sizeof(message));
+    message.imuacceleration = (struct CanPrimaryImuacceleration){ .x = 0.62F, .y = 1.21F * sweep, .z = 0.98F, .temperature = 39.0F };
+    SIMULATOR_SEND(imuacceleration, IMUACCELERATION);
+    memset(&message, 0, sizeof(message));
+    message.imuangularrate = (struct CanPrimaryImuangularrate){ .x = 2.1F, .y = 0.4F, .z = 34.8F * sweep };
+    SIMULATOR_SEND(imuangularrate, IMUANGULARRATE);
+    memset(&message, 0, sizeof(message));
+    message.estimatedvehicleposition.psi = sweep * 2.5F;
+    SIMULATOR_SEND(estimatedvehicleposition, ESTIMATEDVEHICLEPOSITION);
+
+    /* Board versions: PIPO on an older libcan shows the mismatch. */
+    message.eculibcanversion = (struct CanPrimaryEculibcanversion){ .major = (uint16_t)can_version_major, .minor = (uint16_t)can_version_minor, .patch = (uint16_t)can_version_patch };
+    SIMULATOR_SEND(eculibcanversion, ECULIBCANVERSION);
+    message.ecuversioninfo = (struct CanPrimaryEcuversioninfo){ .commithash = 0xa1b2c3dU };
+    SIMULATOR_SEND(ecuversioninfo, ECUVERSIONINFO);
+    message.pipolibcanversion = (struct CanPrimaryPipolibcanversion){ .major = 17U };
+    SIMULATOR_SEND(pipolibcanversion, PIPOLIBCANVERSION);
+    message.pipoversioninfo = (struct CanPrimaryPipoversioninfo){ .commithash = 0x3d2e9aaU };
+    SIMULATOR_SEND(pipoversioninfo, PIPOVERSIONINFO);
 }
 
 /*!
@@ -562,6 +671,8 @@ int main(int argc, char **argv) {
             replay = true;
             replay_step = (uint32_t)strtoul(argv[++i], NULL, 10);
             replay_to = (uint32_t)strtoul(argv[++i], NULL, 10);
+        } else if (strcmp(argv[i], "--debug") == 0 && (i + 1) < argc) {
+            simulator_debug_tab = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--flash") == 0 && (i + 1) < argc) {
             simulator_flash_enabled = true;
             simulator_flash_id = (uint32_t)strtoul(argv[++i], NULL, 0);
@@ -640,6 +751,18 @@ int main(int argc, char **argv) {
     uint32_t last_flash_ms = 0U;
     uint32_t last_replay_ms = simulator_get_tick();
     while (tigrClosed(window) == 0) {
+        // --debug: IDLE -> MENU -> DEBUG once the boot logo is over, then the tab.
+        if (simulator_debug_tab >= 0) {
+            const enum WheelFsmState state = scheduler_api_get_fsm_state();
+            if (state == WHEEL_FSM_STATE_IDLE) {
+                EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_MENU));
+            } else if (state == WHEEL_FSM_STATE_MENU) {
+                EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_DEBUG));
+            } else if (state == WHEEL_FSM_STATE_DEBUG) {
+                EAGLETRT_API_UNUSED(screen_api_debug_step((int8_t)simulator_debug_tab));
+                simulator_debug_tab = -1;
+            }
+        }
         if (scheduler_api_routine() != SCHEDULER_RC_OK) {
             fprintf(stderr, "scheduler routine failed\n");
         }

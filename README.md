@@ -11,19 +11,20 @@ It also handles **buttons** and **3 rotary switches** for user input in real-tim
 
 ## Codebase structure
 
-- `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules, one folder per module, grouped by area. Headers and sources mirror each other, and every include is written from `Core/Inc/steering` (`#include "ui/debug/wheel/debug-wheel-api.h"`), so an include tells where the file is:
+- `Core/Src/steering/`, `Core/Inc/steering/`: hardware-agnostic application modules, one folder per module, grouped by area. Headers and sources mirror each other, and every include is written from `Core/Inc/steering` (`#include "ui/debug/debug-api.h"`), so an include tells where the file is:
 
   ```text
   app/          scheduler/ (task table, wiring)  fsm/ (wheel state machine)  post/
   can/          bus/ (RX/TX queues)  router/ (libcan decoding)  flash-monitor/  identity/
   inputs/       inputs-shared.h  raw/ (edges)  events/ (gestures, combos)  router/ (per-state bindings)  parameters/
   ui/           style.h  data/ (UI snapshot)  screen/ (view table)  dashboard/  menu/  popup/  splash/
-                debug/wheel/ (WHEEL debug page; one folder per debug tab)
+                debug/ (tab engine) + hv/ motors/ cooling/ inverters/ pedals/ brakes/ shutdown/ lv/ pipo/ as/ dynamics/ sw/ wheel/ (one folder per tab)
+  vehicle/      shutdown/ (the shutdown chain in circuit order)
   util/         timeout/  logger/
   drivers/      mcp23017/  micron-steer-sdram/
   ```
 
-  Tests mirror the same tree under `test/` (`test/ui/debug/test_debug_wheel`, ...).
+  Tests mirror the same tree under `test/` (`test/ui/debug/test_debug`, ...).
 - `Core/Src/steering/can/router/can-communications-router-api.c`: the only place that knows about **libcan**. It decodes every inbound frame, folds the ones the dashboard renders into the UI snapshot, hands the rest to the flash monitor, and owns the list of identifiers the FDCAN hardware filters let through (everything else is rejected before it reaches the CPU; the secondary bus accepts nothing yet). Every value the dashboard shows has a stale timeout (three missed frames, at least 500 ms): a silent source shows "--". It also builds the wheel's own outbound messages (button status carrying TS-on/PTT, control maps, driver action). Identity broadcasts (FSM status, firmware and libcan versions) live in `identity-api.c`.
 - Everything else in `Core/` is CubeMX-generated peripheral code; the hardware glue that wires peripherals to the application modules lives in its user-code sections.
 - `fenice-evo-steering-wheel-bootloader-sw/`: the OpenBLT CAN bootloader (OpenBLT 1.22, own CubeMX project, built from the same `platformio.ini`). It occupies the first 128K flash sector; the firmware linked after it uses `STM32H723XG_FLASH_SHIFTED.ld` (see [Bootloader](#bootloader)).
@@ -71,7 +72,7 @@ stateDiagram-v2
 | `INIT` | power-on self test (once, before the first task), then the logo for 1 s | `INIT` |
 | `IDLE` | main page: driver dashboard, or the AS page while the ECU runs an autonomous mission (driver controls, PTT and TS-on ignored then) | `IDLE` |
 | `MENU` | menu page; knob and top buttons navigate, driver controls ignored | `IDLE` |
-| `DEBUG` | placeholder page; every driver control still works | `IDLE` |
+| `DEBUG` | 13 debug tabs (HV ... SW, WHEEL), bottom paddles cycle them; every driver control still works | `IDLE` |
 | `CALIBRATION` | placeholder page; top left goes back to the menu | `IDLE` |
 | `SCREEN_SAVER` | logo only; every input ignored but the menu combo | `IDLE` |
 | `FLASH` | another board is being flashed: logo, "FLASHING" and the board's name on screen; inputs ignored; `SteeringWheelFsm` is the only frame the wheel sends | `FLASH` |
@@ -110,7 +111,7 @@ Raw inputs (button edges, knob steps) go through two layers before they change a
 and launch control; top paddles hold PTT; TS-on held while pressed; **top right = driver action
 OK, top left = REPEAT** (1 while held, `DriverAction` on every change); menu combo (both top
 buttons) held 1 s opens the menu. `MENU`: center manettino moves, top right selects, top left goes
-back. `DEBUG` binds what `IDLE` does; `CALIBRATION` only top left (back); `SCREEN_SAVER` only the
+back. `DEBUG` binds what `IDLE` does plus the bottom paddles (previous / next tab); `CALIBRATION` only top left (back); `SCREEN_SAVER` only the
 menu combo. `INIT`, `FLASH` and `ERROR` bind nothing.
 
 ### Rendering
@@ -164,20 +165,24 @@ content changes) and CAN frames can be injected:
 | `c`, `v` (hold) | PTT paddles |
 | `t` (hold) | TS-on |
 | `r`, `f` (hold) | top buttons: REPEAT / OK driver actions, BACK / SELECT in the menu; both together, held 1 s: menu combo |
-| `b`, `n` | bottom paddles (no function yet) |
+| `b`, `n` | bottom paddles (DEBUG: previous / next tab) |
 | `1` | next vehicle status of the simulated ECU (it sends `EcuFsm` every 200 ms; only IDLE unlocks the menu) |
 | `2` | inject one step of telemetry (SoC, temperatures, laps) |
 | `p` | toggle a continuous telemetry feed |
 | `3` | toggle flashing traffic of another board (FLASH page, wheel muted) |
 | `4` | next board for the flashing traffic |
 
-`--screenshot <file.ppm>` runs for one second, saves the window and exits
+`--screenshot <file.ppm>` runs for 1.5 s (past the boot logo), saves the window and exits
 (e.g. `.pio/build/simulator/program --screenshot frame.ppm`). `--replay <from> <to>` feeds
 telemetry steps `from..to`, alternating with ECU-state-only frames: with `--screenshot`,
 `--replay 0 12` and `--replay 12 12` must produce identical images (a quick check that the
 copy-free double buffering never leaves a stale box behind).
 `--flash <id>` starts with flashing traffic on, from the board whose `FlashingTx` ID is `<id>`
 (e.g. `--flash 0x66 --screenshot flash.ppm` for the pedals' FLASH page).
+`--debug <tab>` goes to DEBUG after the boot logo and opens tab `<tab>` (0 = HV ... 12 = WHEEL),
+e.g. `--debug 6 --screenshot shutdown.ppm`. The telemetry feed also sends every message the
+debug tabs decode; values whose message libcan does not have yet stay `--`
+(`Core/Inc/steering/can/can-placeholders.h`).
 Needs OpenGL (Cocoa on macOS, GL + X11 on Linux).
 
 ### Bootloader

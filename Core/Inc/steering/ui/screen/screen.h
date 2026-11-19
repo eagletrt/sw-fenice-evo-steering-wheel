@@ -2,7 +2,7 @@
 #define SCREEN_H
 
 #include "ui/dashboard/dashboard.h"
-#include "ui/debug/wheel/debug-wheel.h"
+#include "ui/debug/debug.h"
 #include "ui/menu/menu.h"
 #include "ui/popup/popup.h"
 #include "raster.h"
@@ -38,7 +38,7 @@ struct ScreenAccelerators {
 /*!
  * \brief Boxes of the biggest view.
  */
-#define SCREEN_MAX_BOX_COUNT (EAGLETRT_API_MAX(EAGLETRT_API_MAX(EAGLETRT_API_MAX(EAGLETRT_API_MAX(DASHBOARD_BOX_COUNT, POPUP_BOX_COUNT), SPLASH_BOX_COUNT), MENU_BOX_COUNT), DEBUG_WHEEL_BOX_COUNT))
+#define SCREEN_MAX_BOX_COUNT (EAGLETRT_API_MAX(EAGLETRT_API_MAX(EAGLETRT_API_MAX(EAGLETRT_API_MAX(DASHBOARD_BOX_COUNT, POPUP_BOX_COUNT), SPLASH_BOX_COUNT), MENU_BOX_COUNT), DEBUG_MAX_BOXES))
 
 /*!
  * \brief Pages the screen can show.
@@ -53,7 +53,7 @@ enum ScreenViewId : uint8_t {
     SCREEN_VIEW_PLACEHOLDER, /*!< Logo + page name, for modes whose design isn't ready (TODO(design)) */
     SCREEN_VIEW_LOGO,        /*!< Logo only: boot and screen saver */
     SCREEN_VIEW_MENU,        /*!< Menu page */
-    SCREEN_VIEW_DEBUG,       /*!< WHEEL debug page (TODO(#13): the other tabs) */
+    SCREEN_VIEW_DEBUG,       /*!< Debug tabs (the shown tab's boxes) */
     SCREEN_VIEW_POPUP,       /*!< Parameter-change popup, overlay only */
     SCREEN_VIEW_COUNT,
 };
@@ -79,7 +79,7 @@ struct ScreenHandler {
     struct SplashHandler placeholder;  /*!< Placeholder page: logo + "NO DESIGN YET" + page name */
     struct SplashHandler logo;         /*!< Logo-only page (boot, screen saver) */
     struct MenuHandler menu;           /*!< Menu page and its cursor */
-    struct DebugWheelHandler debug;    /*!< WHEEL debug page */
+    struct DebugHandler debug;         /*!< Debug tabs */
 };
 
 #endif // SCREEN_H

@@ -247,7 +247,7 @@ EAGLETRT_STATIC void prv_scheduler_api_task_render(uint32_t tick_ms) {
  */
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 EAGLETRT_STATIC void prv_scheduler_api_update_health(uint32_t tick_ms, uint16_t dropped_in_window) {
-    struct WheelHealth *health = &scheduler_handler.health;
+    struct WheelHealth *health = &ui_data_api_get()->wheel;
     health->window_ms = tick_ms - scheduler_handler.window_start_ms;
     health->frames = scheduler_handler.frames_in_window;
     health->render_max_us = scheduler_handler.stats[SCHEDULER_TASK_RENDER].window_max_us;
@@ -259,7 +259,11 @@ EAGLETRT_STATIC void prv_scheduler_api_update_health(uint32_t tick_ms, uint16_t 
     if (scheduler_handler.config.read_health != NULL) {
         scheduler_handler.config.read_health(health);
     }
-    EAGLETRT_API_UNUSED(screen_api_sync_health(health));
+}
+
+EAGLETRT_STATIC void prv_scheduler_api_task_windows(uint32_t tick_ms) {
+    EAGLETRT_API_UNUSED(tick_ms);
+    ui_data_api_rotate_windows();
 }
 
 EAGLETRT_STATIC void prv_scheduler_api_task_stats(uint32_t tick_ms) {
@@ -307,6 +311,13 @@ EAGLETRT_STATIC void prv_scheduler_api_on_request(enum InputRequest request, int
     if (request == INPUT_REQUEST_MENU) {
         if (wheel_fsm_api_request(WHEEL_FSM_STATE_MENU) == WHEEL_FSM_RC_OK) {
             screen_api_menu_open();
+        }
+        return;
+    }
+    if (request == INPUT_REQUEST_TAB) {
+        // Bound in DEBUG only.
+        if (screen_api_debug_step(amount) != SCREEN_RC_OK) {
+            EAGLETRT_API_UNUSED(wheel_fsm_api_request(WHEEL_FSM_STATE_ERROR));
         }
         return;
     }
@@ -394,6 +405,7 @@ EAGLETRT_STATIC const struct SchedulerTask prv_scheduler_api_tasks[SCHEDULER_TAS
     [SCHEDULER_TASK_CAN_TX] = { 1U, 0U, prv_scheduler_api_task_can_tx },
     [SCHEDULER_TASK_RENDER] = { 20U, 5U, prv_scheduler_api_task_render },
     [SCHEDULER_TASK_STATS] = { SCHEDULER_STATS_LOG_PERIOD_MS, 3U, prv_scheduler_api_task_stats },
+    [SCHEDULER_TASK_WINDOWS] = { 1000U, 7U, prv_scheduler_api_task_windows },
 };
 
 /*!
