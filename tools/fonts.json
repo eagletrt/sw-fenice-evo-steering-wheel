@@ -2,8 +2,7 @@
     {
         "name": "inter",
         "font": "InterBold.ttf",
-        "size": 220,
-        "edges": [0.05, 0.6],
+        "sizes": [16, 40, 150],
         "characters": "A-Za-z0-9 ./°%+<>()-"
     }
 ]

@@ -26,11 +26,8 @@ logger = logging.getLogger("libraster")
 def find_generator() -> Path | None:
     """Locate libraster's tools/generator.py.
 
-    This is needed to test local changes to the libraster without needing to push on github each time
+    This is needed to test local changes to the libraster without needing to push on github each time.
     """
-    found = next(Path(".pio").rglob("generator.py"), None)
-    if found is not None:
-        return found
     for link in Path(".pio").rglob("*.pio-link"):
         try:
             data = json.loads(link.read_text())
@@ -42,7 +39,7 @@ def find_generator() -> Path | None:
         candidate = Path(data.get("cwd", ".")) / uri[len("symlink://"):] / "tools" / "generator.py"
         if candidate.exists():
             return candidate
-    return None
+    return next(Path(".pio").rglob("generator.py"), None)
 
 
 def hash_file(path: Path) -> str:
